@@ -1,0 +1,152 @@
+{
+    "ogre" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "ogre"
+    },
+    "bunny" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "bunny"
+    },
+    "duck" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "flying"
+    },
+    "bat" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "flying"
+    },
+    "ghost" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "ghost"
+    },
+    "ghoul" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "ghost"
+    },
+    "vampire" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "ghost"
+    },
+    "spider" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "bug"
+    },
+    "bug" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "bug"
+    },
+    "elf" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "elf"
+    },
+    "goblin" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "elf"
+    },
+    "michael bay" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "elf"
+    },
+    "gnome" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "gnome"
+    },
+    "plant" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "plant"
+    },
+    "snake" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "snake"
+    },
+    "viper" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "snake"
+    },
+    "python" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "snake"
+    },
+    "rat" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "rat"
+    },
+    "mouse" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "rat"
+    },
+    "horse" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "horse"
+    },
+    "alpaca" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "horse"
+    },
+    "llama" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "horse"
+    },
+    "housewife" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "female"
+    },
+    "schoolgirl" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "female"
+    },
+    "woman" : {
+        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "attacks" : [],
+        "magic" : [],
+        "type" : "female"
+    }
+}

@@ -1,0 +1,42 @@
+{
+com.badlogic.gdx.graphics.g2d.BitmapFont: { 
+    small: { file: small.fnt },
+    big: { file: big.fnt } 
+},
+com.badlogic.gdx.graphics.Color: {
+	white: { a: 1, b: 1, g: 1, r: 1 },
+	black: { a: 1, b: 0, g: 0, r: 0 }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
+	default: { down: button_down, up: button_up },
+	toggle: { down: button_down, checked: button_down, up: button_up }
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+	default: { down: button_down, up: button_up, checked: button_down, font: small, fontColor: white, downFontColor: black, checkedFontColor: black }
+},
+com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+	default: { vScroll: scroll, background: button_up, vScrollKnob: scroll-knob }
+},
+com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
+	default: {
+		font: small, fontColor: white, background: window,
+		scrollStyle: default,
+		listStyle: { font: small, selection: button_down }
+	}
+},
+com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
+	default: { titleFont: small, background: window, titleFontColor: white },
+	window: { titleFont: small, background: window, titleFontColor: white }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+	default: { font: small, fontColor: white },
+	big: { font: big, fontColor: white },
+	small: { font: small, fontColor: white }
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }
+},
+com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
+	default: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: small }
+}
+}

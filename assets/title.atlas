@@ -1,0 +1,68 @@
+
+title.png
+size: 916,1016
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+back
+  rotate: false
+  xy: 504, 84
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+castle
+  rotate: false
+  xy: 504, 102
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+character
+  rotate: false
+  xy: 504, 66
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+cliff
+  rotate: false
+  xy: 516, 616
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+titlefnt
+  rotate: false
+  xy: 2, 504
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+tools
+  rotate: false
+  xy: 2, 2
+  size: 500, 500
+  orig: 500, 500
+  offset: 0, 0
+  index: -1
+
+title2.png
+size: 683,754
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+lightning
+  rotate: false
+  xy: 2, 2
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+logo
+  rotate: false
+  xy: 2, 404
+  size: 681, 350
+  orig: 681, 350
+  offset: 0, 0
+  index: -1
