@@ -1,0 +1,104 @@
+
+dungeon.png
+size: 184,202
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+bug
+  rotate: false
+  xy: 2, 56
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+bunny
+  rotate: false
+  xy: 132, 186
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+character
+  rotate: false
+  xy: 2, 38
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+duck
+  rotate: false
+  xy: 20, 56
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+elf
+  rotate: false
+  xy: 132, 168
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+ghost
+  rotate: false
+  xy: 150, 186
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+girl
+  rotate: false
+  xy: 2, 20
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+gnome
+  rotate: false
+  xy: 20, 38
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+horse
+  rotate: false
+  xy: 38, 56
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+ogre
+  rotate: false
+  xy: 132, 150
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+plant
+  rotate: false
+  xy: 150, 168
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+rat
+  rotate: false
+  xy: 168, 186
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+snake
+  rotate: false
+  xy: 2, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+tiles
+  rotate: false
+  xy: 2, 74
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1

@@ -1,19 +1,33 @@
 package core.common;
 
 import scenes.SceneManager;
+import GenericComponents.Position;
+import GenericComponents.Renderable;
 import GenericComponents.Stats;
+import GenericSystems.MovementSystem;
 
+import com.artemis.Entity;
+import com.artemis.World;
+import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics.DisplayMode;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 
-import core.Inventory;
+import core.datatypes.FileType;
+import core.datatypes.Inventory;
 import core.datatypes.Item;
 import factories.AdjectiveFactory;
+import factories.DungeonFactory;
 import factories.MonsterFactory;
 
 public class Storymode extends com.badlogic.gdx.Game {
 
+	private static Storymode instance;
 	private Stats player;
 	private float time;
 	private Inventory inventory;
@@ -22,6 +36,10 @@ public class Storymode extends com.badlogic.gdx.Game {
 	
 	private boolean resumed;
 	
+	private boolean fullscreen;
+	
+	private Array<World> dungeon;
+	
 	@Override
 	public void create() {
 		//setup all factory resources
@@ -29,23 +47,36 @@ public class Storymode extends com.badlogic.gdx.Game {
 		MonsterFactory.init();
 		AdjectiveFactory.init();
 		
-		startGame(3);
-		
 		SceneManager.setGame(this);
 		SceneManager.register("town", scenes.town.Scene.class);
 		SceneManager.register("dungeon", scenes.dungeon.Scene.class);
 		SceneManager.register("title", scenes.title.Scene.class);
-		SceneManager.switchToScene("title");
+		SceneManager.register("newgame", scenes.newgame.Scene.class);
+		
+		
+		//SceneManager.switchToScene("title");
+		
+		//test dungeon
+		
+		instance = this;
+		
+		startGame(3);
+		scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
+		dungeon.setDungeon(FileType.Other, 5);
+		SceneManager.switchToScene(dungeon);
+		
 	}
 
-	public void startGame(int difficulty) {
-		//make a player
-		player = new Stats(10, 0, MathUtils.random(10), MathUtils.random(10), MathUtils.random(10), MathUtils.random(10));
-		player.hp = 5;
-		//make crafting requirements
-		inventory = new Inventory();
+	public static void startGame(int difficulty) {
 		
-		time = 0f;
+		//make a player
+		instance.player = new Stats(10, 0, MathUtils.random(10), MathUtils.random(10), MathUtils.random(10), MathUtils.random(10));
+
+		//make crafting requirements
+		instance.inventory = new Inventory(difficulty);
+		
+		//reset game clock
+		instance.time = 0f;
 	}
 	
 	public String getTimeElapsed()
@@ -60,9 +91,6 @@ public class Storymode extends com.badlogic.gdx.Game {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
-		//default render screen
-		super.render();
-		
 		float delta = Gdx.graphics.getDeltaTime();
 		//ignore pause time in getting time played
 		if (resumed)
@@ -71,6 +99,30 @@ public class Storymode extends com.badlogic.gdx.Game {
 			resumed = false;
 		}
 		time += delta;
+		
+		this.getScreen().render(delta);
+		
+		//quick reset debug
+		if (Gdx.input.isKeyPressed(Keys.F9))
+		{
+			SceneManager.switchToScene("title");
+		}
+		
+		if ((Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT)) && Gdx.input.isKeyPressed(Keys.ENTER))
+		{
+			if (fullscreen)
+			{
+				Gdx.graphics.setDisplayMode(InternalRes[0], InternalRes[1], false);
+				fullscreen = false;
+			}
+			else
+			{
+				DisplayMode dm = Gdx.graphics.getDesktopDisplayMode();
+				Gdx.graphics.setDisplayMode(dm.width, dm.height, true);
+				fullscreen = true;
+			}
+			
+		}
 	}
 	
 	public void resume()
@@ -85,7 +137,7 @@ public class Storymode extends com.badlogic.gdx.Game {
 	public void rest()
 	{
 		player.hp = player.maxhp;
-		Tracker.NumberValues.TimesSlept.increment();
+		Tracker.NumberValues.Times_Slept.increment();
 	}
 
 	public Inventory getInventory()
@@ -96,5 +148,37 @@ public class Storymode extends com.badlogic.gdx.Game {
 	public Stats getPlayer()
 	{
 		return player;
+	}
+	
+	public void newDungeon(AssetManager manager, FileType type, int difficulty)
+	{
+		System.out.println("making a d");
+		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+		DungeonFactory factory = new DungeonFactory(atlas, type);
+		dungeon = factory.create(difficulty);
+		
+		//add player into all floors
+		for (World floor : dungeon)
+		{
+			//make player
+			Entity e = floor.createEntity();
+			e.addComponent(new Position(0,0));
+			e.addComponent(player);	//shared stats reference
+			e.addComponent(new Renderable(atlas.findRegion("character")));
+			e.addToWorld();
+			
+			floor.getManager(TagManager.class).register("player", e);
+			
+			//put entity at start position on each floor
+			floor.getSystem(MovementSystem.class).moveToStart(e);
+		}
+	}
+	
+	/**
+	 * @return all the floors of our dungeon
+	 */
+	public Array<World> getDungeon()
+	{
+		return dungeon;
 	}
 }

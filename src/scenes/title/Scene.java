@@ -2,6 +2,8 @@ package scenes.title;
 
 import scenes.SceneManager;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
@@ -27,6 +29,8 @@ public class Scene implements Screen {
 	boolean loaded;
 	
 	Music bgm;
+	boolean musicStarted;
+	int difficulty = 3;
 	
 	@Override
 	public void render(float delta) {
@@ -42,6 +46,13 @@ public class Scene implements Screen {
 		
 		stage.act(delta);
 		stage.draw();
+		
+		//skip the intro
+		if (Gdx.input.isKeyPressed(Keys.ESCAPE) ||
+			Gdx.input.isKeyPressed(Keys.BACKSPACE) )
+		{
+			showDiffSelection();
+		}
 	}
 
 	@Override
@@ -54,8 +65,8 @@ public class Scene implements Screen {
 		Viewport v = new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]);
 		stage = new Stage(v);
 		manager = new AssetManager();
-		manager.load("assets/title.json", Skin.class);
-		manager.load("assets/audio/title.mp3", Music.class);
+		manager.load("data/title.json", Skin.class);
+		manager.load("data/audio/title.mp3", Music.class);
 	}
 
 	/**
@@ -65,10 +76,11 @@ public class Scene implements Screen {
 	{
 		loaded = true;
 		
-		//TODO fetch assets
-		final Skin skin = manager.get("assets/title.json", Skin.class);
+		//fetch assets
+		final Skin skin = manager.get("data/title.json", Skin.class);
+		bgm = manager.get("data/audio/title.mp3", Music.class);
 		
-		//TODO create title sequence
+		//create title sequence
 		
 		//initial text
 		{
@@ -98,6 +110,18 @@ public class Scene implements Screen {
 			);
 			textGrid.row();
 			textGrid.add(text).expandX().fillX().padRight(60f);
+			text = new Label("June 20, 2014", skin, "small");
+			text.setWrap(true);
+			text.setAlignment(Align.right);
+			text.addAction(
+				Actions.sequence(
+					Actions.alpha(0f),
+					Actions.delay(3f),
+					Actions.alpha(1f, 1f)
+				)
+			);
+			textGrid.row();
+			textGrid.add(text).expandX().fillX().padRight(60f);
 			textGrid.addAction(
 				Actions.sequence(
 					Actions.alpha(1f),
@@ -107,7 +131,7 @@ public class Scene implements Screen {
 
 						@Override
 						public void run() {
-							bgm = manager.get("assets/audio/title.mp3", Music.class);
+							musicStarted = true;
 							bgm.play();
 						}
 						
@@ -169,13 +193,7 @@ public class Scene implements Screen {
 			Image tools = new Image(skin.getDrawable("tools"));
 			tools.setPosition(stage.getWidth()/2-tools.getWidth()/2, stage.getHeight()/2-tools.getHeight()/2);
 			Table table = new Table();
-			Label label = new Label("Title theme", skin);
-			table.add(label).expandX().fillX();
-			table.row();
-			label = new Label("Anamanaguchi -  Helix Nebula", skin);
-			table.add(label).expandX().fillX();
-			table.row();
-			label = new Label("available on FreeMusicArchive.org", skin);
+			Label label = new Label("All music available on FreeMusicArchive.org", skin);
 			table.add(label).expandX().fillX();
 			table.row();
 			
@@ -278,10 +296,31 @@ public class Scene implements Screen {
 					Actions.alpha(1f, 1f),
 					Actions.forever(
 						Actions.sequence(
-							Actions.moveTo(0, stage.getHeight() - logo.getHeight() + 5f, .75f),
-							Actions.moveTo(0, stage.getHeight() - logo.getHeight() - 5f, .75f)
+							Actions.moveTo(0, stage.getHeight() - logo.getHeight() + 5f, 2f),
+							Actions.moveTo(0, stage.getHeight() - logo.getHeight() - 5f, 2f)
 						)
 					)
+				)
+			);
+			
+			Table table = new Table();
+			
+			Label label = new Label("Title theme", skin, "small");
+			label.setAlignment(Align.right);
+			table.add(label).expandX().fillX();
+			table.row();
+			label = new Label("Anamanaguchi - Helix Nebula", skin, "small");
+			label.setAlignment(Align.right);
+			table.add(label).expandX().fillX();
+			table.row();
+			table.pad(10f);
+			table.pack();
+			table.addAction(
+				Actions.sequence(
+					Actions.alpha(0f),
+					Actions.moveTo(stage.getWidth()-table.getWidth(), 0),
+					Actions.delay(40f),
+					Actions.alpha(1f, 1f)
 				)
 			);
 			
@@ -289,6 +328,7 @@ public class Scene implements Screen {
 			cool.addActor(lightning);
 			cool.addActor(group);
 			cool.addActor(logo);
+			cool.addActor(table);
 			
 			cool.addAction(
 				Actions.sequence(
@@ -296,31 +336,39 @@ public class Scene implements Screen {
 					Actions.delay(24f), 
 					Actions.alpha(1f), 
 					Actions.delay(30f), 
-					Actions.alpha(0f, 1f)
+					Actions.alpha(0f, 1f),
+					Actions.delay(1f),
+					Actions.run(new Runnable(){
+
+						@Override
+						public void run() {
+							bgm.stop();
+						}
+						
+					}),
+					Actions.delay(1.5f),
+					Actions.run(new Runnable(){
+
+						@Override
+						public void run() {
+							showDiffSelection();
+						}
+						
+					})				
 				)
 			);
 			stage.addActor(cool);
 		}
-		
-		//show title
-		
-		stage.addAction(Actions.sequence(
-			Actions.alpha(1f),
-			Actions.delay(55f),
-			Actions.alpha(0f),
-			Actions.run(new Runnable(){
 
-				@Override
-				public void run() {
-					bgm.stop();
-					SceneManager.switchToScene("town");
-				}
-				
-			})
-		));
-		
 		//make sure all initial steps are set
 		stage.act();
+	}
+	
+	private void showDiffSelection()
+	{
+		musicStarted = false;
+		bgm.stop();
+		SceneManager.switchToScene("newgame");
 	}
 	
 	@Override
@@ -330,12 +378,18 @@ public class Scene implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
+		if (musicStarted)
+		{
+			bgm.pause();
+		}
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
+		if (musicStarted)
+		{
+			bgm.play();
+		}
 	}
 
 	@Override

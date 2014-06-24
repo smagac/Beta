@@ -9,13 +9,13 @@ public class ItemFactory {
 	
 	private final Array<String> areaLoot;
 	
-	public ItemFactory(String area)
+	public ItemFactory(FileType area)
 	{
 		//make sure item data is loaded
 		Item.init();
 		
 		areaLoot = new Array<String>();
-		areaLoot.addAll(Item.lootLocations.get(FileType.getType(area)));
+		areaLoot.addAll(Item.lootLocations.get(area));
 		areaLoot.addAll(Item.lootLocations.get(FileType.Other));
 	}
 	

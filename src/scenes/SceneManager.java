@@ -76,6 +76,15 @@ public class SceneManager {
 		}
 	}
 	
+	/**
+	 * Switch to an already created scene
+	 * @param scene
+	 */
+	public static void switchToScene(Screen scene)
+	{
+		service.setScreen(scene);
+	}
+	
 	public static void setGame(Storymode game)
 	{
 		service = game;

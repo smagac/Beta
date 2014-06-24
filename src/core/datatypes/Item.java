@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
-public class Item
+public class Item implements Comparable<Item>
 {
 	public static Array<String> items;
 	public static Array<String> loot;
@@ -77,5 +77,55 @@ public class Item
 	    result = prime * result + name.hashCode();
 	    
 	    return result;
+	}
+	
+	public String fullname()
+	{
+		return String.format("%s %s", adj, name);
+	}
+	
+	public String toString()
+	{
+		return fullname();
+	}
+
+	@Override
+	public int compareTo(Item o) {
+		//only compare names against craftables
+		if (o instanceof Craftable)
+		{
+			Craftable c = (Craftable)o;
+			return name.compareTo(c.name);
+		}
+		return fullname().compareTo(o.fullname());
+	}
+	
+	public boolean equals(Object o)
+	{
+		if (o == null) {
+			return false;
+		}
+		if (o == this) {
+			return true;
+		}
+		if (o.hashCode() == this.hashCode()) {
+			return true;
+		}
+		if (o instanceof String)
+		{
+			String s = (String)o;
+			return name.equals(s); 
+		}
+		if (o instanceof Craftable)
+		{
+			Craftable c = (Craftable)o;
+			return name.equals(c.name);
+		}
+		if (o instanceof Item)
+		{
+			Item i = (Item)o;
+			return fullname().equals(i.fullname());
+		}
+		return false;
 	}
 }

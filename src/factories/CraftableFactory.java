@@ -1,7 +1,6 @@
 package factories;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.Craftable;
 import core.datatypes.Item;
@@ -18,13 +17,12 @@ public class CraftableFactory {
 	{
 		String name = Item.craftables.random();
 		String adj = AdjectiveFactory.getAdjective();
-		Array<String> parts = new Array<String>();
+		String[] parts = new String[MathUtils.random(1, 5)];
 		
-		final int ingredientCount = MathUtils.random(1, 5);
-		for (int i = 0; i < ingredientCount; i++)
+		for (int i = 0; i < parts.length; i++)
 		{
-			parts.add(Item.items.random());
+			parts[i] = Item.items.random();
 		}
-		return new Craftable(name, adj);
+		return new Craftable(name, adj, parts);
 	}
 }

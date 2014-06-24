@@ -1,11 +1,16 @@
 {
 com.badlogic.gdx.graphics.g2d.BitmapFont: { 
     small: { file: small.fnt },
-    big: { file: big.fnt } 
+    big: { file: big.fnt },
+    prompt: { file: titlefnt.fnt },
+    promptsm: { file: prompt_sm.fnt }
 },
 com.badlogic.gdx.graphics.Color: {
 	white: { a: 1, b: 1, g: 1, r: 1 },
 	black: { a: 1, b: 0, g: 0, r: 0 }
+},
+com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable: {
+    scrollbar: { region: scroll }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	default: { down: button_down, up: button_up },
@@ -15,7 +20,7 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: { down: button_down, up: button_up, checked: button_down, font: small, fontColor: white, downFontColor: black, checkedFontColor: black }
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
-	default: { vScroll: scroll, background: button_up, vScrollKnob: scroll-knob }
+	default: { background: button_up, vScrollKnob: scroll-knob }
 },
 com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 	default: {
@@ -31,7 +36,9 @@ com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: small, fontColor: white },
 	big: { font: big, fontColor: white },
-	small: { font: small, fontColor: white }
+	small: { font: small, fontColor: white },
+	prompt: { font: prompt, fontColor: white },
+	promptsm: { font: promptsm, fontColor: white }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }

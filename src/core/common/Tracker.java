@@ -2,8 +2,6 @@ package core.common;
 
 import com.badlogic.gdx.utils.ObjectMap;
 
-import core.datatypes.FileType;
-
 public class Tracker {
 
 	/**
@@ -12,13 +10,13 @@ public class Tracker {
 	 *
 	 */
 	public enum NumberValues {
-		TimesSlept,
-		MonstersKilled,
-		ItemsCrafted,
-		LootFound,
-		TimesDied,
-		LootSacrificed,
-		FilesExplored;
+		Times_Slept,
+		Monsters_Killed,
+		Items_Crafted,
+		Loot_Found,
+		Times_Died,
+		Loot_Sacrificed,
+		Files_Explored;
 		
 		private int count = 0;
 		
@@ -30,6 +28,11 @@ public class Tracker {
 		public void decrement()
 		{
 			count--;
+		}
+		
+		public String toString()
+		{
+			return String.format("%s: %d", name().replace('_', ' '), count);
 		}
 	}
 	
@@ -79,17 +82,5 @@ public class Tracker {
 			}
 			return m;
 		}
-	}
-	
-	private static ObjectMap<FileType, Integer> typeTracker;
-	
-	public static void increment(FileType v)
-	{
-		typeTracker.put(v, typeTracker.get(v, 0) + 1);
-	}
-	
-	public static void decrement(FileType v)
-	{
-		typeTracker.put(v, typeTracker.get(v, 0) - 1);
 	}
 }

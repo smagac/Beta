@@ -10,7 +10,6 @@ public class Craftable extends Item
 	 * Integer - quantity required
 	 */
 	private ObjectMap<String, Integer> requirements;
-	private boolean made = false;
 	
 	public Craftable(String name, String adj, String... parts) {
 		super(name, adj, null);
@@ -28,10 +27,5 @@ public class Craftable extends Item
 	public ObjectMap<String, Integer> getRequirements()
 	{
 		return requirements;
-	}
-	
-	public String toString()
-	{
-		return String.format("[%s] %s %s", (made)?"x":" ", adj, name);
 	}
 }

@@ -15,13 +15,13 @@
         "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
         "attacks" : [],
         "magic" : [],
-        "type" : "flying"
+        "type" : "duck"
     },
     "bat" : {
         "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
         "attacks" : [],
         "magic" : [],
-        "type" : "flying"
+        "type" : "duck"
     },
     "ghost" : {
         "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
@@ -135,18 +135,18 @@
         "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
         "attacks" : [],
         "magic" : [],
-        "type" : "female"
+        "type" : "girl"
     },
     "schoolgirl" : {
         "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
         "attacks" : [],
         "magic" : [],
-        "type" : "female"
+        "type" : "girl"
     },
     "woman" : {
         "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
         "attacks" : [],
         "magic" : [],
-        "type" : "female"
+        "type" : "girl"
     }
 }

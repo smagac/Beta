@@ -32,7 +32,7 @@ cliff
   orig: 400, 400
   offset: 0, 0
   index: -1
-titlefnt
+small
   rotate: false
   xy: 2, 504
   size: 512, 512
@@ -48,21 +48,28 @@ tools
   index: -1
 
 title2.png
-size: 683,754
+size: 916,866
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 lightning
   rotate: false
-  xy: 2, 2
+  xy: 516, 114
   size: 400, 400
   orig: 400, 400
   offset: 0, 0
   index: -1
 logo
   rotate: false
-  xy: 2, 404
+  xy: 2, 516
   size: 681, 350
   orig: 681, 350
+  offset: 0, 0
+  index: -1
+titlefnt
+  rotate: false
+  xy: 2, 2
+  size: 512, 512
+  orig: 512, 512
   offset: 0, 0
   index: -1

@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -14,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -29,6 +32,7 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.common.Storymode;
+import core.datatypes.Inventory;
 
 /**
  * Base UI for adventuring in the town
@@ -49,11 +53,12 @@ public abstract class UI {
 	private Label craftingStats;
 	private Label levelStats;
 	private Label timeStats;
-	private Label message;
 	
+	protected Scene<? extends UI> parent;
 	private AssetManager manager;
 	private Stage stage;
 	private Group window;
+	protected Group messageWindow;
 	protected Group display;
 	private Rectangle displayBounds;
 	private Rectangle tmpBound;
@@ -66,6 +71,7 @@ public abstract class UI {
 	
 	public UI(Scene<? extends UI> scene, AssetManager manager)
 	{
+		this.parent = scene;
 		this.service = scene.getService();
 		this.manager = manager;
 		Viewport view = new ScalingViewport(Scaling.fit, 960, 540);
@@ -74,17 +80,21 @@ public abstract class UI {
 		buttons = new ButtonGroup();
 		
 		tmpBound = new Rectangle();
+		displayBounds = new Rectangle();
 		
-		manager.load("assets/uiskin.json", Skin.class);
+		manager.load("data/uiskin.json", Skin.class);
 	}
 	
 	/**
 	 * Custom required method to create complex actors that are recognized
 	 * as a single window in order to provide tiling of the ninepatch 
 	 */
-	private Group makeWindow(int width, int height)
+	public static Group makeWindow(Skin skin, int width, int height)
 	{
 		Group group = new Group();
+		group.setSize(width, height);
+		group.setTouchable(Touchable.childrenOnly);
+
 		TextureRegion p = skin.getRegion("window");
 		TextureRegion[] split = {
 				new TextureRegion(p, 0, 0, 32, 32),   //tl
@@ -136,13 +146,14 @@ public abstract class UI {
 		b.setPosition(32, 0);
 		b.setWidth(width-64);
 		group.addActor(b);
-		
+
 		//setup center
 //		Image c = new Image(new TiledDrawable(split[4]));
 //		c.setPosition(32, 32);
 //		c.setSize(width-64, height-64);
 //		group.addActor(c);
 		
+
 		return group;
 	}
 	
@@ -151,14 +162,14 @@ public abstract class UI {
 	 */
 	public void init()
 	{
-		skin = manager.get("assets/uiskin.json", Skin.class);
+		skin = manager.get("data/uiskin.json", Skin.class);
 
 		//make sure the stage is empty
 		stage.clear();
 		
 		//stat frame
 		{
-			Group window = makeWindow(384, 108);
+			Group window = makeWindow(skin, 384, 108);
 			window.setPosition(96f, 16f);
 			
 			craftingStats = new Label(String.format(statFormat, 0, 0), skin, "small");
@@ -178,19 +189,20 @@ public abstract class UI {
 		}
 		//message frame
 		{
-			Group window = makeWindow(384, 108);
+			Group window = makeWindow(skin, 384, 108);
 			window.setPosition(480f, 16f);
 			
-			message = new Label("", skin, "big");
-			message.setPosition(40f, 48f);
+			messageWindow = new Group();
+			messageWindow.setPosition(32f, 32f);
+			messageWindow.setSize(320f, 44f);
 			
-			window.addActor(message);
+			window.addActor(messageWindow);
 			stage.addActor(window);
 		}
 		
 		//window frame
 		{
-			Group frame = makeWindow(832, 432);
+			Group frame = makeWindow(skin, 832, 432);
 			window = new Group();
 			window.setSize(832f,  432f);
 			window.setPosition(64f, 92f);
@@ -208,11 +220,111 @@ public abstract class UI {
 			stage.addActor(window);
 		}
 		
-		String[] buttons = defineButtons();
-		if (buttons != null)
+		String[] butt = defineButtons();
+		if (butt != null)
 		{
-			setButtons(buttons);
+			buttonList = new HorizontalGroup();
+			
+			setButtons(butt);
+			
+			window.addActor(buttonList);	
+			
+			buttonList.addListener(new InputListener(){
+				@Override
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					if (keycode == Keys.LEFT || keycode == Keys.A)
+					{
+						setIndex(getIndex()-1);
+						return true;
+					}
+					if (keycode == Keys.RIGHT || keycode == Keys.D)
+					{
+						setIndex(getIndex()+1);
+						return true;
+					}
+					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+					{
+						triggerAction(getIndex());
+						setButtons(defineButtons());
+						return true;
+					}
+					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+					{
+						triggerAction(-1);
+						setButtons(defineButtons());
+						return true;
+					}
+					return false;
+				}
+			});
+			
+			setFocus(buttonList);
 		}
+		
+		if (buttonList == null)
+		{
+			stage.setKeyboardFocus(focusList()[0]);
+		}
+		
+		//focus handler
+		stage.addListener(new InputListener(){
+			
+			int focus = -1;
+			
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				if (focusList()==null)
+					return false;
+				
+				if (stage.getKeyboardFocus() == buttonList && buttonList != null)
+				{
+					if (keycode == Keys.UP || keycode == Keys.W || keycode == Keys.TAB)
+					{
+						buttons.uncheckAll();
+						focus = 0;
+						setFocus(focusList()[0]);
+					}
+				}
+				else
+				{
+					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+					{
+						focus = -1;
+						setFocus(buttonList);
+					}
+					else if (keycode == Keys.TAB)
+					{
+						focus++;
+						if (focus >= focusList().length)
+						{
+							if (buttonList != null)
+							{
+								focus = -1;
+								setFocus(buttonList);
+								buttons.getButtons().get(0).setChecked(true);
+							}
+							else
+							{
+								focus = 0;
+								setFocus(focusList()[focus]);
+							}
+						}
+						else
+						{
+							setFocus(focusList()[focus]);
+						}
+					}
+				}
+
+				return false;
+			}
+		});
+		
+		stage.addAction(Actions.alpha(0f));
+		stage.addAction(Actions.alpha(1f, .2f));
+		stage.calculateScissors(displayBounds, tmpBound);
 	}
 	
 	/**
@@ -221,16 +333,32 @@ public abstract class UI {
 	protected abstract void extend();
 	
 	/**
+	 * Allow rendering into the display things that aren't stage2d elements
+	 */
+	protected void externalRender(){
+		
+	}
+	
+	/**
 	 * Handles an action to be performed when a button in the menu is clicked
 	 * @param index
 	 */
 	protected abstract void triggerAction(int index);
 	
+	protected abstract Actor[] focusList();
+	
 	public abstract String[] defineButtons();
 	
 	private final void setButtons(final String... butt)
 	{
-		buttonList = new HorizontalGroup();
+		if (butt == null)
+		{
+			disableMenuInput();
+			return;
+		}
+		
+		buttonList.clearChildren();
+		
 		buttons = new ButtonGroup();
 		
 		for (int i = 0; i < butt.length; i++)
@@ -250,6 +378,7 @@ public abstract class UI {
 					if (button == Buttons.LEFT)
 					{
 						triggerAction(getIndex());
+						setButtons(defineButtons());
 						return true;
 					}
 					return false;
@@ -260,38 +389,6 @@ public abstract class UI {
 		}
 		
 		buttonList.setPosition(window.getWidth() / 2 - buttonList.getPrefWidth() / 2, 32f);
-		stage.addListener(new InputListener(){
-			@Override
-			public boolean keyDown(InputEvent evt, int keycode)
-			{
-				if (buttonList.isVisible())
-				{
-					if (keycode == Keys.LEFT || keycode == Keys.A)
-					{
-						setIndex(getIndex()-1);
-						return true;
-					}
-					if (keycode == Keys.RIGHT || keycode == Keys.D)
-					{
-						setIndex(getIndex()+1);
-						return true;
-					}
-					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
-					{
-						triggerAction(getIndex());
-						return true;
-					}
-				}
-				if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
-				{
-					triggerAction(-1);
-					return true;
-				}
-				return false;
-			}
-		});
-		
-		window.addActor(buttonList);
 	}
 	
 	/**
@@ -307,7 +404,6 @@ public abstract class UI {
 	 */
 	protected final void setIndex(int i)
 	{
-		System.out.println("bleep");
 		if (i < 0)
 		{
 			i = 0;
@@ -338,7 +434,14 @@ public abstract class UI {
 	 */
 	public void setMessage(String s)
 	{
+		messageWindow.clear();
+		
+		Label message = new Label("", skin, "promptsm");
+		message.setPosition(8f, 12f);
+		
 		message.setText(s);
+		
+		messageWindow.addActor(message);
 	}
 	
 	public final void update(float delta)
@@ -346,8 +449,13 @@ public abstract class UI {
 		//update time
 		timeStats.setText(String.format(timeFormat, getService().getTimeElapsed()));
 		
+		//update stats
 		Stats s = getService().getPlayer();
 		levelStats.setText(String.format(levelFormat, 1, s.hp, s.maxhp));
+		
+		//update progress
+		Inventory i = getService().getInventory();
+		craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
 		
 		//update animations
 		stage.act(delta);
@@ -356,12 +464,12 @@ public abstract class UI {
 	
 	public final void draw()
 	{
-		stage.calculateScissors(displayBounds, tmpBound);
 		ScissorStack.pushScissors(tmpBound);
 		Batch b = stage.getBatch();
 		b.begin();
-		display.draw(b, 1.0f);
+		display.draw(b, stage.getRoot().getColor().a);
 		b.end();
+		externalRender();
 		ScissorStack.popScissors();
 		
 		//hide display during rendering of the stage
@@ -370,11 +478,11 @@ public abstract class UI {
 		
 		//make sure it's set as visible so it accepts input between frames
 		display.setVisible(true);
-		
 	}
 	
 	public final void resize(int width, int height){
 		stage.getViewport().update(width, height);
+		stage.calculateScissors(displayBounds, tmpBound);
 	}
 	
 	public final void addToInput(InputMultiplexer input)
@@ -385,5 +493,21 @@ public abstract class UI {
 	protected final Storymode getService()
 	{
 		return service;
+	}
+	
+	private final void setFocus(Actor a)
+	{
+		stage.setKeyboardFocus(a);
+		stage.setScrollFocus(a);
+	}
+	
+	protected Batch getBatch()
+	{
+		return stage.getBatch();
+	}
+	
+	protected Camera getCamera()
+	{
+		return stage.getViewport().getCamera();
 	}
 }

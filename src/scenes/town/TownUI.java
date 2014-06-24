@@ -2,13 +2,17 @@ package scenes.town;
 
 import java.io.File;
 
+import scenes.SceneManager;
 import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -17,12 +21,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
+import core.datatypes.Item;
 
 public class TownUI extends UI {
 
@@ -38,11 +44,20 @@ public class TownUI extends UI {
 	Table fileDetails;
 	
 	Table craftSubmenu;
+	Table lootSubmenu;
 	List<Craftable> craftList;
+	ScrollPane lootPane;
+	Table lootList;
 	Table requirementList;
+	
+	Array<Actor> focus;
 	
 	boolean changeDir;
 	int lastIndex = -1;
+	int menu = -1;
+	final int CRAFT = 2;
+	final int EXPLORE = 1;
+	final int SLEEP = 0;
 	
 	public TownUI(Scene scene, AssetManager manager) {
 		super(scene, manager);
@@ -97,7 +112,7 @@ public class TownUI extends UI {
 		//create craft submenu layout
 		{
 			craftSubmenu = new Table();
-			craftSubmenu.setWidth(350f);
+			craftSubmenu.setWidth(250f);
 			craftSubmenu.setHeight(display.getHeight());
 			
 			//list of required crafts
@@ -116,37 +131,53 @@ public class TownUI extends UI {
 					{
 						Label l = new Label(name, skin);
 						l.setAlignment(Align.left);
-						requirementList.add(l);
+						requirementList.add(l).expandX().fillX();
 						Label i = new Label(""+map.get(name), skin);
 						i.setAlignment(Align.right);
 						requirementList.add(i).expandX().fillX();
 						requirementList.row();
 					}
+					
+					requirementList.pack();
 				}
 
 			});
 			
 			ScrollPane pane = new ScrollPane(craftList, skin);
-			pane.setHeight((display.getHeight())/2);
-			craftSubmenu.add(pane).expandX().fillX().pad(10f);
+			craftSubmenu.top().add(pane).expand().fill().height(display.getHeight()/2-20).pad(10f);
 			
 			craftSubmenu.row();
 			//current highlighted craft item requirements
 			requirementList = new Table();
 			requirementList.clear();
 			requirementList.row();
+			requirementList.pad(10);
+			requirementList.top().left();
 			
 			ScrollPane pane2 = new ScrollPane(requirementList, skin);
-			craftSubmenu.add(pane2).expand().fill().pad(10f);
+			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-20).pad(10f);
+			craftSubmenu.pad(10f);
 			craftSubmenu.setPosition(display.getWidth(), 0);
 			display.addActor(craftSubmenu);
+			
+			lootSubmenu = new Table();
+			lootSubmenu.setWidth(250f);
+			lootSubmenu.setHeight(display.getHeight());
+			lootSubmenu.setPosition(-lootSubmenu.getWidth(), 0);
+			lootList = new Table();
+			lootPane = new ScrollPane(lootList, skin);
+			lootPane.setHeight(display.getHeight()/2);
+			lootPane.setScrollingDisabled(true, false);
+			lootSubmenu.add(lootPane).expand().fill().pad(10f);
+			
+			display.addActor(lootSubmenu);
 		}
 		
 
 		//create explore submenu layout
 		{
 			exploreSubmenu = new Table();
-			exploreSubmenu.setWidth(300f);
+			exploreSubmenu.setWidth(250f);
 			exploreSubmenu.setHeight(display.getHeight());
 			exploreSubmenu.setPosition(-exploreSubmenu.getWidth(), 0);
 			
@@ -215,7 +246,7 @@ public class TownUI extends UI {
 							Image icon = new Image(skin.getRegion(ext.toString()));
 							Label type = new Label("File Type: " + ext, skin);
 							Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-							Label diff = new Label("Difficulty: " + "*****", skin);
+							Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
 							
 							icon.setAlign(Align.center);
 							icon.setSize(96f, 96f);
@@ -230,9 +261,9 @@ public class TownUI extends UI {
 							contents.row();
 							contents.add(diff).expandX().fillX();
 							
-							ScrollPane pane = new ScrollPane(contents, skin);
-							pane.setScrollingDisabled(true, true);
-							fileDetails.add(pane).expand().fill();
+							ScrollPane pane2 = new ScrollPane(contents, skin);
+							pane2.setScrollingDisabled(true, true);
+							fileDetails.add(pane2).expand().fill();
 							fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
 						}
 					
@@ -243,13 +274,32 @@ public class TownUI extends UI {
 
 			});
 			
-			ScrollPane pane = new ScrollPane(fileList, skin);
+			final ScrollPane pane = new ScrollPane(fileList, skin);
 			pane.setHeight(display.getHeight());
 			pane.setScrollingDisabled(true, false);
 			exploreSubmenu.add(pane).expand().fill().pad(10f);
 			
+			fileList.addListener(new InputListener(){
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					if (keycode == Keys.DOWN)
+					{
+						fileList.setSelectedIndex(Math.min(fileList.getItems().size-1, fileList.getSelectedIndex()+1));
+					}
+					if (keycode == Keys.UP)
+					{
+						fileList.setSelectedIndex(Math.max(0, fileList.getSelectedIndex()-1));
+					}
+
+					float y = Math.max(0, (fileList.getSelectedIndex() * fileList.getItemHeight()) + pane.getHeight()/2);
+					pane.scrollTo(0, fileList.getHeight()-y, pane.getWidth(), pane.getHeight());
+					
+					return false;
+				}
+			});
+			
 			fileDetails = new Table();
-			fileDetails.setSize(200f, display.getHeight());
+			fileDetails.setSize(250f, display.getHeight());
 			fileDetails.setPosition(display.getWidth(), 0);
 			
 			display.addActor(fileDetails);
@@ -295,39 +345,129 @@ public class TownUI extends UI {
 
 	protected void triggerAction(int index)
 	{
-		disableMenuInput();
-		//craft menu
-		if (index == 2)
+		if (menu == CRAFT)
 		{
-			showCraftSubmenu();
+			if (index == 1)
+			{
+				Craftable c = craftList.getSelected();
+				if (c != null)
+				{
+					boolean made = getService().getInventory().makeItem(c);
+					setMessage((made)?"Crafted an item!":"Not enough materials");
+					populateLoot();
+				}
+			}
+			else
+			{
+				restore();
+			}
 		}
-		else if (index == 1)
+		else if (menu == EXPLORE)
 		{
-			showExploreSubmenu();
+			if (index == 1)
+			{
+				if (getService().getPlayer().hp <= 0)
+				{
+					setMessage("You need to rest first!");
+				}
+				else
+				{
+					FileHandle f = directoryList.get(fileList.getSelectedIndex());
+					//TODO switch to dungeon
+					
+					if (f != null)
+					{
+						FileType ext = FileType.getType(f.extension());
+						int diff = ext.difficulty(f.length());
+						
+						scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
+						dungeon.setDungeon(ext, diff);
+						SceneManager.switchToScene(dungeon);
+					}
+				}
+			}
+			else
+			{
+				restore();
+			}
 		}
-		else if (index == 0)
+		else if (menu == SLEEP)
 		{
-			sleep();
+			//ignore input
 		}
 		else
 		{
-			restore();
+			//craft menu
+			if (index == 2)
+			{
+				showCraftSubmenu();
+			}
+			else if (index == 1)
+			{
+				showExploreSubmenu();
+			}
+			else if (index == 0)
+			{
+				sleep();
+			}
+			else
+			{
+				restore();
+			}
 		}
+	}
+	
+	private void populateLoot()
+	{
+		lootList.clear();
+		lootList.top().left();
+		
+		ObjectMap<Item, Integer> loot = getService().getInventory().getLoot();
+		if (loot.keys().hasNext)
+		{
+			lootList.setWidth(lootPane.getWidth());
+			lootList.pad(10f);
+			for (Item item : loot.keys())
+			{
+				Label l = new Label(item.toString(), skin);
+				l.setAlignment(Align.left);
+				l.setScaleX(Math.min(1.0f, l.getPrefWidth() / (lootPane.getWidth() - 30f)));
+				lootList.add(l).expandX().fillX();
+				Label i = new Label(""+loot.get(item), skin);
+				i.setAlignment(Align.right);
+				lootList.add(i).expandX().fillX();
+				lootList.row();
+			}
+		}
+		else
+		{
+			lootList.center();
+			Label l = new Label("Looks like you don't have any loot!  You should go exploring", skin);
+			l.setWrap(true);
+			l.setAlignment(Align.center);
+			lootList.add(l).expandX().fillX();
+		}
+		lootList.pack();
 	}
 	
 	private void showCraftSubmenu()
 	{
+		menu = CRAFT;
 		//populate the submenu's data
 		craftList.setItems(getService().getInventory().getRequiredCrafts());	
 		requirementList.clear();
 			
+		//create loot menu
+		populateLoot();
+	
 		sleepImg.addAction(Actions.moveTo(-sleepImg.getWidth(), 0, 1.5f));
 		exploreImg.addAction(Actions.moveTo(-exploreImg.getWidth(), 118f, 1.5f));
-		craftImg.addAction(Actions.sequence(
+		craftImg.addAction(
+			Actions.sequence(
 				Actions.moveTo(display.getWidth()-craftImg.getWidth(), display.getHeight() - craftImg.getHeight(), .5f),
-				Actions.moveTo((display.getWidth()*.3f)-craftImg.getWidth()/2, display.getHeight() - craftImg.getHeight(), 1f)
-			));
-		character.addAction(Actions.moveTo((display.getWidth()*.3f)-character.getWidth()/2, 18f, 1.5f));
+				Actions.moveTo(display.getWidth()/2-craftImg.getWidth()/2, 118f, 1f)
+			)
+		);
 	
 		craftSubmenu.addAction(Actions.sequence(
 			Actions.moveTo(display.getWidth(), 0),
@@ -335,11 +475,18 @@ public class TownUI extends UI {
 			Actions.moveTo(display.getWidth()-craftSubmenu.getWidth(), 0, .3f)
 		));
 		
+		lootSubmenu.addAction(Actions.sequence(
+			Actions.moveTo(-lootSubmenu.getWidth(), 0),
+			Actions.delay(1.5f),
+			Actions.moveTo(0, 0, .3f)
+		));
+		
 		setMessage("Tink Tink");
 	}
 	
 	private void showExploreSubmenu()
 	{
+		menu = EXPLORE;
 		sleepImg.addAction(Actions.moveTo(-sleepImg.getWidth(), 0, 1.5f));
 		craftImg.addAction(Actions.moveTo(display.getWidth(), 0, 1.5f));
 	
@@ -354,6 +501,8 @@ public class TownUI extends UI {
 	
 	private void sleep()
 	{
+		menu = SLEEP;
+		disableMenuInput();
 		setMessage("Good night!");
 		sleepImg.addAction(Actions.sequence(
 			Actions.moveTo(32f, display.getHeight()/2 - sleepImg.getHeight()/2, .5f),
@@ -361,7 +510,6 @@ public class TownUI extends UI {
 		));
 		exploreImg.addAction(Actions.moveTo(display.getWidth(), 118f, 1.5f));
 		craftImg.addAction(Actions.moveTo(display.getWidth(), 0f, 1.5f));
-		disableMenuInput();
 		
 		display.addAction(Actions.sequence(
 			Actions.delay(2f),
@@ -394,18 +542,57 @@ public class TownUI extends UI {
 	 */
 	private void restore()
 	{
+		menu = -1;
+		
+		exploreImg.clearActions();
+		sleepImg.clearActions();
+		craftImg.clearActions();
+		character.clearActions();
+		lootSubmenu.clearActions();
+		craftSubmenu.clearActions();
+		exploreSubmenu.clearActions();
+		fileDetails.clearActions();
+		
 		exploreImg.addAction(Actions.moveTo(display.getWidth()/2-exploreImg.getWidth()/2, 118f, 1.5f));
 		sleepImg.addAction(Actions.moveTo(0, 0, 1.5f));
 		craftImg.addAction(Actions.moveTo(display.getWidth()-craftImg.getWidth(), 0, 1.5f));
 		character.addAction(Actions.moveTo(display.getWidth()/2-character.getWidth()/2, 18f, 1.5f));
+		lootSubmenu.addAction(Actions.moveTo(-lootSubmenu.getWidth(), 0, .3f));
 		craftSubmenu.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 		exploreSubmenu.addAction(Actions.moveTo(-exploreSubmenu.getWidth(), 0, .3f));
-		enableMenuInput();
+		fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 		setMessage("What're we doing next?");
+		
+		enableMenuInput();
 	}
 
 	@Override
 	public String[] defineButtons() {
+		if (menu == CRAFT)
+		{
+			return new String[]{"Return", "Make Item"};
+		}
+		else if (menu == EXPLORE)
+		{
+			return new String[]{"Return", "Explore Dungeon"};
+		}
+		else if (menu == SLEEP)
+		{
+			return null;
+		}
 		return new String[]{"sleep", "explore", "craft"};
+	}
+
+	@Override
+	protected Actor[] focusList() {
+		if (menu == CRAFT)
+		{
+			return new Actor[]{lootPane, craftList};
+		}
+		else if (menu == EXPLORE)
+		{
+			return new Actor[]{fileList};
+		}
+		return null;
 	}
 }

@@ -2,6 +2,8 @@ package factories;
 
 import GenericComponents.Combat;
 import GenericComponents.Identifier;
+import GenericComponents.Monster;
+import GenericComponents.Position;
 import GenericComponents.Renderable;
 import GenericComponents.Stats;
 
@@ -13,12 +15,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.datatypes.FileType;
+import core.datatypes.Item;
 
 /**
  * Factory for creating all the monsters in a level
@@ -88,7 +93,7 @@ public class MonsterFactory {
 			attacks = src.get("attacks").asStringArray();
 			magic = src.get("magic").asStringArray();
 			location = src.getString("where", null);
-			type = src.getString("type", "beast");
+			type = src.getString("type", "rat");
 		}
 	}
 	
@@ -98,12 +103,12 @@ public class MonsterFactory {
 	/**
 	 * 
 	 * @param icons - file containing all of the image representations of the monsters
-	 * @param area - type of factory we should create
+	 * @param type - type of factory we should create
 	 */
-	public MonsterFactory(TextureAtlas icons, String area)
+	public MonsterFactory(TextureAtlas icons, FileType type)
 	{
 		this.icons = icons;
-		this.area = FileType.valueOf(area);
+		this.area = type;
 		for (Texture t : this.icons.getTextures())
 		{
 			t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
@@ -116,21 +121,37 @@ public class MonsterFactory {
 	 * @param world - level representation of entities
 	 * @param area - type of file area we need to load monsters for
 	 * @param size - the size of the file, indicating how many monsters we need
+	 * @param rooms - list of rooms to lock each monster into
+	 * @return an array of all the monsters that have just been created and added to the world
 	 */
-	public void makeMonsters(World world, int size)
+	public Array<Entity> makeMonsters(World world, int size, Array<Rectangle> rooms, ItemFactory lootMaker)
 	{
 		Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
-		selection.addAll(monsters.get(area));
-		selection.addAll(monsters.get(FileType.Other)); 
+		Array<Entity> monsters = new Array<Entity>();
+		selection.addAll(MonsterFactory.monsters.get(area));
+		selection.addAll(MonsterFactory.monsters.get(FileType.Other)); 
 
 		GroupManager gm = world.getManager(GroupManager.class);
 		for (int i = 0; i < size; i++)
 		{
-			MonsterTemplate t = selection.get(MathUtils.random(selection.size));
-			Entity e = create(world, t);
-			gm.add(e, Group);
-			world.addEntity(e);
+			MonsterTemplate t = selection.random();
+			Entity monster = create(world, t, lootMaker.createItem());
+			monster.addComponent(new Monster());
+			
+			//add its position into a random room
+			Rectangle room = rooms.random();
+			int x = (int) MathUtils.random(room.x, room.x+room.width);
+			int y = (int) MathUtils.random(room.y, room.y+room.height);
+			
+			monster.addComponent(new Position(x, y, room));
+			
+			monster.addToWorld();
+			
+			gm.add(monster, "monsters");
+			monsters.add(monster);
 		}
+		
+		return monsters;
 	}
 	
 	/**
@@ -139,13 +160,17 @@ public class MonsterFactory {
 	 * @param t - template we use to base our entity from
 	 * @return an entity
 	 */
-	private Entity create(World world, MonsterTemplate t)
+	private Entity create(World world, MonsterTemplate t, Item item)
 	{
 		Entity e = world.createEntity();
 		e.addComponent(new Stats(t.hp, MathUtils.random(20), t.str, t.def, t.mag, t.spd), Stats.CType);
-		e.addComponent(new Combat(t.attacks, t.magic));
 		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective()));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
+		
+		Combat c = new Combat(t.attacks, t.magic);
+		c.setDrop(item);
+		
+		e.addComponent(c);
 		
 		return e;
 	}
