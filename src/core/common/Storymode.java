@@ -80,7 +80,7 @@ public class Storymode extends com.badlogic.gdx.Game {
 	public static void startGame(int difficulty) {
 		
 		//make a player
-		instance.player = new Stats(10, 0, MathUtils.random(10), MathUtils.random(10), MathUtils.random(10), MathUtils.random(10));
+		instance.player = new Stats(10, 0, MathUtils.random(10), 5, 5, 5, 50);
 
 		//make crafting requirements
 		instance.inventory = new Inventory(difficulty);
@@ -189,7 +189,6 @@ public class Storymode extends com.badlogic.gdx.Game {
 	
 	public void newDungeon(AssetManager manager, FileType type, int difficulty)
 	{
-		System.out.println("making a d");
 		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
 		DungeonFactory factory = new DungeonFactory(atlas, type);
 		dungeon = factory.create(difficulty);

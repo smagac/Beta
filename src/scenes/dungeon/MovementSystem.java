@@ -14,11 +14,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+
 import components.Combat;
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Stats;
+import core.common.Tracker;
 
 /**
  * Handles all movement for dungeoning, as well as bump combat
@@ -142,10 +144,10 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		{
 			return;
 		}
-		if (MathUtils.randomBoolean(Math.min(aStats.speed / bStats.speed, 1f)))
+		if (MathUtils.randomBoolean(Math.min((MathUtils.random(.5f, 2f)*aStats.getSpeed()) / bStats.getSpeed(), 1f)))
 		{
 		
-			int dmg = Math.abs(Math.min(0, aStats.strength - bStats.defense));
+			int dmg = Math.abs(Math.min(0, (int)(MathUtils.random(.5f, 2f)*aStats.getStrength()) - bStats.getDefense()));
 			bStats.hp = Math.max(0, bStats.hp - dmg);
 			
 			if (actor == player)
@@ -173,6 +175,12 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				{
 					Combat combat = combatMap.get(opponent);
 					parentScene.getItem(combat.getDrop());
+					aStats.exp++;
+					if (aStats.levelUp())
+					{
+						parentScene.log("You have gained a level!");
+					}
+					Tracker.NumberValues.Monsters_Killed.increment();
 				}
 			}
 		}
@@ -310,7 +318,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 			//roll for move
 			Stats s = statMap.get(e);
 			//chance multiplied since agro
-			if (MathUtils.randomBoolean(Math.min(s.speed*5, 100f) / 100f))
+			if (MathUtils.randomBoolean(Math.min(s.getSpeed()*1.5f, 100f) / 100f))
 			{
 				int dX = 0;
 				int dY = 0;
@@ -329,7 +337,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		{
 			//roll for move
 			Stats s = statMap.get(e);
-			if (MathUtils.randomBoolean(Math.min(s.speed, 100f) / 100f))
+			if (MathUtils.randomBoolean(Math.min(s.getSpeed(), 100f) / 100f))
 			{
 				int dX = 0;
 				int dY = 0;

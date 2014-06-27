@@ -1,108 +1,108 @@
 {
     "ogre" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "6", "str" : "11", "def" : "4", "mag" : "1", "spd" : "20",
         "attacks" : [],
         "magic" : [],
         "type" : "ogre"
     },
     "bunny" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "3", "str" : "6", "def" : "2", "mag" : "1", "spd" : "50",
         "attacks" : [],
         "magic" : [],
         "type" : "bunny"
     },
     "duck" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "5", "str" : "7", "def" : "1", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "duck"
     },
     "bat" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "3", "str" : "5", "def" : "3", "mag" : "1", "spd" : "65",
         "attacks" : [],
         "magic" : [],
         "type" : "duck"
     },
     "ghost" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "10", "str" : "7", "def" : "0", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "ghost"
     },
     "ghoul" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "15", "str" : "6", "def" : "6", "mag" : "1", "spd" : "15",
         "attacks" : [],
         "magic" : [],
         "type" : "ghost"
     },
     "vampire" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "20", "str" : "11", "def" : "3", "mag" : "1", "spd" : "55",
         "attacks" : [],
         "magic" : [],
         "type" : "ghost"
     },
     "spider" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "5", "str" : "8", "def" : "2", "mag" : "1", "spd" : "75",
         "attacks" : [],
         "magic" : [],
         "type" : "bug"
     },
     "bug" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "4", "str" : "4", "def" : "3", "mag" : "1", "spd" : "45",
         "attacks" : [],
         "magic" : [],
         "type" : "bug"
     },
     "elf" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "15", "str" : "6", "def" : "5", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "elf"
     },
     "goblin" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "7", "str" : "4", "def" : "3", "mag" : "1", "spd" : "50",
         "attacks" : [],
         "magic" : [],
         "type" : "elf"
     },
     "michael bay" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "100", "str" : "0", "def" : "-10", "mag" : "1", "spd" : "0",
         "attacks" : [],
         "magic" : [],
         "type" : "elf"
     },
     "gnome" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "15", "str" : "14", "def" : "9", "mag" : "1", "spd" : "25",
         "attacks" : [],
         "magic" : [],
         "type" : "gnome"
     },
     "plant" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "1", "str" : "17", "def" : "1", "mag" : "1", "spd" : "5",
         "attacks" : [],
         "magic" : [],
         "type" : "plant"
     },
     "snake" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "8", "str" : "7", "def" : "2", "mag" : "1", "spd" : "40",
         "attacks" : [],
         "magic" : [],
         "type" : "snake"
     },
     "viper" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "11", "str" : "10", "def" : "0", "mag" : "1", "spd" : "75",
         "attacks" : [],
         "magic" : [],
         "type" : "snake"
     },
     "python" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "25", "str" : "10", "def" : "6", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "snake"
     },
     "rat" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "1", "str" : "4", "def" : "0", "mag" : "1", "spd" : "95",
         "attacks" : [],
         "magic" : [],
         "type" : "rat"
@@ -114,37 +114,37 @@
         "type" : "rat"
     },
     "horse" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "13", "str" : "9", "def" : "13", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "horse"
     },
     "alpaca" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "9", "str" : "5", "def" : "10", "mag" : "1", "spd" : "25",
         "attacks" : [],
         "magic" : [],
         "type" : "horse"
     },
     "llama" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "15", "str" : "3", "def" : "15", "mag" : "1", "spd" : "15",
         "attacks" : [],
         "magic" : [],
         "type" : "horse"
     },
     "housewife" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "10", "str" : "5", "def" : "5", "mag" : "1", "spd" : "30",
         "attacks" : [],
         "magic" : [],
         "type" : "girl"
     },
     "schoolgirl" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "4", "str" : "9", "def" : "3", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "girl"
     },
     "woman" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
+        "hp" : "15", "str" : "7", "def" : "4", "mag" : "1", "spd" : "30",
         "attacks" : [],
         "magic" : [],
         "type" : "girl"

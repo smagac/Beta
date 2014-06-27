@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import core.common.Tracker;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 
@@ -135,6 +136,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 	protected void dead()
 	{
 		ui.dead();
+		Tracker.NumberValues.Times_Died.increment();
 		
 		//remove input from stage
 		input.clear();

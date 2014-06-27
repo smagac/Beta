@@ -473,7 +473,7 @@ public abstract class UI {
 		
 		//update stats
 		Stats s = getService().getPlayer();
-		levelStats.setText(String.format(levelFormat, 1, s.hp, s.maxhp));
+		levelStats.setText(String.format(levelFormat, s.getLevel(), s.hp, s.maxhp));
 		
 		//update progress
 		Inventory i = getService().getInventory();

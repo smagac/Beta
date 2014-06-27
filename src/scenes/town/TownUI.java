@@ -237,7 +237,7 @@ public class TownUI extends UI {
 			//list of required crafts
 			fileList = new List<String>(skin);
 			
-			loadDir(Gdx.files.external("."));
+			loadDir(Gdx.files.external("/"));
 			changeDir = false;
 			
 			fileList.addListener(new ChangeListener(){
