@@ -6,6 +6,7 @@ import scenes.dungeon.RenderSystem;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
@@ -60,12 +61,11 @@ public class DungeonFactory {
 		//catch crazy out of bounds
 		if (difficulty > 5 || difficulty < 1)
 		{
-			System.err.println("difficulty out of bounds, setting to 3");
+			Gdx.app.log("[Invalid param]", "difficulty out of bounds, setting to 3");
 			difficulty = 3;
 		}
 		
 		int floors = MathUtils.random(1, difficulty+difficulty) * MathUtils.random(1, difficulty);
-		System.out.println("floors : " + floors);
 		Array<World> dungeon = new Array<World>();
 		for (int i = 0; i < floors; i++)
 		{

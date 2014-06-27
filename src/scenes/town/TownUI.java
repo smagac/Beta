@@ -7,6 +7,7 @@ import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -60,6 +61,7 @@ public class TownUI extends UI {
 	final int CRAFT = 2;
 	final int EXPLORE = 1;
 	final int SLEEP = 0;
+	private ButtonGroup craftTabs;
 	
 	public TownUI(Scene scene, AssetManager manager) {
 		super(scene, manager);
@@ -119,12 +121,12 @@ public class TownUI extends UI {
 			craftSubmenu.setHeight(display.getHeight());
 			
 			
-			Group craftTabs = new HorizontalGroup();
-			ButtonGroup tabs = new ButtonGroup();
+			Group tabs = new HorizontalGroup();
+			craftTabs = new ButtonGroup();
 			{
 				final TextButton myButton = new TextButton("My List", skin);
-				craftTabs.addActor(myButton);
-				tabs.add(myButton);
+				tabs.addActor(myButton);
+				craftTabs.add(myButton);
 				myButton.addListener(new ChangeListener(){
 
 					@Override
@@ -140,8 +142,8 @@ public class TownUI extends UI {
 				});
 				
 				final TextButton todayButton = new TextButton("Today's Special", skin);
-				craftTabs.addActor(todayButton);
-				tabs.add(todayButton);
+				tabs.addActor(todayButton);
+				craftTabs.add(todayButton);
 				todayButton.addListener(new ChangeListener(){
 
 					@Override
@@ -157,7 +159,7 @@ public class TownUI extends UI {
 				});
 			}
 			
-			craftSubmenu.add(craftTabs).fillX().expandX().padLeft(2f);
+			craftSubmenu.add(tabs).fillX().expandX().padLeft(2f);
 			craftSubmenu.row();
 			
 			//list of required crafts
@@ -189,6 +191,8 @@ public class TownUI extends UI {
 			});
 			
 			ScrollPane pane = new ScrollPane(craftList, skin);
+			pane.setFadeScrollBars(false);
+			
 			craftSubmenu.top().add(pane).expand().fill().height(display.getHeight()/2-20).pad(2f).padTop(0f);
 			
 			craftSubmenu.row();
@@ -200,6 +204,7 @@ public class TownUI extends UI {
 			requirementList.top().left();
 			
 			ScrollPane pane2 = new ScrollPane(requirementList, skin);
+			pane2.setFadeScrollBars(false);
 			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-20).pad(2f);
 			craftSubmenu.pad(10f);
 			craftSubmenu.setPosition(display.getWidth(), 0);
@@ -213,6 +218,9 @@ public class TownUI extends UI {
 			lootPane = new ScrollPane(lootList, skin);
 			lootPane.setHeight(display.getHeight()/2);
 			lootPane.setScrollingDisabled(true, false);
+			lootPane.setScrollBarPositions(true, false);
+			lootPane.setFadeScrollBars(false);
+			lootPane.setScrollbarsOnTop(true);
 			lootSubmenu.add(lootPane).expand().fill().pad(10f);
 			
 			display.addActor(lootSubmenu);
@@ -234,7 +242,6 @@ public class TownUI extends UI {
 			
 			fileList.addListener(new ChangeListener(){
 
-				
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					if (changeDir)
@@ -246,7 +253,6 @@ public class TownUI extends UI {
 					
 					fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 					
-					String path = fileList.getSelected();
 					int listIndex = fileList.getSelectedIndex();
 					final FileHandle selected = directoryList.get(listIndex);
 					
@@ -265,18 +271,19 @@ public class TownUI extends UI {
 							if (lastIndex == listIndex)
 							{
 								listIndex = 0;
+								lastIndex = -1;
 								changeDir = true;
 								fileList.addAction(Actions.sequence(
-										Actions.moveTo(-fileList.getWidth(), 0, .3f),
-										Actions.run(new Runnable(){
+									Actions.moveTo(-fileList.getWidth(), 0, .3f),
+									Actions.run(new Runnable(){
 
-											@Override
-											public void run() {
-												loadDir(selected);
-											}
-											
-										}),
-										Actions.moveTo(0, 0, .3f)
+										@Override
+										public void run() {
+											loadDir(selected);
+										}
+										
+									}),
+									Actions.moveTo(0, 0, .3f)
 								));
 							}
 						}
@@ -322,6 +329,7 @@ public class TownUI extends UI {
 			final ScrollPane pane = new ScrollPane(fileList, skin);
 			pane.setHeight(display.getHeight());
 			pane.setScrollingDisabled(true, false);
+			pane.setFadeScrollBars(false);
 			exploreSubmenu.add(pane).expand().fill().pad(10f);
 			
 			fileList.addListener(new InputListener(){
@@ -356,6 +364,10 @@ public class TownUI extends UI {
 	}
 	
 	private void loadDir(FileHandle external) {
+		//disable input while loading directory
+		InputProcessor input = Gdx.input.getInputProcessor();
+		Gdx.input.setInputProcessor(null);
+		
 		FileHandle[] handles = external.list();
 		Array<FileHandle> acceptable = new Array<FileHandle>();
 		Array<String> paths = new Array<String>();
@@ -386,7 +398,9 @@ public class TownUI extends UI {
 		this.fileList.setItems(paths);
 		this.directoryList = acceptable;
 		directory = external;
+		this.fileList.act(0f);
 		
+		Gdx.input.setInputProcessor(input);
 	}
 
 	@Override
@@ -476,12 +490,10 @@ public class TownUI extends UI {
 			lootList.pad(10f);
 			for (Item item : loot.keys())
 			{
-				Label l = new Label(item.toString(), skin);
-				l.setWrap(true);
-				l.setAlignment(Align.left);
-				l.setScaleX(Math.min(1.0f, l.getPrefWidth() / (lootPane.getWidth() - 30f)));
+				TextButton l = new TextButton(item.toString(), skin);
+				l.setDisabled(true);
 				lootList.add(l).expandX().fillX();
-				Label i = new Label(""+loot.get(item), skin);
+				Label i = new Label(""+loot.get(item), skin, "smaller");
 				i.setAlignment(Align.right);
 				lootList.add(i).width(30f);
 				lootList.row();
@@ -528,6 +540,8 @@ public class TownUI extends UI {
 			Actions.delay(1.5f),
 			Actions.moveTo(0, 0, .3f)
 		));
+		
+		
 		
 		setMessage("Tink Tink");
 	}

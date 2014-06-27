@@ -352,7 +352,6 @@ public class PathMaker {
 			return false;
 		}
 		
-		System.out.println("Making a hallway");
 		int x1 = (int)from.x;
 		int x2 = (int)to.x;
 		int y1 = (int)from.y;
@@ -445,16 +444,21 @@ public class PathMaker {
 	 */
 	public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int tW, int tH)
 	{
-		TiledMapTileLayer layer = new TiledMapTileLayer(board.length, board[0].length, tW, tH);
+		//add padding so it doesn't look like the rooms flood into nothingness
+		TiledMapTileLayer layer = new TiledMapTileLayer(board.length+2, board[0].length+2, tW, tH);
 		
-		for (int x = 0; x < board.length; x++)
+		for (int x = -1, sX = 0; sX <= layer.getWidth(); x++, sX++)
 		{
-			for (int y = 0; y < board[0].length; y++)
+			for (int y = -1, sY = 0; sY <= layer.getHeight(); y++, sY++)
 			{
 				Cell cell = new Cell();
 				
 				TiledMapTile tile;
-				if (board[x][y] == NULL)
+				if (x < 0 || x >= board.length || y < 0 || y >= board[0].length)
+				{
+					tile = tileset.getTile(0);
+				}
+				else if (board[x][y] == NULL)
 				{
 					tile = tileset.getTile(0);
 				}
@@ -475,7 +479,7 @@ public class PathMaker {
 					tile = tileset.getTile(2);
 				}
 				cell.setTile(tile);
-				layer.setCell(x, y, cell);
+				layer.setCell(x+1, y+1, cell);
 			}
 		}
 		

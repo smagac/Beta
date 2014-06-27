@@ -23,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
@@ -215,6 +216,23 @@ public class WanderUI extends UI {
 				sacrifice();
 			}
 		}
+		else if (this.index == -1)
+		{
+			if (index == 0)
+			{
+				display.addAction(
+					Actions.sequence(
+						Actions.alpha(0f, 3f),
+						Actions.run(new Runnable(){
+							@Override
+							public void run(){
+								SceneManager.switchToScene("town");
+							}
+						})
+					)
+				);
+			}
+		}
 	}
 
 	private void sacrifice()
@@ -231,13 +249,13 @@ public class WanderUI extends UI {
 					Tracker.NumberValues.Loot_Sacrificed.increment();
 				}
 				this.healCost++;
+				this.index = 0;
+				this.menu = 0;
 			}
 			else if (menu == 2)
 			{
 				leave();
 			}
-			this.index = 0;
-			this.menu = 0;
 		}
 		else
 		{
@@ -424,17 +442,21 @@ public class WanderUI extends UI {
 
 	@Override
 	public String[] defineButtons() {
-		if (index == 0)
-		{
-			return new String[]{"Request Assistance"};
-		}
-		else if (index == 1)
+		if (index == 1)
 		{
 			return new String[]{"Return", "Heal Me", "Go Home"};
 		}
-		else
+		else if (index == 2)
 		{
 			return new String[]{"I've changed my mind", "Sacrifice Your Loot"};
+		}
+		else if (index == -1)
+		{
+			return new String[]{"Return Home"};
+		}
+		else
+		{
+			return new String[]{"Request Assistance"};
 		}
 	}
 
@@ -447,11 +469,15 @@ public class WanderUI extends UI {
 	public void setMessage(String msg)
 	{
 		//update the battle log
-		log.getItems().add(msg);
+		Array<String> l = log.getItems();
+		if (l.size > 5)
+		{
+			l.removeIndex(0);
+		}
+		l.add(msg);
 		log.pack();
 		
-		float y = Math.max(0, (log.getItems().size * log.getItemHeight()) + logPane.getHeight()/2);
-		logPane.scrollTo(0, log.getHeight()-y, logPane.getWidth(), logPane.getHeight());
+		logPane.scrollTo(0, logPane.getHeight(), logPane.getWidth(), logPane.getHeight());
 	}
 
 	/**
@@ -505,6 +531,8 @@ public class WanderUI extends UI {
 		);
 		
 		setFocus(dialog);
+		index = -1;
+		refreshButtons();
 	}
 	
 	/**
@@ -554,5 +582,7 @@ public class WanderUI extends UI {
 		);
 		
 		setFocus(dialog);
+		index = -1;
+		refreshButtons();
 	}
 }

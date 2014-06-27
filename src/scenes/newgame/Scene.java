@@ -378,7 +378,7 @@ public class Scene implements Screen {
 		text.setAlignment(Align.center);
 		text.setWrap(true);
 		
-		textTable.add(text).center().expandX().fillX().pad(40f);
+		textTable.add(text).center().expandX().fillX().pad(60f);
 		
 		Label down = new Label("More", skin, "promptsm");
 		textTable.row();

@@ -49,7 +49,7 @@ public abstract class UI {
 
 	
 	private static final String statFormat = "Crafting Completed %d/%d";
-	private static final String levelFormat = "Level %d  HP: %3d/%3d";
+	private static final String levelFormat = "Level %d         HP: %3d/%3d";
 	private static final String timeFormat = "Time: %s";
 	
 	private Label craftingStats;
@@ -189,13 +189,13 @@ public abstract class UI {
 			Group window = makeWindow(skin, 384, 108);
 			window.setPosition(96f, 16f);
 			
-			craftingStats = new Label(String.format(statFormat, 0, 0), skin, "small");
-			levelStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "small");
-			timeStats = new Label(String.format(timeFormat, "000:00:00"), skin, "small");
+			craftingStats = new Label(String.format(statFormat, 0, 0), skin, "promptsm");
+			levelStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
+			timeStats = new Label(String.format(timeFormat, "000:00:00"), skin, "promptsm");
 			
 			craftingStats.setPosition(40f, 54f);
 			levelStats.setPosition(40f, 32f);
-			timeStats.setPosition(344f-timeStats.getPrefWidth(), 32f);
+			timeStats.setPosition(344f-timeStats.getPrefWidth(), 54f);
 			
 			window.addActor(craftingStats);
 			window.addActor(levelStats);
@@ -264,13 +264,13 @@ public abstract class UI {
 					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 					{
 						triggerAction(getIndex());
-						setButtons(defineButtons());
+						refreshButtons();
 						return true;
 					}
 					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
 					{
 						triggerAction(-1);
-						setButtons(defineButtons());
+						refreshButtons();
 						return true;
 					}
 					return false;
@@ -366,6 +366,11 @@ public abstract class UI {
 	
 	public abstract String[] defineButtons();
 	
+	protected final void refreshButtons()
+	{
+		setButtons(defineButtons());
+	}
+	
 	private final void setButtons(final String... butt)
 	{
 		if (butt == null)
@@ -395,7 +400,7 @@ public abstract class UI {
 					if (button == Buttons.LEFT)
 					{
 						triggerAction(getIndex());
-						setButtons(defineButtons());
+						refreshButtons();
 						return true;
 					}
 					return false;

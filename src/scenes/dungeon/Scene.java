@@ -72,7 +72,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 		
 		loot = new ObjectMap<Item, Integer>();
 		
-		bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,1));
+		bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2));
 		manager.load(bgmName, Music.class);
 		
 		input = new InputMultiplexer();
