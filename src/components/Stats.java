@@ -18,6 +18,7 @@ public class Stats extends Component {
 	private int magic;
 	private float speed;
 	public int exp;
+	public int nextExp;
 	
 	public Stats(int... values)
 	{
@@ -30,6 +31,7 @@ public class Stats extends Component {
 		magic = values[4];
 		speed = values[5];
 		exp = 0;
+		nextExp = level*10;
 	}
 	
 	public int getLevel()
@@ -67,6 +69,8 @@ public class Stats extends Component {
 			strength = 5+level;
 			defense = 5+level;
 			magic++;
+			nextExp = level*10;
+			exp = 0;
 			return true;
 		}
 		return false;

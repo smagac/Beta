@@ -23,7 +23,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -49,7 +51,9 @@ public abstract class UI {
 
 	
 	private static final String statFormat = "Crafting Completed %d/%d";
-	private static final String levelFormat = "Level %d         HP: %3d/%3d";
+	private static final String levelFormat = "Level %d";
+	private static final String hpFormat = "HP: %3d/%3d";
+	private static final String expFormat = "EXP: %3d/%3d";
 	private static final String timeFormat = "Time: %s";
 	
 	private Label craftingStats;
@@ -72,6 +76,8 @@ public abstract class UI {
 	private Storymode service;
 	
 	private ShaderProgram hueify;
+	private Label hpStats;
+	private Label expStats;
 	
 	public UI(Scene<? extends UI> scene, AssetManager manager)
 	{
@@ -191,15 +197,30 @@ public abstract class UI {
 			
 			craftingStats = new Label(String.format(statFormat, 0, 0), skin, "promptsm");
 			levelStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
+			hpStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
+			expStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
 			timeStats = new Label(String.format(timeFormat, "000:00:00"), skin, "promptsm");
 			
 			craftingStats.setPosition(40f, 54f);
-			levelStats.setPosition(40f, 32f);
 			timeStats.setPosition(344f-timeStats.getPrefWidth(), 54f);
 			
+			levelStats.setAlignment(Align.left);
+			hpStats.setAlignment(Align.center);
+			expStats.setAlignment(Align.right);
+			
+			Table group = new Table();
+			group.pad(10f);
+			group.row().bottom().left();
+			group.add(levelStats).expandX().fillX();
+			group.add(hpStats).expandX().fillX();
+			group.add(expStats).expandX().fillX();
+			group.setWidth(320f);
+			group.setHeight(20f);
+			group.setPosition(32f, 32f);
+			
 			window.addActor(craftingStats);
-			window.addActor(levelStats);
 			window.addActor(timeStats);
+			window.addActor(group);
 			
 			
 			stage.addActor(window);
@@ -473,8 +494,9 @@ public abstract class UI {
 		
 		//update stats
 		Stats s = getService().getPlayer();
-		levelStats.setText(String.format(levelFormat, s.getLevel(), s.hp, s.maxhp));
-		
+		levelStats.setText(String.format(levelFormat, s.getLevel()));
+		hpStats.setText(String.format(hpFormat, s.hp, s.maxhp));
+		expStats.setText(String.format(expFormat, s.exp, s.nextExp));
 		//update progress
 		Inventory i = getService().getInventory();
 		craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));

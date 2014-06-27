@@ -10,6 +10,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -62,6 +63,7 @@ public class TownUI extends UI {
 	final int EXPLORE = 1;
 	final int SLEEP = 0;
 	private ButtonGroup craftTabs;
+	FileHandle queueDir;
 	
 	public TownUI(Scene scene, AssetManager manager) {
 		super(scene, manager);
@@ -279,7 +281,7 @@ public class TownUI extends UI {
 
 										@Override
 										public void run() {
-											loadDir(selected);
+											queueDir = selected;
 										}
 										
 									}),
@@ -401,8 +403,20 @@ public class TownUI extends UI {
 		this.fileList.act(0f);
 		
 		Gdx.input.setInputProcessor(input);
+		
 	}
 
+	@Override
+	protected void externalRender (Rectangle r) {
+		
+		if (queueDir != null)
+		{
+			loadDir(queueDir);
+			queueDir = null;
+		}
+		
+	}
+	
 	@Override
 	protected void triggerAction(int index)
 	{

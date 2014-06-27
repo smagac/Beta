@@ -129,7 +129,7 @@ public class Inventory {
 				for (; lootKeys.hasNext && i == null;)
 				{
 					Item i2 = lootKeys.next();
-					if (i2.equals(r)) {
+					if (i2.fullname().equals(r.fullname())) {
 						i = i2;
 					}
 				}

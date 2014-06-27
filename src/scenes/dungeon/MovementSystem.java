@@ -139,15 +139,21 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		Stats aStats = statMap.get(actor);
 		Stats bStats = statMap.get(opponent);
 		
+		float mult = 1.1f;
+		if (actor == player)
+		{
+			mult = 2f;
+		}
+		
 		//ignore if target died at some point along the way
 		if (bStats.hp <= 0)
 		{
 			return;
 		}
-		if (MathUtils.randomBoolean(Math.min((MathUtils.random(.5f, 2f)*aStats.getSpeed()) / bStats.getSpeed(), 1f)))
+		if (MathUtils.randomBoolean(Math.min((MathUtils.random(.8f, mult)*aStats.getSpeed()) / bStats.getSpeed(), 1f)))
 		{
 		
-			int dmg = Math.abs(Math.min(0, (int)(MathUtils.random(.5f, 2f)*aStats.getStrength()) - bStats.getDefense()));
+			int dmg = Math.max(0, (int)(MathUtils.random(.8f, mult)*aStats.getStrength()) - bStats.getDefense());
 			bStats.hp = Math.max(0, bStats.hp - dmg);
 			
 			if (actor == player)
@@ -173,6 +179,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				//drop enemy item
 				else
 				{
+					parentScene.log("You killed the " + idMap.get(opponent).toString());
 					Combat combat = combatMap.get(opponent);
 					parentScene.getItem(combat.getDrop());
 					aStats.exp++;
@@ -181,6 +188,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 						parentScene.log("You have gained a level!");
 					}
 					Tracker.NumberValues.Monsters_Killed.increment();
+					opponent.deleteFromWorld();
 				}
 			}
 		}

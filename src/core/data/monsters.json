@@ -36,7 +36,7 @@
         "type" : "ghost"
     },
     "vampire" : {
-        "hp" : "20", "str" : "11", "def" : "3", "mag" : "1", "spd" : "55",
+        "hp" : "20", "str" : "8", "def" : "3", "mag" : "1", "spd" : "55",
         "attacks" : [],
         "magic" : [],
         "type" : "ghost"
@@ -54,7 +54,7 @@
         "type" : "bug"
     },
     "elf" : {
-        "hp" : "15", "str" : "6", "def" : "5", "mag" : "1", "spd" : "35",
+        "hp" : "15", "str" : "6", "def" : "4", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "elf"
@@ -72,7 +72,7 @@
         "type" : "elf"
     },
     "gnome" : {
-        "hp" : "15", "str" : "14", "def" : "9", "mag" : "1", "spd" : "25",
+        "hp" : "15", "str" : "14", "def" : "6", "mag" : "1", "spd" : "25",
         "attacks" : [],
         "magic" : [],
         "type" : "gnome"
@@ -96,7 +96,7 @@
         "type" : "snake"
     },
     "python" : {
-        "hp" : "25", "str" : "10", "def" : "6", "mag" : "1", "spd" : "35",
+        "hp" : "25", "str" : "10", "def" : "3", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "snake"
@@ -114,19 +114,19 @@
         "type" : "rat"
     },
     "horse" : {
-        "hp" : "13", "str" : "9", "def" : "13", "mag" : "1", "spd" : "35",
+        "hp" : "13", "str" : "9", "def" : "4", "mag" : "1", "spd" : "35",
         "attacks" : [],
         "magic" : [],
         "type" : "horse"
     },
     "alpaca" : {
-        "hp" : "9", "str" : "5", "def" : "10", "mag" : "1", "spd" : "25",
+        "hp" : "9", "str" : "5", "def" : "5", "mag" : "1", "spd" : "25",
         "attacks" : [],
         "magic" : [],
         "type" : "horse"
     },
     "llama" : {
-        "hp" : "15", "str" : "3", "def" : "15", "mag" : "1", "spd" : "15",
+        "hp" : "15", "str" : "3", "def" : "6", "mag" : "1", "spd" : "15",
         "attacks" : [],
         "magic" : [],
         "type" : "horse"

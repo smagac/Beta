@@ -167,7 +167,13 @@ public class MonsterFactory {
 	private Entity create(World world, MonsterTemplate t, Item item)
 	{
 		Entity e = world.createEntity();
-		e.addComponent(new Stats(t.hp, MathUtils.random(20), t.str, t.def, t.mag, t.spd), Stats.CType);
+		e.addComponent(new Stats(t.hp, 
+								MathUtils.random(20), 
+								(int)(MathUtils.random(.75f, 1.1f)*t.str), 
+								(int)(MathUtils.random(.5f, 1.1f)*t.def), 
+								t.mag,
+								(int)(MathUtils.random(.3f, 1.1f)*t.spd)
+							));
 		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective()));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
 		
