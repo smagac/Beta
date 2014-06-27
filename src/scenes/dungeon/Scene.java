@@ -5,10 +5,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.FileType;
 import core.datatypes.Item;
@@ -69,6 +71,9 @@ public class Scene extends scenes.Scene<WanderUI> {
 		manager = new AssetManager();
 		
 		manager.load("data/dungeon.atlas", TextureAtlas.class);
+		manager.load(DataDirs.hit, Sound.class);
+		manager.load(DataDirs.dead, Sound.class);
+		
 		ui = new WanderUI(this, manager);
 		
 		loot = new ObjectMap<Item, Integer>();
@@ -110,7 +115,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	public void changeFloor(int i)
 	{
-		if (i < 0)
+		if (i < 0 || i >= getService().getDungeon().size)
 		{
 			leave();
 			return;
@@ -126,6 +131,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 		ui.setFloor(floor);
 		ms = floor.getSystem(MovementSystem.class);
 		ms.setScene(this);
+		ms.hit = manager.get(DataDirs.hit, Sound.class);
 		
 		input.clear();
 		input.addProcessor(ms);
@@ -137,7 +143,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 	{
 		ui.dead();
 		Tracker.NumberValues.Times_Died.increment();
-		
+		manager.get(DataDirs.dead, Sound.class).play();
 		//remove input from stage
 		input.clear();
 		ui.addToInput(input);

@@ -9,6 +9,7 @@ import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -43,6 +44,8 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	
 	Entity player;
 	ImmutableBag<Entity> monsters;
+	
+	Sound hit;
 	
 	@SuppressWarnings("unchecked")
 	public MovementSystem(int floor)
@@ -139,7 +142,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		Stats aStats = statMap.get(actor);
 		Stats bStats = statMap.get(opponent);
 		
-		float mult = 1.1f;
+		float mult = 1.25f;
 		if (actor == player)
 		{
 			mult = 2f;
@@ -153,21 +156,38 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		if (MathUtils.randomBoolean(Math.min((MathUtils.random(.8f, mult)*aStats.getSpeed()) / bStats.getSpeed(), 1f)))
 		{
 		
+			hit.play();
 			int dmg = Math.max(0, (int)(MathUtils.random(.8f, mult)*aStats.getStrength()) - bStats.getDefense());
 			bStats.hp = Math.max(0, bStats.hp - dmg);
 			
+			String msg;
 			if (actor == player)
 			{
 				Identifier id = idMap.get(opponent);
 				String name = id.toString();
-				parentScene.log("You attacked " + name + " for " + dmg + " damage");
+				if (dmg == 0)
+				{
+					msg = name + " blocked your attack!";
+				}
+				else
+				{
+					msg = "You attacked " + name + " for " + dmg + " damage";
+				}
 			}
 			else
 			{
 				Identifier id = idMap.get(actor);
 				String name = id.toString();
-				parentScene.log(name + " attacked you for " + dmg + " damage");
+				if (dmg == 0)
+				{
+					msg = name + " blocked " + name + "'s attack";
+				}
+				else
+				{
+					msg = name + " attacked you for " + dmg + " damage";
+				}
 			}
+			parentScene.log(msg);
 			
 			if (bStats.hp <= 0)
 			{
@@ -319,6 +339,11 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		Position m = positionMap.get(e);
 		Position p = positionMap.get(player);
 		
+		if (e.isActive())
+		{
+			return;
+		}
+		
 		//only try moving once the character is in the same room as it
 		//try to move towards the player when nearby
 		if (p.distance(m) < 3)
@@ -326,7 +351,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 			//roll for move
 			Stats s = statMap.get(e);
 			//chance multiplied since agro
-			if (MathUtils.randomBoolean(Math.min(s.getSpeed()*1.5f, 100f) / 100f))
+			if (MathUtils.randomBoolean(Math.min(MathUtils.random(1f, 3f)*s.getSpeed(), 100f) / 100f))
 			{
 				int dX = 0;
 				int dY = 0;
@@ -345,7 +370,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		{
 			//roll for move
 			Stats s = statMap.get(e);
-			if (MathUtils.randomBoolean(Math.min(s.getSpeed(), 100f) / 100f))
+			if (MathUtils.randomBoolean(Math.min(MathUtils.random(1f, 2f)*s.getSpeed(), 100f) / 100f))
 			{
 				int dX = 0;
 				int dY = 0;

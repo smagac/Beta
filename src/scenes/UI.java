@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -35,6 +36,7 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import components.Stats;
+import core.DataDirs;
 import core.common.Storymode;
 import core.datatypes.Inventory;
 
@@ -61,7 +63,7 @@ public abstract class UI {
 	private Label timeStats;
 	
 	protected Scene<? extends UI> parent;
-	private AssetManager manager;
+	protected AssetManager manager;
 	private Stage stage;
 	private Group window;
 	protected Group messageWindow;
@@ -99,6 +101,10 @@ public abstract class UI {
 			(new GdxRuntimeException(hueify.getLog())).printStackTrace();
 			System.exit(-1);
 		}
+		
+		manager.load(DataDirs.accept, Sound.class);
+		manager.load(DataDirs.tick, Sound.class);
+		
 	}
 	
 	public static Group makeWindow(Skin skin, int width, int height)
@@ -284,6 +290,7 @@ public abstract class UI {
 					}
 					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 					{
+						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
 						refreshButtons();
 						return true;
@@ -330,30 +337,27 @@ public abstract class UI {
 				{
 					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
 					{
-						focus = -1;
-						setFocus(buttonList);
+						if (stage.getKeyboardFocus() == buttonList)
+						{
+							manager.get(DataDirs.accept, Sound.class).play();
+							triggerAction(0);
+							refreshButtons();
+						}
+						else
+						{
+							focus = 0;
+							buttons.getButtons().first().setChecked(true);
+							setFocus(buttonList);
+						}
 					}
 					else if (keycode == Keys.TAB)
 					{
 						focus++;
 						if (focus >= focusList().length)
 						{
-							if (buttonList != null)
-							{
-								focus = -1;
-								setFocus(buttonList);
-								buttons.getButtons().get(0).setChecked(true);
-							}
-							else
-							{
-								focus = 0;
-								setFocus(focusList()[focus]);
-							}
+							focus = 0;
 						}
-						else
-						{
-							setFocus(focusList()[focus]);
-						}
+						setFocus(focusList()[focus]);
 					}
 				}
 
@@ -407,6 +411,7 @@ public abstract class UI {
 		for (int i = 0; i < butt.length; i++)
 		{
 			final Button button = new TextButton(butt[i], skin);
+			button.setName(butt[i]);
 			button.pad(4f, 10f, 4f, 10f);
 			button.addListener(new InputListener(){
 				@Override
@@ -420,6 +425,7 @@ public abstract class UI {
 				{
 					if (button == Buttons.LEFT)
 					{
+						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
 						refreshButtons();
 						return true;
@@ -432,6 +438,15 @@ public abstract class UI {
 		}
 		
 		buttonList.setPosition(window.getWidth() / 2 - buttonList.getPrefWidth() / 2, 32f);
+	}
+
+	protected final void forceButtonFocus()
+	{
+		if (buttonList != null)
+		{
+			setFocus(buttonList);
+			buttons.setChecked(buttons.getButtons().first().getName());
+		}
 	}
 	
 	/**

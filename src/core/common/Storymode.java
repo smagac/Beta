@@ -50,7 +50,8 @@ public class Storymode extends com.badlogic.gdx.Game {
 	
 	@Override
 	public void create() {
-		
+		currentHue = hues[0];
+	    
 		//setup all factory resources
 		Item.init();
 		MonsterFactory.init();
@@ -63,19 +64,19 @@ public class Storymode extends com.badlogic.gdx.Game {
 		SceneManager.register("newgame", scenes.newgame.Scene.class);
 		
 		
-		//SceneManager.switchToScene("title");
+		SceneManager.switchToScene("title");
 		
-		//test dungeon
 		
 		instance = this;
 		
+		//test dungeon
+		/*
 		startGame(3);
 		scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
 		dungeon.setDungeon(FileType.Other, 5);
 		SceneManager.switchToScene(dungeon);
-		
-		currentHue = hues[0];
-    }
+		*/
+	}
 
 	public static void startGame(int difficulty) {
 		

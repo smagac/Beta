@@ -474,9 +474,10 @@ public class WanderUI extends UI {
 			l.removeIndex(0);
 		}
 		l.add(msg);
+		log.act(0f);
 		log.pack();
 		
-		logPane.scrollTo(0, logPane.getHeight(), logPane.getWidth(), logPane.getHeight());
+		logPane.scrollTo(0, log.getHeight(), logPane.getWidth(), log.getItemHeight());
 	}
 
 	/**

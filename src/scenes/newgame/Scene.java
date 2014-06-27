@@ -11,6 +11,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -29,6 +30,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import core.DataDirs;
 import core.common.Storymode;
 
 public class Scene implements Screen {
@@ -86,6 +88,9 @@ public class Scene implements Screen {
 		manager = new AssetManager();
 		manager.load("data/uiskin.json", Skin.class);
 		manager.load("data/audio/story.mp3", Music.class);
+		manager.load(DataDirs.tick, Sound.class);
+		manager.load(DataDirs.shimmer, Sound.class);
+		manager.load(DataDirs.accept, Sound.class);
 	}
 	
 	private void init()
@@ -119,6 +124,7 @@ public class Scene implements Screen {
 				{
 					difficulty = Math.max(0, difficulty-1);
 					number.setText(""+difficulty);
+					manager.get(DataDirs.tick, Sound.class).play();
 					return true;
 				}
 				return false;
@@ -148,6 +154,7 @@ public class Scene implements Screen {
 				{
 					difficulty = Math.min(5, difficulty+1);
 					number.setText(""+difficulty);
+					manager.get(DataDirs.tick, Sound.class).play();
 					return true;
 				}
 				return false;
@@ -178,6 +185,14 @@ public class Scene implements Screen {
 				
 				window.addAction(
 					Actions.sequence(
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								manager.get(DataDirs.accept, Sound.class).play();
+							}
+							
+						}),
 						Actions.alpha(0f, .5f),
 						Actions.run(new Runnable(){
 							
@@ -185,7 +200,6 @@ public class Scene implements Screen {
 							public void run() {
 								next();
 							}
-							
 						})
 					)
 				);
@@ -219,31 +233,22 @@ public class Scene implements Screen {
 				if (keycode == Keys.LEFT || keycode == Keys.A)
 				{
 					hit = true;
+					
 					difficulty = Math.max(1, difficulty-1);
+					manager.get(DataDirs.tick, Sound.class).play();
 					number.setText(""+difficulty);		
 				}
 				else if (keycode == Keys.RIGHT || keycode == Keys.D)
 				{
 					hit = true;
 					difficulty = Math.min(5, difficulty+1);
+					manager.get(DataDirs.tick, Sound.class).play();
 					number.setText(""+difficulty);		
 				}
 				else if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 				{
 					hit = true;
-					window.addAction(
-						Actions.sequence(
-							Actions.alpha(0f, .5f),
-							Actions.delay(1.5f),
-							Actions.run(new Runnable(){
-								
-								@Override
-								public void run() {
-									next();
-								}
-							})
-						)
-					);
+					accept.setChecked(true);
 				}
 				
 				return hit;
@@ -278,6 +283,15 @@ public class Scene implements Screen {
 		textTable.addAction(Actions.alpha(0f, 1f));
 		goddess.clearActions();
 		goddess.addAction(Actions.sequence(
+			Actions.run(new Runnable(){
+
+				@Override
+				public void run() {
+					stage.getRoot().clearListeners();
+					
+				}
+				
+			}),
 			Actions.rotateBy(360f, 1f),
 			Actions.rotateBy(360f, .75f),
 			Actions.rotateBy(360f, .5f),
@@ -286,6 +300,14 @@ public class Scene implements Screen {
 					Actions.repeat(10, Actions.rotateBy(360f, .25f)),
 					Actions.sequence(
 						Actions.delay(1f),
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								manager.get(DataDirs.shimmer, Sound.class).play();
+							}
+							
+						}),
 						Actions.moveTo(goddess.getX(), stage.getHeight()+128f, .4f)
 					)
 				)
@@ -319,7 +341,6 @@ public class Scene implements Screen {
 					@Override
 					public void run() {
 						String dialog = story.nextLine();
-						System.out.println(dialog);
 						text.setText(dialog);
 						textTable.pack();
 					}
@@ -398,11 +419,16 @@ public class Scene implements Screen {
 							public boolean keyDown(InputEvent evt, int keycode)
 							{
 								boolean hit = false;
-								if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+								if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+								{
+									hit = true;
+									end();
+								}
+								else if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 								{
 									hit = true;
 									next();
-								}								
+								}						
 								return hit;
 							}
 						});

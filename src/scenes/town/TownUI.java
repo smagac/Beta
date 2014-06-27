@@ -9,6 +9,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -30,6 +31,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
+import core.DataDirs;
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
@@ -51,6 +53,7 @@ public class TownUI extends UI {
 	Table lootSubmenu;
 	List<Craftable> craftList;
 	ScrollPane lootPane;
+	ScrollPane craftPane;
 	Table lootList;
 	Table requirementList;
 	
@@ -125,41 +128,44 @@ public class TownUI extends UI {
 			
 			Group tabs = new HorizontalGroup();
 			craftTabs = new ButtonGroup();
-			{
-				final TextButton myButton = new TextButton("My List", skin);
-				tabs.addActor(myButton);
-				craftTabs.add(myButton);
-				myButton.addListener(new ChangeListener(){
+			final TextButton myButton = new TextButton("My List", skin);
+			tabs.addActor(myButton);
+			myButton.setName("required");
+			craftTabs.add(myButton);
+			myButton.addListener(new ChangeListener(){
 
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (actor == myButton)
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (actor == myButton)
+					{
+						if (myButton.isChecked())
 						{
-							if (myButton.isChecked())
-							{
-								craftList.setItems(getService().getInventory().getRequiredCrafts());
-							}
+							manager.get(DataDirs.tick, Sound.class).play();
+							craftList.setItems(getService().getInventory().getRequiredCrafts());
+							craftList.setSelectedIndex(0);
 						}
 					}
-				});
-				
-				final TextButton todayButton = new TextButton("Today's Special", skin);
-				tabs.addActor(todayButton);
-				craftTabs.add(todayButton);
-				todayButton.addListener(new ChangeListener(){
+				}
+			});
+			
+			final TextButton todayButton = new TextButton("Today's Special", skin);
+			todayButton.setName("extra");
+			tabs.addActor(todayButton);
+			craftTabs.add(todayButton);
+			todayButton.addListener(new ChangeListener(){
 
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (actor == todayButton)
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (actor == todayButton)
+					{
+						if (todayButton.isChecked())
 						{
-							if (todayButton.isChecked())
-							{
-								craftList.setItems(getService().getInventory().getTodaysCrafts());
-							}
+							craftList.setItems(getService().getInventory().getTodaysCrafts());
+							craftList.setSelectedIndex(0);
 						}
 					}
-				});
-			}
+				}
+			});
 			
 			craftSubmenu.add(tabs).fillX().expandX().padLeft(2f);
 			craftSubmenu.row();
@@ -172,6 +178,7 @@ public class TownUI extends UI {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					requirementList.clear();
+					manager.get(DataDirs.tick, Sound.class).play();
 					
 					//build requirements list
 					Craftable c = craftList.getSelected();
@@ -192,10 +199,10 @@ public class TownUI extends UI {
 
 			});
 			
-			ScrollPane pane = new ScrollPane(craftList, skin);
-			pane.setFadeScrollBars(false);
+			craftPane = new ScrollPane(craftList, skin);
+			craftPane.setFadeScrollBars(false);
 			
-			craftSubmenu.top().add(pane).expand().fill().height(display.getHeight()/2-20).pad(2f).padTop(0f);
+			craftSubmenu.top().add(craftPane).expand().fill().height(display.getHeight()/2-20).pad(2f).padTop(0f);
 			
 			craftSubmenu.row();
 			//current highlighted craft item requirements
@@ -225,6 +232,48 @@ public class TownUI extends UI {
 			lootPane.setScrollbarsOnTop(true);
 			lootSubmenu.add(lootPane).expand().fill().pad(10f);
 			
+			lootPane.addListener(new InputListener(){
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					if (keycode == Keys.DOWN || keycode == Keys.S)
+					{
+						lootPane.fling(.4f, 0, -64f/.4f);
+					}
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						lootPane.fling(.4f, 0, 64f/.4f);
+					}
+					return false;
+				}
+			});
+			craftPane.addListener(new InputListener(){
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					if (keycode == Keys.DOWN || keycode == Keys.S)
+					{
+						craftList.setSelectedIndex(Math.min(craftList.getItems().size-1, craftList.getSelectedIndex()+1));
+						float y = Math.max(0, (craftList.getSelectedIndex() * craftList.getItemHeight()) + craftPane.getHeight()/2);
+						craftPane.scrollTo(0, craftList.getHeight()-y, craftPane.getWidth(), craftPane.getHeight());
+					}
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						craftList.setSelectedIndex(Math.max(0, craftList.getSelectedIndex()-1));
+						float y = Math.max(0, (craftList.getSelectedIndex() * craftList.getItemHeight()) + craftPane.getHeight()/2);
+						craftPane.scrollTo(0, craftList.getHeight()-y, craftPane.getWidth(), craftPane.getHeight());
+					}
+					if (keycode == Keys.LEFT || keycode == Keys.A)
+					{
+						myButton.setChecked(true);
+					}
+					if (keycode == Keys.RIGHT || keycode == Keys.D )
+					{
+						todayButton.setChecked(true);
+					}
+					
+					return false;
+				}
+			});
+			
 			display.addActor(lootSubmenu);
 		}
 		
@@ -253,15 +302,27 @@ public class TownUI extends UI {
 						return;
 					}
 					
+					manager.get(DataDirs.tick, Sound.class).play();
+					
 					fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 					
-					int listIndex = fileList.getSelectedIndex();
-					final FileHandle selected = directoryList.get(listIndex);
+					int listIndex;
+					final FileHandle selected;
+					try
+					{
+						listIndex = fileList.getSelectedIndex();
+						selected = directoryList.get(listIndex);
+					}
+					catch (java.lang.IndexOutOfBoundsException e)
+					{
+						System.out.println("file loader derp");
+						return;
+					}
 					
 					if (selected == null && lastIndex == listIndex)
 					{
 						//go to parent directory
-						loadDir(directory.parent());
+						queueDir = directory.parent();
 					}
 					else if (selected != null)
 					{
@@ -272,9 +333,9 @@ public class TownUI extends UI {
 							
 							if (lastIndex == listIndex)
 							{
-								listIndex = 0;
-								lastIndex = -1;
+								lastIndex = -2;
 								changeDir = true;
+								fileList.setItems();
 								fileList.addAction(Actions.sequence(
 									Actions.moveTo(-fileList.getWidth(), 0, .3f),
 									Actions.run(new Runnable(){
@@ -338,11 +399,11 @@ public class TownUI extends UI {
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
-					if (keycode == Keys.DOWN)
+					if (keycode == Keys.DOWN || keycode == Keys.S)
 					{
 						fileList.setSelectedIndex(Math.min(fileList.getItems().size-1, fileList.getSelectedIndex()+1));
 					}
-					if (keycode == Keys.UP)
+					if (keycode == Keys.UP || keycode == Keys.W)
 					{
 						fileList.setSelectedIndex(Math.max(0, fileList.getSelectedIndex()-1));
 					}
@@ -399,7 +460,7 @@ public class TownUI extends UI {
 		
 		this.fileList.setItems(paths);
 		this.directoryList = acceptable;
-		directory = external;
+		this.directory = external;
 		this.fileList.act(0f);
 		
 		Gdx.input.setInputProcessor(input);
@@ -414,7 +475,6 @@ public class TownUI extends UI {
 			loadDir(queueDir);
 			queueDir = null;
 		}
-		
 	}
 	
 	@Override
@@ -530,7 +590,7 @@ public class TownUI extends UI {
 		//populate the submenu's data
 		craftList.setItems(getService().getInventory().getRequiredCrafts());	
 		requirementList.clear();
-			
+		craftTabs.setChecked(craftTabs.getButtons().first().getName());
 		//create loot menu
 		populateLoot();
 	
@@ -554,8 +614,6 @@ public class TownUI extends UI {
 			Actions.delay(1.5f),
 			Actions.moveTo(0, 0, .3f)
 		));
-		
-		
 		
 		setMessage("Tink Tink");
 	}
@@ -666,7 +724,7 @@ public class TownUI extends UI {
 	protected Actor[] focusList() {
 		if (menu == CRAFT)
 		{
-			return new Actor[]{lootPane, craftList};
+			return new Actor[]{lootPane, craftPane};
 		}
 		else if (menu == EXPLORE)
 		{
