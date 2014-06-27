@@ -1,5 +1,7 @@
 package scenes.newgame;
 
+import java.util.Scanner;
+
 import scenes.SceneManager;
 import scenes.UI;
 
@@ -8,6 +10,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -15,8 +18,10 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -28,12 +33,24 @@ import core.common.Storymode;
 
 public class Scene implements Screen {
 
-	AssetManager manager;
-	Stage stage;
+	private AssetManager manager;
+	private Stage stage;
+	private Skin skin;
 	
-	boolean loaded;
+	private boolean loaded;
 	
-	int difficulty = 3;
+	private int difficulty = 3;
+	
+	private int index = -1;
+	
+	private Scanner story;
+	private Table textTable;
+	private Label text;
+	private Music bgm;
+	private Image goddess;
+	private Image you;
+	
+	private boolean over;
 	
 	@Override
 	public void render(float delta) {
@@ -45,6 +62,12 @@ public class Scene implements Screen {
 		if (!loaded)
 		{
 			init();
+		}
+		if (over)
+		{
+			Storymode.startGame(difficulty);
+			SceneManager.switchToScene("town");
+			return;
 		}
 		
 		stage.act(delta);
@@ -62,6 +85,7 @@ public class Scene implements Screen {
 		stage = new Stage(v);
 		manager = new AssetManager();
 		manager.load("data/uiskin.json", Skin.class);
+		manager.load("data/audio/story.mp3", Music.class);
 	}
 	
 	private void init()
@@ -69,7 +93,7 @@ public class Scene implements Screen {
 		loaded = true;
 		
 		//fetch assets
-		final Skin skin = manager.get("data/uiskin.json", Skin.class);
+		skin = manager.get("data/uiskin.json", Skin.class);
 				
 		stage.clear();
 		
@@ -227,6 +251,7 @@ public class Scene implements Screen {
 		});
 		
 		stage.addActor(window);
+		
 		stage.act();
 		Gdx.input.setInputProcessor(stage);
 		
@@ -234,8 +259,161 @@ public class Scene implements Screen {
 
 	private void next()
 	{
-		Storymode.startGame(difficulty);
-		SceneManager.switchToScene("town");
+		if (index == -1)
+		{
+			loadStory();
+		}
+		else if (story.hasNextLine())
+		{
+			advanceStory();
+		}
+		else
+		{
+			end();
+		}
+	}
+	
+	private void end()
+	{
+		textTable.addAction(Actions.alpha(0f, 1f));
+		goddess.clearActions();
+		goddess.addAction(Actions.sequence(
+			Actions.rotateBy(360f, 1f),
+			Actions.rotateBy(360f, .75f),
+			Actions.rotateBy(360f, .5f),
+			Actions.rotateBy(360f, .25f),
+			Actions.parallel(
+					Actions.repeat(10, Actions.rotateBy(360f, .25f)),
+					Actions.sequence(
+						Actions.delay(1f),
+						Actions.moveTo(goddess.getX(), stage.getHeight()+128f, .4f)
+					)
+				)
+			)
+		);
+		you.addAction(
+			Actions.sequence(
+				Actions.delay(5f),
+				Actions.moveTo(stage.getWidth()/2f - you.getWidth()/2f, 48f, 2f),
+				Actions.delay(2f),
+				Actions.alpha(0f, 2f),
+				Actions.run(new Runnable(){
+
+					@Override
+					public void run() {
+						over = true;
+					}
+					
+				})
+		));
+	}
+	
+	private void advanceStory()
+	{
+		textTable.addAction(Actions.alpha(1f));
+		text.addAction(
+			Actions.sequence(
+				Actions.alpha(0f, .1f),
+				Actions.run(new Runnable(){
+
+					@Override
+					public void run() {
+						String dialog = story.nextLine();
+						System.out.println(dialog);
+						text.setText(dialog);
+						textTable.pack();
+					}
+					
+				}),
+				Actions.alpha(1f, .1f)
+			)
+		);
+		index++;
+	}
+	
+	private void loadStory()
+	{
+		story = new Scanner(Gdx.files.classpath("core/data/title.txt").read());
+		bgm = manager.get("data/audio/story.mp3", Music.class);
+		bgm.setLooping(true);
+		bgm.play();
+		
+		stage.clear();
+		
+		you = new Image(skin.getRegion("character"));
+		you.setScaling(Scaling.stretch);
+		you.setSize(64f, 64f);
+		you.setPosition(stage.getWidth()*.4f, 48f);
+		you.addAction(Actions.sequence(Actions.alpha(0f),Actions.alpha(1f, 1f)));
+		stage.addActor(you);
+		
+		//goddess
+		goddess = new Image(skin.getRegion("goddess"));
+		goddess.setScaling(Scaling.stretch);
+		goddess.setSize(128f, 128f);
+		goddess.setPosition(stage.getWidth() * .6f, 48f);
+		goddess.setOrigin(64f, 64f);
+		goddess.addAction(Actions.sequence(
+				Actions.alpha(0f),
+				Actions.delay(4f),
+				Actions.alpha(1f, 3f),
+				Actions.forever(
+					Actions.sequence(
+						Actions.moveTo(stage.getWidth() * .6f, 58f, 5f),
+						Actions.moveTo(stage.getWidth() * .6f, 48f, 5f)
+					)
+				)
+			)
+		);
+		
+		stage.addActor(goddess);
+		
+		textTable = new Table();
+		textTable.center();
+		textTable.setWidth(stage.getWidth());
+		textTable.setFillParent(true);
+		
+		//text
+		text = new Label("", skin, "prompt");
+		text.setAlignment(Align.center);
+		text.setWrap(true);
+		
+		textTable.add(text).center().expandX().fillX().pad(40f);
+		
+		Label down = new Label("More", skin, "promptsm");
+		textTable.row();
+		textTable.add(down).right().padRight(80f);
+		textTable.pack();
+		textTable.addAction(
+			Actions.sequence(
+				Actions.alpha(0f),
+				Actions.delay(8f),
+				Actions.run(new Runnable(){
+	
+					@Override
+					public void run() {
+						
+						stage.addListener(new InputListener(){
+							@Override
+							public boolean keyDown(InputEvent evt, int keycode)
+							{
+								boolean hit = false;
+								if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+								{
+									hit = true;
+									next();
+								}								
+								return hit;
+							}
+						});
+						advanceStory();
+					}
+				})
+			)
+		);
+		stage.addActor(textTable);
+		
+		stage.act();
 	}
 	
 	@Override
@@ -245,20 +423,27 @@ public class Scene implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
+		if (bgm != null)
+		{
+			bgm.pause();
+		}
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
+		if (bgm != null)
+		{
+			bgm.play();
+		}
 	}
 
 	@Override
 	public void dispose() {
+		bgm.stop();
+		bgm.dispose();
+		manager.dispose();
 		stage.dispose();
-		
+		story.close();
 	}
 
 }

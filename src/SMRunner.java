@@ -12,8 +12,8 @@ public class SMRunner {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.backgroundFPS = -1;
 		config.foregroundFPS = 60;
-		config.width = 1280;
-		config.height = 720;
+		config.width = Storymode.InternalRes[0]*2;
+		config.height = Storymode.InternalRes[1]*2;
 		//config.resizable = false;
 		config.title = "StoryMode";
 

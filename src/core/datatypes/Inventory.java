@@ -8,17 +8,18 @@ import com.badlogic.gdx.utils.ObjectMap.Keys;
 import core.common.Tracker;
 import factories.AdjectiveFactory;
 import factories.CraftableFactory;
-import factories.ItemFactory;
 
 public class Inventory {
 
+	CraftableFactory cf;
 	Array<Craftable> required;
+	Array<Craftable> todaysCrafts;
 	ObjectMap<Item, Integer> loot;
 	private int progress = 0;
 	
 	public Inventory(int difficulty)
 	{
-		CraftableFactory cf = new CraftableFactory();
+		cf = new CraftableFactory();
 		
 		required = new Array<Craftable>();
 		for (int i = 0; i < difficulty; i++)
@@ -26,16 +27,30 @@ public class Inventory {
 			required.add(cf.createRandomCraftable());
 		}
 		
+		refreshCrafts();
+		
 		loot = new ObjectMap<Item, Integer>();
 		
 		//debug add loot to test crafting
-		Craftable c = required.random();
-		ObjectMap<String, Integer> ik = c.getRequirements();
-		for (String s : ik.keys())
+		for (int i = 0; i < 30; i++)
 		{
-			loot.put(new Item(s, AdjectiveFactory.getAdjective(), ""), ik.get(s) + MathUtils.random(1, 20));
+			loot.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective(), ""), MathUtils.random(1, 20));
 		}
-		
+	}
+	
+	/**
+	 * Refreshes the list of today's craftable items with a new list
+	 */
+	public void refreshCrafts() {
+		todaysCrafts = new Array<Craftable>();
+		for (int i = 0; i < 5; i++)
+		{
+			todaysCrafts.add(cf.createRandomCraftable());
+		}
+	}
+	
+	public Array<Craftable> getTodaysCrafts() {
+		return todaysCrafts;
 	}
 	
 	public Array<Craftable> getRequiredCrafts() {
@@ -102,8 +117,8 @@ public class Inventory {
 				
 				//add the item to your loot
 				loot.put(c, 1);
-				Tracker.NumberValues.Items_Crafted.increment();
 			}
+			Tracker.NumberValues.Items_Crafted.increment();
 			
 			//count progress after making
 			progress = 0;
@@ -129,5 +144,59 @@ public class Inventory {
 
 	public ObjectMap<Item, Integer> getLoot() {
 		return loot;
+	}
+
+	/**
+	 * Removes a list of items from your loot
+	 * @param sacrifices
+	 */
+	public boolean sacrifice(ObjectMap<Item, Integer> sacrifices, int required) {
+		int pieces = 0;
+		boolean canSacrifice = true;
+		for (Item item : sacrifices.keys())
+		{
+			Integer i = sacrifices.get(item);
+			if (loot.get(item, 0) < i)
+			{
+				canSacrifice = false;
+				break;
+			}
+			else
+			{
+				pieces += i;
+			}
+		}
+		
+		if (pieces < required)
+		{
+			canSacrifice = false;
+		}
+		
+		if (canSacrifice)
+		{
+			for (Item item : sacrifices.keys())
+			{
+				Integer i = sacrifices.get(item);
+				Integer k = loot.get(item) - i;
+				if (k == 0)
+				{
+					loot.remove(item);
+				}
+				else
+				{
+					loot.put(item, k);
+				}
+			}
+		}
+		
+		return canSacrifice;
+	}
+	
+	public void merge(ObjectMap<Item, Integer> more)
+	{
+		for (Item item : more.keys())
+		{
+			loot.put(item, loot.get(item, 0) + more.get(item));
+		}
 	}
 }

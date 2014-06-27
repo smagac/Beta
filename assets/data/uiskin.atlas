@@ -1,26 +1,26 @@
 
 uiskin.png
-size: 824,922
+size: 914,868
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 audio
   rotate: false
-  xy: 774, 890
+  xy: 2, 54
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 big
   rotate: false
-  xy: 2, 410
-  size: 512, 512
-  orig: 512, 512
+  xy: 2, 740
+  size: 512, 128
+  orig: 512, 128
   offset: 0, 0
   index: -1
 button_down
   rotate: false
-  xy: 518, 356
+  xy: 800, 754
   size: 16, 16
   split: 2, 2, 2, 2
   orig: 16, 16
@@ -28,7 +28,7 @@ button_down
   index: -1
 button_up
   rotate: false
-  xy: 544, 390
+  xy: 872, 818
   size: 16, 16
   split: 2, 3, 4, 3
   orig: 16, 16
@@ -36,63 +36,77 @@ button_up
   index: -1
 character
   rotate: false
-  xy: 2, 2
+  xy: 898, 852
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 compressed
   rotate: false
-  xy: 518, 374
+  xy: 774, 738
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 craft
   rotate: false
-  xy: 2, 152
+  xy: 516, 612
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 executable
   rotate: false
-  xy: 2, 20
+  xy: 872, 836
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 explore
   rotate: false
-  xy: 516, 666
+  xy: 2, 88
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 explore_back
   rotate: false
-  xy: 260, 152
+  xy: 516, 354
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
+fader
+  rotate: false
+  xy: 2, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+goddess
+  rotate: false
+  xy: 28, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 image
   rotate: false
-  xy: 100, 118
+  xy: 2, 20
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 other
   rotate: false
-  xy: 774, 856
+  xy: 28, 54
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 progback
   rotate: false
-  xy: 100, 108
+  xy: 774, 694
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -100,7 +114,7 @@ progback
   index: -1
 progfront
   rotate: false
-  xy: 126, 142
+  xy: 800, 744
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -108,76 +122,72 @@ progfront
   index: -1
 scroll-knob
   rotate: false
-  xy: 126, 142
+  xy: 800, 744
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
   offset: 0, 0
   index: -1
+prompt_sm
+  rotate: false
+  xy: 2, 414
+  size: 512, 64
+  orig: 512, 64
+  offset: 0, 0
+  index: -1
 scroll
   rotate: false
-  xy: 28, 42
+  xy: 54, 76
   size: 10, 10
   orig: 10, 10
   offset: 0, 0
   index: -1
 sleep
   rotate: false
-  xy: 518, 408
+  xy: 260, 88
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
+small
+  rotate: false
+  xy: 2, 610
+  size: 512, 128
+  orig: 512, 128
+  offset: 0, 0
+  index: -1
+smaller
+  rotate: false
+  xy: 2, 380
+  size: 512, 32
+  orig: 512, 32
+  offset: 0, 0
+  index: -1
+smallest
+  rotate: false
+  xy: 2, 346
+  size: 512, 32
+  orig: 512, 32
+  offset: 0, 0
+  index: -1
+titlefnt
+  rotate: false
+  xy: 2, 480
+  size: 512, 128
+  orig: 512, 128
+  offset: 0, 0
+  index: -1
 video
   rotate: false
-  xy: 800, 890
+  xy: 774, 704
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 window
   rotate: false
-  xy: 2, 54
+  xy: 774, 772
   size: 96, 96
   orig: 96, 96
-  offset: 0, 0
-  index: -1
-
-uiskin2.png
-size: 514,514
-format: RGBA8888
-filter: Nearest,Nearest
-repeat: none
-prompt_sm
-  rotate: false
-  xy: 2, 2
-  size: 512, 512
-  orig: 512, 512
-  offset: 0, 0
-  index: -1
-
-uiskin3.png
-size: 514,514
-format: RGBA8888
-filter: Nearest,Nearest
-repeat: none
-small
-  rotate: false
-  xy: 2, 2
-  size: 512, 512
-  orig: 512, 512
-  offset: 0, 0
-  index: -1
-
-uiskin4.png
-size: 514,514
-format: RGBA8888
-filter: Nearest,Nearest
-repeat: none
-titlefnt
-  rotate: false
-  xy: 2, 2
-  size: 512, 512
-  orig: 512, 512
   offset: 0, 0
   index: -1

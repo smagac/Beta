@@ -1,6 +1,8 @@
 {
 com.badlogic.gdx.graphics.g2d.BitmapFont: { 
     small: { file: small.fnt },
+    smaller: { file: smaller.fnt },
+    smallest: { file: smallest.fnt },
     big: { file: big.fnt },
     prompt: { file: titlefnt.fnt },
     promptsm: { file: prompt_sm.fnt }
@@ -17,16 +19,23 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	toggle: { down: button_down, checked: button_down, up: button_up }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
-	default: { down: button_down, up: button_up, checked: button_down, font: small, fontColor: white, downFontColor: black, checkedFontColor: black }
+	default: { down: button_down, up: button_up, checked: button_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black }
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
-	default: { background: button_up, vScrollKnob: scroll-knob }
+	default: { background: button_up, vScrollKnob: scroll-knob },
+	log: { vScrollKnob: scroll-knob },
+    
 },
 com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 	default: {
 		font: small, fontColor: white, background: window,
 		scrollStyle: default,
 		listStyle: { font: small, selection: button_down }
+	},
+	log : {
+	   font: smallest, fontColor: white,
+       scrollStyle: default,
+       listStyle: { font: smallest, selection: button_down }
 	}
 },
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
@@ -37,13 +46,17 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: small, fontColor: white },
 	big: { font: big, fontColor: white },
 	small: { font: small, fontColor: white },
+	smaller: { font: smaller, fontColor: white },
+	smallest: {font: smallest, fontColor: white},
 	prompt: { font: prompt, fontColor: white },
-	promptsm: { font: promptsm, fontColor: white }
+	promptsm: { font: promptsm, fontColor: white },
+	hover: { font: small, fontColor: white, background: button_down }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }
 },
 com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
-	default: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: small }
+	default: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: smaller },
+	log: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: smallest },
 }
 }

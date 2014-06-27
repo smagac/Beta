@@ -1,10 +1,7 @@
 package core.common;
 
 import scenes.SceneManager;
-import GenericComponents.Position;
-import GenericComponents.Renderable;
-import GenericComponents.Stats;
-import GenericSystems.MovementSystem;
+import scenes.dungeon.MovementSystem;
 
 import com.artemis.Entity;
 import com.artemis.World;
@@ -12,12 +9,17 @@ import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
+import components.Position;
+import components.Renderable;
+import components.Stats;
 import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
@@ -40,8 +42,15 @@ public class Storymode extends com.badlogic.gdx.Game {
 	
 	private Array<World> dungeon;
 	
+	//COOL RENDERING
+	private static final Color[] hues = {Color.WHITE, Color.ORANGE, Color.GREEN, Color.CYAN, Color.MAGENTA, Color.MAROON, Color.YELLOW, Color.RED, Color.TEAL, Color.OLIVE};
+	private static Color currentHue = hues[0];
+	
+	private Screen queued;
+	
 	@Override
 	public void create() {
+		
 		//setup all factory resources
 		Item.init();
 		MonsterFactory.init();
@@ -65,7 +74,8 @@ public class Storymode extends com.badlogic.gdx.Game {
 		dungeon.setDungeon(FileType.Other, 5);
 		SceneManager.switchToScene(dungeon);
 		
-	}
+		currentHue = hues[0];
+    }
 
 	public static void startGame(int difficulty) {
 		
@@ -87,6 +97,14 @@ public class Storymode extends com.badlogic.gdx.Game {
 	@Override
 	public void render()
 	{
+		//wait until a cycle is over before we acceptably switch screens
+		// this way we can call switches from the UI at any point
+		if (queued != null)
+		{
+			super.setScreen(queued);
+			queued = null;
+		}
+		
 		//make sure our buffer is always cleared
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -120,11 +138,30 @@ public class Storymode extends com.badlogic.gdx.Game {
 				DisplayMode dm = Gdx.graphics.getDesktopDisplayMode();
 				Gdx.graphics.setDisplayMode(dm.width, dm.height, true);
 				fullscreen = true;
-			}
-			
+			}	
 		}
+		
+		//control hues
+		if ((Gdx.input.isKeyPressed(Keys.NUM_0))) { currentHue = hues[0]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_1))) { currentHue = hues[1]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_2))) { currentHue = hues[2]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_3))) { currentHue = hues[3]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_4))) { currentHue = hues[4]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_5))) { currentHue = hues[5]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_6))) { currentHue = hues[6]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_7))) { currentHue = hues[7]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_8))) { currentHue = hues[8]; }
+		if ((Gdx.input.isKeyPressed(Keys.NUM_9))) { currentHue = hues[9]; }
+		
 	}
 	
+	@Override
+	public void setScreen(Screen screen)
+	{
+		queued = screen;
+	}
+	
+	@Override
 	public void resume()
 	{
 		super.resume();
@@ -180,5 +217,10 @@ public class Storymode extends com.badlogic.gdx.Game {
 	public Array<World> getDungeon()
 	{
 		return dungeon;
+	}
+	
+	public static Color getPalette()
+	{
+		return currentHue;
 	}
 }

@@ -14,14 +14,16 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
@@ -63,6 +65,7 @@ public class TownUI extends UI {
 		super(scene, manager);
 	}
 	
+	@Override
 	public void extend()
 	{
 		//explore icon
@@ -115,6 +118,48 @@ public class TownUI extends UI {
 			craftSubmenu.setWidth(250f);
 			craftSubmenu.setHeight(display.getHeight());
 			
+			
+			Group craftTabs = new HorizontalGroup();
+			ButtonGroup tabs = new ButtonGroup();
+			{
+				final TextButton myButton = new TextButton("My List", skin);
+				craftTabs.addActor(myButton);
+				tabs.add(myButton);
+				myButton.addListener(new ChangeListener(){
+
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (actor == myButton)
+						{
+							if (myButton.isChecked())
+							{
+								craftList.setItems(getService().getInventory().getRequiredCrafts());
+							}
+						}
+					}
+				});
+				
+				final TextButton todayButton = new TextButton("Today's Special", skin);
+				craftTabs.addActor(todayButton);
+				tabs.add(todayButton);
+				todayButton.addListener(new ChangeListener(){
+
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (actor == todayButton)
+						{
+							if (todayButton.isChecked())
+							{
+								craftList.setItems(getService().getInventory().getTodaysCrafts());
+							}
+						}
+					}
+				});
+			}
+			
+			craftSubmenu.add(craftTabs).fillX().expandX().padLeft(2f);
+			craftSubmenu.row();
+			
 			//list of required crafts
 			craftList = new List<Craftable>(skin);
 			craftList.setItems(getService().getInventory().getRequiredCrafts());
@@ -126,15 +171,15 @@ public class TownUI extends UI {
 					
 					//build requirements list
 					Craftable c = craftList.getSelected();
-					ObjectMap<String, Integer> map = c.getRequirements();
-					for (String name : map.keys())
+					ObjectMap<String, Integer> items = c.getRequirements();
+					for (String name : items.keys())
 					{
-						Label l = new Label(name, skin);
+						Label l = new Label(name, skin, "smallest");
 						l.setAlignment(Align.left);
 						requirementList.add(l).expandX().fillX();
-						Label i = new Label(""+map.get(name), skin);
+						Label i = new Label(""+items.get(name), skin, "smallest");
 						i.setAlignment(Align.right);
-						requirementList.add(i).expandX().fillX();
+						requirementList.add(i).width(30f);
 						requirementList.row();
 					}
 					
@@ -144,7 +189,7 @@ public class TownUI extends UI {
 			});
 			
 			ScrollPane pane = new ScrollPane(craftList, skin);
-			craftSubmenu.top().add(pane).expand().fill().height(display.getHeight()/2-20).pad(10f);
+			craftSubmenu.top().add(pane).expand().fill().height(display.getHeight()/2-20).pad(2f).padTop(0f);
 			
 			craftSubmenu.row();
 			//current highlighted craft item requirements
@@ -155,7 +200,7 @@ public class TownUI extends UI {
 			requirementList.top().left();
 			
 			ScrollPane pane2 = new ScrollPane(requirementList, skin);
-			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-20).pad(10f);
+			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-20).pad(2f);
 			craftSubmenu.pad(10f);
 			craftSubmenu.setPosition(display.getWidth(), 0);
 			display.addActor(craftSubmenu);
@@ -280,6 +325,7 @@ public class TownUI extends UI {
 			exploreSubmenu.add(pane).expand().fill().pad(10f);
 			
 			fileList.addListener(new InputListener(){
+				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
 					if (keycode == Keys.DOWN)
@@ -343,6 +389,7 @@ public class TownUI extends UI {
 		
 	}
 
+	@Override
 	protected void triggerAction(int index)
 	{
 		if (menu == CRAFT)
@@ -430,12 +477,13 @@ public class TownUI extends UI {
 			for (Item item : loot.keys())
 			{
 				Label l = new Label(item.toString(), skin);
+				l.setWrap(true);
 				l.setAlignment(Align.left);
 				l.setScaleX(Math.min(1.0f, l.getPrefWidth() / (lootPane.getWidth() - 30f)));
 				lootList.add(l).expandX().fillX();
 				Label i = new Label(""+loot.get(item), skin);
 				i.setAlignment(Align.right);
-				lootList.add(i).expandX().fillX();
+				lootList.add(i).width(30f);
 				lootList.row();
 			}
 		}
@@ -520,6 +568,9 @@ public class TownUI extends UI {
 				@Override
 				public void run() {
 					getService().rest();
+					
+					//new crafts appear each day!
+					getService().getInventory().refreshCrafts();
 				}
 				
 			}),

@@ -3,10 +3,13 @@ package scenes.town;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 
 public class Scene extends scenes.Scene<TownUI> {
 
 	boolean loaded;
+	
+	Music bgm;
 	
 	@Override
 	public void render(float delta) {
@@ -18,6 +21,9 @@ public class Scene extends scenes.Scene<TownUI> {
 		if (!loaded)
 		{
 			ui.init();
+			bgm = manager.get("data/audio/town.mp3");
+			bgm.play();
+			bgm.setLooping(true);
 			loaded = true;
 		}
 		
@@ -36,34 +42,43 @@ public class Scene extends scenes.Scene<TownUI> {
 		manager = new AssetManager();
 		
 		ui = new TownUI(this, manager);
+		manager.load("data/audio/town.mp3", Music.class);
 		
 		InputMultiplexer input = new InputMultiplexer();
 		ui.addToInput(input);
 		Gdx.input.setInputProcessor(input);
+		
+		//new crafts appear when you return to town
+		getService().getInventory().refreshCrafts();
 	}
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
-
+		dispose();
 	}
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
+		if (bgm != null)
+		{
+			bgm.pause();
+		}
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
+		if (bgm != null)
+		{
+			bgm.play();
+		}
 	}
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-
+		bgm.stop();
+		bgm.dispose();
+		manager.dispose();
+		ui.dispose();
 	}
 
 }

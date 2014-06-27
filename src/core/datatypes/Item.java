@@ -26,7 +26,7 @@ public class Item implements Comparable<Item>
 		JsonReader json = new JsonReader();
 		
 		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath("factories/data/items.json"));
+		JsonValue jv = json.parse(Gdx.files.classpath("core/data/items.json"));
 		
 		lootLocations = new ObjectMap<FileType, Array<String>>();
 		items = new Array<String>();
@@ -84,6 +84,7 @@ public class Item implements Comparable<Item>
 		return String.format("%s %s", adj, name);
 	}
 	
+	@Override
 	public String toString()
 	{
 		return fullname();
@@ -100,6 +101,7 @@ public class Item implements Comparable<Item>
 		return fullname().compareTo(o.fullname());
 	}
 	
+	@Override
 	public boolean equals(Object o)
 	{
 		if (o == null) {

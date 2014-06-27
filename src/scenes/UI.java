@@ -1,7 +1,6 @@
 package scenes;
 
-import GenericComponents.Stats;
-
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
@@ -9,6 +8,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -27,10 +27,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import components.Stats;
 import core.common.Storymode;
 import core.datatypes.Inventory;
 
@@ -69,6 +71,8 @@ public abstract class UI {
 	private ButtonGroup buttons;
 	private Storymode service;
 	
+	private ShaderProgram hueify;
+	
 	public UI(Scene<? extends UI> scene, AssetManager manager)
 	{
 		this.parent = scene;
@@ -83,13 +87,24 @@ public abstract class UI {
 		displayBounds = new Rectangle();
 		
 		manager.load("data/uiskin.json", Skin.class);
+		
+		hueify = new ShaderProgram(Gdx.files.classpath("core/util/bg.vertex.glsl"), Gdx.files.classpath("core/util/bg.fragment.glsl"));
+		if (!hueify.isCompiled()){
+			(new GdxRuntimeException(hueify.getLog())).printStackTrace();
+			System.exit(-1);
+		}
+	}
+	
+	public static Group makeWindow(Skin skin, int width, int height)
+	{
+		return makeWindow(skin, width, height, false);
 	}
 	
 	/**
 	 * Custom required method to create complex actors that are recognized
 	 * as a single window in order to provide tiling of the ninepatch 
 	 */
-	public static Group makeWindow(Skin skin, int width, int height)
+	public static Group makeWindow(Skin skin, int width, int height, boolean filled)
 	{
 		Group group = new Group();
 		group.setSize(width, height);
@@ -148,11 +163,13 @@ public abstract class UI {
 		group.addActor(b);
 
 		//setup center
-//		Image c = new Image(new TiledDrawable(split[4]));
-//		c.setPosition(32, 32);
-//		c.setSize(width-64, height-64);
-//		group.addActor(c);
-		
+		if (filled)
+		{
+			Image c = new Image(new TiledDrawable(split[4]));
+			c.setPosition(32, 32);
+			c.setSize(width-64, height-64);
+			group.addActor(c);
+		}
 
 		return group;
 	}
@@ -195,8 +212,9 @@ public abstract class UI {
 			messageWindow = new Group();
 			messageWindow.setPosition(32f, 32f);
 			messageWindow.setSize(320f, 44f);
-			
+
 			window.addActor(messageWindow);
+			
 			stage.addActor(window);
 		}
 		
@@ -334,10 +352,9 @@ public abstract class UI {
 	
 	/**
 	 * Allow rendering into the display things that aren't stage2d elements
+	 * @param tmpBound - area to draw into
 	 */
-	protected void externalRender(){
-		
-	}
+	protected void externalRender(Rectangle tmpBound){ }
 	
 	/**
 	 * Handles an action to be performed when a button in the menu is clicked
@@ -464,18 +481,27 @@ public abstract class UI {
 	
 	public final void draw()
 	{
-		ScissorStack.pushScissors(tmpBound);
 		Batch b = stage.getBatch();
+		
+		//bind the attribute
+		hueify.begin();
+		hueify.setUniformf("hue", Storymode.getPalette());
+		hueify.end();
+		
+		b.setShader(hueify);
+		
+		ScissorStack.pushScissors(tmpBound);
+		externalRender(tmpBound);
+		b.setProjectionMatrix(stage.getCamera().combined);
 		b.begin();
 		display.draw(b, stage.getRoot().getColor().a);
 		b.end();
-		externalRender();
 		ScissorStack.popScissors();
 		
 		//hide display during rendering of the stage
 		display.setVisible(false);
 		stage.draw();
-		
+
 		//make sure it's set as visible so it accepts input between frames
 		display.setVisible(true);
 	}
@@ -495,7 +521,7 @@ public abstract class UI {
 		return service;
 	}
 	
-	private final void setFocus(Actor a)
+	protected final void setFocus(Actor a)
 	{
 		stage.setKeyboardFocus(a);
 		stage.setScrollFocus(a);
@@ -509,5 +535,10 @@ public abstract class UI {
 	protected Camera getCamera()
 	{
 		return stage.getViewport().getCamera();
+	}
+	
+	public final void dispose()
+	{
+		stage.dispose();
 	}
 }

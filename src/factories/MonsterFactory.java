@@ -1,12 +1,5 @@
 package factories;
 
-import GenericComponents.Combat;
-import GenericComponents.Identifier;
-import GenericComponents.Monster;
-import GenericComponents.Position;
-import GenericComponents.Renderable;
-import GenericComponents.Stats;
-
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
@@ -14,14 +7,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import components.Combat;
+import components.Identifier;
+import components.Monster;
+import components.Position;
+import components.Renderable;
+import components.Stats;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 
@@ -53,7 +52,7 @@ public class MonsterFactory {
 		}
 		
 		JsonReader json = new JsonReader();
-		JsonValue monsterList = json.parse(Gdx.files.classpath("factories/data/monsters.json"));
+		JsonValue monsterList = json.parse(Gdx.files.classpath("core/data/monsters.json"));
 		
 		for (JsonValue jv : monsterList)
 		{
@@ -121,10 +120,10 @@ public class MonsterFactory {
 	 * @param world - level representation of entities
 	 * @param area - type of file area we need to load monsters for
 	 * @param size - the size of the file, indicating how many monsters we need
-	 * @param rooms - list of rooms to lock each monster into
+	 * @param layer - list of rooms to lock each monster into
 	 * @return an array of all the monsters that have just been created and added to the world
 	 */
-	public Array<Entity> makeMonsters(World world, int size, Array<Rectangle> rooms, ItemFactory lootMaker)
+	public Array<Entity> makeMonsters(World world, int size, TiledMapTileLayer layer, ItemFactory lootMaker)
 	{
 		Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
 		Array<Entity> monsters = new Array<Entity>();
@@ -139,11 +138,16 @@ public class MonsterFactory {
 			monster.addComponent(new Monster());
 			
 			//add its position into a random room
-			Rectangle room = rooms.random();
-			int x = (int) MathUtils.random(room.x, room.x+room.width);
-			int y = (int) MathUtils.random(room.y, room.y+room.height);
-			
-			monster.addComponent(new Position(x, y, room));
+			int x = 0;
+			int y = 0;
+			TiledMapTile tile;
+			do
+			{
+				x = MathUtils.random(0, layer.getWidth()-1);
+				y = MathUtils.random(0, layer.getHeight()-1);
+				tile = layer.getCell(x, y).getTile();
+			} while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
+			monster.addComponent(new Position(x, y));
 			
 			monster.addToWorld();
 			

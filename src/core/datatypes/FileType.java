@@ -36,6 +36,7 @@ public enum FileType {
 		return Other;
 	}
 	
+	@Override
 	public String toString()
 	{
 		return this.name().toLowerCase();

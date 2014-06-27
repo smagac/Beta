@@ -1,14 +1,12 @@
 package scenes.dungeon;
 
-import GenericSystems.MovementSystem;
-import GenericSystems.RenderSystem;
-
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.datatypes.FileType;
@@ -22,6 +20,11 @@ public class Scene extends scenes.Scene<WanderUI> {
 	private int currentFloor;
 	
 	ObjectMap<Item, Integer> loot;
+	
+	private String bgmName;
+	private Music bgm;
+	
+	private InputMultiplexer input;
 	
 	public void setDungeon(FileType type, int difficulty)
 	{
@@ -41,6 +44,9 @@ public class Scene extends scenes.Scene<WanderUI> {
 			ui.init();
 			getService().newDungeon(manager, fileType, difficulty);
 			changeFloor(0);
+			bgm = manager.get(bgmName, Music.class);
+			bgm.setLooping(true);
+			bgm.play();
 			loaded = true;
 		}
 		
@@ -50,8 +56,6 @@ public class Scene extends scenes.Scene<WanderUI> {
 		
 		ui.update(delta);
 		ui.draw();
-		
-		floor.getSystem(RenderSystem.class).process();
 	}
 
 	@Override
@@ -67,49 +71,86 @@ public class Scene extends scenes.Scene<WanderUI> {
 		ui = new WanderUI(this, manager);
 		
 		loot = new ObjectMap<Item, Integer>();
+		
+		bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,1));
+		manager.load(bgmName, Music.class);
+		
+		input = new InputMultiplexer();
 	}
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
-
+		dispose();
 	}
 
 	@Override
-	public void pause() { }
+	public void pause() { 
+		if (bgm != null)
+		{
+			bgm.pause();
+		}
+	}
 
 	@Override
-	public void resume() { }
+	public void resume() { 
+		if (bgm != null)
+		{
+			bgm.play();
+		}
+	}
 
 	@Override
-	public void dispose() {	}
+	public void dispose() {
+		bgm.stop();
+		bgm.dispose();
+		manager.dispose();
+		ui.dispose();
+	}
 	
 	public void changeFloor(int i)
 	{
-		currentFloor = i;
-		World floor = getService().getDungeon().get(currentFloor);
-		ui.setFloor(floor);
-		Gdx.input.setInputProcessor(floor.getSystem(MovementSystem.class));
-	}
-	
-	public void dead()
-	{
-		ui.dead();
+		if (i < 0)
+		{
+			leave();
+			return;
+		}
 		
-		//remove input from stage
-		InputMultiplexer input = new InputMultiplexer();
+		//remove self from old floor
+		World floor = getService().getDungeon().get(currentFloor);
+		MovementSystem ms = floor.getSystem(MovementSystem.class);
+		ms.setScene(null);
+		
+		currentFloor = i;
+		floor = getService().getDungeon().get(currentFloor);
+		ui.setFloor(floor);
+		ms = floor.getSystem(MovementSystem.class);
+		ms.setScene(this);
+		
+		input.clear();
+		input.addProcessor(ms);
 		ui.addToInput(input);
 		Gdx.input.setInputProcessor(input);
 	}
 	
-	public void leave()
+	protected void dead()
+	{
+		ui.dead();
+		
+		//remove input from stage
+		input.clear();
+		ui.addToInput(input);
+		Gdx.input.setInputProcessor(input);
+	}
+	
+	protected void leave()
 	{
 		ui.leave();
 		
-		//TODO merge loot into inventory
+		//merge loot into inventory
+		getService().getInventory().merge(this.loot);
 		
 		//remove input from stage
-		InputMultiplexer input = new InputMultiplexer();
+		input.clear();
 		ui.addToInput(input);
 		Gdx.input.setInputProcessor(input);
 	}
@@ -118,9 +159,14 @@ public class Scene extends scenes.Scene<WanderUI> {
 	 * Add an item after a monster has dropped it
 	 * @param item
 	 */
-	public void getItem(Item item)
+	protected void getItem(Item item)
 	{
 		loot.put(item, loot.get(item, 0) + 1);
 		ui.setMessage("Obtained " + item.fullname());
+	}
+	
+	protected void log(String message)
+	{
+		ui.setMessage(message);
 	}
 }

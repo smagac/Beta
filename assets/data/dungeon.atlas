@@ -95,7 +95,7 @@ snake
   orig: 16, 16
   offset: 0, 0
   index: -1
-tiles
+tiles2
   rotate: false
   xy: 2, 74
   size: 128, 128
