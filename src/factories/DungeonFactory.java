@@ -92,9 +92,7 @@ public class DungeonFactory {
 			
 			//add monsters to rooms
 			// monster count is anywhere between 5-20 on easy and 25-100 on hard
-			monsterFactory.makeMonsters(world, MathUtils.random(difficulty*2, difficulty*4), layer, itemFactory);
-			
-			
+			monsterFactory.makeMonsters(world, MathUtils.random(difficulty*2, difficulty*4), layer, itemFactory, i+1);
 			
 			//generate map from rooms
 			world.getSystem(RenderSystem.class).setMap(tm);

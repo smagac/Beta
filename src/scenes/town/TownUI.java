@@ -3,7 +3,7 @@ package scenes.town;
 import java.io.File;
 
 import scenes.SceneManager;
-import scenes.UI;
+import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -11,6 +11,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -36,7 +37,7 @@ import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 
-public class TownUI extends UI {
+public class TownUI extends GameUI {
 
 	Image sleepImg;
 	Group exploreImg;
@@ -443,7 +444,7 @@ public class TownUI extends UI {
 		for (FileHandle handle : handles)
 		{
 			File f = handle.file();
-			String path = handle.nameWithoutExtension();
+			String path = handle.name();
 			//make sure hidden files are not shown
 			if (f.isHidden())
 			{
@@ -499,7 +500,7 @@ public class TownUI extends UI {
 		}
 		else if (menu == EXPLORE)
 		{
-			if (index == 1)
+			if (index == 1 || index == 2)
 			{
 				if (getService().getPlayer().hp <= 0)
 				{
@@ -507,18 +508,34 @@ public class TownUI extends UI {
 				}
 				else
 				{
-					FileHandle f = directoryList.get(fileList.getSelectedIndex());
-					//TODO switch to dungeon
+					FileType ext = FileType.Other;
+					int diff = 1;
 					
-					if (f != null)
+					//load selected file dungeon
+					if (index == 1)
 					{
-						FileType ext = FileType.getType(f.extension());
-						int diff = ext.difficulty(f.length());
-						
-						scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
-						dungeon.setDungeon(ext, diff);
-						SceneManager.switchToScene(dungeon);
+						FileHandle f = directoryList.get(fileList.getSelectedIndex());
+						if (f != null && !f.isDirectory())
+						{
+							ext = FileType.getType(f.extension());
+							diff = ext.difficulty(f.length());
+						}
+						else
+						{
+							return;
+						}
 					}
+					//random dungeonas
+					else
+					{
+						ext = FileType.values()[MathUtils.random(FileType.values().length-1)];
+						diff = MathUtils.random(1, 5);
+					}
+					scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
+					dungeon.setDungeon(ext, diff);
+				
+					SceneManager.switchToScene(dungeon);
+					
 				}
 			}
 			else
@@ -711,7 +728,7 @@ public class TownUI extends UI {
 		}
 		else if (menu == EXPLORE)
 		{
-			return new String[]{"Return", "Explore Dungeon"};
+			return new String[]{"Return", "Explore Dungeon", "Random Dungeon"};
 		}
 		else if (menu == SLEEP)
 		{

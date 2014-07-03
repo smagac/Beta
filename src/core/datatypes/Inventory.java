@@ -68,48 +68,49 @@ public class Inventory {
 	public boolean makeItem(Craftable c)
 	{
 		ObjectMap<String, Integer> requirements = c.getRequirements();
-		Keys<String> keys = requirements.keys();
-		ObjectMap<Item, Integer> take = new ObjectMap<Item, Integer>();
 		boolean make = true;
-		Keys<Item> lootKeys = loot.keys();
 		
-		while (make && keys.hasNext)
+		ObjectMap<Item, Integer> remove = new ObjectMap<Item, Integer>();
+		
+		for (String required : requirements.keys())
 		{
-			String item = keys.next();
-			Item i = null;
-			lootKeys.reset();
-			for (; lootKeys.hasNext && i == null;)
+			int need = requirements.get(required);
+			int have = 0;
+			
+			for (Item lootName : loot.keys())
 			{
-				Item i2 = lootKeys.next();
-				if (i2.equals(item)) {
-					i = i2;
+				if (lootName.equals(required))
+				{
+					Integer amount = loot.get(lootName);
+					
+					have = have + amount;
+					
+					if (have > need)
+					{
+						amount = have-need;
+					}
+					remove.put(lootName, amount);
 				}
 				
+				if (have >= need)
+				{
+					break;
+				}
 			}
-			if (i != null)
-			{
-				int count = loot.get(i, 0);
-				int want = requirements.get(item);
-				if (count < want)
-				{
-					make = false;
-				}
-				else
-				{
-					take.put(i, want);
-				}
-			} else
+		
+			if (have < need)
 			{
 				make = false;
+				break;
 			}
 		}
 		
 		if (make)
 		{
-			for (Item i : take.keys())
+			for (Item i : remove.keys())
 			{
-				int amount = take.get(i);
-				loot.put(i, loot.get(i) - amount);
+				int amount = remove.get(i);
+				loot.put(i,  loot.get(i) - amount);
 				if (loot.get(i) <= 0)
 				{
 					loot.remove(i);
@@ -125,14 +126,16 @@ public class Inventory {
 			for (Craftable r : required)
 			{
 				Item i = null;
-				lootKeys.reset();
-				for (; lootKeys.hasNext && i == null;)
+				
+				Keys<Item> keys = loot.keys();
+				for (; keys.hasNext && i == null;)
 				{
-					Item i2 = lootKeys.next();
+					Item i2 = keys.next();
 					if (i2.fullname().equals(r.fullname())) {
 						i = i2;
 					}
 				}
+				
 				if (i != null && loot.get(i, 0) > 0)
 				{
 					progress++;

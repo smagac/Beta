@@ -19,7 +19,7 @@ public class Craftable extends Item
 		for (int i = 0; i < parts.length; i++)
 		{
 			String part = parts[i];
-			int count = MathUtils.random(1, 10);
+			int count = MathUtils.random(1, 5);
 			requirements.put(part, count);
 		}
 	}

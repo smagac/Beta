@@ -46,12 +46,15 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	ImmutableBag<Entity> monsters;
 	
 	Sound hit;
+
+	private boolean enabledInput;
 	
 	@SuppressWarnings("unchecked")
 	public MovementSystem(int floor)
 	{
 		super(Aspect.getAspectForAll(Monster.class));
 		floorNum = floor;
+		enabledInput = true;
 	}
 
 	@Override
@@ -180,7 +183,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				String name = id.toString();
 				if (dmg == 0)
 				{
-					msg = name + " blocked " + name + "'s attack";
+					msg = "You blocked " + name + "'s attack";
 				}
 				else
 				{
@@ -274,6 +277,9 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	@Override
 	public boolean keyDown(int keycode) {
 		
+		if (!enabledInput)
+			return false;
+		
 		Position playerPos = positionMap.get(player);
 		int x = playerPos.getX();
 		int y = playerPos.getY();
@@ -334,12 +340,17 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	@Override
 	public boolean scrolled(int amount) { return false; }
 
+	public void inputEnabled(boolean enable)
+	{
+		this.enabledInput = enable;
+	}
+	
 	@Override
 	protected void process(Entity e) {
 		Position m = positionMap.get(e);
 		Position p = positionMap.get(player);
 		
-		if (e.isActive())
+		if (!e.isActive())
 		{
 			return;
 		}
@@ -349,9 +360,9 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		if (p.distance(m) < 3)
 		{
 			//roll for move
-			Stats s = statMap.get(e);
+			//Stats s = statMap.get(e);
 			//chance multiplied since agro
-			if (MathUtils.randomBoolean(Math.min(MathUtils.random(1f, 3f)*s.getSpeed(), 100f) / 100f))
+			if (MathUtils.randomBoolean(.75f))
 			{
 				int dX = 0;
 				int dY = 0;
@@ -369,8 +380,8 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		else
 		{
 			//roll for move
-			Stats s = statMap.get(e);
-			if (MathUtils.randomBoolean(Math.min(MathUtils.random(1f, 2f)*s.getSpeed(), 100f) / 100f))
+			//Stats s = statMap.get(e);
+			if (MathUtils.randomBoolean(.45f))
 			{
 				int dX = 0;
 				int dY = 0;

@@ -1,6 +1,6 @@
 {
     "other" : [
-        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD"
+        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD", "sadness"
     ],
     
     "image" : [
@@ -12,7 +12,7 @@
     ],
     
     "video" : [
-        "chips", "popcorn", "glasses", "recliner", "car", "hero", "heroine", "shampoo", "commercial", "dinner"
+        "chips", "popcorn", "glasses", "recliner", "car", "hero", "heroine", "shampoo", "commercial", "questionables"
     ],
     
     "compressed" : [
@@ -25,6 +25,6 @@
     
     "craftable" : [
         "sword", "pants", "drugs", "hats", "cake", "politics", "cocktail", "armor", "stew", "statue", "apocalypse",
-        "plan", "soda", "computer", "boat", "robot", "ensemble", "sport"
+        "plan", "soda", "computer", "boat", "robot", "ensemble", "sport", "virus", "genome", "picnic"
     ]
 }

@@ -1,7 +1,7 @@
 package scenes.dungeon;
 
 import scenes.SceneManager;
-import scenes.UI;
+import scenes.GameUI;
 
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
@@ -31,7 +31,7 @@ import core.common.Tracker;
 import core.datatypes.Item;
 import scenes.Scene;
 
-public class WanderUI extends UI {
+public class WanderUI extends GameUI {
 
 	Image fader;
 	ScrollPane logPane;
@@ -272,6 +272,7 @@ public class WanderUI extends UI {
 	}
 
 	private void showGoddess(String string) {
+		getService().getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(false);
 		gMsg.setText(string);
 		
 		goddess.clearActions();
@@ -286,6 +287,7 @@ public class WanderUI extends UI {
 	}
 	
 	private void hideGoddess() {
+		getService().getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(true);
 		goddess.clearActions();
 		goddessDialog.clearActions();
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));

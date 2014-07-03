@@ -14,20 +14,24 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import components.Position;
 import components.Renderable;
 import components.Stats;
+import core.Palette;
 import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
+import core.service.IColorMode;
 import factories.AdjectiveFactory;
 import factories.DungeonFactory;
 import factories.MonsterFactory;
 
-public class Storymode extends com.badlogic.gdx.Game {
+public class Storymode extends com.badlogic.gdx.Game implements IColorMode {
 
 	private static Storymode instance;
 	private Stats player;
@@ -43,14 +47,17 @@ public class Storymode extends com.badlogic.gdx.Game {
 	private Array<World> dungeon;
 	
 	//COOL RENDERING
-	private static final Color[] hues = {Color.WHITE, Color.ORANGE, Color.GREEN, Color.CYAN, Color.MAGENTA, Color.MAROON, Color.YELLOW, Color.RED, Color.TEAL, Color.OLIVE};
-	private static Color currentHue = hues[0];
+	private Palette currentHue = Palette.Original;
+	private float contrast = .5f;
+	private ShaderProgram hueify;
 	
 	private Screen queued;
+	private boolean invert;
+	
+	private BossListener boss;
 	
 	@Override
 	public void create() {
-		currentHue = hues[0];
 	    
 		//setup all factory resources
 		Item.init();
@@ -66,8 +73,16 @@ public class Storymode extends com.badlogic.gdx.Game {
 		
 		SceneManager.switchToScene("title");
 		
+		hueify = new ShaderProgram(Gdx.files.classpath("core/util/bg.vertex.glsl"), Gdx.files.classpath("core/util/bg.fragment.glsl"));
+		if (!hueify.isCompiled()){
+			(new GdxRuntimeException(hueify.getLog())).printStackTrace();
+			System.exit(-1);
+		}
+		
+		boss = new BossListener(this);
 		
 		instance = this;
+		
 		
 		//test dungeon
 		/*
@@ -105,10 +120,40 @@ public class Storymode extends com.badlogic.gdx.Game {
 			super.setScreen(queued);
 			queued = null;
 		}
+	
+		Palette p = getPalette();
+		Color clear = new Color(isInverted()?p.high:p.low);
+		float contrast = getContrast();
+		
+		//Copy AMD formula on wikipedia for smooth step in GLSL so our background can be the same as the shader
+	    // Scale, bias and saturate x to 0..1 range
+	    contrast = MathUtils.clamp((contrast - .5f)/(1f - .5f), 0.0f, 1.0f); 
+	    // Evaluate polynomial
+	    contrast = contrast*contrast*(3 - 2*contrast);
+		
+		clear.lerp(isInverted()?p.low:p.high, contrast);
 		
 		//make sure our buffer is always cleared
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(clear.r, clear.g, clear.b, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
+
+		//bind the attribute
+		hueify.begin();
+		hueify.setUniformf("contrast", getContrast());
+		if (isInverted())
+		{
+			
+			hueify.setUniformf("low", p.high);
+			hueify.setUniformf("high", p.low);
+		}
+		else
+		{
+			hueify.setUniformf("low", p.low);
+			hueify.setUniformf("high",p.high);
+		}
+		hueify.end();
+		
 		
 		float delta = Gdx.graphics.getDeltaTime();
 		//ignore pause time in getting time played
@@ -126,6 +171,11 @@ public class Storymode extends com.badlogic.gdx.Game {
 		{
 			SceneManager.switchToScene("title");
 		}
+		else if (Gdx.input.isKeyPressed(Keys.F10))
+		{
+			startGame(3);
+			SceneManager.switchToScene("town");
+		}
 		
 		if ((Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT)) && Gdx.input.isKeyPressed(Keys.ENTER))
 		{
@@ -141,19 +191,6 @@ public class Storymode extends com.badlogic.gdx.Game {
 				fullscreen = true;
 			}	
 		}
-		
-		//control hues
-		if ((Gdx.input.isKeyPressed(Keys.NUM_0))) { currentHue = hues[0]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_1))) { currentHue = hues[1]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_2))) { currentHue = hues[2]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_3))) { currentHue = hues[3]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_4))) { currentHue = hues[4]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_5))) { currentHue = hues[5]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_6))) { currentHue = hues[6]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_7))) { currentHue = hues[7]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_8))) { currentHue = hues[8]; }
-		if ((Gdx.input.isKeyPressed(Keys.NUM_9))) { currentHue = hues[9]; }
-		
 	}
 	
 	@Override
@@ -219,8 +256,54 @@ public class Storymode extends com.badlogic.gdx.Game {
 		return dungeon;
 	}
 	
-	public static Color getPalette()
+	public Palette getPalette()
 	{
 		return currentHue;
+	}
+	
+	public void setPalette(Palette p)
+	{
+		if (p.equals(currentHue))
+		{
+			invert();
+		}
+		else
+		{
+			currentHue = p;
+			invert = false;
+		}
+	}
+
+	@Override
+	public float getContrast() {
+		return (invert)?1f-contrast:contrast;
+	}
+
+	@Override
+	public float brighten() {
+		return contrast = Math.min(1f, contrast + .1f);
+	}
+
+	@Override
+	public float darken() {
+		return contrast = Math.max(0, contrast - .1f);
+	}
+	
+	public void invert() {
+		invert = !invert;
+	}
+	
+	public boolean isInverted() {
+		return invert;
+	}
+
+	@Override
+	public ShaderProgram getShader() {
+		return hueify;
+	}
+	
+	public BossListener getBossInput()
+	{
+		return boss;
 	}
 }

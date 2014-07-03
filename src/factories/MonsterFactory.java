@@ -123,7 +123,7 @@ public class MonsterFactory {
 	 * @param layer - list of rooms to lock each monster into
 	 * @return an array of all the monsters that have just been created and added to the world
 	 */
-	public Array<Entity> makeMonsters(World world, int size, TiledMapTileLayer layer, ItemFactory lootMaker)
+	public Array<Entity> makeMonsters(World world, int size, TiledMapTileLayer layer, ItemFactory lootMaker, int floor)
 	{
 		Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
 		Array<Entity> monsters = new Array<Entity>();
@@ -134,7 +134,7 @@ public class MonsterFactory {
 		for (int i = 0; i < size; i++)
 		{
 			MonsterTemplate t = selection.random();
-			Entity monster = create(world, t, lootMaker.createItem());
+			Entity monster = create(world, t, lootMaker.createItem(), floor);
 			monster.addComponent(new Monster());
 			
 			//add its position into a random room
@@ -164,15 +164,15 @@ public class MonsterFactory {
 	 * @param t - template we use to base our entity from
 	 * @return an entity
 	 */
-	private Entity create(World world, MonsterTemplate t, Item item)
+	private Entity create(World world, MonsterTemplate t, Item item, int floor)
 	{
 		Entity e = world.createEntity();
 		e.addComponent(new Stats(t.hp, 
 								MathUtils.random(20), 
-								(int)(MathUtils.random(.75f, 1.1f)*t.str), 
-								(int)(MathUtils.random(.5f, 1.1f)*t.def), 
+								(int)(MathUtils.random(.65f+(floor / 10f), 1.0f+(floor / 10f))*t.str), 
+								(int)(MathUtils.random(.4f+(floor / 10f), 1.0f+(floor / 10f))*t.def), 
 								t.mag,
-								(int)(MathUtils.random(.3f, 1.1f)*t.spd)
+								(int)(MathUtils.random(.2f+(floor / 10f), 1.0f+(floor / 10f))*t.spd)
 							));
 		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective()));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
