@@ -1,24 +1,28 @@
 package scenes.newgame;
 
-import scenes.SceneManager;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
 import core.DataDirs;
-import core.common.Storymode;
+import core.common.BossListener;
+import core.common.SceneManager;
+import core.service.IGame;
+import core.service.Inject;
 
 public class Scene extends scenes.Scene<NewUI> {
 
 	private Music bgm;
 	
+	@Inject public IGame gameService;
+	
 	@Override
 	public void extend(float delta) {
 		if (ui.isDone())
 		{
-			Storymode.startGame(ui.getDifficulty());
+			
+			gameService.startGame(ui.getDifficulty());
 			SceneManager.switchToScene("town");
 			return;
 		}
@@ -49,7 +53,8 @@ public class Scene extends scenes.Scene<NewUI> {
 		
 		InputMultiplexer input = new InputMultiplexer();
 		input.addProcessor(ui);
-		input.addProcessor(getService().getBossInput());
+		input.addProcessor(BossListener.getInstance());
+		
 		Gdx.input.setInputProcessor(input);
 	}
 	
@@ -60,8 +65,6 @@ public class Scene extends scenes.Scene<NewUI> {
 		bgm.play();
 		
 		ui.prepareStory();
-		
-		ui.clear();
 	}
 	
 	@Override

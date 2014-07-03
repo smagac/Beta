@@ -24,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import components.Stats;
 import core.DataDirs;
 import core.datatypes.Inventory;
+import core.service.IPlayerContainer;
 
 /**
  * Base UI for adventuring in the town
@@ -58,9 +59,14 @@ public abstract class GameUI extends UI {
 	private Label hpStats;
 	private Label expStats;
 	
-	public GameUI(Scene<? extends GameUI> scene, AssetManager manager)
+	private IPlayerContainer playerService;
+	
+	public GameUI(Scene<? extends GameUI> scene, AssetManager manager, IPlayerContainer playerService)
 	{
 		super(scene, manager);
+		
+		this.playerService = playerService;
+		
 		buttonList = new HorizontalGroup();
 		buttons = new ButtonGroup();
 		
@@ -393,15 +399,15 @@ public abstract class GameUI extends UI {
 	public final void act(float delta)
 	{
 		//update time
-		timeStats.setText(String.format(timeFormat, getService().getTimeElapsed()));
+		timeStats.setText(String.format(timeFormat, playerService.getTimeElapsed()));
 		
 		//update stats
-		Stats s = getService().getPlayer();
+		Stats s = playerService.getPlayer();
 		levelStats.setText(String.format(levelFormat, s.getLevel()));
 		hpStats.setText(String.format(hpFormat, s.hp, s.maxhp));
 		expStats.setText(String.format(expFormat, s.exp, s.nextExp));
 		//update progress
-		Inventory i = getService().getInventory();
+		Inventory i = playerService.getInventory();
 		craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
 		
 		//update animations
@@ -423,7 +429,7 @@ public abstract class GameUI extends UI {
 		
 		//hide display during rendering of the stage
 		display.setVisible(false);
-		draw();
+		super.draw();
 
 		//make sure it's set as visible so it accepts input between frames
 		display.setVisible(true);

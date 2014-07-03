@@ -14,6 +14,9 @@ import core.common.BossListener;
 import core.common.Tracker;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.service.IDungeonContainer;
+import core.service.IPlayerContainer;
+import core.service.Inject;
 
 public class Scene extends scenes.Scene<WanderUI> {
 
@@ -26,7 +29,10 @@ public class Scene extends scenes.Scene<WanderUI> {
 	private String bgmName;
 	private Music bgm;
 	
-	private InputMultiplexer input;
+	@Inject public IDungeonContainer dungeonService;
+	@Inject public IPlayerContainer playerService;
+	
+	InputMultiplexer input;
 	
 	public void setDungeon(FileType type, int difficulty)
 	{
@@ -36,14 +42,14 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	@Override
 	public void extend(float delta) {
-		World floor = getService().getDungeon().get(currentFloor);
+		World floor = dungeonService.getDungeon().get(currentFloor);
 		floor.setDelta(delta);
 		floor.process();
 		
 		ui.act(delta);
 		ui.draw();
 	}
-
+	
 	@Override
 	public void resize(int width, int height) {
 		ui.resize(width, height);
@@ -55,14 +61,12 @@ public class Scene extends scenes.Scene<WanderUI> {
 		manager.load(DataDirs.hit, Sound.class);
 		manager.load(DataDirs.dead, Sound.class);
 		
-		ui = new WanderUI(this, manager);
+		ui = new WanderUI(this, manager, playerService, dungeonService);
 		
 		loot = new ObjectMap<Item, Integer>();
 		
 		bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2));
 		manager.load(bgmName, Music.class);
-		
-		input = new InputMultiplexer();
 	}
 
 	@Override
@@ -96,30 +100,27 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	public void changeFloor(int i)
 	{
-		if (i < 0 || i >= getService().getDungeon().size)
+		if (i < 0 || i >= dungeonService.getDungeon().size)
 		{
 			leave();
 			return;
 		}
 		
 		//remove self from old floor
-		World floor = getService().getDungeon().get(currentFloor);
+		World floor = dungeonService.getDungeon().get(currentFloor);
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
 		//ms.setScene(null);
 		
+		input.removeProcessor(ms);
+		
 		currentFloor = i;
-		floor = getService().getDungeon().get(currentFloor);
+		floor = dungeonService.getDungeon().get(currentFloor);
 		ui.setFloor(floor);
 		ms = floor.getSystem(MovementSystem.class);
 		ms.setScene(this);
 		ms.hit = manager.get(DataDirs.hit, Sound.class);
 		
-		input.clear();
 		input.addProcessor(ms);
-		input.addProcessor(ui);
-		input.addProcessor(new BossListener(getService()));
-		
-		Gdx.input.setInputProcessor(input);
 	}
 	
 	protected void dead()
@@ -127,12 +128,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 		ui.dead();
 		Tracker.NumberValues.Times_Died.increment();
 		manager.get(DataDirs.dead, Sound.class).play();
-		//remove input from stage
-		input.clear();
-		input.addProcessor(ui);
-		input.addProcessor(new BossListener(getService()));
-		
-		Gdx.input.setInputProcessor(input);
+		((InputMultiplexer)Gdx.input.getInputProcessor()).addProcessor(ui);
 	}
 	
 	protected void leave()
@@ -140,13 +136,10 @@ public class Scene extends scenes.Scene<WanderUI> {
 		ui.leave();
 		
 		//merge loot into inventory
-		getService().getInventory().merge(this.loot);
+		playerService.getInventory().merge(this.loot);
 		
 		//remove input from stage
-		input.clear();
-		input.addProcessor(ui);
-		input.addProcessor(getService().getBossInput());
-		Gdx.input.setInputProcessor(input);
+		((InputMultiplexer)Gdx.input.getInputProcessor()).addProcessor(ui);
 	}
 	
 	/**
@@ -166,11 +159,18 @@ public class Scene extends scenes.Scene<WanderUI> {
 
 	@Override
 	protected void init() {
+		input = new InputMultiplexer();
+		
 		ui.init();
-		getService().newDungeon(manager, fileType, difficulty);
+		dungeonService.newDungeon(manager, fileType, difficulty);
 		changeFloor(0);
 		bgm = manager.get(bgmName, Music.class);
 		bgm.setLooping(true);
 		bgm.play();
+		
+		input.addProcessor(ui);
+		input.addProcessor(BossListener.getInstance());
+		
+		Gdx.input.setInputProcessor(input);
 	}
 }

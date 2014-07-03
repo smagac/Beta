@@ -1,8 +1,8 @@
+package core.common;
+
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-
-import core.common.Storymode;
 
 public class SMRunner {
 

@@ -3,7 +3,8 @@ package scenes;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 
-import core.common.Storymode;
+import core.service.IColorMode;
+import core.service.Inject;
 
 /**
  * Generic scene class with injectable service support and provided assumed ui
@@ -18,7 +19,8 @@ public abstract class Scene<View extends UI> implements Screen {
 	 */
 	protected final AssetManager manager;
 	
-	private Storymode service;
+	@Inject public IColorMode color;
+	
 	protected View ui;
 	
 	private boolean loaded;
@@ -28,20 +30,10 @@ public abstract class Scene<View extends UI> implements Screen {
 		manager = new AssetManager();
 	}
 	
-	protected Storymode getService()
-	{
-		return service;
-	}
-	
 	@Override
 	public void resize(int width, int height)
 	{
 		ui.resize(width, height);
-	}
-	
-	protected void setService(Storymode service)
-	{
-		this.service = service;
 	}
 	
 	@Override
@@ -58,7 +50,7 @@ public abstract class Scene<View extends UI> implements Screen {
 			loaded = true;
 		}
 		
-		ui.getBatch().setShader(getService().getShader());
+		ui.getBatch().setShader(color.getShader());
 		ui.act(delta);
 		
 		extend(delta);

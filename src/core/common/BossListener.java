@@ -1,23 +1,39 @@
 package core.common;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Input.Keys;
 
 import core.Palette;
 import core.service.IColorMode;
+import core.service.IGame;
 
 public class BossListener implements InputProcessor {
 
-	private IColorMode service;
-	
-	public BossListener(IColorMode service)
+	private static BossListener instance;
+	public static BossListener getInstance()
 	{
-		this.service = service;
+		return instance;
 	}
 	
-	public IColorMode getService()
+	private IColorMode color;
+	private IGame game;
+	
+	protected BossListener(IColorMode colorService, IGame gameService)
 	{
-		return service;
+		this.color = colorService;
+		this.game = gameService;
+		instance = this;
+	}
+	
+	public IColorMode getColorService()
+	{
+		return color;
+	}
+	
+	public IGame getGameService()
+	{
+		return game;
 	}
 	
 	@Override
@@ -28,14 +44,34 @@ public class BossListener implements InputProcessor {
 		
 		if (keycode == Keys.NUM_1) { nextCol = Palette.Original; }
 		if (keycode == Keys.NUM_2) { nextCol = Palette.Gameboy; }
-		if (keycode == Keys.MINUS) { getService().darken(); }
-		if (keycode == Keys.EQUALS) { getService().brighten(); }
+		if (keycode == Keys.MINUS) { getColorService().darken(); }
+		if (keycode == Keys.EQUALS) { getColorService().brighten(); }
 		
 		if (nextCol != null)
 		{
-			getService().setPalette(nextCol);
+			getColorService().setPalette(nextCol);
 			return true;
 		}
+		
+		if (keycode == Keys.F9)
+		{
+			getGameService().startGame(3);
+			return true;
+		}
+		if (keycode == Keys.F10)
+		{
+			getGameService().fastStart();
+		}
+		
+		//fullscreen toggle
+		if (keycode == Keys.ENTER)
+		{
+			if (Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT))
+			{
+				getGameService().toggleFullscreen();
+			}
+		}
+		
 		return false;
 	}
 

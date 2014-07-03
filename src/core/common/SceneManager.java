@@ -1,10 +1,13 @@
-package scenes;
+package core.common;
 
+
+import java.lang.reflect.Field;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import core.common.Storymode;
+import core.service.Inject;
+import core.service.Service;
 
 /**
  * Very simple manager for storing all saved scene names.  Much like a route
@@ -46,10 +49,20 @@ public class SceneManager {
 			Screen s;
 			try {
 				s = c.newInstance();
-				if (s instanceof Scene<?>)
+
+				Field[] fields = s.getClass().getFields();
+				for (Field f : fields)
 				{
-					((Scene<?>)s).setService(service);
+					Inject anno = f.getAnnotation(Inject.class);
+					if (anno != null && Service.class.isAssignableFrom(f.getType()))
+					{
+						f.setAccessible(true);
+						@SuppressWarnings("unchecked")
+						Class<? extends Service> type = (Class<? extends Service>) f.getType();
+						f.set(s, type.cast(service));
+					}
 				}
+
 				return s;
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();

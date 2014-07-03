@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 import core.Palette;
 
-public interface IColorMode {
+public interface IColorMode extends Service {
 
 	public Palette getPalette();
 	public void setPalette(Palette p);

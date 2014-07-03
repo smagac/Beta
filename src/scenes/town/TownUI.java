@@ -2,7 +2,6 @@ package scenes.town;
 
 import java.io.File;
 
-import scenes.SceneManager;
 import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
@@ -33,9 +32,11 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
+import core.common.SceneManager;
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.service.IPlayerContainer;
 
 public class TownUI extends GameUI {
 
@@ -69,8 +70,11 @@ public class TownUI extends GameUI {
 	private ButtonGroup craftTabs;
 	FileHandle queueDir;
 	
-	public TownUI(Scene scene, AssetManager manager) {
-		super(scene, manager);
+	private final IPlayerContainer player;
+	
+	public TownUI(Scene scene, AssetManager manager, IPlayerContainer player) {
+		super(scene, manager, player);
+		this.player = player;
 	}
 	
 	@Override
@@ -142,7 +146,7 @@ public class TownUI extends GameUI {
 						if (myButton.isChecked())
 						{
 							manager.get(DataDirs.tick, Sound.class).play();
-							craftList.setItems(getService().getInventory().getRequiredCrafts());
+							craftList.setItems(player.getInventory().getRequiredCrafts());
 							craftList.setSelectedIndex(0);
 						}
 					}
@@ -161,7 +165,7 @@ public class TownUI extends GameUI {
 					{
 						if (todayButton.isChecked())
 						{
-							craftList.setItems(getService().getInventory().getTodaysCrafts());
+							craftList.setItems(player.getInventory().getTodaysCrafts());
 							craftList.setSelectedIndex(0);
 						}
 					}
@@ -173,7 +177,7 @@ public class TownUI extends GameUI {
 			
 			//list of required crafts
 			craftList = new List<Craftable>(skin);
-			craftList.setItems(getService().getInventory().getRequiredCrafts());
+			craftList.setItems(player.getInventory().getRequiredCrafts());
 			craftList.addListener(new ChangeListener(){
 
 				@Override
@@ -488,7 +492,7 @@ public class TownUI extends GameUI {
 				Craftable c = craftList.getSelected();
 				if (c != null)
 				{
-					boolean made = getService().getInventory().makeItem(c);
+					boolean made = player.getInventory().makeItem(c);
 					setMessage((made)?"Crafted an item!":"Not enough materials");
 					populateLoot();
 				}
@@ -502,7 +506,7 @@ public class TownUI extends GameUI {
 		{
 			if (index == 1 || index == 2)
 			{
-				if (getService().getPlayer().hp <= 0)
+				if (player.getPlayer().hp <= 0)
 				{
 					setMessage("You need to rest first!");
 				}
@@ -574,7 +578,7 @@ public class TownUI extends GameUI {
 		lootList.clear();
 		lootList.top().left();
 		
-		ObjectMap<Item, Integer> loot = getService().getInventory().getLoot();
+		ObjectMap<Item, Integer> loot = player.getInventory().getLoot();
 		if (loot.keys().hasNext)
 		{
 			lootList.setWidth(lootPane.getWidth());
@@ -605,7 +609,7 @@ public class TownUI extends GameUI {
 	{
 		menu = CRAFT;
 		//populate the submenu's data
-		craftList.setItems(getService().getInventory().getRequiredCrafts());	
+		craftList.setItems(player.getInventory().getRequiredCrafts());	
 		requirementList.clear();
 		craftTabs.setChecked(craftTabs.getButtons().first().getName());
 		//create loot menu
@@ -670,10 +674,10 @@ public class TownUI extends GameUI {
 
 				@Override
 				public void run() {
-					getService().rest();
+					player.rest();
 					
 					//new crafts appear each day!
-					getService().getInventory().refreshCrafts();
+					player.getInventory().refreshCrafts();
 				}
 				
 			}),

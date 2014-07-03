@@ -4,10 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 
+import core.common.BossListener;
+import core.service.IPlayerContainer;
+import core.service.Inject;
+
 public class Scene extends scenes.Scene<TownUI> {
 
 	Music bgm;
 
+	@Inject public IPlayerContainer playerService;
+	
 	@Override
 	public void resize(int width, int height) {
 		((TownUI)ui).resize(width, height);
@@ -15,16 +21,16 @@ public class Scene extends scenes.Scene<TownUI> {
 
 	@Override
 	public void show() {
-		ui = new TownUI(this, manager);
+		ui = new TownUI(this, manager, playerService);
 		manager.load("data/audio/town.mp3", Music.class);
 		
 		InputMultiplexer input = new InputMultiplexer();
 		input.addProcessor(ui);
-		input.addProcessor(getService().getBossInput());
+		input.addProcessor(BossListener.getInstance());
 		Gdx.input.setInputProcessor(input);
 		
 		//new crafts appear when you return to town
-		getService().getInventory().refreshCrafts();
+		playerService.getInventory().refreshCrafts();
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package scenes.dungeon;
 
-import scenes.SceneManager;
 import scenes.GameUI;
 
 import com.artemis.World;
@@ -27,8 +26,11 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import components.Stats;
+import core.common.SceneManager;
 import core.common.Tracker;
 import core.datatypes.Item;
+import core.service.IDungeonContainer;
+import core.service.IPlayerContainer;
 import scenes.Scene;
 
 public class WanderUI extends GameUI {
@@ -59,9 +61,15 @@ public class WanderUI extends GameUI {
 	private ScrollPane lootPane;
 	private ScrollPane sacrificePane;
 	
+	private final IPlayerContainer playerService;
+	private final IDungeonContainer dungeonService;
 	
-	public WanderUI(Scene<WanderUI> scene, AssetManager manager) {
-		super(scene, manager);
+	
+	public WanderUI(Scene<WanderUI> scene, AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
+		super(scene, manager, playerService);
+		
+		this.playerService = playerService;
+		this.dungeonService = dungeonService;
 		
 		loot = new ObjectMap<Item, Integer>();
 		sacrifices = new ObjectMap<Item, Integer>();
@@ -236,12 +244,12 @@ public class WanderUI extends GameUI {
 
 	private void sacrifice()
 	{
-		if (getService().getInventory().sacrifice(this.sacrifices, (menu == 1) ? this.healCost : this.floorNum))
+		if (playerService.getInventory().sacrifice(this.sacrifices, (menu == 1) ? this.healCost : this.floorNum))
 		{
 			hideGoddess();
 			if (menu == 1)
 			{
-				Stats s = getService().getPlayer();
+				Stats s = playerService.getPlayer();
 				s.hp = s.maxhp;
 				for (int i = 0; i < this.sacrifices.size; i++)
 				{
@@ -272,7 +280,7 @@ public class WanderUI extends GameUI {
 	}
 
 	private void showGoddess(String string) {
-		getService().getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(false);
+		dungeonService.getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(false);
 		gMsg.setText(string);
 		
 		goddess.clearActions();
@@ -287,7 +295,7 @@ public class WanderUI extends GameUI {
 	}
 	
 	private void hideGoddess() {
-		getService().getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(true);
+		dungeonService.getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(true);
 		goddess.clearActions();
 		goddessDialog.clearActions();
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));
@@ -300,7 +308,7 @@ public class WanderUI extends GameUI {
 		itemSubmenu.clearActions();
 		
 		//make clone so we can work with it
-		this.loot = new ObjectMap<Item, Integer>(getService().getInventory().getLoot());
+		this.loot = new ObjectMap<Item, Integer>(playerService.getInventory().getLoot());
 		
 		sacrifices.clear();
 		

@@ -14,20 +14,17 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 
 import core.DataDirs;
-import core.common.Storymode;
 
 public abstract class UI extends Stage {
 
 	protected Skin skin;
 	protected Scene<?> parent;
 	protected AssetManager manager;
-	private Storymode service;
 	
 	public UI(Scene<?> scene, AssetManager manager)
 	{
 		super(new ScalingViewport(Scaling.fit, 960, 540));
 		this.parent = scene;
-		this.service = scene.getService();
 		this.manager = manager;
 		manager.load("data/uiskin.json", Skin.class);
 
@@ -116,11 +113,6 @@ public abstract class UI extends Stage {
 		}
 
 		return group;
-	}
-	
-	protected final Storymode getService()
-	{
-		return service;
 	}
 	
 	public void resize(int width, int height){

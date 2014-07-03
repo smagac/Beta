@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
+import core.common.SceneManager;
 import scenes.Scene;
-import scenes.SceneManager;
 import scenes.UI;
 
 public class TitleSequence extends UI {

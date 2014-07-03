@@ -1,6 +1,6 @@
 package core.common;
 
-import scenes.SceneManager;
+
 import scenes.dungeon.MovementSystem;
 
 import com.artemis.Entity;
@@ -8,7 +8,6 @@ import com.artemis.World;
 import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
@@ -27,13 +26,15 @@ import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.service.IColorMode;
+import core.service.IDungeonContainer;
+import core.service.IGame;
+import core.service.IPlayerContainer;
 import factories.AdjectiveFactory;
 import factories.DungeonFactory;
 import factories.MonsterFactory;
 
-public class Storymode extends com.badlogic.gdx.Game implements IColorMode {
+public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, IPlayerContainer, IDungeonContainer {
 
-	private static Storymode instance;
 	private Stats player;
 	private float time;
 	private Inventory inventory;
@@ -56,9 +57,17 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode {
 	
 	private BossListener boss;
 	
+	protected Storymode(){}
+	
 	@Override
 	public void create() {
-	    
+		boss = new BossListener(this, this);
+		hueify = new ShaderProgram(Gdx.files.classpath("core/util/bg.vertex.glsl"), Gdx.files.classpath("core/util/bg.fragment.glsl"));
+		if (!hueify.isCompiled()){
+			(new GdxRuntimeException(hueify.getLog())).printStackTrace();
+			System.exit(-1);
+		}
+		
 		//setup all factory resources
 		Item.init();
 		MonsterFactory.init();
@@ -70,19 +79,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode {
 		SceneManager.register("title", scenes.title.Scene.class);
 		SceneManager.register("newgame", scenes.newgame.Scene.class);
 		
-		
 		SceneManager.switchToScene("title");
-		
-		hueify = new ShaderProgram(Gdx.files.classpath("core/util/bg.vertex.glsl"), Gdx.files.classpath("core/util/bg.fragment.glsl"));
-		if (!hueify.isCompiled()){
-			(new GdxRuntimeException(hueify.getLog())).printStackTrace();
-			System.exit(-1);
-		}
-		
-		boss = new BossListener(this);
-		
-		instance = this;
-		
 		
 		//test dungeon
 		/*
@@ -93,16 +90,52 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode {
 		*/
 	}
 
-	public static void startGame(int difficulty) {
+	public void startGame(int difficulty) {
 		
 		//make a player
-		instance.player = new Stats(10, 0, MathUtils.random(10), 5, 5, 5, 50);
+		player = new Stats(10, 0, MathUtils.random(10), 5, 5, 5, 50);
 
 		//make crafting requirements
-		instance.inventory = new Inventory(difficulty);
+		inventory = new Inventory(difficulty);
 		
 		//reset game clock
-		instance.time = 0f;
+		time = 0f;
+	}
+	
+	/**
+	 * Reset back to the title
+	 */
+	public void softReset()
+	{
+		player = null;
+		inventory = null;
+		time = 0f;
+		
+		SceneManager.switchToScene("title");
+	}
+	
+	/**
+	 * Skip all the title sequence and story and just jump into a normal difficulty game
+	 */
+	public void fastStart()
+	{
+		startGame(3);
+		SceneManager.switchToScene("town");
+	}
+	
+	public void toggleFullscreen()
+	{
+		if (fullscreen)
+		{
+			Gdx.graphics.setDisplayMode(InternalRes[0], InternalRes[1], false);
+			fullscreen = false;
+		}
+		else
+		{
+			DisplayMode dm = Gdx.graphics.getDesktopDisplayMode();
+			Gdx.graphics.setDisplayMode(dm.width, dm.height, true);
+			fullscreen = true;
+		}
 	}
 	
 	public String getTimeElapsed()
@@ -165,32 +198,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode {
 		time += delta;
 		
 		this.getScreen().render(delta);
-		
-		//quick reset debug
-		if (Gdx.input.isKeyPressed(Keys.F9))
-		{
-			SceneManager.switchToScene("title");
-		}
-		else if (Gdx.input.isKeyPressed(Keys.F10))
-		{
-			startGame(3);
-			SceneManager.switchToScene("town");
-		}
-		
-		if ((Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT)) && Gdx.input.isKeyPressed(Keys.ENTER))
-		{
-			if (fullscreen)
-			{
-				Gdx.graphics.setDisplayMode(InternalRes[0], InternalRes[1], false);
-				fullscreen = false;
-			}
-			else
-			{
-				DisplayMode dm = Gdx.graphics.getDesktopDisplayMode();
-				Gdx.graphics.setDisplayMode(dm.width, dm.height, true);
-				fullscreen = true;
-			}	
-		}
 	}
 	
 	@Override

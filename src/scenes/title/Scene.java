@@ -1,13 +1,14 @@
 package scenes.title;
 
-import scenes.SceneManager;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+
+import core.common.BossListener;
+import core.common.SceneManager;
 
 public class Scene extends scenes.Scene<TitleSequence> {
 	
@@ -59,9 +60,8 @@ public class Scene extends scenes.Scene<TitleSequence> {
 		
 		InputMultiplexer input = new InputMultiplexer();
 		input.addProcessor(ui);
-		input.addProcessor(getService().getBossInput());
+		input.addProcessor(BossListener.getInstance());
 		Gdx.input.setInputProcessor(input);
-		
 	}
 	
 	private void showDiffSelection()
