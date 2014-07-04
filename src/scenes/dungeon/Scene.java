@@ -1,6 +1,7 @@
 package scenes.dungeon;
 
 import com.artemis.World;
+import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
@@ -47,7 +48,10 @@ public class Scene extends scenes.Scene<WanderUI> {
 		fileType = FileType.getType(file.extension());
 		if (fileType == FileType.Audio)
 		{
-			bgmName = file.file().getAbsolutePath();
+			if (file.extension().matches("(mp3|ogg|wav)"))
+			{
+				bgmName = file.file().getAbsolutePath();
+			}
 		}
 		this.difficulty = difficulty;
 	}
