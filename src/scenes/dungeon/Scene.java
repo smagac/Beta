@@ -144,21 +144,28 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	protected void dead()
 	{
+		World floor = dungeonService.getDungeon().get(currentFloor);
+		MovementSystem ms = floor.getSystem(MovementSystem.class);
 		ui.dead();
 		Tracker.NumberValues.Times_Died.increment();
 		manager.get(DataDirs.dead, Sound.class).play();
-		((InputMultiplexer)Gdx.input.getInputProcessor()).addProcessor(ui);
+		input.removeProcessor(ms);
+		input.addProcessor(ui);
 	}
 	
 	protected void leave()
 	{
+		World floor = dungeonService.getDungeon().get(currentFloor);
+		MovementSystem ms = floor.getSystem(MovementSystem.class);
+		
 		ui.leave();
 		
 		//merge loot into inventory
 		playerService.getInventory().merge(this.loot);
 		
 		//remove input from stage
-		((InputMultiplexer)Gdx.input.getInputProcessor()).addProcessor(ui);
+		input.removeProcessor(ms);
+		input.addProcessor(ui);
 	}
 	
 	/**

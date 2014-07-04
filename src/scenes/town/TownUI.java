@@ -596,8 +596,8 @@ public class TownUI extends GameUI {
 			lootList.pad(10f);
 			for (Item item : loot.keys())
 			{
-				TextButton l = new TextButton(item.toString(), skin);
-				l.setDisabled(true);
+				Label l = new Label(item.toString(), skin, "smaller");
+				l.setAlignment(Align.left);
 				lootList.add(l).expandX().fillX();
 				Label i = new Label(""+loot.get(item), skin, "smaller");
 				i.setAlignment(Align.right);

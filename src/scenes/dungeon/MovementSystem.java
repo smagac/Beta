@@ -8,6 +8,7 @@ import com.artemis.managers.GroupManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -62,22 +63,43 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		return true;
 	}
 	
-	protected boolean checkTile(int x, int y, Entity e)
+	/**
+	 * Checks to see if a tile is specifically of type wall
+	 * @param x
+	 * @param y
+	 * @return true if tile is not passable or if it is out of bounds
+	 */
+	protected boolean isWall(int x, int y)
 	{
 		if ((x < 0 || x >= collision.length) || (y < 0 || y >= collision.length))
-			return false;
-		
-		boolean passable;
-		passable = collision[x][y];
-		for (int i = 0; i < monsters.size() && passable; i++)
+			return true;
+		return !collision[x][y];
+	}
+	
+	/**
+	 * Checks to see if an entity can move to a tile
+	 * @param x
+	 * @param y
+	 * @param e - the entity to move
+	 * @return true if there is no other entity or wall blocking its way
+	 */
+	protected boolean checkTile(int x, int y, Entity e)
+	{
+		boolean passable = !isWall(x, y);
+		if (monsters != null)
 		{
-			Entity monster = monsters.get(i);
-			Position p = positionMap.get(monster);
+			for (int i = 0; i < monsters.size() && passable; i++)
+			{
+				Entity monster = monsters.get(i);
+				Position p = positionMap.get(monster);
+				passable = !(p.getX() == x && p.getY() == y);
+			}
+		}
+		if (passable)
+		{
+			Position p = positionMap.get(player);
 			passable = !(p.getX() == x && p.getY() == y);
 		}
-		Position p = positionMap.get(player);
-		passable = passable && !(p.getX() == x && p.getY() == y);
-		
 		return passable;
 	}
 	
@@ -280,40 +302,45 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		if (!enabledInput)
 			return false;
 		
-		Position playerPos = positionMap.get(player);
-		int x = playerPos.getX();
-		int y = playerPos.getY();
 		boolean moved = false;
-		if (keycode == Keys.UP || keycode == Keys.W)
-		{
-			y++;
-			moved = true;
-		}
-		if (keycode == Keys.DOWN || keycode == Keys.S)
-		{
-			y--;
-			moved = true;
-		}
-		if (keycode == Keys.LEFT || keycode == Keys.A)
-		{
-			x--;
-			moved = true;
-		}
-		if (keycode == Keys.RIGHT || keycode == Keys.D)
-		{
-			x++;
-			moved = true;
-		}
 		
-		if (moved) {
-			//make sure enemy list is populated at least once
-			if (monsters == null)
+		//allow 2 turn dashing
+		for (int i = 0; i < (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)?2:1); i++)
+		{
+			Position playerPos = positionMap.get(player);
+			int x = playerPos.getX();
+			int y = playerPos.getY();
+			if (keycode == Keys.UP || keycode == Keys.W)
 			{
-				begin();
+				y++;
+				moved = true;
 			}
-			moveTo(x, y, player);
-			//execute a turn
-			process();
+			if (keycode == Keys.DOWN || keycode == Keys.S)
+			{
+				y--;
+				moved = true;
+			}
+			if (keycode == Keys.LEFT || keycode == Keys.A)
+			{
+				x--;
+				moved = true;
+			}
+			if (keycode == Keys.RIGHT || keycode == Keys.D)
+			{
+				x++;
+				moved = true;
+			}
+			
+			if (!isWall(x, y)) {
+				//make sure enemy list is populated at least once
+				if (monsters == null)
+				{
+					begin();
+				}
+				moveTo(x, y, player);
+				//execute a turn
+				process();
+			}
 		}
 		
 		return moved;
@@ -366,11 +393,31 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 			{
 				int dX = 0;
 				int dY = 0;
+				boolean priority = MathUtils.randomBoolean();
 				
-				if (p.getX() < m.getX()) dX = -1;
-				if (p.getX() > m.getX()) dX = 1;
-				if (p.getY() < m.getY()) dY = -1;
-				if (p.getY() > m.getY()) dY = 1;
+				//horizontal priority flip
+				if (priority)
+				{
+					if (p.getX() < m.getX()) dX = -1;
+					if (p.getX() > m.getX()) dX = 1;
+					if (dX == 0)
+					{
+						if (p.getY() < m.getY()) dY = -1;
+						if (p.getY() > m.getY()) dY = 1;
+					}
+						
+				}
+				//vertical priority
+				else
+				{
+					if (p.getY() < m.getY()) dY = -1;
+					if (p.getY() > m.getY()) dY = 1;
+					if (dY == 0)
+					{
+						if (p.getX() < m.getX()) dX = -1;
+						if (p.getX() > m.getX()) dX = 1;
+					}
+				}
 				
 				//follow player chance
 				moveTo(m.getX() + dX, m.getY() + dY, e);
