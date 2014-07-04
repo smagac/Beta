@@ -297,7 +297,7 @@ public class TownUI extends GameUI {
 			
 			loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));
 			changeDir = false;
-			
+
 			fileList.addListener(new ChangeListener(){
 
 				@Override
@@ -308,8 +308,6 @@ public class TownUI extends GameUI {
 						event.cancel();
 						return;
 					}
-					
-					manager.get(DataDirs.tick, Sound.class).play();
 					
 					fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 					
@@ -322,6 +320,7 @@ public class TownUI extends GameUI {
 					}
 					catch (java.lang.IndexOutOfBoundsException e)
 					{
+						listIndex = 0;
 						System.out.println("file loader derp");
 						return;
 					}
@@ -330,6 +329,8 @@ public class TownUI extends GameUI {
 					{
 						//go to parent directory
 						queueDir = directory.parent();
+						manager.get(DataDirs.tick, Sound.class).play();
+						return;
 					}
 					else if (selected != null)
 					{
@@ -340,7 +341,6 @@ public class TownUI extends GameUI {
 							
 							if (lastIndex == listIndex)
 							{
-								lastIndex = -2;
 								changeDir = true;
 								fileList.setItems();
 								fileList.addAction(Actions.sequence(
@@ -355,6 +355,7 @@ public class TownUI extends GameUI {
 									}),
 									Actions.moveTo(0, 0, .3f)
 								));
+								return;
 							}
 						}
 						else
@@ -388,12 +389,14 @@ public class TownUI extends GameUI {
 							fileDetails.add(pane2).expand().fill();
 							fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
 						}
-					
 					}
-
+					
+					if (lastIndex != -1)
+					{
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
 					lastIndex = listIndex;
 				}
-
 			});
 			
 			final ScrollPane pane = new ScrollPane(fileList, skin);
@@ -434,6 +437,7 @@ public class TownUI extends GameUI {
 	}
 	
 	private void loadDir(FileHandle external) {
+		lastIndex = -1;
 		//disable input while loading directory
 		InputProcessor input = Gdx.input.getInputProcessor();
 		Gdx.input.setInputProcessor(null);
@@ -470,6 +474,7 @@ public class TownUI extends GameUI {
 		}
 		
 		this.fileList.setItems(paths);
+		this.fileList.setSelectedIndex(0);
 		this.directoryList = acceptable;
 		this.directory = external;
 		this.fileList.act(0f);
