@@ -37,6 +37,8 @@ import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.IPlayerContainer;
+import core.util.FileSort;
+import core.util.PathSort;
 
 public class TownUI extends GameUI {
 
@@ -440,11 +442,6 @@ public class TownUI extends GameUI {
 		Array<FileHandle> acceptable = new Array<FileHandle>();
 		Array<String> paths = new Array<String>();
 		
-		if (external.parent() != null || !external.path().equals(external.parent().path()))
-		{
-			paths.add("..");
-			acceptable.add(null);
-		}
 		for (FileHandle handle : handles)
 		{
 			File f = handle.file();
@@ -461,6 +458,15 @@ public class TownUI extends GameUI {
 			
 			acceptable.add(handle);
 			paths.add(path);
+		}
+		
+		paths.sort(new PathSort());
+		acceptable.sort(new FileSort());
+		
+		if (external.parent() != null || !external.path().equals(external.parent().path()))
+		{
+			paths.insert(0, "..");
+			acceptable.insert(0, null);
 		}
 		
 		this.fileList.setItems(paths);
