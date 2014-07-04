@@ -293,7 +293,7 @@ public class TownUI extends GameUI {
 			//list of required crafts
 			fileList = new List<String>(skin);
 			
-			loadDir(Gdx.files.external("/"));
+			loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));
 			changeDir = false;
 			
 			fileList.addListener(new ChangeListener(){
