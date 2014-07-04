@@ -288,12 +288,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 
 	@Override
 	public float brighten() {
-		return contrast = Math.min(1f, contrast + .1f);
+		return contrast = Math.min(.9f, contrast + .1f);
 	}
 
 	@Override
 	public float darken() {
-		return contrast = Math.max(0, contrast - .1f);
+		return contrast = Math.max(.1f, contrast - .1f);
 	}
 	
 	public void invert() {
