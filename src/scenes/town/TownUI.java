@@ -515,14 +515,15 @@ public class TownUI extends GameUI {
 					FileType ext = FileType.Other;
 					int diff = 1;
 					
+					scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
 					//load selected file dungeon
 					if (index == 1)
 					{
 						FileHandle f = directoryList.get(fileList.getSelectedIndex());
 						if (f != null && !f.isDirectory())
 						{
-							ext = FileType.getType(f.extension());
 							diff = ext.difficulty(f.length());
+							dungeon.setDungeon(f, diff);
 						}
 						else
 						{
@@ -534,9 +535,8 @@ public class TownUI extends GameUI {
 					{
 						ext = FileType.values()[MathUtils.random(FileType.values().length-1)];
 						diff = MathUtils.random(1, 5);
+						dungeon.setDungeon(ext, diff);
 					}
-					scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
-					dungeon.setDungeon(ext, diff);
 				
 					SceneManager.switchToScene(dungeon);
 					

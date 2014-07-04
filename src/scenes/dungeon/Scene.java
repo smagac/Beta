@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -38,6 +39,17 @@ public class Scene extends scenes.Scene<WanderUI> {
 	{
 		fileType = type;
 		this.difficulty = difficulty;
+		bgmName = null;
+	}
+	
+	public void setDungeon(FileHandle file, int difficulty)
+	{
+		fileType = FileType.getType(file.extension());
+		if (fileType == FileType.Audio)
+		{
+			bgmName = file.file().getAbsolutePath();
+		}
+		this.difficulty = difficulty;
 	}
 	
 	@Override
@@ -65,7 +77,10 @@ public class Scene extends scenes.Scene<WanderUI> {
 		
 		loot = new ObjectMap<Item, Integer>();
 		
-		bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2));
+		if (bgmName == null)
+		{
+			bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2));
+		}
 		manager.load(bgmName, Music.class);
 	}
 
