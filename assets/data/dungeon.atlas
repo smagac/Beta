@@ -67,30 +67,44 @@ horse
   orig: 16, 16
   offset: 0, 0
   index: -1
-ogre
+loot
   rotate: false
   xy: 132, 150
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-plant
+mimic
+  rotate: false
+  xy: 132, 150
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+ogre
   rotate: false
   xy: 150, 168
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-rat
+plant
   rotate: false
   xy: 168, 186
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-snake
+rat
   rotate: false
   xy: 2, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+snake
+  rotate: false
+  xy: 20, 20
   size: 16, 16
   orig: 16, 16
   offset: 0, 0

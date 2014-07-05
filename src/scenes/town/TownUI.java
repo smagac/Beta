@@ -1,6 +1,7 @@
 package scenes.town;
 
 import java.io.File;
+import java.util.Iterator;
 
 import scenes.GameUI;
 
@@ -16,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -42,37 +44,42 @@ import core.util.PathSort;
 
 public class TownUI extends GameUI {
 
-	Image sleepImg;
-	Group exploreImg;
-	Image craftImg;
-	Image character;
+	private Image sleepImg;
+	private Group exploreImg;
+	private Image craftImg;
+	private Image character;
 	
-	Table exploreSubmenu;
-	List<String> fileList;
-	Array<FileHandle> directoryList;
-	FileHandle directory;
-	Table fileDetails;
+	private Table exploreSubmenu;
+	private List<String> fileList;
+	private Array<FileHandle> directoryList;
+	private FileHandle directory;
+	private Table fileDetails;
 	
-	Table craftSubmenu;
-	Table lootSubmenu;
-	List<Craftable> craftList;
-	ScrollPane lootPane;
-	ScrollPane craftPane;
-	Table lootList;
-	Table requirementList;
+	private Table craftSubmenu;
+	private Table lootSubmenu;
+	private List<Craftable> craftList;
+	private ScrollPane lootPane;
+	private ScrollPane craftPane;
+	private Table lootList;
+	private Table requirementList;
 	
-	Array<Actor> focus;
+	private Image goddess;
+	private Group goddessDialog;
+	private Label gMsg;
 	
-	boolean changeDir;
-	int lastIndex = -1;
-	int menu = -1;
-	final int CRAFT = 2;
-	final int EXPLORE = 1;
-	final int SLEEP = 0;
+	private boolean changeDir;
+	private int lastIndex = -1;
 	private ButtonGroup craftTabs;
-	FileHandle queueDir;
+	private FileHandle queueDir;
 	
 	private final IPlayerContainer player;
+	
+	private int menu = -1;
+	private static final int GODDESS = 3;
+	private static final int CRAFT = 2;
+	private static final int EXPLORE = 1;
+	private static final int SLEEP = 0;
+	private Iterator<String> dialog;
 	
 	public TownUI(Scene scene, AssetManager manager, IPlayerContainer player) {
 		super(scene, manager, player);
@@ -432,6 +439,26 @@ public class TownUI extends GameUI {
 			display.addActor(fileDetails);
 			display.addActor(exploreSubmenu);
 		}
+
+		goddess = new Image(skin.getRegion("goddess"));
+		goddess.setSize(128f, 128f);
+		goddess.setScaling(Scaling.stretch);
+		goddessDialog = makeWindow(skin, 500, 150, true);
+		goddessDialog.setPosition(40f, display.getHeight()/2f-goddessDialog.getHeight()/2f);
+		Table gMessage = new Table();
+		gMessage.setFillParent(true);
+		gMessage.pad(36f);
+		gMsg = new Label("", skin, "small");
+		gMsg.setWrap(true);
+		gMessage.add(gMsg).expand().fill();
+		goddessDialog.addActor(gMessage);
+		
+		display.addActor(goddess);
+		display.addActor(goddessDialog);
+		
+		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f));
+		goddessDialog.addAction(Actions.alpha(0f));
+		
 		
 		setMessage("What're we doing next?");
 	}
@@ -480,7 +507,6 @@ public class TownUI extends GameUI {
 		this.fileList.act(0f);
 		
 		Gdx.input.setInputProcessor(input);
-		
 	}
 
 	@Override
@@ -496,16 +522,86 @@ public class TownUI extends GameUI {
 	@Override
 	protected void triggerAction(int index)
 	{
-		if (menu == CRAFT)
+		if (menu == GODDESS)
+		{
+			if (dialog.hasNext())
+			{
+				gMsg.setText(dialog.next());
+			}
+			else
+			{
+				dialog = null;
+				hideGoddess();
+				menu = -1;
+			}
+		}
+		else if (menu == CRAFT)
 		{
 			if (index == 1)
 			{
 				Craftable c = craftList.getSelected();
+				int count = player.getInventory().getProgress();
 				if (c != null)
 				{
 					boolean made = player.getInventory().makeItem(c);
 					setMessage((made)?"Crafted an item!":"Not enough materials");
 					populateLoot();
+					
+					//show helpful tip after first item has been made!
+					if (count == 0 && made)
+					{
+						int hint = MathUtils.random(3);
+						if (hint == 0)
+						{
+							showGoddess(
+								"Hooray~  You crafted something for me!",
+								"For actually going through with all this and actually helping me, let me tell you a secret!",
+								"If you press any button between 0-9 you can change the color of the world!",
+								"And if you press + or - you can change the contrast of those colors~",
+								"You can do this at any point in time in the world of StoryMode, even during the intro scene!",
+								"Hope you have fun with this secret!  Goodbye~"
+							);
+						}
+						else if (hint == 1)
+						{
+							showGoddess(
+									"Hooray~  You crafted something for me!",
+									"For actually going through with all this and actually helping me, let me tell you a secret!",
+									"The great developer of your reality kind of forgot to remove debug keys from your world",
+									"Pressing F5 will soft reset your world back to the introduction sequence.",
+									"This can be helpful if your current difficulty is too hard or you want to start over to get a good score",
+									"You can do this at any point in time in the world of StoryMode!",
+									"Though I don't know why you'd want to use it before you've even really started the game.",
+									"Hope you have fun with this secret!  Goodbye~"
+								);
+						}
+						else if (hint == 2)
+						{
+							showGoddess(
+									"Hooray~  You crafted something for me!",
+									"For actually going through with all this and actually helping me, let me tell you a secret!",
+									"The great developer of your reality kind of forgot to remove debug keys from your world",
+									"Pressing F9 will immediately kill the application",
+									"He calls it \"The Boss Key\" and told me once it's a homage to DOS Games. Whatever that means.",
+									"You can do this at any point in time in the world of StoryMode!",
+									"Be warned as it's a bit dangerous to use!  Hopefully you won't accidentally bump the key at any point in time~",
+									"Hope you have fun with this secret!  Goodbye~"
+								);
+						}
+						else if (hint == 3)
+						{
+							showGoddess(
+									"Hooray~  You crafted something for me!",
+									"For actually going through with all this and actually helping me, let me tell you a secret!",
+									"The great developer of your reality kind of forgot to remove debug keys from your world",
+									"Pressing F6 will immediately throw you into a game session of level 3 difficulty.",
+									"It's great if you want to skip the cool cinematic and my blabbering mouth at the beginning of the game.",
+									"Though I don't know why you'd ever want to do that!",
+									"Like most other secrets, you can use this key at any point in the world of StoryMode!",
+									"Hope you have fun with this secret!  Goodbye~"
+								);
+						}
+					}
 				}
 			}
 			else
@@ -603,7 +699,9 @@ public class TownUI extends GameUI {
 				i.setAlignment(Align.right);
 				lootList.add(i).width(30f);
 				lootList.row();
+				
 			}
+			lootList.setTouchable(Touchable.disabled);
 		}
 		else
 		{
@@ -737,7 +835,18 @@ public class TownUI extends GameUI {
 
 	@Override
 	public String[] defineButtons() {
-		if (menu == CRAFT)
+		if (menu == GODDESS)
+		{
+			if (dialog.hasNext())
+			{
+				return new String[]{"Continue"};
+			}
+			else
+			{
+				return new String[]{"Good-bye"};
+			}
+		}
+		else if (menu == CRAFT)
 		{
 			return new String[]{"Return", "Make Item"};
 		}
@@ -763,5 +872,29 @@ public class TownUI extends GameUI {
 			return new Actor[]{fileList};
 		}
 		return null;
+	}
+
+
+	private void showGoddess(String... text) {
+		dialog = new Array<String>(text).iterator();
+		gMsg.setText(dialog.next());
+		
+		goddess.clearActions();
+		goddess.addAction(Actions.moveTo(display.getWidth()-128f, display.getHeight()/2-64f, .3f));
+		
+		goddessDialog.clearActions();
+		goddessDialog.addAction(Actions.alpha(1f, .2f));
+		
+		restore();
+		
+		menu = GODDESS;
+		refreshButtons();
+	}
+	
+	private void hideGoddess() {
+		goddess.clearActions();
+		goddessDialog.clearActions();
+		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));
+		goddessDialog.addAction(Actions.alpha(0f, .2f));
 	}
 }

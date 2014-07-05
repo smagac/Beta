@@ -1,11 +1,7 @@
-package dungeon;
+package core.util.dungeon;
 
 import java.util.Arrays;
 
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -28,25 +24,29 @@ public class PathMaker {
 	int[][] board;
 	Array<Room> rooms;
 	
-	static final int NULL = 0;
-	static final int ROOM = 1;
-	static final int HALL = 2;
-	static final int WALL = 3;
-	static final int UP   = 4;
-	static final int DOWN = 5;
+	static final float MAX_SATURATION = .8f;
+	float filled;
+	float size;
 	
-	public PathMaker(int width, int height)
+	public static final int NULL = 0;
+	public static final int ROOM = 1;
+	public static final int HALL = 2;
+	public static final int WALL = 3;
+	public static final int UP   = 4;
+	public static final int DOWN = 5;
+	
+	public int[][] run(int roomCount, int w, int h)
 	{
-		board = new int[width][height];
 		rooms = new Array<Room>();
-	}
-	
-	public void run(int roomCount)
-	{
+		
+		board = new int[w][h];
+		size = w*h;
+		
+		filled = 0;
 		rooms.clear();
 		
 		//place a handleful of random rooms until threshold is met
-		while (rooms.size < roomCount)
+		while (rooms.size < roomCount && !isSaturated())
 		{
 			int width = MathUtils.random(10)+3;
 			int height = MathUtils.random(10)+3;
@@ -62,6 +62,7 @@ public class PathMaker {
 					for (int y = r.bottom(); y <= r.top(); y++)
 					{
 						board[x][y] = ROOM;
+						filled++;
 					}
 				}
 				
@@ -97,8 +98,13 @@ public class PathMaker {
 		} while (board[x][y] != ROOM);
 		board[x][y] = DOWN;
 		
+		return board;
 	}
 	
+	private boolean isSaturated() {
+		return (filled/size) > MAX_SATURATION;
+	}
+
 	/**
 	 * Attempts to find all open areas on the board that this rectangle can fit
 	 * @param r
@@ -360,6 +366,8 @@ public class PathMaker {
 		board[x1][y1] = HALL;
 		board[x2][y2] = HALL;
 		
+		filled += 2;
+		
 		//keep track of directional motion
 		int dirX, dirY;
 		
@@ -397,11 +405,15 @@ public class PathMaker {
 			}
 			
 			if (board[x1][y1] == NULL)
+			{
 				board[x1][y1] = HALL;
-			
+				filled++;
+			}
 			if (board[x2][y2] == NULL)
+			{
 				board[x2][y2] = HALL;
-			
+				filled++;
+			}
 			//check once more if the iterators match after moving
 			// if the iterators are on the same level, try connecting them
 			if (x1 == x2)
@@ -411,10 +423,16 @@ public class PathMaker {
 					//adjust y until we reach destination
 					y1 += dirY;
 					if (board[x1][y1] == NULL)
+					{
 						board[x1][y1] = HALL;
+						filled++;
+					}
 				}
 				if (board[x1][y1] == NULL)
+				{
 					board[x1][y1] = HALL;
+					filled++;
+				}
 				//return that we've connected the hallway successfully
 				return true;
 			}
@@ -426,65 +444,21 @@ public class PathMaker {
 					//adjust y until we reach destination
 					x1 += dirX;
 					if (board[x1][y1] == NULL)
+					{
 						board[x1][y1] = HALL;
+						filled++;
+					}
 				}
 				if (board[x1][y1] == NULL)
+				{
 					board[x1][y1] = HALL;
+					filled++;
+				}
 				return true;
 			}
 		}
 	}
 	
-	/**
-	 * Convert a generated map into a tiledmap layer using a tileset
-	 * @param tileset
-	 * @param tW - the pixel width of a single tile
-	 * @param tH - pixel height of a tile
-	 * @return a newly made TiledMapTileLayer
-	 */
-	public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int tW, int tH)
-	{
-		//add padding so it doesn't look like the rooms flood into nothingness
-		TiledMapTileLayer layer = new TiledMapTileLayer(board.length+2, board[0].length+2, tW, tH);
-		
-		for (int x = -1, sX = 0; sX <= layer.getWidth(); x++, sX++)
-		{
-			for (int y = -1, sY = 0; sY <= layer.getHeight(); y++, sY++)
-			{
-				Cell cell = new Cell();
-				
-				TiledMapTile tile;
-				if (x < 0 || x >= board.length || y < 0 || y >= board[0].length)
-				{
-					tile = tileset.getTile(0);
-				}
-				else if (board[x][y] == NULL)
-				{
-					tile = tileset.getTile(0);
-				}
-				else if (board[x][y] == WALL)
-				{
-					tile = tileset.getTile(1);
-				}	
-				else if (board[x][y] == UP)
-				{
-					tile = tileset.getTile(4);
-				}
-				else if (board[x][y] == DOWN)
-				{
-					tile = tileset.getTile(3);
-				}
-				else
-				{
-					tile = tileset.getTile(2);
-				}
-				cell.setTile(tile);
-				layer.setCell(x+1, y+1, cell);
-			}
-		}
-		
-		return layer;
-	}
 
 	public Array<Room> getRooms() {
 		return rooms;

@@ -1,5 +1,6 @@
 package scenes.newgame;
 
+import java.awt.Button;
 import java.util.Scanner;
 
 import com.badlogic.gdx.Gdx;
@@ -378,6 +379,16 @@ public class NewUI extends UI {
 									next();
 								}						
 								return hit;
+							}
+							
+							@Override
+							public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+							{
+								if (button == Buttons.LEFT)
+								{
+									next();
+								}
+								return false;
 							}
 						});
 						advanceStory();

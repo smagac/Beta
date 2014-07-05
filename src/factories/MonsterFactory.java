@@ -3,6 +3,7 @@ package factories;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
+import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -23,6 +24,7 @@ import components.Renderable;
 import components.Stats;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.util.dungeon.Room;
 
 /**
  * Factory for creating all the monsters in a level
@@ -31,6 +33,7 @@ import core.datatypes.Item;
  */
 public class MonsterFactory {
 
+	private static ObjectMap<String, MonsterTemplate> allMonsters;
 	private static ObjectMap<FileType, Array<MonsterTemplate>> monsters;
 	public static final String Group = "Monster";
 	
@@ -45,7 +48,7 @@ public class MonsterFactory {
 			return;
 		
 		monsters = new ObjectMap<FileType, Array<MonsterTemplate>>();
-		
+		allMonsters = new ObjectMap<String, MonsterTemplate>();
 		for (FileType type : FileType.values())
 		{
 			monsters.put(type, new Array<MonsterTemplate>());
@@ -58,6 +61,7 @@ public class MonsterFactory {
 		{
 			MonsterTemplate temp = new MonsterTemplate(jv);
 			monsters.get(FileType.getType(temp.location)).add(temp);
+			allMonsters.put(temp.name, temp);
 		}
 		
 		loaded = true;
@@ -70,15 +74,32 @@ public class MonsterFactory {
 	 */
 	private static class MonsterTemplate
 	{
+		//base name of the monster
 		final String name;
+		
+		//stats
 		final int hp;
 		final int str;
 		final int def;
 		final int mag;
 		final int spd;
-		final String[] attacks;
-		final String[] magic;
+		
+		//movement rates
+		final float norm;
+		final float agro;
+		
+		//passive enemies only attack/pursue as soon as they've been attacked
+		// normally enemies will become agro as soon as you enter their visibility range of 3 tiles
+		// as soon as a passive enemy is attacked, they no longer return to passive and act like normal enemies
+		final boolean passive;
+		
+		//special death message for killing the enemy
+		final String die;
+		
+		//defines the kind of files you can find them in
 		final String location;
+		
+		//sprite type to use
 		final String type;
 		
 		MonsterTemplate(final JsonValue src)
@@ -89,8 +110,10 @@ public class MonsterFactory {
 			def = src.getInt("def");
 			mag = src.getInt("mag");
 			spd = src.getInt("spd");
-			attacks = src.get("attacks").asStringArray();
-			magic = src.get("magic").asStringArray();
+			norm = src.getFloat("norm", .4f);
+			agro = src.getFloat("agro", .75f);
+			die = src.getString("die", "You have slain %s");
+			passive = src.getBoolean("passive", false);
 			location = src.getString("where", null);
 			type = src.getString("type", "rat");
 		}
@@ -123,17 +146,23 @@ public class MonsterFactory {
 	 * @param layer - list of rooms to lock each monster into
 	 * @return an array of all the monsters that have just been created and added to the world
 	 */
-	public Array<Entity> makeMonsters(World world, int size, TiledMapTileLayer layer, ItemFactory lootMaker, int floor)
+	public void makeMonsters(World world, int size, TiledMapTileLayer layer, ItemFactory lootMaker, int floor)
 	{
 		Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
-		Array<Entity> monsters = new Array<Entity>();
 		selection.addAll(MonsterFactory.monsters.get(area));
 		selection.addAll(MonsterFactory.monsters.get(FileType.Other)); 
 
 		GroupManager gm = world.getManager(GroupManager.class);
 		for (int i = 0; i < size; i++)
 		{
-			MonsterTemplate t = selection.random();
+			MonsterTemplate t;
+			do
+			{
+				t = selection.random();
+			}
+			//don't allow mimics as normal enemies
+			while (t.name.equals("mimic"));
+			
 			Entity monster = create(world, t, lootMaker.createItem(), floor);
 			monster.addComponent(new Monster());
 			
@@ -152,10 +181,7 @@ public class MonsterFactory {
 			monster.addToWorld();
 			
 			gm.add(monster, "monsters");
-			monsters.add(monster);
 		}
-		
-		return monsters;
 	}
 	
 	/**
@@ -174,14 +200,74 @@ public class MonsterFactory {
 								t.mag,
 								(int)(MathUtils.random(.2f+(floor / 10f), 1.0f+(floor / 10f))*t.spd)
 							));
-		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective()));
+		e.addComponent(new Identifier(t.name, item.type()));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
 		
-		Combat c = new Combat(t.attacks, t.magic);
-		c.setDrop(item);
+		Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
 		
 		e.addComponent(c);
 		
 		return e;
+	}
+
+	/**
+	 * Populates empty parts of the dungeon with random treasure chests
+	 * @param world
+	 * @param rooms
+	 * @param layer
+	 * @param lootMaker
+	 * @param floor
+	 */
+	public void makeTreasure(World world, Array<Room> rooms, TiledMapTileLayer layer, ItemFactory lootMaker, int floor) {
+		GroupManager gm = world.getManager(GroupManager.class);
+		MonsterTemplate treasure = allMonsters.get("treasure chest");
+		MonsterTemplate mimic = allMonsters.get("mimic");
+		
+		for (Room r : rooms)
+		{
+			//calculate population density
+			int mCount = 0;
+			ImmutableBag<Entity> m = world.getManager(GroupManager.class).getEntities("monsters");
+			for (int i = 0; i < m.size(); i++)
+			{
+				Position position = m.get(i).getComponent(Position.class);
+				if (r.contains(position.getX(), position.getY()))
+				{
+					mCount++;
+				}
+			}
+			float density = Math.max(1.0f, (mCount * 4 * 4) / (r.getWidth() * r.getHeight()));
+			
+			//randomly place a treasure chest
+			// higher chance of there being a chest if the room is empty
+			if (MathUtils.randomBoolean(1-density))
+			{
+				//low chance of chest actually being a mimic
+				Entity monster;
+				if (MathUtils.randomBoolean(.08f + (floor/300f)))
+				{
+					monster = create(world, mimic, lootMaker.createItem(), floor);
+				}
+				else
+				{
+					monster = create(world, treasure, lootMaker.createItem(), floor);	
+				}
+				monster.addComponent(new Monster());
+				int x = 0;
+				int y = 0;
+				TiledMapTile tile;
+				do
+				{
+					x = MathUtils.random(r.left(), r.right());
+					y = MathUtils.random(r.bottom(), r.top());
+					tile = layer.getCell(x, y).getTile();
+				} while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
+				monster.addComponent(new Position(x, y));
+					
+				monster.addToWorld();
+				
+				gm.add(monster, "monsters");
+			}
+		}
 	}
 }

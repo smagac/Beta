@@ -1,4 +1,4 @@
-package dungeon;
+package core.util.dungeon;
 
 import com.badlogic.gdx.math.Rectangle;
 

@@ -1,12 +1,16 @@
 package factories;
 
+import java.io.IOException;
+
 import scenes.dungeon.MovementSystem;
 import scenes.dungeon.RenderSystem;
 
+import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
@@ -16,9 +20,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
 
+import components.Position;
+import components.Renderable;
+import components.Stats;
+import core.datatypes.Dungeon;
 import core.datatypes.FileType;
-import dungeon.PathMaker;
 
 /**
  * Generates tiled maps and populates them for you to explore
@@ -27,16 +35,28 @@ import dungeon.PathMaker;
  */
 public class DungeonFactory {
 
+	//directory to save dungeon files into
+	private final String tmpDir;
+	
+	//acceptable characters for serial id generation
+	private static final String acceptable = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	
+	
 	private ItemFactory itemFactory;
 	private MonsterFactory monsterFactory;
 	private TiledMapTileSet tileset;
+	private TextureAtlas atlas;
 	
-	public DungeonFactory(TextureAtlas atlas, FileType type)
+	int difficulty;
+	
+	public DungeonFactory(TextureAtlas atlas)
 	{
-		itemFactory = new ItemFactory(type);
-		monsterFactory = new MonsterFactory(atlas, type);
+		this.atlas = atlas;
 		TextureRegion tiles = atlas.findRegion("tiles2");
 		buildTileSet(tiles);
+		
+		tmpDir = Gdx.files.getExternalStoragePath()+"storymode/tmp";// System.getProperty("java.io.tmpdir");
+		System.out.println(tmpDir);
 	}
 	
 	private void buildTileSet(TextureRegion tiles)
@@ -53,11 +73,20 @@ public class DungeonFactory {
 	}
 	
 	/**
-	 * Generate a new dungeon
+	 * Generate a new dungeon and save all its floors into a temp directory
 	 * @param difficulty - defines how large and how many monsters the dungeon will have, but also more loot
+	 * @throws IOException 
+	 * @return an array of the serial ids of the floors on the file system
 	 */
-	public Array<World> create(int difficulty)
+	public Array<Dungeon> create(FileType type, int difficulty) throws IOException
 	{
+		this.difficulty = difficulty;
+		itemFactory = new ItemFactory(type);
+		monsterFactory = new MonsterFactory(atlas, type);
+		
+		//make sure dungeon dir exists
+		Gdx.files.absolute(tmpDir).mkdirs();
+		
 		//catch crazy out of bounds
 		if (difficulty > 5 || difficulty < 1)
 		{
@@ -65,43 +94,98 @@ public class DungeonFactory {
 			difficulty = 3;
 		}
 		
-		int floors = MathUtils.random(1, difficulty+difficulty) * MathUtils.random(1, difficulty);
-		Array<World> dungeon = new Array<World>();
-		for (int i = 0; i < floors; i++)
+		Array<Dungeon> dungeon = new Array<Dungeon>();
+		
+		//please don't ask about my numbers, they're so randomly picked out from my head
+		// I don't even know what the curve looks like on a TI calculator ;_;
+		int floors = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		//stress
+		floors = 90;
+		for (int floor = 1, width = 50, height = 50; floor <= floors; floor++, width += 5, height += 5)
 		{
-			World world = new World();
+			Dungeon d = new Dungeon(type, difficulty, floor, width, height, monsterFactory, itemFactory);
 			
-			world.setManager(new TagManager());
-			world.setManager(new GroupManager());
+			/* Use for dumping
+			//generate a serialized tmp file
+			String serial;
+			String suffix = String.format("%02d", floor);
+			do
+			{
+				serial = "";
+				for (int i = 0; i < 12; i++)
+				{
+					serial += acceptable.charAt(MathUtils.random(acceptable.length()-1));
+				}
+			}
+			while (Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix).exists());
+			FileHandle tmp = Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix);
+			tmp.file().createNewFile();
 			
-			world.setSystem(new RenderSystem(), true);
-			MovementSystem ms = new MovementSystem(i);
-			world.setSystem(ms, true);
-			
-			//make rooms and doors
-			int roomCount = MathUtils.random(1+(difficulty*2), 3+(difficulty*4));
-
-			TiledMap tm = new TiledMap();
-			TiledMapTileLayer layer;
-
-			PathMaker maker = new PathMaker(50, 50);
-			maker.run(roomCount);
-			layer = maker.paintLayer(tileset, 32, 32);
-			
-			tm.getLayers().add(layer);
-			
-			//add monsters to rooms
-			// monster count is anywhere between 5-20 on easy and 25-100 on hard
-			monsterFactory.makeMonsters(world, MathUtils.random(difficulty*2, difficulty*4), layer, itemFactory, i+1);
-			
-			//generate map from rooms
-			world.getSystem(RenderSystem.class).setMap(tm);
-			ms.setMap(layer);
-			
-			world.initialize();
-			dungeon.add(world);
+			Json serializer = new Json();
+			serializer.prettyPrint(d);
+			serializer.toJson(d, Dungeon.class, tmp);
+			*/
+			dungeon.add(d);
 		}
 		return dungeon;
+	}
+	
+	/**
+	 * Prepare a world to be loaded and stepped into
+	 * @param ts
+	 */
+	public World create(Dungeon dungeon, Stats player)
+	{
+		/*
+		String suffix = String.format("%02d", floor);
+		FileHandle file = Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix);
+		Dungeon dungeon = (new Json()).fromJson(Dungeon.class, file);
+		*/
+		int floor = dungeon.floor();
+		World world = new World();
+		
+		world.setManager(new TagManager());
+		world.setManager(new GroupManager());
+		
+		world.setSystem(new RenderSystem(), true);
+		MovementSystem ms = new MovementSystem(floor);
+		world.setSystem(ms, true);
+	
+		TiledMap map = new TiledMap();
+		TiledMapTileLayer layer = dungeon.paintLayer(tileset, 32, 32);
+		map.getLayers().add(layer);
+		
+		world.getSystem(RenderSystem.class).setMap(map);
+		ms.setMap(layer);
+		
+		//add monsters to rooms
+		// monster count is anywhere between 5-20 on easy and 25-100 on hard
+		monsterFactory.makeMonsters(world, MathUtils.random(dungeon.roomCount(), dungeon.roomCount()+floor*(floor*difficulty)), layer, itemFactory, floor);
+		
+		//forcibly add some loot monsters
+		monsterFactory.makeTreasure(world, dungeon.rooms(), layer, itemFactory, floor);
+		
+		world.initialize();
+		
+		//make player
+		Entity e = world.createEntity();
+		e.addComponent(new Position(0,0));
+		e.addComponent(player);	//shared stats reference
+		e.addComponent(new Renderable(atlas.findRegion("character")));
+		e.addToWorld();
+		
+		world.getManager(TagManager.class).register("player", e);
+		
+		world.getSystem(MovementSystem.class).setPlayer();
+		
+		//put entity at start position on each floor
+		
+		return world;
+	}
+	
+	public void dispose()
+	{
+		//Gdx.files.absolute(tmpDir).deleteDirectory();
 	}
 	
 	/**

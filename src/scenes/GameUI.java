@@ -1,5 +1,7 @@
 package scenes;
 
+import scenes.dungeon.MovementSystem;
+
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
@@ -14,12 +16,14 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.badlogic.gdx.utils.Scaling;
 
 import components.Stats;
 import core.DataDirs;
@@ -60,7 +64,7 @@ public abstract class GameUI extends UI {
 	private Label expStats;
 	
 	private IPlayerContainer playerService;
-	
+
 	public GameUI(Scene<? extends GameUI> scene, AssetManager manager, IPlayerContainer playerService)
 	{
 		super(scene, manager);

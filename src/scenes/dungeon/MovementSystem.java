@@ -5,6 +5,7 @@ import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.managers.GroupManager;
+import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Input.Keys;
@@ -35,7 +36,6 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	
 	boolean[][] collision;
 	Vector2 start, end;
-	int floorNum;
 	
 	@Mapper ComponentMapper<Monster> monsterMap;
 	@Mapper ComponentMapper<Position> positionMap;
@@ -51,10 +51,13 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	private boolean enabledInput;
 	
 	@SuppressWarnings("unchecked")
+	/**
+	 * Creates a new movement and combat handler
+	 * @param floor - floor number representation of this system
+	 */
 	public MovementSystem(int floor)
 	{
 		super(Aspect.getAspectForAll(Monster.class));
-		floorNum = floor;
 		enabledInput = true;
 	}
 
@@ -116,17 +119,12 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				//descend
 				if (p.getX() == (int)end.x && p.getY() == (int)end.y)
 				{
-					parentScene.log("You descend to floor " + (floorNum + 1)) ;
-					parentScene.changeFloor(floorNum + 1);
+					parentScene.descend();
 				}
 				//ascend
 				else if (p.getX() == (int)start.x && p.getY() == (int)start.y)
 				{
-					if (floorNum - 1 > 0)
-					{
-						parentScene.log("You ascend to floor " + (floorNum - 1));
-					}
-					parentScene.changeFloor(floorNum - 1);
+					parentScene.ascend();
 				}
 			}
 		}
@@ -180,7 +178,6 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		}
 		if (MathUtils.randomBoolean(Math.min((MathUtils.random(.8f, mult)*aStats.getSpeed()) / bStats.getSpeed(), 1f)))
 		{
-		
 			hit.play();
 			int dmg = Math.max(0, (int)(MathUtils.random(.8f, mult)*aStats.getStrength()) - bStats.getDefense());
 			bStats.hp = Math.max(0, bStats.hp - dmg);
@@ -198,6 +195,8 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				{
 					msg = "You attacked " + name + " for " + dmg + " damage";
 				}
+				Combat combatProp = combatMap.get(opponent);
+				combatProp.aggress();
 			}
 			else
 			{
@@ -224,8 +223,8 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				//drop enemy item
 				else
 				{
-					parentScene.log("You killed the " + idMap.get(opponent).toString());
 					Combat combat = combatMap.get(opponent);
+					parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));
 					parentScene.getItem(combat.getDrop());
 					aStats.exp++;
 					if (aStats.levelUp())
@@ -286,14 +285,24 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	
 	/**
 	 * Set the system's main player and moves them to their starting position
-	 * @param player
 	 */
-	public void moveToStart(Entity player)
+	public void moveToStart()
 	{
-		this.player = player;
 		Position p = positionMap.get(player);
 		
 		p.move((int)start.x, (int)start.y);
+	}
+	
+	public void moveToEnd()
+	{
+		Position p = positionMap.get(player);
+		
+		p.move((int)end.x, (int)end.y);	
+	}
+	
+	public void setPlayer()
+	{
+		player = world.getManager(TagManager.class).getEntity("player");
 	}
 
 	@Override
@@ -382,14 +391,17 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 			return;
 		}
 		
+
+		Combat prop = combatMap.get(e);
+		
 		//only try moving once the character is in the same room as it
 		//try to move towards the player when nearby
-		if (p.distance(m) < 3)
+		if (prop.isAgro())
 		{
 			//roll for move
 			//Stats s = statMap.get(e);
 			//chance multiplied since agro
-			if (MathUtils.randomBoolean(.75f))
+			if (MathUtils.randomBoolean(prop.getMovementRate()))
 			{
 				int dX = 0;
 				int dY = 0;
@@ -421,6 +433,11 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				
 				//follow player chance
 				moveTo(m.getX() + dX, m.getY() + dY, e);
+				
+				if (p.distance(m) > 5)
+				{
+					prop.calm();
+				}
 			}
 		}
 		//lazily wander around
@@ -428,7 +445,7 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		{
 			//roll for move
 			//Stats s = statMap.get(e);
-			if (MathUtils.randomBoolean(.45f))
+			if (MathUtils.randomBoolean(prop.getMovementRate()))
 			{
 				int dX = 0;
 				int dY = 0;
@@ -441,6 +458,11 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 				
 				//follow player chance
 				moveTo(m.getX() + dX, m.getY() + dY, e);
+				
+				if (p.distance(m) < 3 && !prop.isPassive())
+				{
+					prop.aggress();
+				}
 			}
 		}
 	}

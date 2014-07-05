@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -48,7 +49,6 @@ public class WanderUI extends GameUI {
 	
 	//variables for sacrifice menu
 	int index, menu;
-	private int floorNum;
 	int healCost;
 	private Group goddessDialog;
 	private Label gMsg;
@@ -159,6 +159,41 @@ public class WanderUI extends GameUI {
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f));
 		goddessDialog.addAction(Actions.alpha(0f));
 		
+		//mouse listener for moving the character by clicking within the display
+		display.addListener(new InputListener(){
+			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+			{
+				MovementSystem ms = dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
+				
+				float dir = MathUtils.atan2(display.getHeight()/2-y, display.getWidth()/2-x);
+				
+				//LEFT
+				if (dir > -MathUtils.PI/4 && dir < MathUtils.PI/4)
+				{
+					ms.keyDown(Keys.LEFT);
+					return true;
+				}
+				//RIGHT
+				else if (dir < -3*MathUtils.PI/4 || dir > 3*MathUtils.PI/4)
+				{
+					ms.keyDown(Keys.RIGHT);
+					return true;
+				}
+				//UP
+				else if (dir < -MathUtils.PI/4 && dir > -3*MathUtils.PI/4)
+				{
+					ms.keyDown(Keys.UP);
+					return true;
+				}
+				//DOWN
+				else if (dir > MathUtils.PI/4 && dir < 3*MathUtils.PI/4)
+				{
+					ms.keyDown(Keys.DOWN);
+					return true;
+				}
+				return false;
+			}
+		});
 		
 		index = 0;
 	}
@@ -173,7 +208,6 @@ public class WanderUI extends GameUI {
 	protected void setFloor(World world)
 	{
 		floor = world.getSystem(RenderSystem.class);
-		floorNum = world.getSystem(MovementSystem.class).floorNum + 1;
 	}
 
 	@Override
@@ -194,7 +228,7 @@ public class WanderUI extends GameUI {
 			}
 			else if (index == 2)
 			{
-				showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently " + (this.floorNum) + " floors deep.");
+				showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently " + dungeonService.getCurrentFloorNumber() + " floors deep.");
 				this.index = 2;
 				menu = 2;
 			}
@@ -244,7 +278,7 @@ public class WanderUI extends GameUI {
 
 	private void sacrifice()
 	{
-		if (playerService.getInventory().sacrifice(this.sacrifices, (menu == 1) ? this.healCost : this.floorNum))
+		if (playerService.getInventory().sacrifice(this.sacrifices, (menu == 1) ? this.healCost : dungeonService.getCurrentFloorNumber()))
 		{
 			hideGoddess();
 			if (menu == 1)
@@ -273,14 +307,14 @@ public class WanderUI extends GameUI {
 			}
 			else
 			{
-				desired = this.floorNum;
+				desired = dungeonService.getCurrentFloorNumber();
 			}
 			showGoddess("That's not enough!\nYou need to sacrifice " + desired + " items");
 		}
 	}
 
 	private void showGoddess(String string) {
-		dungeonService.getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(false);
+		dungeonService.getCurrentFloor().getSystem(MovementSystem.class).inputEnabled(false);
 		gMsg.setText(string);
 		
 		goddess.clearActions();
@@ -295,7 +329,7 @@ public class WanderUI extends GameUI {
 	}
 	
 	private void hideGoddess() {
-		dungeonService.getDungeon().get(floorNum-1).getSystem(MovementSystem.class).inputEnabled(true);
+		dungeonService.getCurrentFloor().getSystem(MovementSystem.class).inputEnabled(true);
 		goddess.clearActions();
 		goddessDialog.clearActions();
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));

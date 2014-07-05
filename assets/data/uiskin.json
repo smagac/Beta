@@ -19,7 +19,8 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	toggle: { down: button_down, checked: button_down, up: button_up }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
-	default: { down: button_down, up: button_up, checked: button_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black }
+	default: { down: button_down, up: button_up, checked: button_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
+	list: {font: smaller, fontColor: white}
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: { background: button_up, vScrollKnob: scroll-knob },

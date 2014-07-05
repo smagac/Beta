@@ -84,6 +84,11 @@ public class Item implements Comparable<Item>
 		return String.format("%s %s", adj, name);
 	}
 	
+	public String type()
+	{
+		return adj;
+	}
+	
 	@Override
 	public String toString()
 	{

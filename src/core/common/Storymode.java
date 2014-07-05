@@ -1,11 +1,9 @@
 package core.common;
 
 
-import scenes.dungeon.MovementSystem;
+import java.io.IOException;
 
-import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Screen;
@@ -18,10 +16,9 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-import components.Position;
-import components.Renderable;
 import components.Stats;
 import core.Palette;
+import core.datatypes.Dungeon;
 import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
@@ -45,7 +42,11 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	
 	private boolean fullscreen;
 	
-	private Array<World> dungeon;
+	//factory data
+	DungeonFactory dungeonFactory;
+	private Array<Dungeon> floors;
+	private int currentFloor;
+	private World dungeon;
 	
 	//COOL RENDERING
 	private Palette currentHue = Palette.Original;
@@ -232,37 +233,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		return player;
 	}
 	
-	public void newDungeon(AssetManager manager, FileType type, int difficulty)
-	{
-		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
-		DungeonFactory factory = new DungeonFactory(atlas, type);
-		dungeon = factory.create(difficulty);
-		
-		//add player into all floors
-		for (World floor : dungeon)
-		{
-			//make player
-			Entity e = floor.createEntity();
-			e.addComponent(new Position(0,0));
-			e.addComponent(player);	//shared stats reference
-			e.addComponent(new Renderable(atlas.findRegion("character")));
-			e.addToWorld();
-			
-			floor.getManager(TagManager.class).register("player", e);
-			
-			//put entity at start position on each floor
-			floor.getSystem(MovementSystem.class).moveToStart(e);
-		}
-	}
-	
-	/**
-	 * @return all the floors of our dungeon
-	 */
-	public Array<World> getDungeon()
-	{
-		return dungeon;
-	}
-	
 	public Palette getPalette()
 	{
 		return currentHue;
@@ -312,5 +282,72 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	public BossListener getBossInput()
 	{
 		return boss;
+	}
+
+	public void newDungeon(AssetManager manager, FileType type, int difficulty)
+	{
+		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+		if (dungeonFactory == null)
+		{
+			dungeonFactory = new DungeonFactory(atlas);
+		}
+		try {
+			floors = dungeonFactory.create(type, difficulty);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
+		//add player into all floors
+		currentFloor = 0;
+		loadFloor(1);
+	}
+	
+	@Override
+	public World loadFloor(int i) {
+		if (currentFloor != i)
+		{
+			if (i > 0 && i < floors.size)
+			{
+				dungeon = dungeonFactory.create(floors.get(i-1), player);
+				currentFloor = i;
+			}
+			else
+			{
+				dungeon = null;
+				currentFloor = -1;
+			}
+		}
+		return dungeon;
+	}
+
+	@Override
+	public World getCurrentFloor() {
+		return dungeon;
+	}
+
+	@Override
+	public void nextFloor() {
+		loadFloor(currentFloor+1);
+	}
+
+	@Override
+	public void prevFloor() {
+		loadFloor(currentFloor-1);
+	}
+
+	@Override
+	public boolean hasPrevFloor() {
+		return currentFloor - 1 > 0;
+	}
+
+	@Override
+	public boolean hasNextFloor() {
+		return currentFloor + 1 < floors.size;
+	}
+
+	@Override
+	public int getCurrentFloorNumber() {
+		return currentFloor;
 	}
 }

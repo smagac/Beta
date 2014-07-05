@@ -54,14 +54,20 @@ public class BossListener implements InputProcessor {
 			return true;
 		}
 		
-		if (keycode == Keys.F9)
+		if (keycode == Keys.F5)
 		{
-			getGameService().startGame(3);
+			getGameService().softReset();
 			return true;
 		}
-		if (keycode == Keys.F10)
+		if (keycode == Keys.F6)
 		{
 			getGameService().fastStart();
+			return true;
+		}
+		if (keycode == Keys.F9)
+		{
+			//EXIT LIKE A BITCH
+			System.exit(0);
 		}
 		
 		//fullscreen toggle

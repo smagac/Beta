@@ -1,7 +1,6 @@
 package scenes.dungeon;
 
 import com.artemis.World;
-import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
@@ -24,7 +23,6 @@ public class Scene extends scenes.Scene<WanderUI> {
 
 	private int difficulty;
 	private FileType fileType;
-	private int currentFloor;
 	
 	ObjectMap<Item, Integer> loot;
 	
@@ -58,7 +56,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	@Override
 	public void extend(float delta) {
-		World floor = dungeonService.getDungeon().get(currentFloor);
+		World floor = dungeonService.getCurrentFloor();
 		floor.setDelta(delta);
 		floor.process();
 		
@@ -117,55 +115,83 @@ public class Scene extends scenes.Scene<WanderUI> {
 		ui.dispose();
 	}
 	
-	public void changeFloor(int i)
+	public void ascend()
 	{
-		if (i < 0 || i >= dungeonService.getDungeon().size)
+		//remove self from old floor
+		World floor = dungeonService.getCurrentFloor();
+		MovementSystem ms = floor.getSystem(MovementSystem.class);
+		input.removeProcessor(ms);
+		
+		if (!dungeonService.hasPrevFloor())
 		{
 			leave();
 			return;
 		}
+		else
+		{
+			dungeonService.prevFloor();
+		}
+		floor = dungeonService.getCurrentFloor();
+		ms = floor.getSystem(MovementSystem.class);
+		floor.getSystem(MovementSystem.class).moveToEnd();
 		
+		changeFloor();
+	}
+	
+	public void descend()
+	{
 		//remove self from old floor
-		World floor = dungeonService.getDungeon().get(currentFloor);
+		World floor = dungeonService.getCurrentFloor();
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		//ms.setScene(null);
-		
 		input.removeProcessor(ms);
 		
-		currentFloor = i;
-		floor = dungeonService.getDungeon().get(currentFloor);
-		ui.setFloor(floor);
+		if (!dungeonService.hasNextFloor())
+		{
+			leave();
+			return;
+		}
+		else
+		{
+			dungeonService.nextFloor();
+		}
+		
+		floor = dungeonService.getCurrentFloor();
 		ms = floor.getSystem(MovementSystem.class);
+		floor.getSystem(MovementSystem.class).moveToStart();
+		
+		changeFloor();
+	}
+	
+	private void changeFloor()
+	{
+		World floor = dungeonService.getCurrentFloor();
+		MovementSystem ms = floor.getSystem(MovementSystem.class);
+		ui.setFloor(floor);
 		ms.setScene(this);
 		ms.hit = manager.get(DataDirs.hit, Sound.class);
 		
 		input.addProcessor(ms);
+		
+		log("You move onto to floor " + dungeonService.getCurrentFloorNumber()) ;
 	}
 	
 	protected void dead()
 	{
-		World floor = dungeonService.getDungeon().get(currentFloor);
+		World floor = dungeonService.getCurrentFloor();
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
+		ms.inputEnabled(false);
 		ui.dead();
+		
 		Tracker.NumberValues.Times_Died.increment();
 		manager.get(DataDirs.dead, Sound.class).play();
-		input.removeProcessor(ms);
-		input.addProcessor(ui);
 	}
 	
 	protected void leave()
 	{
-		World floor = dungeonService.getDungeon().get(currentFloor);
-		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		
 		ui.leave();
 		
 		//merge loot into inventory
 		playerService.getInventory().merge(this.loot);
-		
-		//remove input from stage
-		input.removeProcessor(ms);
-		input.addProcessor(ui);
 	}
 	
 	/**
@@ -188,8 +214,12 @@ public class Scene extends scenes.Scene<WanderUI> {
 		input = new InputMultiplexer();
 		
 		ui.init();
+		
 		dungeonService.newDungeon(manager, fileType, difficulty);
-		changeFloor(0);
+		changeFloor();
+		World floor = dungeonService.getCurrentFloor();
+		floor.getSystem(MovementSystem.class).moveToStart();
+		
 		bgm = manager.get(bgmName, Music.class);
 		bgm.setLooping(true);
 		bgm.play();

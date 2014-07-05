@@ -1,29 +1,33 @@
 package components;
 
 import com.artemis.Component;
-import com.badlogic.gdx.math.MathUtils;
 
 import core.datatypes.Item;
 
 public class Combat extends Component {
 
-	String[] attacks;
-	String[] magic;
+	String die;
+	float moveChance;
+	float agroMoveChance;
+	boolean agro;
+	boolean passive;
 	Item itemDrop;
 	
-	public Combat(String[] attacks, String[] magic)
+	public Combat(float norm, float agro, boolean passive, Item drop, String deathMessage)
 	{
-		this.attacks = attacks;
-		this.magic = magic;
+		this.moveChance = norm;
+		this.agroMoveChance = agro;
+		this.die = deathMessage;
+		this.itemDrop = drop;
 	}
 	
 	/**
-	 * Set the item type this entity will drop when killed
-	 * @param item
+	 * Get the chance that this enemy moves
+	 * @return
 	 */
-	public void setDrop(Item item)
+	public float getMovementRate()
 	{
-		itemDrop = item;
+		return (agro)?agroMoveChance:moveChance;
 	}
 	
 	/**
@@ -34,21 +38,31 @@ public class Combat extends Component {
 		return itemDrop;
 	}
 	
-	/**
-	 * Get a random attack name
-	 * @return a string
-	 */
-	public String getAttack()
+	public boolean isPassive()
 	{
-		return attacks[MathUtils.random(attacks.length)];
+		return passive;
 	}
 	
 	/**
-	 * Get a random spell name
-	 * @return a string
+	 * Forcibly aggress an enemy, 'causing it to drop its passive state
 	 */
-	public String getSpell()
+	public void aggress()
 	{
-		return magic[MathUtils.random(magic.length)];
+		passive = false;
+		agro = true;
+	}
+	
+	public boolean isAgro()
+	{
+		return agro;
+	}
+	
+	public String getDeathMessage(String enemyName)
+	{
+		return String.format(die, enemyName);
+	}
+
+	public void calm() {
+		agro = false;
 	}
 }
