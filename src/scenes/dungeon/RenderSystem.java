@@ -7,13 +7,18 @@ import com.artemis.annotations.Mapper;
 import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
+
 import components.Position;
 import components.Renderable;
 import core.common.Storymode;
@@ -30,6 +35,7 @@ public class RenderSystem extends EntityProcessingSystem {
 	float scale;
 	float height;
 	private TiledMap map;
+	private TextureRegion nullTile;
 	
 	@SuppressWarnings("unchecked")
 	public RenderSystem()
@@ -104,8 +110,15 @@ public class RenderSystem extends EntityProcessingSystem {
 		camera.position.y = pos.getY()*scale;
 		camera.update();
 		
-		//give color to non-walkable spaces outside the bounds of the map
-				
+		//fill background
+		if (nullTile != null)
+		{
+			nullTile.setRegionWidth((int)camera.viewportWidth);
+			nullTile.setRegionHeight((int)camera.viewportHeight);
+			batch.begin();
+			batch.draw(nullTile, 0, 0, camera.viewportWidth, camera.viewportHeight);
+			batch.end();
+		}
 		mapRenderer.setView(camera);
 		mapRenderer.render();
 		batch.setProjectionMatrix(camera.combined);
@@ -131,5 +144,11 @@ public class RenderSystem extends EntityProcessingSystem {
 	
 	protected float getScale() {
 		return scale;
+	}
+
+	public void setNull(Texture texture) {
+		texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
+		this.nullTile = new TextureRegion(texture);
+		
 	}
 }

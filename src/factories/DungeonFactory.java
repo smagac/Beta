@@ -51,7 +51,11 @@ public class DungeonFactory {
 	public static void prepareFactory(TextureAtlas atlas)
 	{
 		DungeonFactory.atlas = atlas;
-		buildTileSet(atlas.findRegion("tiles2"));
+		if (tileset == null)
+		{
+			tileset = new TiledMapTileSet();
+		}
+		buildTileSet();
 	}
 	
 	public static void dispose()
@@ -60,17 +64,17 @@ public class DungeonFactory {
 		tileset = null;
 	}
 	
-	private static void buildTileSet(TextureRegion tiles)
+	private static void buildTileSet()
 	{
-		tileset = new TiledMapTileSet();
-		//corners
-		TextureRegion[][] ti = tiles.split(32, 32);
-		
-		tileset.putTile(0, new SimpleTile(ti[0][1], 0, false));		//empty
-		tileset.putTile(1, new SimpleTile(ti[0][2], 1, true));		//room walls
-		tileset.putTile(2, new SimpleTile(ti[0][2], 2, true));		//floor
-		tileset.putTile(3, new SimpleTile(ti[1][0], 3, true)); 		//stairs down
-		tileset.putTile(4, new SimpleTile(ti[1][1], 4, true)); 		//stairs up
+		if (tileset == null)
+		{
+			tileset = new TiledMapTileSet();
+		}
+		tileset.putTile(0, new SimpleTile(atlas.findRegion("null"), 0, false));		//empty
+		tileset.putTile(1, new SimpleTile(atlas.findRegion("floor"), 1, true));		//room walls
+		tileset.putTile(2, new SimpleTile(atlas.findRegion("floor"), 2, true));		//floor
+		tileset.putTile(3, new SimpleTile(atlas.findRegion("down"), 3, true)); 		//stairs down
+		tileset.putTile(4, new SimpleTile(atlas.findRegion("up"), 4, true)); 		//stairs up
 	}
 	
 	/**
@@ -155,6 +159,7 @@ public class DungeonFactory {
 		loader.progress = 5;
 		
 		TiledMap map = new TiledMap();
+		map.getTileSets().addTileSet(tileset);
 		TiledMapTileLayer layer = dungeon.paintLayer(tileset, 32, 32);
 		map.getLayers().add(layer);
 		world.getSystem(RenderSystem.class).setMap(map);
@@ -195,15 +200,16 @@ public class DungeonFactory {
 	 */
 	private static class SimpleTile implements TiledMapTile {
 
-		TextureRegion region;
-		MapProperties prop;
-		int id;
+		final TextureRegion region;
+		final MapProperties prop;
+		final int id;
 		
 		SimpleTile(TextureRegion r, int id)
 		{
 			region = r;
 			prop = new MapProperties();
 			prop.put("passable", false);
+			this.id = id;
 			setId(id);
 		}
 		
@@ -217,7 +223,7 @@ public class DungeonFactory {
 		public int getId() { return id; }
 
 		@Override
-		public void setId(int id) {	this.id = id; }
+		public void setId(int id) { } //do nothing, id is final
 
 		@Override
 		public BlendMode getBlendMode() {

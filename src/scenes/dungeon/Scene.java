@@ -7,6 +7,7 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -127,6 +128,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	@Override
 	public void show() {
 		manager.load("data/dungeon.atlas", TextureAtlas.class);
+		manager.load("data/null.png", Texture.class);
 		manager.load(DataDirs.hit, Sound.class);
 		manager.load(DataDirs.dead, Sound.class);
 		
@@ -239,6 +241,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			depth--;
 		}
 		ms.setScene(this);
+		floor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
 		
 		log("You move onto floor " + depth) ;
 

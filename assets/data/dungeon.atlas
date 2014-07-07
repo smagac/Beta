@@ -1,118 +1,146 @@
 
 dungeon.png
-size: 184,202
+size: 244,52
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 bug
-  rotate: false
-  xy: 2, 56
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-bunny
-  rotate: false
-  xy: 132, 186
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-character
-  rotate: false
-  xy: 2, 38
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-duck
-  rotate: false
-  xy: 20, 56
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-elf
-  rotate: false
-  xy: 132, 168
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-ghost
-  rotate: false
-  xy: 150, 186
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-girl
-  rotate: false
-  xy: 2, 20
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-gnome
-  rotate: false
-  xy: 20, 38
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-horse
-  rotate: false
-  xy: 38, 56
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-loot
-  rotate: false
-  xy: 132, 150
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-mimic
-  rotate: false
-  xy: 132, 150
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-ogre
-  rotate: false
-  xy: 150, 168
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-plant
-  rotate: false
-  xy: 168, 186
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-rat
   rotate: false
   xy: 2, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-snake
+bunny
   rotate: false
-  xy: 20, 20
+  xy: 138, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-tiles2
+character
   rotate: false
-  xy: 2, 74
-  size: 128, 128
-  orig: 128, 128
+  xy: 20, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+down
+  rotate: false
+  xy: 2, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+duck
+  rotate: false
+  xy: 156, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+elf
+  rotate: false
+  xy: 38, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+floor
+  rotate: false
+  xy: 36, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+ghost
+  rotate: false
+  xy: 174, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+girl
+  rotate: false
+  xy: 56, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+gnome
+  rotate: false
+  xy: 192, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+horse
+  rotate: false
+  xy: 74, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+loot
+  rotate: false
+  xy: 210, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+mimic
+  rotate: false
+  xy: 210, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+null
+  rotate: false
+  xy: 70, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+wall
+  rotate: false
+  xy: 70, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+ogre
+  rotate: false
+  xy: 92, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+plant
+  rotate: false
+  xy: 228, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+rat
+  rotate: false
+  xy: 110, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+snake
+  rotate: false
+  xy: 138, 18
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+up
+  rotate: false
+  xy: 104, 20
+  size: 32, 32
+  orig: 32, 32
   offset: 0, 0
   index: -1
