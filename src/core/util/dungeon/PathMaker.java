@@ -51,11 +51,11 @@ public class PathMaker {
 			int width = MathUtils.random(10)+3;
 			int height = MathUtils.random(10)+3;
 			
-			Array<Vector2> locations = findAllOpenAreas(width, height);
+			Array<int[]> locations = findAllOpenAreas(width, height);
 			if (locations.size > 0)
 			{
-				Vector2 where = locations.random();
-				Room r = new Room((int)where.x, (int)where.y, width, height);
+				int[] where = locations.random();
+				Room r = new Room(where[0], where[1], width, height);
 				rooms.add(r);
 				for (int x = r.left(); x <= r.right(); x++)
 				{
@@ -109,9 +109,9 @@ public class PathMaker {
 	 * Attempts to find all open areas on the board that this rectangle can fit
 	 * @param r
 	 */
-	private Array<Vector2> findAllOpenAreas(int width, int height)
+	private Array<int[]> findAllOpenAreas(int width, int height)
 	{
-		Array<Vector2> positions = new Array<Vector2>();
+		Array<int[]> positions = new Array<int[]>();
 		int[][] good = new int[board.length][board[0].length];
 		
 		for (int y=0; y < board[0].length; ++y)
@@ -161,7 +161,7 @@ public class PathMaker {
 				//when our rectangle is fully formed, we can add it as a plausible location
 				if (vertical_count == height)
 				{
-					positions.add(new Vector2(x, y-height+1));
+					positions.add(new int[]{x, y-height+1});
 					vertical_count--;
 				}
 			}
