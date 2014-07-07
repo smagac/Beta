@@ -11,18 +11,18 @@ uniform float contrast;
 void main(void) {
 
     vec4 texCol = texture2D(u_texture, v_texCoords);
-    vec3 h = vec3(0f);
+    vec3 h = vec3(0);
     
     texCol *= v_color;
     
     if (any(greaterThan(texCol.rgb, h)))
     {
-        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(0, .5f, contrast));
+        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(0, .5, contrast));
         
     }
     else
     {  
-        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(.5f, 1f, contrast));
+        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(.5, 1, contrast));
     }
     
     gl_FragColor = texCol;
