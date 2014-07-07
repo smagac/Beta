@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -18,12 +19,10 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
@@ -68,7 +67,6 @@ public class WanderUI extends GameUI {
 	Label enemyName;
 	Label enemyHP;
 	private boolean statsVis;
-	float oldX, oldY;		//old mouse positions in case the player moves with keyboard the hover will update
 	InputProcessor wanderControls;
 	
 	public WanderUI(AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
@@ -213,13 +211,6 @@ public class WanderUI extends GameUI {
 				}
 				return false;
 			}
-			
-			@Override
-			public boolean mouseMoved(InputEvent evt, float x, float y) { 
-				Vector2 tile = dungeonService.getCurrentFloor().getSystem(RenderSystem.class).unproject(x, y, display.getWidth(), display.getHeight());
-				dungeonService.getCurrentFloor().getSystem(MovementSystem.class).mouseMoved(tile);
-				return true; 
-			}
 		};
 		
 		//mouse listener for moving the character by clicking within the display
@@ -248,11 +239,6 @@ public class WanderUI extends GameUI {
 						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.RIGHT);
 					}
 				}
-				if (moved)
-				{
-					displayControl.mouseMoved(null, oldX, oldY);
-				}
-				
 				return moved;
 			}
 
@@ -288,8 +274,9 @@ public class WanderUI extends GameUI {
 	{
 		if (dungeonService.getCurrentFloor() != null)
 		{
-			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).setView(getBatch(), getCamera());
+			Camera c = getViewport().getCamera();
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
+			getViewport().setCamera(c);
 		}
 	}
 
@@ -727,7 +714,7 @@ public class WanderUI extends GameUI {
 		refreshButtons();
 	}
 	
-	public void showStats(float x, float y, String name, String hp)
+	public void showStats(Vector2 v, String name, String hp)
 	{
 		if (statsVis && name.equals(enemyName.getText().toString())) {
 			return;
@@ -737,17 +724,17 @@ public class WanderUI extends GameUI {
 		
 		enemyName.setText(name);
 		enemyHP.setText(hp);
+		v = display.screenToLocalCoordinates(v);
 		stats.pack();
 		float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
 		stats.setWidth(width);
 		stats.setBackground(skin.getDrawable("button_up"));
-		Vector2 p = dungeonService.getCurrentFloor().getSystem(RenderSystem.class).project(x, y, display.getWidth(), display.getHeight());
 		stats.addAction(Actions.sequence(
 			Actions.alpha(0f),
-			Actions.moveTo(p.x - stats.getPrefWidth()/2, p.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*.5f),
+			Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*.5f),
 			Actions.parallel(
 				Actions.alpha(1f, .3f),
-				Actions.moveTo(p.x - stats.getPrefWidth()/2, p.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*1.25f, .3f)
+				Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*1.25f, .3f)
 				)
 			)
 		);

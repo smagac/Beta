@@ -6,41 +6,106 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
+import components.Identifier;
+import components.Monster;
 import components.Position;
 import components.Renderable;
+import components.Stats;
 import core.common.Storymode;
 
 public class RenderSystem extends EntityProcessingSystem {
 
+	WanderUI parentScene;
+	
 	private SpriteBatch batch;
 	private OrthographicCamera camera;
 	private OrthogonalTiledMapRenderer mapRenderer;
 	
 	@Mapper ComponentMapper<Position> positionMap;
 	@Mapper ComponentMapper<Renderable> renderMap;
+	@Mapper ComponentMapper<Monster> monsterMap;
+	@Mapper ComponentMapper<Identifier> idMap;
+	@Mapper ComponentMapper<Stats> statMap;
 	
 	float scale;
 	float height;
 	private TiledMap map;
 	private TextureRegion nullTile;
 	
+	private final Array<Actor> addQueue;
+	private final Array<Actor> removeQueue;
+	private Stage stage;
+	
 	@SuppressWarnings("unchecked")
 	public RenderSystem()
 	{
 		super(Aspect.getAspectForAll(Renderable.class, Position.class));
+		addQueue = new Array<Actor>();
+		removeQueue = new Array<Actor>();
+	}
+	
+	protected void inserted(final Entity e)
+	{
+		super.inserted(e);
+		
+		Renderable r = renderMap.get(e);
+		final Image sprite = new Image(r.getSprite());
+		sprite.setSize(scale, scale);
+		if (monsterMap.has(e))
+		{
+			Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
+			sprite.addListener(new InputListener(){
+				@Override
+				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
+				{
+					Stats s = statMap.get(e);
+					Identifier id = idMap.get(e);
+					Vector2 v = sprite.localToStageCoordinates(new Vector2(0, 0));
+					v = stage.stageToScreenCoordinates(v);
+					Gdx.app.log("[Input]", id.toString() + " has been hovered over. " + v.x + "," + v.y);
+					parentScene.showStats(
+						v, id.toString(), 
+						String.format("HP: %3d / %3d", s.hp, s.maxhp)
+					);	
+				}
+				public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor)
+				{
+					parentScene.hideStats();
+				}
+			});
+		}
+		r.setActor(sprite);
+		
+		addQueue.add(sprite);
+	}
+	
+	protected void removed(final Entity e)
+	{
+		Renderable r = renderMap.get(e);
+		removeQueue.add(r.getActor());
+		
+		super.removed(e);
 	}
 	
 	@Override
@@ -49,37 +114,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		Renderable r = renderMap.get(e);
 		
 		//adjust position to be aligned with tiles
-		batch.draw(r.getSprite(), p.getX()*scale, p.getY()*scale, scale, scale);
-	}
-	
-	/**
-	 * Get if touching an enemy with mouse cursor at x, y
-	 * @param x
-	 * @param y
-	 */
-	protected Vector2 unproject(float x, float y, float f, float g)
-	{
-		x -= f/2f;
-		y -= g/2f;
-		x += camera.position.x;
-		y += camera.position.y;
-		x -= x % scale;
-		y -= y % scale;
-		x /= scale;
-		y /= scale;
-		return new Vector2((int)(x), (int)(y+1));
-	}
-	
-	protected Vector2 project(float x, float y, float f, float g)
-	{
-		y -= 1;
-		x *= scale;
-		y *= scale;
-		x -= camera.position.x;
-		y -= camera.position.y;
-		x += f/2f;
-		y += g/2f;
-		return new Vector2((int)(x), (int)(y));
+		r.move(p.getX()*scale, p.getY()*scale);
 	}
 	
 	public void setMap(TiledMap map)
@@ -90,19 +125,38 @@ public class RenderSystem extends EntityProcessingSystem {
 		scale = 32f * mapRenderer.getUnitScale();
 	}
 	
-	public void setView(Batch batch, Camera camera)
+	public void setView(WanderUI view)
 	{
-		this.batch = (SpriteBatch) batch;
-		if (this.camera == null)
-		{
-			this.camera = new OrthographicCamera();
-		}
+		parentScene = view;
+		Viewport v = view.getViewport();
+		stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight()));
+		stage.addListener(new InputListener(){
+			public boolean mouseMoved(InputEvent evt, float x, float y)
+			{
+				//Gdx.app.log("[Input]", "Mouse is moving");
+				return true;
+			}
+		});
+		this.batch = (SpriteBatch) this.stage.getBatch();
+		this.camera = (OrthographicCamera) this.stage.getCamera();
+		
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
 	}
 	
 	@Override
 	protected void begin()
 	{
+		for (Actor a : addQueue)
+		{
+			stage.addActor(a);
+		}
+		
+		for (Actor r : removeQueue)
+		{
+			Gdx.app.log("[Entity]", "removing an actor");
+			r.remove();
+		}
+		
 		camera.setToOrtho(false, Storymode.InternalRes[0], Storymode.InternalRes[1]);
 		Entity player = world.getManager(TagManager.class).getEntity("player");
 		Position pos = positionMap.get(player);
@@ -121,20 +175,21 @@ public class RenderSystem extends EntityProcessingSystem {
 		}
 		mapRenderer.setView(camera);
 		mapRenderer.render();
-		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
 	}
 	
 	@Override
 	protected void end()
 	{
-		batch.end();
+		stage.act(Gdx.graphics.getDeltaTime());
+		stage.draw();
 	}
 	
 	public void dispose()
 	{
 		batch = null;
 		camera = null;
+		stage.clear();
+		stage = null;
 	}
 
 	@Override
@@ -149,6 +204,10 @@ public class RenderSystem extends EntityProcessingSystem {
 	public void setNull(Texture texture) {
 		texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
 		this.nullTile = new TextureRegion(texture);
-		
+	}
+	
+	public Stage getStage()
+	{
+		return stage;
 	}
 }

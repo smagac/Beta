@@ -288,16 +288,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		ui.setMessage(message);
 	}
-	
-	protected void showStats(float x, float y, String name, String hp)
-	{
-		ui.showStats(x, y, name, hp);
-	}
-	
-	protected void hideStats()
-	{
-		ui.hideStats();
-	}
 
 	@Override
 	protected void init() {
@@ -331,7 +321,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	public void setDungeon(Array<Dungeon> floors)
 	{
 		this.dungeon = floors;
-		currentFloorNumber = 0;
+		currentFloorNumber = floors.size-2;
 		currentFloor = null;
 	}
 
@@ -350,6 +340,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		if (currentFloor != null)
 		{
+			input.removeProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 			currentFloor.getSystem(RenderSystem.class).dispose();
 			currentFloor.getSystem(MovementSystem.class).setScene(null);
 			currentFloor.process();
@@ -357,6 +348,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		currentFloor = world;
 		//make sure enemy list is populated at least once
 		currentFloor.getSystem(MovementSystem.class).begin();
+		currentFloor.getSystem(RenderSystem.class).setView(ui);
+		input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 		currentFloorNumber = i;
 	}
 

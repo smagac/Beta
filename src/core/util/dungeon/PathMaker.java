@@ -77,6 +77,7 @@ public class PathMaker {
 					board[r.right()][y] = WALL;
 				}
 			}
+			locations = null;
 		}
 		
 		connectRooms();

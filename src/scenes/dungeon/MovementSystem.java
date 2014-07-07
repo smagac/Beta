@@ -352,39 +352,6 @@ public class MovementSystem extends EntityProcessingSystem {
 		return false;
 	}
 
-	public boolean mouseMoved(Vector2 xy)
-	{
-		if (enabledInput)
-		{
-			float screenX = xy.x;
-			float screenY = xy.y;
-			
-			for (int i = 0; i < monsters.size(); i++)
-			{
-				Entity e = monsters.get(i);
-				Position p = positionMap.get(e);
-				if (screenX == p.getX() && screenY == p.getY())
-				{
-					p = positionMap.get(player);
-					//make sure the dialog won't cover the player
-					if ((p.getY() >= screenY+1 && p.getY() < screenY + 3) && 
-						(screenX > p.getX()-3 && screenX < p.getX() +3 ))
-					{
-						screenY -= 3;
-					}
-					Stats s = statMap.get(e);
-					Identifier id = idMap.get(e);
-					parentScene.showStats(screenX, screenY, id.toString(), 
-							String.format("HP: %3d / %3d", s.hp, s.maxhp)
-						);
-					return true;
-				}
-			}
-		}
-		parentScene.hideStats();
-		return false;
-	}
-
 	public void inputEnabled(boolean enable)
 	{
 		this.enabledInput = enable;
