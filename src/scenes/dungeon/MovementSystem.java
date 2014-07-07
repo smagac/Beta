@@ -151,7 +151,11 @@ public class MovementSystem extends EntityProcessingSystem {
 				Position playerPos = positionMap.get(player);
 				if (playerPos.getX() == x && playerPos.getY() == y)
 				{
-					fight(e, player);
+					Combat c = combatMap.get(e);
+					if (!c.isPassive())
+					{
+						fight(e, player);
+					}
 				}
 			}
 		}

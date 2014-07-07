@@ -200,7 +200,7 @@ public class MonsterFactory {
 						t.getDef(floor),
 						t.getSpd(floor),
 						t.getExp(floor)));
-		e.addComponent(new Identifier(t.name, item.type()));
+		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective()));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
 		
 		Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
