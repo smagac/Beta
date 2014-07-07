@@ -58,7 +58,7 @@ public class Stats extends Component {
 	
 	public boolean levelUp()
 	{
-		if (exp > level * 10)
+		if (exp >= level * 10)
 		{
 			level++;
 			maxhp = 10+level*5;
