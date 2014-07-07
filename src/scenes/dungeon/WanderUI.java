@@ -18,10 +18,12 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
@@ -604,15 +606,19 @@ public class WanderUI extends GameUI {
 			children.first().remove();
 		}
 		
-		log.bottom();
-		Label output = new Label(msg, skin, "smallest");
-		output.setWrap(true);
-		output.setAlignment(Align.left);
-		log.add(output).expandX().fillX();
 		log.row();
+		log.bottom().left();
+		Label l = new Label(msg, skin, "smallest");
+		l.setWrap(true);
+		l.setAlignment(Align.left);
+		log.add(l).expandX().fillX();
+
 		log.pack();
+		log.act(0f);
+		logPane.validate();
+		logPane.act(0f);
 		
-		logPane.setScrollY(log.getPrefHeight());
+		logPane.setScrollPercentY(1.0f);
 	}
 
 	/**

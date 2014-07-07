@@ -333,7 +333,7 @@ public abstract class GameUI extends UI {
 				public void changed(ChangeEvent event, Actor actor) {
 					if (button.isChecked())
 					{
-						manager.get(DataDirs.tick, Sound.class).play();
+						//manager.get(DataDirs.tick, Sound.class).play();
 					}
 				}
 				
