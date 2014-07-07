@@ -52,7 +52,7 @@ public class Dungeon implements Serializable{
 		PathMaker maker = new PathMaker();
 		tiles = maker.run(roomCount, width, height);
 		rooms = maker.getRooms();
-		monsters = MathUtils.random(roomCount(), roomCount()+floor*(floor*difficulty));
+		monsters = MathUtils.random((int)(roomCount()*Math.max(1, difficulty*floor/100f)), (int)(roomCount()*Math.max(1, 2*difficulty*floor/100f)));
 	}
 
 	/**

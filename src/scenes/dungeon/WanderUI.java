@@ -115,30 +115,43 @@ public class WanderUI extends GameUI {
 		//loot List and buttons
 		{
 			itemSubmenu = new Table();
-			itemSubmenu.setWidth(400f);
-			itemSubmenu.setHeight(190f);
-			itemSubmenu.setPosition(76f, 10f);
+			itemSubmenu.setWidth(460f);
+			itemSubmenu.setHeight(200f);
+			itemSubmenu.setPosition(66f, 10f);
+			
+			Label lootLabel = new Label("My Loot", skin, "header");
+			lootLabel.setAlignment(Align.center);
+			itemSubmenu.top().add(lootLabel).width(230f).pad(4f).padBottom(0f);
+			Label sacrificeLabel = new Label("Sacrifice", skin, "header");
+			sacrificeLabel.setAlignment(Align.center);
+			itemSubmenu.top().add(sacrificeLabel).width(230f).pad(4f).padBottom(0f);
+			itemSubmenu.row();
 			
 			lootList = new Table();
 			lootList.top();
-			lootList.setFillParent(true);
-			lootList.pad(10f);
+			lootList.pad(0f);
 			
 			lootPane = new ScrollPane(lootList, skin);
 			lootPane.setScrollingDisabled(true, false);
-			lootPane.setWidth(200f);
+			lootPane.setScrollbarsOnTop(false);
+			lootPane.setScrollBarPositions(true, false);
+			lootPane.setFadeScrollBars(false);
+			//lootList.setFillParent(true);
 			lootList.setTouchable(Touchable.childrenOnly);
-			itemSubmenu.add(lootPane).width(200f).expandY().fillY().pad(4f);
+			itemSubmenu.add(lootPane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 			
 			sacrificeList = new Table();
-			sacrificeList.top();
-			sacrificeList.setFillParent(true);
-			sacrificeList.pad(10f);
+			sacrificeList.bottom();
+			sacrificeList.pad(4f).padRight(10f);
+			
 			sacrificePane = new ScrollPane(sacrificeList, skin);
 			sacrificePane.setScrollingDisabled(true, false);
-			sacrificePane.setWidth(200f);
+			sacrificePane.setScrollbarsOnTop(false);
+			sacrificePane.setScrollBarPositions(true, false);
+			sacrificePane.setFadeScrollBars(false);
 			sacrificeList.setTouchable(Touchable.childrenOnly);
-			itemSubmenu.add(sacrificePane).width(200f).expandY().fillY().pad(4f);
+			//sacrificeList.setFillParent(true);
+			itemSubmenu.add(sacrificePane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 			
 			itemSubmenu.addAction(Actions.alpha(0f));
 			display.addActor(itemSubmenu);
@@ -351,14 +364,15 @@ public class WanderUI extends GameUI {
 		if (playerService.getInventory().sacrifice(this.sacrifices, (menu == 1) ? this.healCost : dungeonService.getCurrentFloorNumber()))
 		{
 			hideGoddess();
+			for (int i = 0; i < this.sacrifices.size; i++)
+			{
+				Tracker.NumberValues.Loot_Sacrificed.increment();
+			}
+			
 			if (menu == 1)
 			{
 				Stats s = playerService.getPlayer();
 				s.hp = s.maxhp;
-				for (int i = 0; i < this.sacrifices.size; i++)
-				{
-					Tracker.NumberValues.Loot_Sacrificed.increment();
-				}
 				this.healCost++;
 				this.index = 0;
 				this.menu = 0;
@@ -437,10 +451,10 @@ public class WanderUI extends GameUI {
 			{
 				final TextButton l = new TextButton(item.toString(), skin);
 				l.setDisabled(true);
-				lootList.add(l).expandX().fillX();
+				lootList.add(l).width(190f);
 				Label i = new Label(""+loot.get(item), skin, "smaller");
 				i.setAlignment(Align.right);
-				lootList.add(i).width(30f);
+				lootList.add(i).width(20f);
 				lootList.row();
 				
 				l.addListener(new InputListener(){
@@ -499,10 +513,10 @@ public class WanderUI extends GameUI {
 			{
 				final TextButton l = new TextButton(item.toString(), skin);
 				l.setDisabled(true);
-				sacrificeList.add(l).expandX().fillX();
+				sacrificeList.add(l).width(190f);
 				Label i = new Label(""+sacrifices.get(item), skin, "smaller");
 				i.setAlignment(Align.right);
-				sacrificeList.add(i).width(30f);
+				sacrificeList.add(i).width(20f);
 				sacrificeList.row();
 				
 				l.addListener(new InputListener(){
@@ -570,7 +584,7 @@ public class WanderUI extends GameUI {
 		}
 		else
 		{
-			return new String[]{"Request Assistance", "Uh-Oh"};
+			return new String[]{"Request Assistance"};
 		}
 	}
 

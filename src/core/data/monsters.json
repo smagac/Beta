@@ -1,164 +1,160 @@
 {
     "ogre" : {
-        "hp" : "6", "str" : "11", "def" : "4", "mag" : "1", "spd" : "20",
-        
-        
+        "hp" : "6", "str" : "11", "def" : "4", "spd" : "5", "exp" : "2",
+        "maxhp" : "200", "maxstr" : "135", "maxdef" : "70", "maxexp" : "20", "maxpsd" : "35",
         "type" : "ogre"
     },
     "bunny" : {
-        "hp" : "3", "str" : "6", "def" : "2", "mag" : "1", "spd" : "50",
-        
-        
-        "type" : "bunny"
+        "hp" : "3", "str" : "6", "def" : "2", "exp" : "1", "spd" : "15",
+        "maxhp" : "70", "maxstr" : "110", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "45",
+        "type" : "bunny",
+        "passive" : "true"
     },
     "duck" : {
-        "hp" : "5", "str" : "7", "def" : "1", "mag" : "1", "spd" : "35",
-        
-        
+        "hp" : "5", "str" : "7", "def" : "1", "exp" : "1", "spd" : "10",
+        "maxhp" : "90", "maxstr" : "140", "maxdef" : "90", "maxexp" : "20", "maxpsd" : "20",
         "type" : "duck"
     },
     "bat" : {
-        "hp" : "3", "str" : "5", "def" : "3", "mag" : "1", "spd" : "65",
-        
-        
+        "hp" : "3", "str" : "8", "def" : "3", "exp" : "1", "spd" : "15",
+        "maxhp" : "99", "maxstr" : "105", "maxdef" : "80", "maxexp" : "9", "maxpsd" : "55",
         "type" : "duck"
     },
     "ghost" : {
-        "hp" : "10", "str" : "7", "def" : "0", "mag" : "1", "spd" : "35",
-        
-        
-        "type" : "ghost"
+        "hp" : "10", "str" : "7", "def" : "0", "exp" : "1", "spd" : "35",
+        "maxhp" : "85", "maxstr" : "115", "maxdef" : "67", "maxexp" : "10", "maxpsd" : "65",
+        "type" : "ghost",
+        "passive" : "true",
+        "die" : "%s crossed over peacefully"
     },
     "ghoul" : {
-        "hp" : "15", "str" : "6", "def" : "6", "mag" : "1", "spd" : "15",
-        
-        
-        "type" : "ghost"
+        "hp" : "15", "str" : "6", "def" : "5", "exp" : "1", "spd" : "3",
+        "maxhp" : "250", "maxstr" : "112", "maxdef" : "75", "maxexp" : "15", "maxpsd" : "15",
+        "type" : "ghost",
+        "die" : "%s only wanted to be your friend"
     },
     "vampire" : {
-        "hp" : "20", "str" : "8", "def" : "3", "mag" : "1", "spd" : "55",
-        
-        
+        "hp" : "20", "str" : "8", "def" : "3", "exp" : "3", "spd" : "55",
+        "maxhp" : "295", "maxstr" : "130", "maxdef" : "90", "maxexp" : "30", "maxpsd" : "65",
         "type" : "ghost"
     },
     "spider" : {
-        "hp" : "5", "str" : "8", "def" : "2", "mag" : "1", "spd" : "75",
-        
-        
+        "hp" : "5", "str" : "8", "def" : "2", "exp" : "1", "spd" : "15",
+        "maxhp" : "99", "maxstr" : "122", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "35",
         "type" : "bug"
     },
     "bug" : {
-        "hp" : "4", "str" : "4", "def" : "3", "mag" : "1", "spd" : "45",
-        
-        
+        "hp" : "4", "str" : "6", "def" : "3", "exp" : "1", "spd" : "5",
+        "maxhp" : "80", "maxstr" : "110", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "25",
         "type" : "bug"
     },
     "elf" : {
-        "hp" : "15", "str" : "6", "def" : "4", "mag" : "1", "spd" : "35",
-        
-        
-        "type" : "elf"
+        "hp" : "15", "str" : "6", "def" : "4", "exp" : "2", "spd" : "45",
+        "maxhp" : "175", "maxstr" : "60", "maxdef" : "45", "maxexp" : "20", "maxpsd" : "65",
+        "type" : "elf",
+        "passive" : "true"
     },
     "goblin" : {
-        "hp" : "7", "str" : "4", "def" : "3", "mag" : "1", "spd" : "50",
-        
-        
+        "hp" : "7", "str" : "4", "def" : "3", "exp" : "1", "spd" : "8",
+        "maxhp" : "115", "maxstr" : "110", "maxdef" : "72", "maxexp" : "10", "maxpsd" : "34",
         "type" : "elf"
     },
     "michael bay" : {
-        "hp" : "100", "str" : "0", "def" : "-10", "mag" : "1", "spd" : "0",
-        
-        
+        "hp" : "100", "str" : "0", "def" : "-10", "exp" : "1", "spd" : "0",
+        "maxhp" : "9999", "maxstr" : "140", "maxdef" : "10", "maxexp" : "15", "maxpsd" : "0",
         "type" : "elf",
         "die" : "%s exploded!"
     },
     "gnome" : {
-        "hp" : "15", "str" : "14", "def" : "6", "mag" : "1", "spd" : "25",
-        
-        
-        "type" : "gnome"
+        "hp" : "15", "str" : "14", "def" : "6", "exp" : "3", "spd" : "3",
+        "maxhp" : "225", "maxstr" : "130", "maxdef" : "90", "maxexp" : "30", "maxpsd" : "25",
+        "type" : "gnome",
+        "passive" : "true",
+        "die" : "%s fled in search of beer"
     },
     "plant" : {
-        "hp" : "1", "str" : "17", "def" : "1", "mag" : "1", "spd" : "5",
-        
-        
-        "type" : "plant"
+        "hp" : "1", "str" : "17", "def" : "1", "exp" : "2", "spd" : "25",
+        "maxhp" : "40", "maxstr" : "150", "maxdef" : "50", "maxexp" : "20", "maxpsd" : "50",
+        "type" : "plant",
+        "die" : "%s withered away!"
     },
     "snake" : {
-        "hp" : "8", "str" : "7", "def" : "2", "mag" : "1", "spd" : "40",
-        
-        
-        "type" : "snake"
+        "hp" : "8", "str" : "7", "def" : "2", "exp" : "1", "spd" : "12",
+        "maxhp" : "130", "maxstr" : "123", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "35",
+        "type" : "snake",
+        "passive" : "true"
     },
     "viper" : {
-        "hp" : "11", "str" : "10", "def" : "0", "mag" : "1", "spd" : "75",
-        
-        
+        "hp" : "11", "str" : "10", "def" : "0", "exp" : "1", "spd" : "10",
+        "maxhp" : "160", "maxstr" : "130", "maxdef" : "50", "maxexp" : "10", "maxpsd" : "30",
         "type" : "snake"
     },
     "python" : {
-        "hp" : "25", "str" : "10", "def" : "3", "mag" : "1", "spd" : "35",
-        
-        
+        "hp" : "25", "str" : "10", "def" : "3", "exp" : "1", "spd" : "35",
+        "maxhp" : "335", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "65",
         "type" : "snake"
     },
     "rat" : {
-        "hp" : "1", "str" : "4", "def" : "0", "mag" : "1", "spd" : "95",
-        
-        
+        "hp" : "4", "str" : "4", "def" : "3", "exp" : "1", "spd" : "15",
+        "maxhp" : "105", "maxstr" : "110", "maxdef" : "70", "maxexp" : "10", "maxpsd" : "45",
         "type" : "rat"
     },
     "mouse" : {
-        "hp" : "1", "str" : "3", "def" : "0", "mag" : "1", "spd" : "5",
-        
-        
-        "type" : "rat"
+        "hp" : "1", "str" : "3", "def" : "0", "exp" : "1", "spd" : "5",
+        "maxhp" : "75", "maxstr" : "105", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "65",
+        "type" : "rat",
+        "passive" : "true"
     },
     "horse" : {
-        "hp" : "13", "str" : "9", "def" : "4", "mag" : "1", "spd" : "35",
-        
-        
-        "type" : "horse"
+        "hp" : "13", "str" : "9", "def" : "4", "exp" : "1", "spd" : "35",
+        "maxhp" : "210", "maxstr" : "135", "maxdef" : "85", "maxexp" : "30", "maxpsd" : "65",
+        "type" : "horse",
+        "passive" : "true"
+    },
+    "cocatrice" : {
+        "hp" : "19", "str" : "7", "def" : "3", "exp" : "2", "spd" : "10",
+        "maxhp" : "210", "maxstr" : "155", "maxdef" : "75", "maxexp" : "30", "maxpsd" : "15",
+        "type" : "duck"
     },
     "alpaca" : {
-        "hp" : "9", "str" : "5", "def" : "5", "mag" : "1", "spd" : "25",
-        
-        
-        "type" : "horse"
+        "hp" : "9", "str" : "5", "def" : "5", "exp" : "1", "spd" : "25",
+        "maxhp" : "185", "maxstr" : "115", "maxdef" : "95", "maxexp" : "15", "maxpsd" : "25",
+        "type" : "horse",
+        "passive" : "true"
     },
     "llama" : {
-        "hp" : "15", "str" : "3", "def" : "6", "mag" : "1", "spd" : "15",
-        
-        
-        "type" : "horse"
+        "hp" : "15", "str" : "3", "def" : "6", "exp" : "1", "spd" : "15",
+        "maxhp" : "295", "maxstr" : "95", "maxdef" : "125", "maxexp" : "20", "maxpsd" : "15",
+        "type" : "horse",
+        "passive" : "true"
     },
     "housewife" : {
-        "hp" : "10", "str" : "5", "def" : "5", "mag" : "1", "spd" : "30",
-        
-        
+        "hp" : "10", "str" : "5", "def" : "5", "exp" : "1", "spd" : "10",
+        "maxhp" : "99", "maxstr" : "105", "maxdef" : "105", "maxexp" : "10", "maxpsd" : "30",
         "type" : "girl"
     },
     "schoolgirl" : {
-        "hp" : "4", "str" : "9", "def" : "3", "mag" : "1", "spd" : "35",
-        
-        
-        "type" : "girl"
+        "hp" : "4", "str" : "9", "def" : "3", "exp" : "1", "spd" : "25",
+        "maxhp" : "80", "maxstr" : "129", "maxdef" : "75", "maxexp" : "20", "maxpsd" : "45",
+        "type" : "girl",
+        "die" : "%s was late for school"
     },
     "woman" : {
-        "hp" : "15", "str" : "7", "def" : "4", "mag" : "1", "spd" : "30",
-        
-        
+        "hp" : "15", "str" : "7", "def" : "4", "exp" : "1", "spd" : "8",
+        "maxhp" : "125", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "25",
         "type" : "girl"
     },
     "mimic" : {
-        "hp" : "50", "str" : "15", "def": "11", "mag" : "5", "spd" : "10",
+        "hp" : "50", "str" : "15", "def": "11", "exp" : "5", "spd" : "10",
+        "maxhp" : "450", "maxstr" : "160", "maxdef" : "95", "maxexp" : "50", "maxpsd" : "15",
         "type" : "loot",
         "norm" : "0",
         "agro" : ".9",
         "passive" : "true"
     },
     "treasure chest" : {
-        "hp" : "1", "str" : "0", "def": "-10", "mag" : "0", "spd" : "0",
+        "hp" : "1", "str" : "0", "def": "-10", "exp" : "0", "spd" : "0",
+        "maxhp" : "1", "maxstr" : "0", "maxdef" : "-10", "maxexp" : "0", "maxpsd" : "0",
         "type" : "loot",
         "norm" : "0",
         "agro" : "0",

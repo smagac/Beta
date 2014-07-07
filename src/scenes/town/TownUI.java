@@ -300,6 +300,7 @@ public class TownUI extends GameUI {
 			lootLabel.setAlignment(Align.center);
 			lootSubmenu.top().add(lootLabel).expandX().fillX().pad(10f).padBottom(0f);
 			lootSubmenu.row();
+			
 			lootList = new Table();
 			lootPane = new ScrollPane(lootList, skin);
 			lootPane.setHeight(display.getHeight()/2);

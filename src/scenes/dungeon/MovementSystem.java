@@ -179,7 +179,7 @@ public class MovementSystem extends EntityProcessingSystem {
 		{
 			return;
 		}
-		if (MathUtils.randomBoolean(MathUtils.random(.8f, MULT)*bStats.getSpeed()))
+		if (MathUtils.randomBoolean(1f-(MathUtils.random(.8f, MULT)*bStats.getSpeed())/100f))
 		{
 			hit.play();
 			float chance = MathUtils.random(.8f, MULT);

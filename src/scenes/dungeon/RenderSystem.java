@@ -74,7 +74,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		sprite.setSize(scale, scale);
 		if (monsterMap.has(e))
 		{
-			Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
+			//Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
 			sprite.addListener(new InputListener(){
 				@Override
 				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
@@ -83,7 +83,7 @@ public class RenderSystem extends EntityProcessingSystem {
 					Identifier id = idMap.get(e);
 					Vector2 v = sprite.localToStageCoordinates(new Vector2(0, 0));
 					v = stage.stageToScreenCoordinates(v);
-					Gdx.app.log("[Input]", id.toString() + " has been hovered over. " + v.x + "," + v.y);
+					//Gdx.app.log("[Input]", id.toString() + " has been hovered over. " + v.x + "," + v.y);
 					parentScene.showStats(
 						v, id.toString(), 
 						String.format("HP: %3d / %3d", s.hp, s.maxhp)
@@ -153,26 +153,28 @@ public class RenderSystem extends EntityProcessingSystem {
 		
 		for (Actor r : removeQueue)
 		{
-			Gdx.app.log("[Entity]", "removing an actor");
+			//Gdx.app.log("[Entity]", "removing an actor");
 			r.remove();
 		}
 		
 		camera.setToOrtho(false, Storymode.InternalRes[0], Storymode.InternalRes[1]);
-		Entity player = world.getManager(TagManager.class).getEntity("player");
-		Position pos = positionMap.get(player);
-		camera.position.x = pos.getX()*scale;
-		camera.position.y = pos.getY()*scale;
-		camera.update();
 		
 		//fill background
 		if (nullTile != null)
 		{
 			nullTile.setRegionWidth((int)camera.viewportWidth);
 			nullTile.setRegionHeight((int)camera.viewportHeight);
+			batch.setProjectionMatrix(camera.combined);
 			batch.begin();
 			batch.draw(nullTile, 0, 0, camera.viewportWidth, camera.viewportHeight);
 			batch.end();
 		}
+		Entity player = world.getManager(TagManager.class).getEntity("player");
+		Position pos = positionMap.get(player);
+		camera.position.x = pos.getX()*scale;
+		camera.position.y = pos.getY()*scale;
+		camera.update();
+		
 		mapRenderer.setView(camera);
 		mapRenderer.render();
 	}

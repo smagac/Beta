@@ -241,7 +241,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			depth--;
 		}
 		ms.setScene(this);
-		floor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
 		
 		log("You move onto floor " + depth) ;
 
@@ -343,12 +342,15 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			input.removeProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 			currentFloor.getSystem(RenderSystem.class).dispose();
 			currentFloor.getSystem(MovementSystem.class).setScene(null);
+			currentFloor.getSystem(RenderSystem.class).setNull(null);
 			currentFloor.process();
 		}
 		currentFloor = world;
 		//make sure enemy list is populated at least once
 		currentFloor.getSystem(MovementSystem.class).begin();
 		currentFloor.getSystem(RenderSystem.class).setView(ui);
+		currentFloor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
+
 		input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 		currentFloorNumber = i;
 	}
