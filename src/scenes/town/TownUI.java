@@ -6,6 +6,7 @@ import java.util.Iterator;
 import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
@@ -72,7 +73,7 @@ public class TownUI extends GameUI {
 	private ButtonGroup craftTabs;
 	private FileHandle queueDir;
 	
-	private final IPlayerContainer player;
+	private IPlayerContainer playerService;
 	
 	private int menu = -1;
 	private static final int GODDESS = 3;
@@ -81,9 +82,14 @@ public class TownUI extends GameUI {
 	private static final int SLEEP = 0;
 	private Iterator<String> dialog;
 	
-	public TownUI(Scene scene, AssetManager manager, IPlayerContainer player) {
-		super(scene, manager, player);
-		this.player = player;
+	public TownUI(AssetManager manager, IPlayerContainer player) {
+		super(manager, player);
+		this.playerService = player;
+	}
+	
+	protected void unhook()
+	{
+		this.playerService = null;
 	}
 	
 	@Override
@@ -96,8 +102,6 @@ public class TownUI extends GameUI {
 			Image front = new Image(skin.getRegion("explore"));
 			exploreImg.addActor(back);
 			exploreImg.addActor(front);
-			
-			display.addActor(exploreImg);
 			front.addAction(
 					Actions.forever(
 						Actions.sequence(
@@ -107,14 +111,52 @@ public class TownUI extends GameUI {
 						)
 					)
 				);
+			front.setTouchable(Touchable.disabled);
+			back.setTouchable(Touchable.disabled);
+			
 			exploreImg.setSize(front.getWidth(), front.getHeight());
 			exploreImg.setPosition(display.getWidth()/2-exploreImg.getWidth()/2, display.getHeight()-exploreImg.getHeight());
+			exploreImg.setTouchable(Touchable.enabled);
+			exploreImg.addListener(new InputListener(){
+				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+				{
+					if (button == Buttons.LEFT)
+					{
+						if (menu == -1)
+						{
+							triggerAction(1);
+							manager.get(DataDirs.accept, Sound.class).play();
+							refreshButtons();
+						}
+						return true;
+					}
+					return false;
+				}
+			});
+			
+			display.addActor(exploreImg);
 		}
 
 		//sleep icon
 		{
 			sleepImg = new Image(skin.getRegion("sleep"));
 			sleepImg.setPosition(0f, 0f);
+			sleepImg.addListener(new InputListener(){
+				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+				{
+					if (button == Buttons.LEFT)
+					{
+						if (menu == -1)
+						{
+							triggerAction(0);
+							manager.get(DataDirs.accept, Sound.class).play();
+							refreshButtons();
+						}
+						return true;
+					}
+					return false;
+				}
+			});
 			display.addActor(sleepImg);
 		}
 		
@@ -122,6 +164,22 @@ public class TownUI extends GameUI {
 		{
 			craftImg = new Image(skin.getRegion("craft"));
 			craftImg.setPosition(display.getWidth()-craftImg.getWidth(), 0);
+			craftImg.addListener(new InputListener(){
+				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+				{
+					if (button == Buttons.LEFT)
+					{
+						if (menu == -1)
+						{
+							triggerAction(2);
+							manager.get(DataDirs.accept, Sound.class).play();
+							refreshButtons();
+						}
+						return true;
+					}
+					return false;
+				}
+			});
 			display.addActor(craftImg);
 		}
 		
@@ -155,7 +213,7 @@ public class TownUI extends GameUI {
 						if (myButton.isChecked())
 						{
 							manager.get(DataDirs.tick, Sound.class).play();
-							craftList.setItems(player.getInventory().getRequiredCrafts());
+							craftList.setItems(playerService.getInventory().getRequiredCrafts());
 							craftList.setSelectedIndex(0);
 						}
 					}
@@ -174,7 +232,7 @@ public class TownUI extends GameUI {
 					{
 						if (todayButton.isChecked())
 						{
-							craftList.setItems(player.getInventory().getTodaysCrafts());
+							craftList.setItems(playerService.getInventory().getTodaysCrafts());
 							craftList.setSelectedIndex(0);
 						}
 					}
@@ -186,7 +244,7 @@ public class TownUI extends GameUI {
 			
 			//list of required crafts
 			craftList = new List<Craftable>(skin);
-			craftList.setItems(player.getInventory().getRequiredCrafts());
+			craftList.setItems(playerService.getInventory().getRequiredCrafts());
 			craftList.addListener(new ChangeListener(){
 
 				@Override
@@ -540,10 +598,10 @@ public class TownUI extends GameUI {
 			if (index == 1)
 			{
 				Craftable c = craftList.getSelected();
-				int count = player.getInventory().getProgress();
+				int count = playerService.getInventory().getProgress();
 				if (c != null)
 				{
-					boolean made = player.getInventory().makeItem(c);
+					boolean made = playerService.getInventory().makeItem(c);
 					setMessage((made)?"Crafted an item!":"Not enough materials");
 					populateLoot();
 					
@@ -613,7 +671,7 @@ public class TownUI extends GameUI {
 		{
 			if (index == 1 || index == 2)
 			{
-				if (player.getPlayer().hp <= 0)
+				if (playerService.getPlayer().hp <= 0)
 				{
 					setMessage("You need to rest first!");
 				}
@@ -685,7 +743,7 @@ public class TownUI extends GameUI {
 		lootList.clear();
 		lootList.top().left();
 		
-		ObjectMap<Item, Integer> loot = player.getInventory().getLoot();
+		ObjectMap<Item, Integer> loot = playerService.getInventory().getLoot();
 		if (loot.keys().hasNext)
 		{
 			lootList.setWidth(lootPane.getWidth());
@@ -718,7 +776,7 @@ public class TownUI extends GameUI {
 	{
 		menu = CRAFT;
 		//populate the submenu's data
-		craftList.setItems(player.getInventory().getRequiredCrafts());	
+		craftList.setItems(playerService.getInventory().getRequiredCrafts());	
 		requirementList.clear();
 		craftTabs.setChecked(craftTabs.getButtons().first().getName());
 		//create loot menu
@@ -783,10 +841,10 @@ public class TownUI extends GameUI {
 
 				@Override
 				public void run() {
-					player.rest();
+					playerService.rest();
 					
 					//new crafts appear each day!
-					player.getInventory().refreshCrafts();
+					playerService.getInventory().refreshCrafts();
 				}
 				
 			}),

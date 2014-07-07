@@ -2,13 +2,14 @@ package scenes.dungeon;
 
 import scenes.GameUI;
 
-import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -25,6 +26,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.SnapshotArray;
+import com.esotericsoftware.tablelayout.Cell;
 
 import components.Stats;
 import core.common.SceneManager;
@@ -32,18 +35,16 @@ import core.common.Tracker;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
 import core.service.IPlayerContainer;
-import scenes.Scene;
 
 public class WanderUI extends GameUI {
 
 	Image fader;
+	//logger
 	ScrollPane logPane;
-	List<String> log;
+	Table log;
 	
 	Label message;
 	Group dialog;
-	
-	RenderSystem floor;
 	
 	Image goddess;
 	
@@ -61,12 +62,18 @@ public class WanderUI extends GameUI {
 	private ScrollPane lootPane;
 	private ScrollPane sacrificePane;
 	
-	private final IPlayerContainer playerService;
-	private final IDungeonContainer dungeonService;
+	private IPlayerContainer playerService;
+	private IDungeonContainer dungeonService;
 	
+	Table stats;
+	Label enemyName;
+	Label enemyHP;
+	private boolean statsVis;
+	float oldX, oldY;		//old mouse positions in case the player moves with keyboard the hover will update
+	InputProcessor wanderControls;
 	
-	public WanderUI(Scene<WanderUI> scene, AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
-		super(scene, manager, playerService);
+	public WanderUI(AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
+		super(manager, playerService);
 		
 		this.playerService = playerService;
 		this.dungeonService = dungeonService;
@@ -81,7 +88,7 @@ public class WanderUI extends GameUI {
 		
 		messageWindow.clear();
 		
-		log = new List<String>(skin, "log");
+		log = new Table(skin);
 		log.setWidth(messageWindow.getWidth());
 		logPane = new ScrollPane(log, skin, "log");
 		logPane.setSize(messageWindow.getWidth(), messageWindow.getHeight());
@@ -140,6 +147,23 @@ public class WanderUI extends GameUI {
 			display.addActor(itemSubmenu);
 		}
 		
+		//enemy stats
+		{
+			stats = new Table();
+			enemyName = new Label("", skin, "promptsm");
+			enemyName.setAlignment(Align.center);
+			enemyHP = new Label("HP: 0/0", skin, "smaller");
+			enemyHP.setAlignment(Align.center);
+			
+			float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
+			stats.setWidth(width);
+			stats.add(enemyName).expandX().fillX().align(Align.center);
+			stats.row();
+			stats.add(enemyHP).expandX().fillX().align(Align.center);
+			stats.addAction(Actions.alpha(0f));
+			display.addActor(stats);
+		}
+		
 		goddess = new Image(skin.getRegion("goddess"));
 		goddess.setSize(128f, 128f);
 		goddess.setScaling(Scaling.stretch);
@@ -159,41 +183,103 @@ public class WanderUI extends GameUI {
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f));
 		goddessDialog.addAction(Actions.alpha(0f));
 		
-		//mouse listener for moving the character by clicking within the display
-		display.addListener(new InputListener(){
+		final InputListener displayControl = new InputListener(){
 			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 			{
-				MovementSystem ms = dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
-				
 				float dir = MathUtils.atan2(display.getHeight()/2-y, display.getWidth()/2-x);
 				
 				//LEFT
 				if (dir > -MathUtils.PI/4 && dir < MathUtils.PI/4)
 				{
-					ms.keyDown(Keys.LEFT);
+					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.LEFT);
 					return true;
 				}
 				//RIGHT
 				else if (dir < -3*MathUtils.PI/4 || dir > 3*MathUtils.PI/4)
 				{
-					ms.keyDown(Keys.RIGHT);
+					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.RIGHT);
 					return true;
 				}
 				//UP
 				else if (dir < -MathUtils.PI/4 && dir > -3*MathUtils.PI/4)
 				{
-					ms.keyDown(Keys.UP);
+					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.UP);
 					return true;
 				}
 				//DOWN
 				else if (dir > MathUtils.PI/4 && dir < 3*MathUtils.PI/4)
 				{
-					ms.keyDown(Keys.DOWN);
+					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.DOWN);
 					return true;
 				}
 				return false;
 			}
-		});
+			
+			@Override
+			public boolean mouseMoved(InputEvent evt, float x, float y) { 
+				Vector2 tile = dungeonService.getCurrentFloor().getSystem(RenderSystem.class).unproject(x, y, display.getWidth(), display.getHeight());
+				dungeonService.getCurrentFloor().getSystem(MovementSystem.class).mouseMoved(tile);
+				return true; 
+			}
+		};
+		
+		//mouse listener for moving the character by clicking within the display
+		wanderControls = new InputProcessor() {
+			@Override
+			public boolean keyDown(int keycode) {
+				boolean moved = false;
+				
+				//allow 2 turn dashing
+				for (int i = 0; i < (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)?2:1); i++)
+				{
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.UP);
+					}
+					if (keycode == Keys.DOWN || keycode == Keys.S)
+					{
+						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.DOWN);
+					}
+					if (keycode == Keys.LEFT || keycode == Keys.A)
+					{
+						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.LEFT);
+					}
+					if (keycode == Keys.RIGHT || keycode == Keys.D)
+					{
+						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.RIGHT);
+					}
+				}
+				if (moved)
+				{
+					displayControl.mouseMoved(null, oldX, oldY);
+				}
+				
+				return moved;
+			}
+
+			@Override
+			public boolean keyUp(int keycode) {return false;}
+
+			@Override
+			public boolean keyTyped(char character) {return false;}
+
+			@Override
+			public boolean touchDown(int screenX, int screenY, int pointer, int button) { return false;	}
+
+			@Override
+			public boolean touchUp(int screenX, int screenY, int pointer, int button) {	return false; }
+
+			@Override
+			public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
+
+			@Override
+			public boolean mouseMoved(int screenX, int screenY) { return false;	}
+
+			@Override
+			public boolean scrolled(int amount) { return false;	}
+		};
+		
+		display.addListener(displayControl);
 		
 		index = 0;
 	}
@@ -201,13 +287,11 @@ public class WanderUI extends GameUI {
 	@Override
 	protected void externalRender(Rectangle view)
 	{
-		floor.setView(getBatch(), getCamera());
-		floor.process();
-	}
-	
-	protected void setFloor(World world)
-	{
-		floor = world.getSystem(RenderSystem.class);
+		if (dungeonService.getCurrentFloor() != null)
+		{
+			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).setView(getBatch(), getCamera());
+			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
+		}
 	}
 
 	@Override
@@ -314,6 +398,7 @@ public class WanderUI extends GameUI {
 	}
 
 	private void showGoddess(String string) {
+		hideStats();
 		dungeonService.getCurrentFloor().getSystem(MovementSystem.class).inputEnabled(false);
 		gMsg.setText(string);
 		
@@ -499,12 +584,16 @@ public class WanderUI extends GameUI {
 		}
 		else
 		{
-			return new String[]{"Request Assistance"};
+			return new String[]{"Request Assistance", "Uh-Oh"};
 		}
 	}
 
 	@Override
 	protected Actor[] focusList() {
+		if (this.index == 0)
+		{
+			return null;
+		}
 		return new Actor[]{dialog};
 	}
 	
@@ -512,16 +601,22 @@ public class WanderUI extends GameUI {
 	public void setMessage(String msg)
 	{
 		//update the battle log
-		Array<String> l = log.getItems();
-		if (l.size > 5)
+		SnapshotArray<Actor> children = log.getChildren();
+		if (children.size > 10)
 		{
-			l.removeIndex(0);
+			children.first().remove();
 		}
-		l.add(msg);
-		log.act(0f);
-		log.pack();
 		
-		logPane.scrollTo(0, log.getHeight(), logPane.getWidth(), log.getItemHeight());
+		log.bottom();
+		Label output = new Label(msg, skin, "smallest");
+		output.setWrap(true);
+		output.setAlignment(Align.left);
+		log.add(output).expandX().fillX();
+		log.row();
+		
+		log.act(0f);
+		
+		logPane.setScrollY(0);
 	}
 
 	/**
@@ -628,5 +723,44 @@ public class WanderUI extends GameUI {
 		setFocus(dialog);
 		index = -1;
 		refreshButtons();
+	}
+	
+	public void showStats(float x, float y, String name, String hp)
+	{
+		if (statsVis && name.equals(enemyName.getText().toString())) {
+			return;
+		}
+		
+		statsVis = true;
+		
+		enemyName.setText(name);
+		enemyHP.setText(hp);
+		stats.pack();
+		float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
+		stats.setWidth(width);
+		stats.setBackground(skin.getDrawable("button_up"));
+		Vector2 p = dungeonService.getCurrentFloor().getSystem(RenderSystem.class).project(x, y, display.getWidth(), display.getHeight());
+		stats.addAction(Actions.sequence(
+			Actions.alpha(0f),
+			Actions.moveTo(p.x - stats.getPrefWidth()/2, p.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*.5f),
+			Actions.parallel(
+				Actions.alpha(1f, .3f),
+				Actions.moveTo(p.x - stats.getPrefWidth()/2, p.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*1.25f, .3f)
+				)
+			)
+		);
+	}
+	
+	public void hideStats()
+	{
+		statsVis = false;
+		stats.clearActions();
+		stats.addAction(Actions.alpha(0f, .3f));
+	}
+
+	@Override
+	protected void unhook() {
+		playerService = null;
+		dungeonService = null;
 	}
 }

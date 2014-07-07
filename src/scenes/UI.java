@@ -18,19 +18,16 @@ import core.DataDirs;
 public abstract class UI extends Stage {
 
 	protected Skin skin;
-	protected Scene<?> parent;
 	protected AssetManager manager;
 	
-	public UI(Scene<?> scene, AssetManager manager)
+	public UI(AssetManager manager)
 	{
 		super(new ScalingViewport(Scaling.fit, 960, 540));
-		this.parent = scene;
 		this.manager = manager;
 		manager.load("data/uiskin.json", Skin.class);
 
 		manager.load(DataDirs.accept, Sound.class);
 		manager.load(DataDirs.tick, Sound.class);
-		
 	}
 	
 	public abstract void init();
@@ -118,4 +115,16 @@ public abstract class UI extends Stage {
 	public void resize(int width, int height){
 		getViewport().update(width, height);
 	}
+	
+	public void dispose()
+	{
+		super.dispose();
+		unhook();
+	}
+	
+	/**
+	 * Unhook any injected services from the parent that you decided to attach,
+	 * you freakin' lazy dingus.
+	 */
+	protected void unhook() {}
 }

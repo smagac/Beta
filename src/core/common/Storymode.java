@@ -1,36 +1,28 @@
 package core.common;
 
-
-import java.io.IOException;
-
-import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import components.Stats;
 import core.Palette;
-import core.datatypes.Dungeon;
-import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.service.IColorMode;
-import core.service.IDungeonContainer;
 import core.service.IGame;
+import core.service.ILoader;
 import core.service.IPlayerContainer;
 import factories.AdjectiveFactory;
-import factories.DungeonFactory;
 import factories.MonsterFactory;
 
-public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, IPlayerContainer, IDungeonContainer {
+public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, IPlayerContainer, ILoader {
 
 	private Stats player;
 	private float time;
@@ -42,12 +34,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	
 	private boolean fullscreen;
 	
-	//factory data
-	DungeonFactory dungeonFactory;
-	private Array<Dungeon> floors;
-	private int currentFloor;
-	private World dungeon;
-	
 	//COOL RENDERING
 	private Palette currentHue = Palette.Original;
 	private float contrast = .5f;
@@ -57,6 +43,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	private boolean invert;
 	
 	private BossListener boss;
+	
+	//loading screen data
+	private SpriteBatch loadingBatch;
+	private BitmapFont loadingFont;
+	private String loadingMessage;
+	private boolean loading;
 	
 	protected Storymode(){}
 	
@@ -82,6 +74,11 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		
 		SceneManager.switchToScene("title");
 		
+		loadingBatch = new SpriteBatch();
+		loadingFont = new BitmapFont(Gdx.files.internal("data/loading.fnt"));
+		
+		setLoadingMessage(null);
+		
 		//test dungeon
 		/*
 		startGame(3);
@@ -94,7 +91,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	public void startGame(int difficulty) {
 		
 		//make a player
-		player = new Stats(10, 0, MathUtils.random(10), 5, 5, 5, 50);
+		player = new Stats(10, 5, 5, 5, 0);
 
 		//make crafting requirements
 		inventory = new Inventory(difficulty);
@@ -151,8 +148,14 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		// this way we can call switches from the UI at any point
 		if (queued != null)
 		{
+			Screen old = super.getScreen();
 			super.setScreen(queued);
 			queued = null;
+			if (old != null)
+			{
+				SceneManager.unhook(old);
+				System.gc();
+			}
 		}
 	
 		Palette p = getPalette();
@@ -170,7 +173,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		//make sure our buffer is always cleared
 		Gdx.gl.glClearColor(clear.r, clear.g, clear.b, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
 
 		//bind the attribute
 		hueify.begin();
@@ -199,6 +201,18 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		time += delta;
 		
 		this.getScreen().render(delta);
+		
+		if (loading)
+		{
+			Gdx.gl.glClearColor(clear.r, clear.g, clear.b, 1f);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+			
+			//draw load screen
+			loadingBatch.setShader(hueify);
+			loadingBatch.begin();
+			loadingFont.draw(loadingBatch, loadingMessage, InternalRes[0]/2-loadingFont.getBounds(loadingMessage).width/2, 35f);
+			loadingBatch.end();
+		}
 	}
 	
 	@Override
@@ -284,70 +298,21 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		return boss;
 	}
 
-	public void newDungeon(AssetManager manager, FileType type, int difficulty)
-	{
-		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
-		if (dungeonFactory == null)
-		{
-			dungeonFactory = new DungeonFactory(atlas);
-		}
-		try {
-			floors = dungeonFactory.create(type, difficulty);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		
-		//add player into all floors
-		currentFloor = 0;
-		loadFloor(1);
+	@Override
+	public void setLoading(boolean loading) {
+		this.loading = loading;
+	}
+
+	@Override
+	public boolean isLoading() {
+		return loading;
 	}
 	
-	@Override
-	public World loadFloor(int i) {
-		if (currentFloor != i)
-		{
-			if (i > 0 && i < floors.size)
-			{
-				dungeon = dungeonFactory.create(floors.get(i-1), player);
-				currentFloor = i;
-			}
-			else
-			{
-				dungeon = null;
-				currentFloor = -1;
-			}
-		}
-		return dungeon;
+	public void setLoadingMessage(String message)
+	{
+		if (message == null || message.trim().length() == 0)
+			message = "Loading...";
+		this.loadingMessage = message;
 	}
 
-	@Override
-	public World getCurrentFloor() {
-		return dungeon;
-	}
-
-	@Override
-	public void nextFloor() {
-		loadFloor(currentFloor+1);
-	}
-
-	@Override
-	public void prevFloor() {
-		loadFloor(currentFloor-1);
-	}
-
-	@Override
-	public boolean hasPrevFloor() {
-		return currentFloor - 1 > 0;
-	}
-
-	@Override
-	public boolean hasNextFloor() {
-		return currentFloor + 1 < floors.size;
-	}
-
-	@Override
-	public int getCurrentFloorNumber() {
-		return currentFloor;
-	}
 }

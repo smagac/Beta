@@ -12,7 +12,7 @@ public class Craftable extends Item
 	private ObjectMap<String, Integer> requirements;
 	
 	public Craftable(String name, String adj, String... parts) {
-		super(name, adj, null);
+		super(name, adj);
 		
 		requirements = new ObjectMap<String, Integer>();
 

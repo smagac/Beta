@@ -1,7 +1,5 @@
 package scenes;
 
-import scenes.dungeon.MovementSystem;
-
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
@@ -16,14 +14,13 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.badlogic.gdx.utils.Scaling;
 
 import components.Stats;
 import core.DataDirs;
@@ -65,9 +62,9 @@ public abstract class GameUI extends UI {
 	
 	private IPlayerContainer playerService;
 
-	public GameUI(Scene<? extends GameUI> scene, AssetManager manager, IPlayerContainer playerService)
+	public GameUI(AssetManager manager, IPlayerContainer playerService)
 	{
-		super(scene, manager);
+		super(manager);
 		
 		this.playerService = playerService;
 		
@@ -179,25 +176,21 @@ public abstract class GameUI extends UI {
 					if (keycode == Keys.LEFT || keycode == Keys.A)
 					{
 						setIndex(getIndex()-1);
-						return true;
 					}
 					if (keycode == Keys.RIGHT || keycode == Keys.D)
 					{
 						setIndex(getIndex()+1);
-						return true;
 					}
 					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 					{
 						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
 						refreshButtons();
-						return true;
 					}
 					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
 					{
 						triggerAction(-1);
 						refreshButtons();
-						return true;
 					}
 					return false;
 				}
@@ -220,11 +213,13 @@ public abstract class GameUI extends UI {
 			public boolean keyDown(InputEvent evt, int keycode)
 			{
 				if (focusList()==null)
+				{
 					return false;
+				}
 				
 				if (getKeyboardFocus() == buttonList && buttonList != null)
 				{
-					if (keycode == Keys.UP || keycode == Keys.W || keycode == Keys.TAB)
+					if (keycode == Keys.TAB)
 					{
 						buttons.uncheckAll();
 						focus = 0;
@@ -266,6 +261,8 @@ public abstract class GameUI extends UI {
 		addAction(Actions.alpha(0f));
 		addAction(Actions.alpha(1f, .2f));
 		calculateScissors(displayBounds, tmpBound);
+		
+		act(0);
 	}
 	
 	/**
@@ -326,10 +323,20 @@ public abstract class GameUI extends UI {
 						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
 						refreshButtons();
-						return true;
 					}
 					return false;
 				}
+			});
+			button.addListener(new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (button.isChecked())
+					{
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
+				}
+				
 			});
 			buttonList.addActor(button);
 			buttons.add(button);

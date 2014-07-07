@@ -12,10 +12,8 @@ public class Stats extends Component {
 	private int level;
 	public int hp;
 	public int maxhp;
-	public final int mp;
 	private int strength;
 	private int defense;
-	private int magic;
 	private float speed;
 	public int exp;
 	public int nextExp;
@@ -25,11 +23,10 @@ public class Stats extends Component {
 		level = 1;
 		hp = values[0];
 		maxhp = values[0];
-		mp = values[1];
-		strength = values[2];
-		defense = values[3];
-		magic = values[4];
-		speed = values[5];
+		strength = values[1];
+		defense = values[2];
+		speed = values[3];
+		exp = values[4];
 		exp = 0;
 		nextExp = level*10;
 	}
@@ -54,9 +51,9 @@ public class Stats extends Component {
 		return speed;
 	}
 	
-	public int getMagic()
+	public float getExp()
 	{
-		return magic;
+		return exp;
 	}
 	
 	public boolean levelUp()
@@ -68,7 +65,6 @@ public class Stats extends Component {
 			hp = maxhp;
 			strength = 5+level;
 			defense = 5+level;
-			magic++;
 			nextExp = level*10;
 			exp = 0;
 			return true;

@@ -8,9 +8,6 @@ import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.ImmutableBag;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -30,7 +27,7 @@ import core.common.Tracker;
  * @author nhydock
  *
  */
-public class MovementSystem extends EntityProcessingSystem implements InputProcessor {
+public class MovementSystem extends EntityProcessingSystem {
 
 	scenes.dungeon.Scene parentScene;
 	
@@ -49,6 +46,12 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	Sound hit;
 
 	private boolean enabledInput;
+	
+	protected static final int
+		UP = 0,
+		DOWN = 1,
+		LEFT = 2,
+		RIGHT = 3;
 	
 	@SuppressWarnings("unchecked")
 	/**
@@ -305,76 +308,77 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 		player = world.getManager(TagManager.class).getEntity("player");
 	}
 
-	@Override
-	public boolean keyDown(int keycode) {
-		
-		if (!enabledInput)
+	public boolean movePlayer(int direction) {
+
+		if (!this.enabledInput){
 			return false;
-		
-		boolean moved = false;
-		
-		//allow 2 turn dashing
-		for (int i = 0; i < (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)?2:1); i++)
-		{
-			Position playerPos = positionMap.get(player);
-			int x = playerPos.getX();
-			int y = playerPos.getY();
-			if (keycode == Keys.UP || keycode == Keys.W)
-			{
-				y++;
-				moved = true;
-			}
-			if (keycode == Keys.DOWN || keycode == Keys.S)
-			{
-				y--;
-				moved = true;
-			}
-			if (keycode == Keys.LEFT || keycode == Keys.A)
-			{
-				x--;
-				moved = true;
-			}
-			if (keycode == Keys.RIGHT || keycode == Keys.D)
-			{
-				x++;
-				moved = true;
-			}
-			
-			if (!isWall(x, y)) {
-				//make sure enemy list is populated at least once
-				if (monsters == null)
-				{
-					begin();
-				}
-				moveTo(x, y, player);
-				//execute a turn
-				process();
-			}
 		}
 		
-		return moved;
+		if (direction < UP || direction > RIGHT)
+			return false;
+		
+		Position playerPos = positionMap.get(player);
+		int x = playerPos.getX();
+		int y = playerPos.getY();
+		if (direction == UP)
+		{
+			y++;
+		}
+		if (direction == DOWN)
+		{
+			y--;
+		}
+		if (direction == RIGHT)
+		{
+			x++;
+		}
+		if (direction == LEFT)
+		{
+			x--;
+		}
+		
+		if (!isWall(x, y)) {
+			moveTo(x, y, player);
+			//execute a turn
+			process();
+			return true;
+		}
+		
+		return false;
 	}
-	
-	@Override
-	public boolean keyUp(int keycode) { return false; }
-	
-	@Override
-	public boolean keyTyped(char character) { return false; }
-	
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) { return false; }
-	
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) { return false; }
-	
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
-	
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) { return false; }
-	
-	@Override
-	public boolean scrolled(int amount) { return false; }
+
+	public boolean mouseMoved(Vector2 xy)
+	{
+		if (enabledInput)
+		{
+			float screenX = xy.x;
+			float screenY = xy.y;
+			
+			for (int i = 0; i < monsters.size(); i++)
+			{
+				Entity e = monsters.get(i);
+				Position p = positionMap.get(e);
+				if (screenX == p.getX() && screenY == p.getY())
+				{
+					p = positionMap.get(player);
+					//make sure the dialog won't cover the player
+					if ((p.getY() >= screenY+1 && p.getY() < screenY + 3) && 
+						(screenX > p.getX()-3 && screenX < p.getX() +3 ))
+					{
+						screenY -= 3;
+					}
+					Stats s = statMap.get(e);
+					Identifier id = idMap.get(e);
+					parentScene.showStats(screenX, screenY, id.toString(), 
+							String.format("HP: %3d / %3d", s.hp, s.maxhp)
+						);
+					return true;
+				}
+			}
+		}
+		parentScene.hideStats();
+		return false;
+	}
 
 	public void inputEnabled(boolean enable)
 	{
@@ -470,10 +474,12 @@ public class MovementSystem extends EntityProcessingSystem implements InputProce
 	public void setScene(scenes.dungeon.Scene scene)
 	{
 		this.parentScene = scene;
+		if ( scene != null)
+			this.hit = parentScene.hitSound;
 	}
 	
 	@Override
-	protected void begin() {
+	public void begin() {
 		monsters = world.getManager(GroupManager.class).getEntities("monsters");
 	}
 }

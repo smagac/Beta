@@ -10,15 +10,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 import core.common.SceneManager;
-import scenes.Scene;
 import scenes.UI;
 
 public class TitleSequence extends UI {
 
-	public TitleSequence(Scene<?> scene, AssetManager manager) {
-		super(scene, manager);
+	scenes.title.Scene parent;
+	
+	public TitleSequence(scenes.title.Scene parent, AssetManager manager) {
+		super( manager);
+		this.parent = parent;
 		manager.load("data/title.json", Skin.class);
-		
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public class TitleSequence extends UI {
 
 						@Override
 						public void run() {
-							((scenes.title.Scene)parent).startMusic();
+							parent.startMusic();
 						}
 						
 					})

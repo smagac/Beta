@@ -1,9 +1,13 @@
 package scenes;
 
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 
+import core.common.BossListener;
 import core.service.IColorMode;
+import core.service.ILoader;
 import core.service.Inject;
 
 /**
@@ -20,14 +24,19 @@ public abstract class Scene<View extends UI> implements Screen {
 	protected final AssetManager manager;
 	
 	@Inject public IColorMode color;
+	@Inject public ILoader loader;
 	
 	protected View ui;
 	
-	private boolean loaded;
+	protected boolean loaded;
+	protected InputMultiplexer input;
+	protected Music bgm;
 	
 	public Scene()
 	{
 		manager = new AssetManager();
+		input = new InputMultiplexer();
+		input.addProcessor(BossListener.getInstance());
 	}
 	
 	@Override
@@ -41,12 +50,15 @@ public abstract class Scene<View extends UI> implements Screen {
 	{
 		//don't do anything while trying to load
 		if (!manager.update()){
+			loader.setLoading(true);
+			loader.setLoadingMessage(null);
 			return;
 		}
 		
 		if (!loaded)
 		{
 			init();
+			loader.setLoading(false);
 			loaded = true;
 		}
 		
@@ -66,4 +78,16 @@ public abstract class Scene<View extends UI> implements Screen {
 	 * @param delta
 	 */
 	protected abstract void extend(float delta);
+	
+	public void dispose()
+	{
+		if (ui != null) {
+			ui.dispose();
+		}
+		if (bgm != null) {
+			bgm.stop();
+		}
+		input.clear();
+		manager.dispose();
+	}
 }

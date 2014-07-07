@@ -9,32 +9,23 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.artemis.World;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectMap;
-
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
-import factories.ItemFactory;
-import factories.MonsterFactory;
 
 public class Dungeon implements Serializable{
 
 	World world;
 	
-	ObjectMap<Vector2, String> monsters;
-	TiledMap map;
-	TiledMapTileLayer layer;
-	
+	int monsters;
 	int[][] tiles;
 	Array<Room> rooms;
 	
@@ -49,7 +40,7 @@ public class Dungeon implements Serializable{
 	 * @param floor
 	 * @param maker
 	 */
-	public Dungeon(FileType type, int difficulty, int floor, int width, int height, MonsterFactory monsterFactory, ItemFactory itemFactory)
+	public Dungeon(FileType type, int difficulty, int floor, int width, int height)
 	{
 		this.type = type;
 		int roomCount = MathUtils.random(Math.max(5, ((3*floor)/10)+floor), Math.max(5, ((5*floor)/10)+floor));
@@ -57,10 +48,11 @@ public class Dungeon implements Serializable{
 		this.width = width;
 		this.height = height;
 		this.floor = floor;
-		map = new TiledMap();
+		
 		PathMaker maker = new PathMaker();
 		tiles = maker.run(roomCount, width, height);
 		rooms = maker.getRooms();
+		monsters = MathUtils.random(roomCount(), roomCount()+floor*(floor*difficulty));
 	}
 
 	/**
@@ -122,6 +114,7 @@ public class Dungeon implements Serializable{
 		json.writeValue("floor", floor);
 		json.writeValue("width", width);
 		json.writeValue("height", height);
+		json.writeValue("monsters", monsters);
 		
 		//zip and pack the tiles
 		String t = ""+tiles[0][0];
@@ -167,6 +160,7 @@ public class Dungeon implements Serializable{
 		height = jsonData.getInt("height");
 		this.width = width;
 		this.height = height;
+		this.monsters = jsonData.getInt("monsters");
 		
 		//decrypt tiles
 		String tileData = jsonData.getString("tiles");
@@ -214,6 +208,10 @@ public class Dungeon implements Serializable{
 		return rooms.size;
 	}
 	
+	public int monsterCount() {
+		return monsters;
+	}
+	
 	public int floor()
 	{
 		return floor;
@@ -221,5 +219,9 @@ public class Dungeon implements Serializable{
 
 	public Array<Room> rooms() {
 		return rooms;
+	}
+	
+	public FileType type() {
+		return type;
 	}
 }

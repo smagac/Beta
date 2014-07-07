@@ -2,24 +2,32 @@ package scenes.dungeon;
 
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
-import core.common.BossListener;
 import core.common.Tracker;
+import core.datatypes.Dungeon;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
 import core.service.IPlayerContainer;
 import core.service.Inject;
+import factories.DungeonFactory;
+import factories.DungeonFactory.DungeonLoader;
+import factories.DungeonFactory.DungeonLoader.DungeonParam;
+import factories.DungeonFactory.FloorLoader;
+import factories.DungeonFactory.FloorLoader.FloorParam;
 
-public class Scene extends scenes.Scene<WanderUI> {
+
+public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
 	private int difficulty;
 	private FileType fileType;
@@ -27,12 +35,31 @@ public class Scene extends scenes.Scene<WanderUI> {
 	ObjectMap<Item, Integer> loot;
 	
 	private String bgmName;
-	private Music bgm;
 	
-	@Inject public IDungeonContainer dungeonService;
 	@Inject public IPlayerContainer playerService;
 	
-	InputMultiplexer input;
+	AssetManager dungeonManager;
+	DungeonLoader dungeonLoader;
+	boolean dungeonLoaded;
+	boolean floorLoaded;
+	private boolean descending;
+	protected Sound hitSound;
+	private FloorLoader floorLoader;
+	
+	//factory data
+	private Array<Dungeon> dungeon;
+	private int currentFloorNumber;
+	private World currentFloor;
+	
+	public Scene()
+	{
+		super();
+		dungeonManager = new AssetManager();
+		dungeonLoader = new DungeonLoader(new InternalFileHandleResolver());
+		floorLoader = new FloorLoader(new InternalFileHandleResolver());
+		dungeonManager.setLoader(Array.class, dungeonLoader);
+		dungeonManager.setLoader(World.class, floorLoader);
+	}
 	
 	public void setDungeon(FileType type, int difficulty)
 	{
@@ -56,9 +83,37 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	@Override
 	public void extend(float delta) {
-		World floor = dungeonService.getCurrentFloor();
-		floor.setDelta(delta);
-		floor.process();
+		if (!dungeonManager.update())
+		{
+			if (!dungeonLoaded)
+			{
+				loader.setLoading(true);
+				loader.setLoadingMessage(String.format("Creating Dungeon...%d%%", dungeonLoader.getProgress()));
+				return;
+			}
+			else if (!floorLoaded)
+			{
+				loader.setLoadingMessage("Populating Floor");
+			}
+		}
+		else if (!dungeonLoaded)
+		{
+			loader.setLoading(false);
+			initPostDungeon();
+			dungeonLoaded = true;
+			return;
+		}
+		else if (!floorLoaded)
+		{
+			changeFloor();
+			floorLoaded = true;
+		}
+		else
+		{
+			World floor = getCurrentFloor();
+			floor.setDelta(delta);
+			floor.process();	
+		}
 		
 		ui.act(delta);
 		ui.draw();
@@ -75,7 +130,7 @@ public class Scene extends scenes.Scene<WanderUI> {
 		manager.load(DataDirs.hit, Sound.class);
 		manager.load(DataDirs.dead, Sound.class);
 		
-		ui = new WanderUI(this, manager, playerService, dungeonService);
+		ui = new WanderUI(manager, playerService, this);
 		
 		loot = new ObjectMap<Item, Integer>();
 		
@@ -109,75 +164,94 @@ public class Scene extends scenes.Scene<WanderUI> {
 
 	@Override
 	public void dispose() {
-		bgm.stop();
-		bgm.dispose();
-		manager.dispose();
-		ui.dispose();
+		if (bgm != null)
+		{
+			bgm.stop();	
+		}
+		dungeonManager.dispose();
+		DungeonFactory.dispose();
+		super.dispose();	
 	}
 	
 	public void ascend()
 	{
-		//remove self from old floor
-		World floor = dungeonService.getCurrentFloor();
-		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		input.removeProcessor(ms);
-		
-		if (!dungeonService.hasPrevFloor())
+		if (!hasPrevFloor())
 		{
 			leave();
 			return;
 		}
 		else
 		{
-			dungeonService.prevFloor();
+			input.removeProcessor(ui);
+			input.removeProcessor(ui.wanderControls);
+			
+			FloorParam param = new FloorParam();
+			param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+			param.dungeonContainer = this;
+			param.depth = prevFloor();
+			param.floor = getFloor(param.depth);
+			param.player = playerService.getPlayer();
+			
+			dungeonManager.load("floor", World.class, param);
+			descending = false;
+			floorLoaded = false;
 		}
-		floor = dungeonService.getCurrentFloor();
-		ms = floor.getSystem(MovementSystem.class);
-		floor.getSystem(MovementSystem.class).moveToEnd();
-		
-		changeFloor();
 	}
 	
 	public void descend()
 	{
-		//remove self from old floor
-		World floor = dungeonService.getCurrentFloor();
-		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		input.removeProcessor(ms);
-		
-		if (!dungeonService.hasNextFloor())
+		if (!hasNextFloor())
 		{
 			leave();
 			return;
 		}
 		else
 		{
-			dungeonService.nextFloor();
+			input.removeProcessor(ui);
+			input.removeProcessor(ui.wanderControls);
+			
+			FloorParam param = new FloorParam();
+			param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+			param.dungeonContainer = this;
+			param.depth = nextFloor();
+			param.floor = getFloor(param.depth);
+			param.player = playerService.getPlayer();
+			
+			dungeonManager.load("floor", World.class, param);
+			descending = true;
+			floorLoaded = false;
 		}
-		
-		floor = dungeonService.getCurrentFloor();
-		ms = floor.getSystem(MovementSystem.class);
-		floor.getSystem(MovementSystem.class).moveToStart();
-		
-		changeFloor();
 	}
 	
 	private void changeFloor()
 	{
-		World floor = dungeonService.getCurrentFloor();
+		World floor = dungeonManager.get("floor", World.class);
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		ui.setFloor(floor);
+		int depth = getCurrentFloorNumber();
+		if (descending)
+		{
+			ms.moveToStart();
+			depth++;
+		}
+		else
+		{
+			ms.moveToEnd();
+			depth--;
+		}
 		ms.setScene(this);
-		ms.hit = manager.get(DataDirs.hit, Sound.class);
 		
-		input.addProcessor(ms);
+		log("You move onto floor " + depth) ;
+
+		input.addProcessor(ui);
+		input.addProcessor(ui.wanderControls);
+		setCurrentFloor(depth, floor);
 		
-		log("You move onto to floor " + dungeonService.getCurrentFloorNumber()) ;
+		dungeonManager.unload("floor");
 	}
 	
 	protected void dead()
 	{
-		World floor = dungeonService.getCurrentFloor();
+		World floor = getCurrentFloor();
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
 		ms.inputEnabled(false);
 		ui.dead();
@@ -188,6 +262,9 @@ public class Scene extends scenes.Scene<WanderUI> {
 	
 	protected void leave()
 	{
+		World floor = getCurrentFloor();
+		MovementSystem ms = floor.getSystem(MovementSystem.class);
+		ms.inputEnabled(false);
 		ui.leave();
 		
 		//merge loot into inventory
@@ -208,25 +285,103 @@ public class Scene extends scenes.Scene<WanderUI> {
 	{
 		ui.setMessage(message);
 	}
+	
+	protected void showStats(float x, float y, String name, String hp)
+	{
+		ui.showStats(x, y, name, hp);
+	}
+	
+	protected void hideStats()
+	{
+		ui.hideStats();
+	}
 
 	@Override
 	protected void init() {
-		input = new InputMultiplexer();
-		
 		ui.init();
 		
-		dungeonService.newDungeon(manager, fileType, difficulty);
-		changeFloor();
-		World floor = dungeonService.getCurrentFloor();
-		floor.getSystem(MovementSystem.class).moveToStart();
+		DungeonFactory.prepareFactory(manager.get("data/dungeon.atlas", TextureAtlas.class));
+		
+		DungeonParam param =  new DungeonParam();
+		param.difficulty = difficulty;
+		param.dungeonContainer = this;
+		param.type = fileType;
+		
+		hitSound = manager.get(DataDirs.hit, Sound.class);
+		dungeonManager.load("dungeon", Array.class, param);
 		
 		bgm = manager.get(bgmName, Music.class);
 		bgm.setLooping(true);
 		bgm.play();
 		
-		input.addProcessor(ui);
-		input.addProcessor(BossListener.getInstance());
-		
 		Gdx.input.setInputProcessor(input);
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void initPostDungeon()
+	{
+		setDungeon((Array<Dungeon>)dungeonManager.get("dungeon", Array.class));
+		descend();
+	}
+
+	@Override
+	public void setDungeon(Array<Dungeon> floors)
+	{
+		this.dungeon = floors;
+		currentFloorNumber = 0;
+		currentFloor = null;
+	}
+
+	@Override
+	public Dungeon getFloor(int i) {
+		return dungeon.get(i);
+	}
+	
+	/**
+	 * Allow setting/overriding the current world
+	 * @param i
+	 * @param world
+	 */
+	@Override
+	public void setCurrentFloor(int i, World world)
+	{
+		if (currentFloor != null)
+		{
+			currentFloor.getSystem(RenderSystem.class).dispose();
+			currentFloor.getSystem(MovementSystem.class).setScene(null);
+			currentFloor.process();
+		}
+		currentFloor = world;
+		//make sure enemy list is populated at least once
+		currentFloor.getSystem(MovementSystem.class).begin();
+		currentFloorNumber = i;
+	}
+
+	@Override
+	public World getCurrentFloor() {
+		return currentFloor;
+	}
+	
+	public int nextFloor() {
+		return currentFloorNumber + 1;
+	}
+	
+	public int prevFloor() {
+		return currentFloorNumber - 1;
+	}
+
+	@Override
+	public boolean hasPrevFloor() {
+		return prevFloor() > 0;
+	}
+
+	@Override
+	public boolean hasNextFloor() {
+		return nextFloor() < dungeon.size;
+	}
+
+	@Override
+	public int getCurrentFloorNumber() {
+		return currentFloorNumber;
 	}
 }

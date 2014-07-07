@@ -34,14 +34,14 @@ public class Inventory {
 		//debug add loot to test crafting
 		for (int i = 0; i < 30; i++)
 		{
-			loot.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective(), ""), MathUtils.random(1, 20));
+			loot.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
 		}
 		
 		//debug add loot to be able to craft at least one item
 		Craftable c = required.random();
 		for (String s : c.getRequirements().keys())
 		{
-			loot.put(new Item(s, AdjectiveFactory.getAdjective(), ""), c.getRequirements().get(s) + MathUtils.random(1, 5));
+			loot.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
 		}
 	}
 	

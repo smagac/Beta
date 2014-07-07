@@ -1,18 +1,19 @@
 package core.service;
 
 import com.artemis.World;
-import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.utils.Array;
 
-import core.datatypes.FileType;
+import core.datatypes.Dungeon;
 
 public interface IDungeonContainer extends Service {
 
-	public void newDungeon(AssetManager manager, FileType type, int difficulty);
-	public World loadFloor(int i);
+	public void setDungeon(Array<Dungeon> floors);
+	void setCurrentFloor(int i, World world);
+	public Dungeon getFloor(int i);
 	public int getCurrentFloorNumber();
 	public World getCurrentFloor();
-	public void nextFloor();
-	public void prevFloor();
 	public boolean hasPrevFloor();
 	public boolean hasNextFloor();
+	public int nextFloor();
+	public int prevFloor();
 }

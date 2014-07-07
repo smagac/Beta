@@ -11,8 +11,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-
+import com.badlogic.gdx.math.Vector2;
 import components.Position;
 import components.Renderable;
 import core.common.Storymode;
@@ -27,14 +28,13 @@ public class RenderSystem extends EntityProcessingSystem {
 	@Mapper ComponentMapper<Renderable> renderMap;
 	
 	float scale;
+	float height;
 	private TiledMap map;
 	
 	@SuppressWarnings("unchecked")
 	public RenderSystem()
 	{
 		super(Aspect.getAspectForAll(Renderable.class, Position.class));
-		batch = new SpriteBatch();
-		camera = new OrthographicCamera();
 	}
 	
 	@Override
@@ -46,17 +46,51 @@ public class RenderSystem extends EntityProcessingSystem {
 		batch.draw(r.getSprite(), p.getX()*scale, p.getY()*scale, scale, scale);
 	}
 	
+	/**
+	 * Get if touching an enemy with mouse cursor at x, y
+	 * @param x
+	 * @param y
+	 */
+	protected Vector2 unproject(float x, float y, float f, float g)
+	{
+		x -= f/2f;
+		y -= g/2f;
+		x += camera.position.x;
+		y += camera.position.y;
+		x -= x % scale;
+		y -= y % scale;
+		x /= scale;
+		y /= scale;
+		return new Vector2((int)(x), (int)(y+1));
+	}
+	
+	protected Vector2 project(float x, float y, float f, float g)
+	{
+		y -= 1;
+		x *= scale;
+		y *= scale;
+		x -= camera.position.x;
+		y -= camera.position.y;
+		x += f/2f;
+		y += g/2f;
+		return new Vector2((int)(x), (int)(y));
+	}
+	
 	public void setMap(TiledMap map)
 	{
 		this.map = map;
+		this.height = ((TiledMapTileLayer)map.getLayers().get(0)).getHeight();
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
-		scale = 32 * mapRenderer.getUnitScale();
+		scale = 32f * mapRenderer.getUnitScale();
 	}
 	
 	public void setView(Batch batch, Camera camera)
 	{
 		this.batch = (SpriteBatch) batch;
-		//this.camera = (OrthographicCamera) camera;
+		if (this.camera == null)
+		{
+			this.camera = new OrthographicCamera();
+		}
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
 	}
 	
@@ -83,9 +117,19 @@ public class RenderSystem extends EntityProcessingSystem {
 	{
 		batch.end();
 	}
+	
+	public void dispose()
+	{
+		batch = null;
+		camera = null;
+	}
 
 	@Override
 	protected boolean checkProcessing() {
 		return true;
+	}
+	
+	protected float getScale() {
+		return scale;
 	}
 }

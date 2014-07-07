@@ -5,8 +5,6 @@ import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -78,11 +76,11 @@ public class MonsterFactory {
 		final String name;
 		
 		//stats
-		final int hp;
-		final int str;
-		final int def;
-		final int mag;
-		final int spd;
+		private final int hp,  maxhp;
+		private final int str, maxstr;
+		private final int def, maxdef;
+		private final int exp, maxexp;
+		private final int spd, maxspd;
 		
 		//movement rates
 		final float norm;
@@ -105,11 +103,11 @@ public class MonsterFactory {
 		MonsterTemplate(final JsonValue src)
 		{
 			name = src.name;
-			hp = src.getInt("hp");
-			str = src.getInt("str");
-			def = src.getInt("def");
-			mag = src.getInt("mag");
-			spd = src.getInt("spd");
+			hp = src.getInt("hp", 1); maxhp = src.getInt("maxhp", hp);
+			str = src.getInt("str", 1); maxstr = src.getInt("maxstr", str);
+			def = src.getInt("def", 1); maxdef = src.getInt("maxdef", def);
+			exp = src.getInt("exp", 1); maxexp = src.getInt("maxexp", exp);
+			spd = src.getInt("spd", 1); maxspd = src.getInt("maxspd", spd);
 			norm = src.getFloat("norm", .4f);
 			agro = src.getFloat("agro", .75f);
 			die = src.getString("die", "You have slain %s");
@@ -117,6 +115,13 @@ public class MonsterFactory {
 			location = src.getString("where", null);
 			type = src.getString("type", "rat");
 		}
+		
+		public int getHp(float floor) { return (int)MathUtils.lerp(hp, maxhp, 1f/floor); }
+		public int getStr(float floor) { return (int)MathUtils.lerp(str, maxstr, 1f/floor); }
+		public int getDef(float floor) { return (int)MathUtils.lerp(def, maxdef, 1f/floor); }
+		public int getSpd(float floor) { return (int)MathUtils.lerp(spd, maxspd, 1f/floor); }
+		public int getExp(float floor) { return (int)MathUtils.lerp(exp, maxexp, 1f/floor); }
+		
 	}
 	
 	private final TextureAtlas icons;
@@ -131,10 +136,6 @@ public class MonsterFactory {
 	{
 		this.icons = icons;
 		this.area = type;
-		for (Texture t : this.icons.getTextures())
-		{
-			t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-		}
 	}
 	
 	
@@ -193,13 +194,12 @@ public class MonsterFactory {
 	private Entity create(World world, MonsterTemplate t, Item item, int floor)
 	{
 		Entity e = world.createEntity();
-		e.addComponent(new Stats(t.hp, 
-								MathUtils.random(20), 
-								(int)(MathUtils.random(.65f+(floor / 10f), 1.0f+(floor / 10f))*t.str), 
-								(int)(MathUtils.random(.4f+(floor / 10f), 1.0f+(floor / 10f))*t.def), 
-								t.mag,
-								(int)(MathUtils.random(.2f+(floor / 10f), 1.0f+(floor / 10f))*t.spd)
-							));
+		e.addComponent(new Stats(
+						t.getHp(floor),
+						t.getStr(floor),
+						t.getDef(floor),
+						t.getSpd(floor),
+						t.getExp(floor)));
 		e.addComponent(new Identifier(t.name, item.type()));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
 		

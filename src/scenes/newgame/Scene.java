@@ -1,20 +1,16 @@
 package scenes.newgame;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
 import core.DataDirs;
-import core.common.BossListener;
 import core.common.SceneManager;
 import core.service.IGame;
 import core.service.Inject;
 
 public class Scene extends scenes.Scene<NewUI> {
 
-	private Music bgm;
-	
 	@Inject public IGame gameService;
 	
 	@Override
@@ -51,9 +47,7 @@ public class Scene extends scenes.Scene<NewUI> {
 		//fetch assets
 		ui.init();
 		
-		InputMultiplexer input = new InputMultiplexer();
 		input.addProcessor(ui);
-		input.addProcessor(BossListener.getInstance());
 		
 		Gdx.input.setInputProcessor(input);
 	}
@@ -69,10 +63,6 @@ public class Scene extends scenes.Scene<NewUI> {
 	
 	@Override
 	public void hide() {
-		if (bgm != null)
-		{
-			bgm.stop();
-		}
 		dispose();
 	}
 
@@ -94,8 +84,11 @@ public class Scene extends scenes.Scene<NewUI> {
 
 	@Override
 	public void dispose() {
-		manager.dispose();
-		ui.dispose();
+		if (bgm != null)
+		{
+			bgm.stop();
+		}
+		super.dispose();
 	}
 
 }

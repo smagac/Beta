@@ -12,7 +12,6 @@ import core.common.SceneManager;
 
 public class Scene extends scenes.Scene<TitleSequence> {
 	
-	Music bgm;
 	boolean musicStarted;
 	int difficulty = 3;
 	
@@ -98,8 +97,7 @@ public class Scene extends scenes.Scene<TitleSequence> {
 		{
 			bgm.stop();
 		}
-		manager.dispose();
-		ui.dispose();
+		super.dispose();
 	}
 
 }

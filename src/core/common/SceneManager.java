@@ -39,7 +39,7 @@ public class SceneManager {
 	 * Generate a new screen from a registered name
 	 * @param name
 	 * @return
-	 * @throws NullPointerException
+	 * @throws NullPointerException if there is no scene registered with the specified name
 	 */
 	public static Screen create(String name) throws NullPointerException
 	{
@@ -49,30 +49,12 @@ public class SceneManager {
 			Screen s;
 			try {
 				s = c.newInstance();
-
-				Field[] fields = s.getClass().getFields();
-				for (Field f : fields)
-				{
-					Inject anno = f.getAnnotation(Inject.class);
-					if (anno != null && Service.class.isAssignableFrom(f.getType()))
-					{
-						f.setAccessible(true);
-						@SuppressWarnings("unchecked")
-						Class<? extends Service> type = (Class<? extends Service>) f.getType();
-						f.set(s, type.cast(service));
-					}
-				}
-
 				return s;
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		}
-		else
-		{
-			System.out.println(name + " is not a registered Scene");
-		}
-		throw (new NullPointerException());
+		throw (new NullPointerException(name + " is not a registered Scene"));
 	}
 	
 	public static void switchToScene(String name)
@@ -80,7 +62,7 @@ public class SceneManager {
 		try
 		{
 			Screen s = create(name);
-			service.setScreen(s);
+			SceneManager.switchToScene(s);
 		}
 		catch (NullPointerException e)
 		{
@@ -95,7 +77,46 @@ public class SceneManager {
 	 */
 	public static void switchToScene(Screen scene)
 	{
+		Field[] fields = scene.getClass().getFields();
+		for (Field f : fields)
+		{
+			Inject anno = f.getAnnotation(Inject.class);
+			if (anno != null && Service.class.isAssignableFrom(f.getType()))
+			{
+				f.setAccessible(true);
+				@SuppressWarnings("unchecked")
+				Class<? extends Service> type = (Class<? extends Service>) f.getType();
+				try {
+					f.set(scene, type.cast(service));
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		service.setScreen(scene);
+	}
+	
+	/**
+	 * Unhook dependencies from the scene
+	 * @param scene
+	 */
+	public static void unhook(Screen scene)
+	{
+		Field[] fields = scene.getClass().getFields();
+		for (Field f : fields)
+		{
+			Inject anno = f.getAnnotation(Inject.class);
+			if (anno != null && Service.class.isAssignableFrom(f.getType()))
+			{
+				f.setAccessible(true);
+				try {
+					f.set(scene, null);
+					System.out.println("cleared out " + f.getName() + " in " + scene);
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	public static void setGame(Storymode game)

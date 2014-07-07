@@ -1,6 +1,5 @@
 package scenes.newgame;
 
-import java.awt.Button;
 import java.util.Scanner;
 
 import com.badlogic.gdx.Gdx;
@@ -24,7 +23,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
-import scenes.Scene;
 import scenes.UI;
 
 public class NewUI extends UI {
@@ -40,8 +38,10 @@ public class NewUI extends UI {
 	
 	private boolean over;
 	
-	public NewUI(Scene<NewUI> scene, AssetManager manager) {
-		super(scene, manager);
+	Scene parent;
+	
+	public NewUI(Scene scene, AssetManager manager) {
+		super(manager);
 		manager.load("data/uiskin.json", Skin.class);
 	}
 
@@ -219,7 +219,7 @@ public class NewUI extends UI {
 	{
 		if (index == -1)
 		{
-			((scenes.newgame.Scene)parent).prepareStory();
+			parent.prepareStory();
 		}
 		else if (story.hasNextLine())
 		{

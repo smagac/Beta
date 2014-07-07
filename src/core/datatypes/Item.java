@@ -56,17 +56,13 @@ public class Item implements Comparable<Item>
 		loaded = true;
 	}
 	
-	private static final String desc = "You can find this item in %s files";
-	
 	String adj;
 	String name;
-	String from;
 	
-	public Item(String name, String adj, String where)
+	public Item(String name, String adj)
 	{
 		this.adj = adj;
 		this.name = name;
-		this.from = String.format(desc, where);
 	}
 	
 	@Override

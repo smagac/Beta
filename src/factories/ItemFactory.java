@@ -21,6 +21,6 @@ public class ItemFactory {
 	
 	public Item createItem()
 	{
-		return new Item(areaLoot.random(), AdjectiveFactory.getAdjective(), null);
+		return new Item(areaLoot.random(), AdjectiveFactory.getAdjective());
 	}
 }

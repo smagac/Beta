@@ -10,8 +10,6 @@ import core.service.Inject;
 
 public class Scene extends scenes.Scene<TownUI> {
 
-	Music bgm;
-
 	@Inject public IPlayerContainer playerService;
 	
 	@Override
@@ -21,7 +19,7 @@ public class Scene extends scenes.Scene<TownUI> {
 
 	@Override
 	public void show() {
-		ui = new TownUI(this, manager, playerService);
+		ui = new TownUI(manager, playerService);
 		manager.load("data/audio/town.mp3", Music.class);
 		
 		InputMultiplexer input = new InputMultiplexer();
@@ -59,10 +57,9 @@ public class Scene extends scenes.Scene<TownUI> {
 		if (bgm != null)
 		{
 			bgm.stop();
-			bgm.dispose();
 		}
-		manager.dispose();
-		ui.dispose();
+		bgm = null;
+		super.dispose();
 	}
 
 	@Override
