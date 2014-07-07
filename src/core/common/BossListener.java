@@ -67,7 +67,7 @@ public class BossListener implements InputProcessor {
 		if (keycode == Keys.F9)
 		{
 			//EXIT LIKE A BITCH
-			System.exit(0);
+			Gdx.app.exit();
 		}
 		
 		//fullscreen toggle

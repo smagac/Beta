@@ -111,7 +111,6 @@ public class SceneManager {
 				f.setAccessible(true);
 				try {
 					f.set(scene, null);
-					System.out.println("cleared out " + f.getName() + " in " + scene);
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					e.printStackTrace();
 				}
