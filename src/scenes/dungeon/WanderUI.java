@@ -18,16 +18,13 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
-import com.esotericsoftware.tablelayout.Cell;
 
 import components.Stats;
 import core.common.SceneManager;
@@ -613,10 +610,9 @@ public class WanderUI extends GameUI {
 		output.setAlignment(Align.left);
 		log.add(output).expandX().fillX();
 		log.row();
+		log.pack();
 		
-		log.act(0f);
-		
-		logPane.setScrollY(0);
+		logPane.setScrollY(log.getPrefHeight());
 	}
 
 	/**
