@@ -239,7 +239,7 @@ public class TownUI extends GameUI {
 				}
 			});
 			
-			craftSubmenu.add(tabs).fillX().expandX().padLeft(2f);
+			craftSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
 			craftSubmenu.row();
 			
 			//list of required crafts
@@ -295,6 +295,11 @@ public class TownUI extends GameUI {
 			lootSubmenu.setWidth(250f);
 			lootSubmenu.setHeight(display.getHeight());
 			lootSubmenu.setPosition(-lootSubmenu.getWidth(), 0);
+			
+			Label lootLabel = new Label("My Loot", skin, "header");
+			lootLabel.setAlignment(Align.center);
+			lootSubmenu.top().add(lootLabel).expandX().fillX().pad(10f).padBottom(0f);
+			lootSubmenu.row();
 			lootList = new Table();
 			lootPane = new ScrollPane(lootList, skin);
 			lootPane.setHeight(display.getHeight()/2);
@@ -302,7 +307,7 @@ public class TownUI extends GameUI {
 			lootPane.setScrollBarPositions(true, false);
 			lootPane.setFadeScrollBars(false);
 			lootPane.setScrollbarsOnTop(true);
-			lootSubmenu.add(lootPane).expand().fill().pad(10f);
+			lootSubmenu.add(lootPane).expand().fill().pad(10f).padTop(0f);
 			
 			lootPane.addListener(new InputListener(){
 				public boolean keyDown(InputEvent evt, int keycode)
@@ -468,6 +473,9 @@ public class TownUI extends GameUI {
 			pane.setHeight(display.getHeight());
 			pane.setScrollingDisabled(true, false);
 			pane.setFadeScrollBars(false);
+			pane.setScrollBarPositions(true, false);
+			pane.setScrollbarsOnTop(false);
+			
 			exploreSubmenu.add(pane).expand().fill().pad(10f);
 			
 			fileList.addListener(new InputListener(){
@@ -516,7 +524,7 @@ public class TownUI extends GameUI {
 		
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f));
 		goddessDialog.addAction(Actions.alpha(0f));
-		
+		goddessDialog.setVisible(false);
 		
 		setMessage("What're we doing next?");
 	}
@@ -942,7 +950,7 @@ public class TownUI extends GameUI {
 		
 		goddessDialog.clearActions();
 		goddessDialog.addAction(Actions.alpha(1f, .2f));
-		
+		goddessDialog.setVisible(true);
 		restore();
 		
 		menu = GODDESS;
@@ -953,6 +961,11 @@ public class TownUI extends GameUI {
 		goddess.clearActions();
 		goddessDialog.clearActions();
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));
-		goddessDialog.addAction(Actions.alpha(0f, .2f));
+		goddessDialog.addAction(Actions.sequence(Actions.alpha(0f, .2f), Actions.run(new Runnable(){
+			@Override
+			public void run() {
+				goddessDialog.setVisible(false);
+			}
+		})));
 	}
 }
