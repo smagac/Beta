@@ -104,7 +104,7 @@ public class DungeonFactory {
 		//to stress test, uncomment next line
 		//floors = 90;
 		
-		for (int floor = 1, width = 50, height = 50; floor <= floors; floor++, width += 5, height += 5)
+		for (int floor = 1, width = 50, height = 50; floor <= floors; floor++)
 		{
 			Dungeon d = new Dungeon(type, difficulty, floor, width, height);
 			
@@ -130,6 +130,12 @@ public class DungeonFactory {
 			*/
 			dungeon.add(d);
 			loader.progress = (int)(floor/(float)floors * 100);
+			
+			if (floor % 5 == 1)
+			{
+				width += 5;
+				height += 5;
+			}
 		}
 		return dungeon;
 	}

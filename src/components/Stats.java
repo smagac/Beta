@@ -28,7 +28,7 @@ public class Stats extends Component {
 		speed = values[3];
 		exp = values[4];
 		exp = 0;
-		nextExp = level*10;
+		nextExp = 10;
 	}
 	
 	public int getLevel()
@@ -58,14 +58,14 @@ public class Stats extends Component {
 	
 	public boolean levelUp()
 	{
-		if (exp >= level * 10)
+		if (exp >= nextExp)
 		{
 			level++;
-			maxhp = 10+level*5;
+			maxhp += 5;
 			hp = maxhp;
-			strength = 5+level;
-			defense = 5+level;
-			nextExp = level*10;
+			strength++;
+			defense++;
+			nextExp += 10;
 			exp = 0;
 			return true;
 		}

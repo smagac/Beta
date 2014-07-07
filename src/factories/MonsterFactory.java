@@ -116,11 +116,11 @@ public class MonsterFactory {
 			type = src.getString("type", "rat");
 		}
 		
-		public int getHp(float floor) { return (int)MathUtils.lerp(hp, maxhp, 1f/floor); }
-		public int getStr(float floor) { return (int)MathUtils.lerp(str, maxstr, 1f/floor); }
-		public int getDef(float floor) { return (int)MathUtils.lerp(def, maxdef, 1f/floor); }
-		public int getSpd(float floor) { return (int)MathUtils.lerp(spd, maxspd, 1f/floor); }
-		public int getExp(float floor) { return (int)MathUtils.lerp(exp, maxexp, 1f/floor); }
+		public int getHp(float floor) { return (int)MathUtils.lerp(hp, maxhp, floor/100f); }
+		public int getStr(float floor) { return (int)MathUtils.lerp(str, maxstr, floor/100f); }
+		public int getDef(float floor) { return (int)MathUtils.lerp(def, maxdef, floor/100f); }
+		public int getSpd(float floor) { return (int)MathUtils.lerp(spd, maxspd, floor/100f); }
+		public int getExp(float floor) { return (int)MathUtils.lerp(exp, maxexp, floor/100f); }
 		
 	}
 	

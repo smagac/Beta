@@ -172,24 +172,21 @@ public class MovementSystem extends EntityProcessingSystem {
 		Stats aStats = statMap.get(actor);
 		Stats bStats = statMap.get(opponent);
 		
-		float mult = 1.25f;
-		if (actor == player)
-		{
-			mult = 2f;
-		}
+		final float MULT = (actor == player)?2:1.25f;
 		
 		//ignore if target died at some point along the way
 		if (bStats.hp <= 0)
 		{
 			return;
 		}
-		if (MathUtils.randomBoolean(Math.min((MathUtils.random(.8f, mult)*aStats.getSpeed()) / bStats.getSpeed(), 1f)))
+		if (MathUtils.randomBoolean(MathUtils.random(.8f, MULT)*bStats.getSpeed()))
 		{
 			hit.play();
-			int dmg = Math.max(0, (int)(MathUtils.random(.8f, mult)*aStats.getStrength()) - bStats.getDefense());
+			float chance = MathUtils.random(.8f, MULT);
+			int dmg = Math.max(0, (int)(chance*aStats.getStrength()) - bStats.getDefense());
 			bStats.hp = Math.max(0, bStats.hp - dmg);
 			
-			String msg;
+			String msg = "";
 			if (actor == player)
 			{
 				Identifier id = idMap.get(opponent);
@@ -200,7 +197,11 @@ public class MovementSystem extends EntityProcessingSystem {
 				}
 				else
 				{
-					msg = "You attacked " + name + " for " + dmg + " damage";
+					if (chance > MULT * .8f)
+					{
+						msg = "CRITICAL HIT!\n";
+					}
+					msg += "You attacked " + name + " for " + dmg + " damage";
 				}
 				Combat combatProp = combatMap.get(opponent);
 				combatProp.aggress();

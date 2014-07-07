@@ -91,7 +91,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	public void startGame(int difficulty) {
 		
 		//make a player
-		player = new Stats(10, 5, 5, 5, 0);
+		player = new Stats(10, 5, 5, 10, 0);
 
 		//make crafting requirements
 		inventory = new Inventory(difficulty);
