@@ -362,7 +362,8 @@ public class MovementSystem extends EntityProcessingSystem {
 		Position m = positionMap.get(e);
 		Position p = positionMap.get(player);
 		
-		if (!e.isActive())
+		Stats s = statMap.get(e);
+		if (s.hp <= 0)
 		{
 			return;
 		}

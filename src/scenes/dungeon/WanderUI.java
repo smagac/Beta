@@ -716,12 +716,9 @@ public class WanderUI extends GameUI {
 	public void resize(int width, int height)
 	{
 		super.resize(width, height);
-		getViewport().update(width, height, true);
-		System.out.println(getViewport().getViewportHeight());
 		if (dungeonService.getCurrentFloor() != null)
 		{
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().update(width, height, true);
-			System.out.println(dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().getViewportHeight());
 		}
 	}
 
