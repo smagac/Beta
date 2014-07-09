@@ -7,10 +7,8 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -20,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -63,10 +62,6 @@ public class WanderUI extends GameUI {
 	private IPlayerContainer playerService;
 	private IDungeonContainer dungeonService;
 	
-	Table stats;
-	Label enemyName;
-	Label enemyHP;
-	private boolean statsVis;
 	InputProcessor wanderControls;
 	
 	public WanderUI(AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
@@ -157,22 +152,7 @@ public class WanderUI extends GameUI {
 			display.addActor(itemSubmenu);
 		}
 		
-		//enemy stats
-		{
-			stats = new Table();
-			enemyName = new Label("", skin, "promptsm");
-			enemyName.setAlignment(Align.center);
-			enemyHP = new Label("HP: 0/0", skin, "smaller");
-			enemyHP.setAlignment(Align.center);
-			
-			float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
-			stats.setWidth(width);
-			stats.add(enemyName).expandX().fillX().align(Align.center);
-			stats.row();
-			stats.add(enemyHP).expandX().fillX().align(Align.center);
-			stats.addAction(Actions.alpha(0f));
-			display.addActor(stats);
-		}
+		
 		
 		goddess = new Image(skin.getRegion("goddess"));
 		goddess.setSize(128f, 128f);
@@ -287,9 +267,7 @@ public class WanderUI extends GameUI {
 	{
 		if (dungeonService.getCurrentFloor() != null)
 		{
-			Camera c = getViewport().getCamera();
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
-			getViewport().setCamera(c);
 		}
 	}
 
@@ -398,7 +376,6 @@ public class WanderUI extends GameUI {
 	}
 
 	private void showGoddess(String string) {
-		hideStats();
 		dungeonService.getCurrentFloor().getSystem(MovementSystem.class).inputEnabled(false);
 		gMsg.setText(string);
 		
@@ -728,40 +705,7 @@ public class WanderUI extends GameUI {
 		refreshButtons();
 	}
 	
-	public void showStats(Vector2 v, Vector2 v2, String name, String hp)
-	{
-		if (statsVis && name.equals(enemyName.getText().toString())) {
-			return;
-		}
-		
-		statsVis = true;
-		
-		enemyName.setText(name);
-		enemyHP.setText(hp);
-		v = display.screenToLocalCoordinates(v);
-		v2 = display.screenToLocalCoordinates(v2);
-		
-		stats.pack();
-		float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
-		stats.setWidth(width);
-		stats.setBackground(skin.getDrawable("button_up"));
-		stats.addAction(Actions.sequence(
-			Actions.alpha(0f),
-			Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y),
-			Actions.parallel(
-				Actions.alpha(1f, .3f),
-				Actions.moveTo(v2.x - stats.getPrefWidth()/2f, v2.y, .3f)
-				)
-			)
-		);
-	}
 	
-	public void hideStats()
-	{
-		statsVis = false;
-		stats.clearActions();
-		stats.addAction(Actions.alpha(0f, .3f));
-	}
 
 	@Override
 	protected void unhook() {
@@ -772,9 +716,16 @@ public class WanderUI extends GameUI {
 	public void resize(int width, int height)
 	{
 		super.resize(width, height);
+		getViewport().update(width, height, true);
+		System.out.println(getViewport().getViewportHeight());
 		if (dungeonService.getCurrentFloor() != null)
 		{
-			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().update(width, height);
+			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().update(width, height, true);
+			System.out.println(dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().getViewportHeight());
 		}
+	}
+
+	public Skin getSkin() {
+		return skin;
 	}
 }

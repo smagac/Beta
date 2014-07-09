@@ -350,7 +350,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		currentFloor = world;
 		//make sure enemy list is populated at least once
 		currentFloor.getSystem(MovementSystem.class).begin();
-		currentFloor.getSystem(RenderSystem.class).setView(ui);
+		currentFloor.getSystem(RenderSystem.class).setView(ui, ui.getSkin());
 		currentFloor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
 
 		input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());

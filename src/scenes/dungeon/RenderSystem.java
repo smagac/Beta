@@ -20,7 +20,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
@@ -55,6 +60,11 @@ public class RenderSystem extends EntityProcessingSystem {
 	private final Array<Actor> removeQueue;
 	private Stage stage;
 	
+	Table stats;
+	Label enemyName;
+	Label enemyHP;
+	private boolean statsVis;
+	
 	@SuppressWarnings("unchecked")
 	public RenderSystem()
 	{
@@ -82,17 +92,15 @@ public class RenderSystem extends EntityProcessingSystem {
 					Vector2 v = sprite.localToStageCoordinates(new Vector2(0, 0));
 					Vector2 v2 = sprite.localToStageCoordinates(new Vector2(0, sprite.getHeight()+6));
 					
-					v = stage.stageToScreenCoordinates(v);
-					v2 = stage.stageToScreenCoordinates(v2);
 					//Gdx.app.log("[Input]", id.toString() + " has been hovered over. " + v.x + "," + v.y);
-					parentScene.showStats(
+					showStats(
 						v, v2, id.toString(), 
 						String.format("HP: %3d / %3d", s.hp, s.maxhp)
 					);	
 				}
 				public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor)
 				{
-					parentScene.hideStats();
+					hideStats();
 				}
 			});
 		}
@@ -126,7 +134,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		scale = 32f * mapRenderer.getUnitScale();
 	}
 	
-	public void setView(WanderUI view)
+	public void setView(WanderUI view, Skin skin)
 	{
 		parentScene = view;
 		Viewport v = view.getViewport();
@@ -142,6 +150,26 @@ public class RenderSystem extends EntityProcessingSystem {
 		this.camera = (OrthographicCamera) this.stage.getCamera();
 		
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
+		
+		//enemy stats
+		{
+			stats = new Table();
+			enemyName = new Label("", skin, "promptsm");
+			enemyName.setAlignment(Align.center);
+			enemyHP = new Label("HP: 0/0", skin, "smaller");
+			enemyHP.setAlignment(Align.center);
+			
+			float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
+			stats.setWidth(width);
+			stats.add(enemyName).expandX().fillX().align(Align.center);
+			stats.row();
+			stats.add(enemyHP).expandX().fillX().align(Align.center);
+			stats.addAction(Actions.alpha(0f));
+			stats.setBackground(skin.getDrawable("button_up"));
+			stats.setVisible(false);
+			stage.addActor(stats);
+
+		}
 	}
 	
 	@Override
@@ -185,6 +213,11 @@ public class RenderSystem extends EntityProcessingSystem {
 	{
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
+		
+		stage.getBatch().begin();
+		stats.draw(stage.getBatch(), stats.getColor().a);
+		stage.getBatch().end();
+		stage.getBatch().setColor(1f, 1f, 1f, 1f);
 	}
 	
 	public void dispose()
@@ -212,5 +245,38 @@ public class RenderSystem extends EntityProcessingSystem {
 	public Stage getStage()
 	{
 		return stage;
+	}
+	
+	public void showStats(Vector2 v, Vector2 v2, String name, String hp)
+	{
+		if (statsVis && name.equals(enemyName.getText().toString())) {
+			return;
+		}
+		
+		statsVis = true;
+		
+		enemyName.setText(name);
+		enemyHP.setText(hp);
+		
+		stats.pack();
+		float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
+		stats.setWidth(width);
+		
+		stats.addAction(Actions.sequence(
+			Actions.alpha(0f),
+			Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y),
+			Actions.parallel(
+				Actions.alpha(1f, .2f),
+				Actions.moveTo(v2.x - stats.getPrefWidth()/2f, v2.y, .2f)
+				)
+			)
+		);
+	}
+	
+	public void hideStats()
+	{
+		statsVis = false;
+		stats.clearActions();
+		stats.addAction(Actions.alpha(0f, .3f));
 	}
 }

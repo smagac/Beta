@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 
 import core.DataDirs;
+import core.common.Storymode;
 
 public abstract class UI extends Stage {
 
@@ -22,7 +23,7 @@ public abstract class UI extends Stage {
 	
 	public UI(AssetManager manager)
 	{
-		super(new ScalingViewport(Scaling.fit, 960, 540));
+		super(new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]));
 		this.manager = manager;
 		manager.load("data/uiskin.json", Skin.class);
 
