@@ -249,6 +249,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		setCurrentFloor(depth, floor);
 		
 		dungeonManager.unload("floor");
+		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 	
 	protected void dead()
@@ -320,7 +321,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	public void setDungeon(Array<Dungeon> floors)
 	{
 		this.dungeon = floors;
-		currentFloorNumber = floors.size-2;
+		//currentFloorNumber = floors.size-2;
+		currentFloorNumber = 0;
 		currentFloor = null;
 	}
 

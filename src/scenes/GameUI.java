@@ -446,7 +446,7 @@ public abstract class GameUI extends UI {
 		display.setVisible(true);
 	}
 	
-	public final void resize(int width, int height){
+	public void resize(int width, int height){
 		super.resize(width, height);
 		calculateScissors(displayBounds, tmpBound);
 	}

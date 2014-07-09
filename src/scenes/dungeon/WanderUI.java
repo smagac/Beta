@@ -728,7 +728,7 @@ public class WanderUI extends GameUI {
 		refreshButtons();
 	}
 	
-	public void showStats(Vector2 v, String name, String hp)
+	public void showStats(Vector2 v, Vector2 v2, String name, String hp)
 	{
 		if (statsVis && name.equals(enemyName.getText().toString())) {
 			return;
@@ -739,16 +739,18 @@ public class WanderUI extends GameUI {
 		enemyName.setText(name);
 		enemyHP.setText(hp);
 		v = display.screenToLocalCoordinates(v);
+		v2 = display.screenToLocalCoordinates(v2);
+		
 		stats.pack();
 		float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
 		stats.setWidth(width);
 		stats.setBackground(skin.getDrawable("button_up"));
 		stats.addAction(Actions.sequence(
 			Actions.alpha(0f),
-			Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*.5f),
+			Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y),
 			Actions.parallel(
 				Actions.alpha(1f, .3f),
-				Actions.moveTo(v.x - stats.getPrefWidth()/2f, v.y + dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getScale()*1.25f, .3f)
+				Actions.moveTo(v2.x - stats.getPrefWidth()/2f, v2.y, .3f)
 				)
 			)
 		);
@@ -765,5 +767,14 @@ public class WanderUI extends GameUI {
 	protected void unhook() {
 		playerService = null;
 		dungeonService = null;
+	}
+	
+	public void resize(int width, int height)
+	{
+		super.resize(width, height);
+		if (dungeonService.getCurrentFloor() != null)
+		{
+			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().update(width, height);
+		}
 	}
 }

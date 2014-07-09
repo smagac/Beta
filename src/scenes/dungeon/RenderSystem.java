@@ -7,7 +7,6 @@ import com.artemis.annotations.Mapper;
 import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
@@ -32,7 +31,6 @@ import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
-import core.common.Storymode;
 
 public class RenderSystem extends EntityProcessingSystem {
 
@@ -82,10 +80,13 @@ public class RenderSystem extends EntityProcessingSystem {
 					Stats s = statMap.get(e);
 					Identifier id = idMap.get(e);
 					Vector2 v = sprite.localToStageCoordinates(new Vector2(0, 0));
+					Vector2 v2 = sprite.localToStageCoordinates(new Vector2(0, sprite.getHeight()+6));
+					
 					v = stage.stageToScreenCoordinates(v);
+					v2 = stage.stageToScreenCoordinates(v2);
 					//Gdx.app.log("[Input]", id.toString() + " has been hovered over. " + v.x + "," + v.y);
 					parentScene.showStats(
-						v, id.toString(), 
+						v, v2, id.toString(), 
 						String.format("HP: %3d / %3d", s.hp, s.maxhp)
 					);	
 				}
@@ -129,7 +130,7 @@ public class RenderSystem extends EntityProcessingSystem {
 	{
 		parentScene = view;
 		Viewport v = view.getViewport();
-		stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight()));
+		stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
 		stage.addListener(new InputListener(){
 			public boolean mouseMoved(InputEvent evt, float x, float y)
 			{
@@ -157,8 +158,8 @@ public class RenderSystem extends EntityProcessingSystem {
 			r.remove();
 		}
 		
-		camera.setToOrtho(false, Storymode.InternalRes[0], Storymode.InternalRes[1]);
-		
+		camera.position.set(camera.viewportWidth/2, camera.viewportHeight/2, 0);
+		camera.update();
 		//fill background
 		if (nullTile != null)
 		{

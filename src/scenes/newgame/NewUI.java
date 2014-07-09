@@ -42,6 +42,7 @@ public class NewUI extends UI {
 	
 	public NewUI(Scene scene, AssetManager manager) {
 		super(manager);
+		parent = scene;
 		manager.load("data/uiskin.json", Skin.class);
 	}
 
