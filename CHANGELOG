@@ -1,0 +1,50 @@
+Changes since TMG Alpha 2014
+============================
+- When selecting a compatible audio (mp3, ogg, wav) to explore, the song will play in the background
+- File Navigation has been fixed to use absolute paths, allowing you to explore your entire filesystem instead of just your home folder
+- File Navigation list is now properly sorted alphabetically in folder-file order
+- Palette System has been rewritten and now features an original Gameboy green-scale and Virtualboy red-scale alternative palettes
+- Enemies now move smarter and in a more balanced fashion
+- Enemies now only move in 4 directions, just like you, so you can no longer be chased or attacked diagonally
+- Goddess now shows up and gives you a random hint about the game's "secrets" after crafting your first required item
+- Dungeons are now larger and more threatening the deeper you go
+- To help curb annoying load times and seemingly visible stalling, loading screens have been implemented
+- Loading screens still have access to Boss keys, allowing you to change palette and restart the game even during loading
+- Plenty of UI fixes, such as the log box for combat and treasure actually scrolling when new events happen
+- Moving your mouse over an enemy shows their name and current hp in a tool-tip above their head
+- Clicking within the dungeon display will move the character in the direction of the mouse
+- Loot has been added by way of a treasure chest looking enemy with 0 stats, allowing for killing it instantly and getting the loot
+- Loot is balanced to try and generate in rooms where there are less enemies to give you reason to search all of the floor
+- In addition to loot enemies, occasionally mimics appear!
+- Certain enemies are passive, allowing them to not chase after you/become agro until you hit them
+- Certain enemies now have custom death messages, such as Michael Bays and Treasure Chests
+
+Backend Changes
+=============================
+- Secret keys have been changed.  If you were using F9 to soft reset the game, be careful.  I have fallen victim to the habit as well, so no worries, I understand.  F9 now just tries to kill the application.
+- Global key listener allows for "Secret Keys" to be accessed anywhere, instead of sloppily being inserted within the main loop
+- All screens now extend a base "Scene" class for consistency
+- All UIs extend a "UI" class, with all game uis such as the town and dungeon extending "GameUI" class
+- Palette managing now uses 2 tones, 1 for shadows one for highlights
+- The game now uses a custom dependency injection solution using representing of the system as services in order to help prevent accidents from happening with accessing things in messy ways.  SceneManager automates this by assigning the main runner into new Scenes's public fields annotated with @Inject as the specified service type
+- Due to the large sizes of dungeons, they now are loaded asynchronously as a resource
+- loading screens have been added
+- Monsters have a level 1 and level 100 value to stats, with a linear slope between the values designating their stats the deeper you go
+- Additionally, Passive, Death message, and Exp values have been added to the enemy specification
+- LibGDX version used has been upgraded to 1.2.0
+
+TODO List of Features
+=============================
+- Choose your Gender which affects your character sprite and who you serve 
+-- requires a new individual story and in-game texts that need to be set instead of hard code into the uis
+- Enemies at higher levels should have a chance of turning into a treasure chest upon dying to provide extra loot
+- End game still needs implementing
+- Change player's growth curve into stat point allocation system
+-- Menu needs to be accessible in the main menu, requiring you to leave a dungeon to allocate stat points
+-- Roll for stats after choosing your gender and difficulty
+- For official release, inventory needs to be empty when starting a game
+
+If you read all this, thank you, it means a lot to me that you actually are interested in the development of StoryMode
+
+Have fun with the Beta, good luck, and be sure to break as much as you can for me!
+Nicholas Hydock
