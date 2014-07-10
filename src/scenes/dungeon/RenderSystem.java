@@ -238,8 +238,16 @@ public class RenderSystem extends EntityProcessingSystem {
 	}
 
 	public void setNull(Texture texture) {
-		texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-		this.nullTile = new TextureRegion(texture);
+		if (texture != null)
+		{
+			texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
+			this.nullTile = new TextureRegion(texture);
+		}
+		else
+		{
+			this.nullTile = null;
+		}
+		
 	}
 	
 	public Stage getStage()

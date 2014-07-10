@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.artemis.World;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -23,8 +22,6 @@ import core.util.dungeon.Room;
 
 public class Dungeon implements Serializable{
 
-	World world;
-	
 	int monsters;
 	int[][] tiles;
 	Array<Room> rooms;

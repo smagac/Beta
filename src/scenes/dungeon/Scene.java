@@ -3,8 +3,8 @@ package scenes.dungeon;
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.AbsoluteFileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
@@ -35,8 +35,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	ObjectMap<Item, Integer> loot;
 	
-	private String bgmName;
-	
 	@Inject public IPlayerContainer playerService;
 	
 	AssetManager dungeonManager;
@@ -55,7 +53,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	public Scene()
 	{
 		super();
-		dungeonManager = new AssetManager();
+		dungeonManager = new AssetManager(new AbsoluteFileHandleResolver());
 		dungeonLoader = new DungeonLoader(new InternalFileHandleResolver());
 		floorLoader = new FloorLoader(new InternalFileHandleResolver());
 		dungeonManager.setLoader(Array.class, dungeonLoader);
@@ -66,7 +64,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		fileType = type;
 		this.difficulty = difficulty;
-		bgmName = null;
 	}
 	
 	public void setDungeon(FileHandle file, int difficulty)
@@ -76,7 +73,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		{
 			if (file.extension().matches("(mp3|ogg|wav)"))
 			{
-				bgmName = file.file().getAbsolutePath();
+				bgm = Gdx.audio.newMusic(file);
 			}
 		}
 		this.difficulty = difficulty;
@@ -136,11 +133,14 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		
 		loot = new ObjectMap<Item, Integer>();
 		
-		if (bgmName == null)
+		if (bgm == null)
 		{
-			bgmName = String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2));
+			bgm = Gdx.audio.newMusic(Gdx.files.internal(String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2))));
 		}
-		manager.load(bgmName, Music.class);
+		
+		bgm.setLooping(true);
+		bgm.play();
+		
 	}
 
 	@Override
@@ -303,9 +303,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		hitSound = manager.get(DataDirs.hit, Sound.class);
 		dungeonManager.load("dungeon", Array.class, param);
 		
-		bgm = manager.get(bgmName, Music.class);
-		bgm.setLooping(true);
-		bgm.play();
 		
 		Gdx.input.setInputProcessor(input);
 	}
