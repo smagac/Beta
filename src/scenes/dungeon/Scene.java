@@ -349,7 +349,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		currentFloor.getSystem(MovementSystem.class).begin();
 		currentFloor.getSystem(RenderSystem.class).setView(ui, ui.getSkin());
 		currentFloor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
-
+		currentFloor.getSystem(RenderSystem.class).getStage().getBatch().setShader(color.getShader());;
+		
 		input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 		currentFloorNumber = i;
 	}
