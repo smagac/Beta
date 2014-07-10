@@ -22,7 +22,7 @@ public class Inventory {
 		cf = new CraftableFactory();
 		
 		required = new Array<Craftable>();
-		for (int i = 0; i < difficulty; i++)
+		for (int i = 0; i < difficulty*2; i++)
 		{
 			required.add(cf.createRandomCraftable());
 		}
