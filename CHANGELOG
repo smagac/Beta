@@ -1,3 +1,18 @@
+Changes since Beta Announcement on July 7, 2014
+============================
+- Difficulty now determines how many crafts you need to make x2.  This way on level 1 difficulty you won't be done with the game after crafting your first required item
+- Game is distributed using GetDown by ThreeRings.  This allows you to just download the launcher and always have the latest version whenever you run the game instead of having to constantly check back at the website.
+
+#### Backend Changes
+- Music for dungeons no longer uses the AssetManager because I didn't feel like having a separate manager just for loading music along absolute paths because of freakin' Window's file path format
+- Fixed debug logic that was left in that was starting the player off on the last floor of the dungeon
+- Hover over enemy ui element is now contained in each of the render systems to allow for proper scaling of where they should be located.
+- Remember to scale render systems in dungeons when resizing the screen.  My b for anyone who tried the earliest of betas in fullscreen mode
+- some gpus don't like f being appened to numbers in GLSL (AMD APUs).  Remove f and just use standard decimal values in the fragment shader to fix this issue
+- Entities don't delete from the world until the next cycle.  Compensate for this by not processing entities with 0 hp.  Also means we don't pointlessly process treasure chests thinking they can move for fight.
+- Multiple highlight in craft menu when items have same base type is fixed by overriding equals in Craftable objects
+
+
 Changes since TMG Alpha 2014
 ============================
 - When selecting a compatible audio (mp3, ogg, wav) to explore, the song will play in the background
@@ -19,8 +34,7 @@ Changes since TMG Alpha 2014
 - Certain enemies are passive, allowing them to not chase after you/become agro until you hit them
 - Certain enemies now have custom death messages, such as Michael Bays and Treasure Chests
 
-Backend Changes
-=============================
+#### Backend Changes
 - Secret keys have been changed.  If you were using F9 to soft reset the game, be careful.  I have fallen victim to the habit as well, so no worries, I understand.  F9 now just tries to kill the application.
 - Global key listener allows for "Secret Keys" to be accessed anywhere, instead of sloppily being inserted within the main loop
 - All screens now extend a base "Scene" class for consistency
