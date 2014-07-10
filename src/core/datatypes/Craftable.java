@@ -28,4 +28,34 @@ public class Craftable extends Item
 	{
 		return requirements;
 	}
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		if (o == null) {
+			return false;
+		}
+		if (o == this) {
+			return true;
+		}
+		if (o.hashCode() == this.hashCode()) {
+			return true;
+		}
+		if (o instanceof String)
+		{
+			String s = (String)o;
+			return name.equals(s); 
+		}
+		if (o instanceof Craftable)
+		{
+			Craftable c = (Craftable)o;
+			return fullname().equals(c.fullname());
+		}
+		if (o instanceof Item)
+		{
+			Item i = (Item)o;
+			return name.equals(i.name);
+		}
+		return false;
+	}
 }
