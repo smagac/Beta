@@ -3,6 +3,7 @@ package scenes.newgame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import core.DataDirs;
 import core.common.SceneManager;
@@ -25,6 +26,7 @@ public class Scene extends scenes.Scene<NewUI> {
 		}
 		
 		ui.draw();
+		//Table.drawDebug(ui);
 	}
 
 	@Override

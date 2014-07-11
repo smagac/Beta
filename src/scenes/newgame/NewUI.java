@@ -13,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -63,23 +62,36 @@ public class NewUI extends UI {
 		final Group frame = UI.makeWindow(skin, 580, 300);
 		frame.setPosition(getWidth()/2-frame.getWidth()/2, getHeight()/2-frame.getHeight()/2);
 		
-		final Table window = new Table();
+		final Table window = new Table(skin);
+		window.center();
+		window.top();
 		window.setFillParent(true);
-		window.pad(32f);
+		window.pad(40f);
+		window.pack();
+		window.debug();
+		
+		Label prompt = new Label("Please create a character", skin, "prompt");
+		prompt.setAlignment(Align.center);
+		
+		window.top();
+		window.add(prompt).expandX().fillX().colspan(3).padBottom(20);
+		window.row().pad(0, 50f, 0f, 50f);
 		
 		//Difficulty
 		{
-			Label prompt = new Label("Please choose your difficulty", skin, "prompt");
-			prompt.setAlignment(Align.center);
-			window.add(prompt).expandX().fillX();
-			window.row();
+			prompt = new Label("Difficulty", skin, "prompt");
+			prompt.setAlignment(Align.left);
 			
-			HorizontalGroup buttons = new HorizontalGroup();
+			window.add(prompt).expandX().fillX().colspan(1);
 			
-			number = new Label(""+difficulty, skin);
+			number = new Label(""+difficulty, skin, "promptsm");
+			number.setAlignment(Align.center);
+			
+			Table buttons = new Table();
+			buttons.debug();
 			
 			final TextButton left = new TextButton("<", skin);
-			left.pad(0,10,0,10);
+			left.pad(10);
 			left.addListener(new InputListener() {
 				
 				@Override
@@ -109,7 +121,7 @@ public class NewUI extends UI {
 			});
 			
 			final TextButton right = new TextButton(">", skin);
-			right.pad(0,10,0,10);
+			right.pad(10);
 			right.addListener(new InputListener() {
 				
 				@Override
@@ -138,40 +150,35 @@ public class NewUI extends UI {
 				}
 			});
 			
+			buttons.add(left).width(48f).colspan(1).right();
+			buttons.add(number).width(60f).colspan(1).center();
+			buttons.add(right).width(48f).colspan(1).left();
 			
-			
-			buttons.addActor(left);
-			buttons.addActor(number);
-			buttons.addActor(right);
-			buttons.space(30);
-			buttons.pack();
-			
-			window.add(buttons).expandX();
-			window.row();
+			window.add(buttons).colspan(2).center();
 		}
+		window.row().pad(0, 50f, 0f, 50f);
 		//Gender
 		{
-			Label prompt = new Label("Choose your gender", skin, "prompt");
-			prompt.setAlignment(Align.center);
-			window.add(prompt).expandX().fillX();
-			window.row();
+			prompt = new Label("Gender", skin, "prompt");
+			prompt.setAlignment(Align.left);
+			window.add(prompt).expandX().fillX().colspan(1);
 			
 			
-			TextButton left = new TextButton("Male", skin);
-			left.pad(0,10,0,10);
+			TextButton left = new TextButton("Male", skin, "big");
+			left.pad(10);
 			left.setChecked(true);
 			
-			TextButton right = new TextButton("Female", skin);
-			right.pad(0,10,0,10);
+			TextButton right = new TextButton("Female", skin, "big");
+			right.pad(10);
 			
 			gender = new ButtonGroup(left, right);
 			
-			window.add(left).fillX().pad(10f);
-			window.add(right).fillX().pad(10f);
-			
-			window.row();
+			window.center();
+			window.add(left).pad(10f).colspan(1).width(80f).right();
+			window.add(right).pad(10f).colspan(1).width(80f).left();
 		}
 		window.pack();
+		
 		
 		final TextButton accept = new TextButton("START", skin);
 		accept.align(Align.center);
@@ -440,7 +447,6 @@ public class NewUI extends UI {
 			)
 		);
 		addActor(textTable);
-		// TODO Auto-generated method stub
 		
 		act();
 	}
