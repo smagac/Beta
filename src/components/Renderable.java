@@ -3,6 +3,7 @@ package components;
 import com.artemis.Component;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Renderable extends Component {
@@ -25,7 +26,7 @@ public class Renderable extends Component {
 	
 	public void move(float f, float g)
 	{
-		actor.setPosition(f, g);
+		actor.addAction(Actions.moveTo(f, g));
 	}
 
 	public Actor getActor() {

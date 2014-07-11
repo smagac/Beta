@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Position extends Component {
 
 	private final Vector2 loc;
+	private boolean changed;
 	
 	public Position(int x, int y)
 	{
@@ -15,6 +16,7 @@ public class Position extends Component {
 	public void move(int x, int y)
 	{
 		loc.set(x, y);
+		changed = true;
 	}
 
 	public int getX() {
@@ -29,9 +31,10 @@ public class Position extends Component {
 	{
 		return loc.dst(p.loc);
 	}
+	
+	public void update(){changed = false;}
 
-	public void step(Position p) {
-		
-		
+	public boolean changed() {
+		return changed;
 	}
 }

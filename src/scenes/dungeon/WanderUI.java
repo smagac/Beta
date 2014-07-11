@@ -271,6 +271,15 @@ public class WanderUI extends GameUI {
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
 		}
 	}
+	
+	@Override
+	protected void extendAct(float delta)
+	{
+		if (dungeonService.getCurrentFloor() != null)
+		{
+			dungeonService.getCurrentFloor().setDelta(delta);
+		}
+	}
 
 	@Override
 	protected void triggerAction(int index) {

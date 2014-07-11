@@ -6,7 +6,6 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
@@ -136,15 +135,22 @@ public class RenderSystem extends EntityProcessingSystem {
 		Renderable r = renderMap.get(e);
 		
 		//adjust position to be aligned with tiles
-		r.move(p.getX()*scale, p.getY()*scale);
+		if (r.getActor().getX() == 0 && r.getActor().getY() == 0)
+		{
+			r.getActor().addAction(Actions.moveTo(p.getX()*scale, p.getY()*scale));
+		}
+		
+		if (p.changed())
+		{
+			r.getActor().addAction(Actions.moveTo(p.getX()*scale, p.getY()*scale, .2f));
+			p.update();	
+		}
 	}
 	
 	public void setMap(TiledMap map)
 	{
 		this.map = map;
 		this.height = ((TiledMapTileLayer)map.getLayers().get(0)).getHeight();
-		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
-		scale = 32f * mapRenderer.getUnitScale();
 	}
 	
 	public void setView(WanderUI view, Skin skin)
@@ -164,6 +170,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		this.camera = (OrthographicCamera) this.stage.getCamera();
 		
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
+		scale = 32f * mapRenderer.getUnitScale();
 		
 		//enemy stats
 		{
@@ -200,6 +207,9 @@ public class RenderSystem extends EntityProcessingSystem {
 			r.remove();
 		}
 		
+		float x = camera.position.x;
+		float y = camera.position.y;
+		
 		camera.position.set(camera.viewportWidth/2, camera.viewportHeight/2, 0);
 		camera.update();
 		//fill background
@@ -213,11 +223,12 @@ public class RenderSystem extends EntityProcessingSystem {
 			batch.end();
 		}
 		Entity player = world.getManager(TagManager.class).getEntity("player");
-		Position pos = positionMap.get(player);
-		camera.position.x = pos.getX()*scale;
-		camera.position.y = pos.getY()*scale;
-		camera.update();
+		Renderable r = renderMap.get(player);
 		
+		if (r.getActor() == null) return;
+		
+		camera.position.set(x, y, 0);
+		camera.update();
 		mapRenderer.setView(camera);
 		mapRenderer.render();
 	}
@@ -225,13 +236,21 @@ public class RenderSystem extends EntityProcessingSystem {
 	@Override
 	protected void end()
 	{
-		stage.act(Gdx.graphics.getDeltaTime());
+		stage.act(world.getDelta());
 		stage.draw();
 		
 		stage.getBatch().begin();
 		stats.draw(stage.getBatch(), stats.getColor().a);
 		stage.getBatch().end();
 		stage.getBatch().setColor(1f, 1f, 1f, 1f);
+		
+		Entity player = world.getManager(TagManager.class).getEntity("player");
+		Renderable r = renderMap.get(player);
+		
+		if (r.getActor() == null) return;
+		
+		camera.position.x = r.getActor().getX();
+		camera.position.y = r.getActor().getY();
 	}
 	
 	public void dispose()

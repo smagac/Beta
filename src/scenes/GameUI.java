@@ -418,6 +418,8 @@ public abstract class GameUI extends UI {
 		messageWindow.addActor(message);
 	}
 	
+	protected void extendAct(float delta){}
+	
 	@Override
 	public final void act(float delta)
 	{
@@ -435,6 +437,7 @@ public abstract class GameUI extends UI {
 		
 		//update animations
 		super.act(delta);
+		extendAct(delta);
 		//display.act(delta);
 	}
 	

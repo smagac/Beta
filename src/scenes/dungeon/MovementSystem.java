@@ -14,11 +14,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import components.Combat;
 import components.Identifier;
 import components.Monster;
 import components.Position;
+import components.Renderable;
 import components.Stats;
 import core.common.Tracker;
 
@@ -179,6 +181,23 @@ public class MovementSystem extends EntityProcessingSystem {
 		{
 			return;
 		}
+		
+		Renderable aChar = actor.getComponent(Renderable.class);
+		Renderable bChar = opponent.getComponent(Renderable.class);
+		
+		float shiftX, shiftY, x, y;
+		x = aChar.getActor().getX();
+		y = aChar.getActor().getY();
+		shiftX = bChar.getActor().getX()-x;
+		shiftY = bChar.getActor().getY()-y;
+		aChar.getActor().clearActions();
+		aChar.getActor().addAction(
+			Actions.sequence(
+				Actions.moveTo(x + shiftX/4f, y + shiftY/4f, .1f),
+				Actions.moveTo(x, y, .1f)
+			)
+		);
+		
 		if (MathUtils.randomBoolean(1f-(MathUtils.random(.8f, MULT)*bStats.getSpeed())/100f))
 		{
 			hit.play();
