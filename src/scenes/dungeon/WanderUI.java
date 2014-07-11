@@ -174,6 +174,7 @@ public class WanderUI extends GameUI {
 		goddessDialog.addAction(Actions.alpha(0f));
 		
 		final InputListener displayControl = new InputListener(){
+			@Override
 			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 			{
 				float dir = MathUtils.atan2(display.getHeight()/2-y, display.getWidth()/2-x);
@@ -713,6 +714,7 @@ public class WanderUI extends GameUI {
 		dungeonService = null;
 	}
 	
+	@Override
 	public void resize(int width, int height)
 	{
 		super.resize(width, height);

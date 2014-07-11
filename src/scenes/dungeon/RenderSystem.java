@@ -73,6 +73,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		removeQueue = new Array<Actor>();
 	}
 	
+	@Override
 	protected void inserted(final Entity e)
 	{
 		super.inserted(e);
@@ -98,6 +99,7 @@ public class RenderSystem extends EntityProcessingSystem {
 						String.format("HP: %3d / %3d", s.hp, s.maxhp)
 					);	
 				}
+				@Override
 				public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor)
 				{
 					hideStats();
@@ -109,6 +111,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		addQueue.add(sprite);
 	}
 	
+	@Override
 	protected void removed(final Entity e)
 	{
 		Renderable r = renderMap.get(e);
@@ -140,6 +143,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		Viewport v = view.getViewport();
 		stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
 		stage.addListener(new InputListener(){
+			@Override
 			public boolean mouseMoved(InputEvent evt, float x, float y)
 			{
 				//Gdx.app.log("[Input]", "Mouse is moving");

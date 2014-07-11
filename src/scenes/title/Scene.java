@@ -37,10 +37,12 @@ public class Scene extends scenes.Scene<TitleSequence> {
 	/**
 	 * Initialize the ui and load all assets
 	 */
+	@Override
 	protected void init()
 	{
 		ui.init();
 		ui.addListener(new InputListener(){
+			@Override
 			public boolean keyDown(InputEvent evt, int keycode)
 			{
 				//skip the intro

@@ -92,6 +92,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		*/
 	}
 
+	@Override
 	public void startGame(int difficulty) {
 		
 		//make a player
@@ -107,6 +108,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	/**
 	 * Reset back to the title
 	 */
+	@Override
 	public void softReset()
 	{
 		player = null;
@@ -119,12 +121,14 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	/**
 	 * Skip all the title sequence and story and just jump into a normal difficulty game
 	 */
+	@Override
 	public void fastStart()
 	{
 		startGame(3);
 		SceneManager.switchToScene("town");
 	}
 	
+	@Override
 	public void toggleFullscreen()
 	{
 		if (fullscreen)
@@ -140,6 +144,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		}
 	}
 	
+	@Override
 	public String getTimeElapsed()
 	{
 		return String.format(timeFormat, (int)(time/3600f), (int)(time/60f)%60, (int)(time % 60));
@@ -235,27 +240,32 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	/**
 	 * Fully heal the player
 	 */
+	@Override
 	public void rest()
 	{
 		player.hp = player.maxhp;
 		Tracker.NumberValues.Times_Slept.increment();
 	}
 
+	@Override
 	public Inventory getInventory()
 	{
 		return inventory;
 	}
 	
+	@Override
 	public Stats getPlayer()
 	{
 		return player;
 	}
 	
+	@Override
 	public Palette getPalette()
 	{
 		return currentHue;
 	}
 	
+	@Override
 	public void setPalette(Palette p)
 	{
 		if (p.equals(currentHue))
@@ -284,10 +294,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		return contrast = Math.max(.1f, contrast - .1f);
 	}
 	
+	@Override
 	public void invert() {
 		invert = !invert;
 	}
 	
+	@Override
 	public boolean isInverted() {
 		return invert;
 	}
@@ -312,6 +324,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		return loading;
 	}
 	
+	@Override
 	public void setLoadingMessage(String message)
 	{
 		if (message == null || message.trim().length() == 0)

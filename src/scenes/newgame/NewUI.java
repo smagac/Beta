@@ -402,6 +402,7 @@ public class NewUI extends UI {
 		act();
 	}
 	
+	@Override
 	public void dispose()
 	{
 		super.dispose();

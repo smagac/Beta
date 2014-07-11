@@ -86,6 +86,7 @@ public abstract class GameUI extends UI {
 	/**
 	 * Initialize the ui after all assets have been loaded
 	 */
+	@Override
 	public void init()
 	{
 		skin = manager.get("data/uiskin.json", Skin.class);
@@ -417,6 +418,7 @@ public abstract class GameUI extends UI {
 		messageWindow.addActor(message);
 	}
 	
+	@Override
 	public final void act(float delta)
 	{
 		//update time
@@ -436,6 +438,7 @@ public abstract class GameUI extends UI {
 		//display.act(delta);
 	}
 	
+	@Override
 	public final void draw()
 	{
 		Batch b = getBatch();
@@ -456,6 +459,7 @@ public abstract class GameUI extends UI {
 		display.setVisible(true);
 	}
 	
+	@Override
 	public void resize(int width, int height){
 		super.resize(width, height);
 		calculateScissors(displayBounds, tmpBound);

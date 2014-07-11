@@ -90,6 +90,7 @@ public class TownUI extends GameUI {
 		this.playerService = player;
 	}
 	
+	@Override
 	protected void unhook()
 	{
 		this.playerService = null;
@@ -121,6 +122,7 @@ public class TownUI extends GameUI {
 			exploreImg.setPosition(display.getWidth()/2-exploreImg.getWidth()/2, display.getHeight()-exploreImg.getHeight());
 			exploreImg.setTouchable(Touchable.enabled);
 			exploreImg.addListener(new InputListener(){
+				@Override
 				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 				{
 					if (button == Buttons.LEFT)
@@ -145,6 +147,7 @@ public class TownUI extends GameUI {
 			sleepImg = new Image(skin.getRegion("sleep"));
 			sleepImg.setPosition(0f, 0f);
 			sleepImg.addListener(new InputListener(){
+				@Override
 				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 				{
 					if (button == Buttons.LEFT)
@@ -168,6 +171,7 @@ public class TownUI extends GameUI {
 			craftImg = new Image(skin.getRegion("craft"));
 			craftImg.setPosition(display.getWidth()-craftImg.getWidth(), 0);
 			craftImg.addListener(new InputListener(){
+				@Override
 				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 				{
 					if (button == Buttons.LEFT)
@@ -314,6 +318,7 @@ public class TownUI extends GameUI {
 			lootSubmenu.add(lootPane).expand().fill().pad(10f).padTop(0f);
 			
 			lootPane.addListener(new InputListener(){
+				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
 					if (keycode == Keys.DOWN || keycode == Keys.S)
@@ -328,6 +333,7 @@ public class TownUI extends GameUI {
 				}
 			});
 			craftPane.addListener(new InputListener(){
+				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
 					if (keycode == Keys.DOWN || keycode == Keys.S)

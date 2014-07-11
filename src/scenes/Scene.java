@@ -79,6 +79,7 @@ public abstract class Scene<View extends UI> implements Screen {
 	 */
 	protected abstract void extend(float delta);
 	
+	@Override
 	public void dispose()
 	{
 		if (ui != null) {

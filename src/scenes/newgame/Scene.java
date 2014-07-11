@@ -42,6 +42,7 @@ public class Scene extends scenes.Scene<NewUI> {
 		manager.load(DataDirs.accept, Sound.class);
 	}
 	
+	@Override
 	protected void init()
 	{
 		//fetch assets

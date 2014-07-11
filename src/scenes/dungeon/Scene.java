@@ -360,10 +360,12 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		return currentFloor;
 	}
 	
+	@Override
 	public int nextFloor() {
 		return currentFloorNumber + 1;
 	}
 	
+	@Override
 	public int prevFloor() {
 		return currentFloorNumber - 1;
 	}

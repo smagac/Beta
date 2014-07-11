@@ -362,6 +362,7 @@ public class EndUI extends UI {
 		return over;
 	}
 	
+	@Override
 	public void dispose()
 	{
 		super.dispose();

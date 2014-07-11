@@ -118,6 +118,7 @@ public abstract class UI extends Stage {
 		getViewport().update(width, height);
 	}
 	
+	@Override
 	public void dispose()
 	{
 		super.dispose();
