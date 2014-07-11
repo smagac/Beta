@@ -2,8 +2,99 @@ package core.common;
 
 import com.badlogic.gdx.utils.ObjectMap;
 
-public class Tracker {
+public final class Tracker {
 
+	public static int score()
+	{
+		//calculate score
+		int score = 0;
+		
+		return score;
+	}
+	
+	/**
+	 * Calculate a rank for the player based on their tracked stats
+	 * @return
+	 */
+	public static String rank() {
+		
+		String rank = "Straight Shooter";
+		if (score() > 50000)
+		{
+			rank = "Going for the Gold";
+		}
+		if (NumberValues.Monsters_Killed.count > 500)
+		{
+			rank = "Poacher";
+		}
+		if (NumberValues.Monsters_Killed.count > 1000)
+		{
+			rank = "Exterminator";
+		}
+		if (NumberValues.Files_Explored.count < 10)
+		{
+			rank = "Crawler";
+		}
+		if (NumberValues.Items_Crafted.count > 10)
+		{
+			rank = "Apprentice";
+		}
+		if (NumberValues.Files_Explored.count > 10)
+		{
+			rank = "Logger";
+		}
+		if (NumberValues.Times_Slept.count > 100)
+		{
+			rank = "Narclyptic";
+		}
+		if (NumberValues.Items_Crafted.count > 15)
+		{
+			rank = "Favourite Slave";
+		}
+		if (NumberValues.Loot_Sacrificed.count > 500)
+		{
+			rank = "Garbage Dump";
+		}
+		if (NumberValues.Files_Explored.count > 20)
+		{
+			rank = "Living Virus";
+		}
+		if (NumberValues.Items_Crafted.count > 25)
+		{
+			rank = "Crafting Addict";
+		}
+		if (NumberValues.Monsters_Killed.count > 10000)
+		{
+			rank = "Mass Extintion";
+		}
+		if (NumberValues.Files_Explored.count == 0)
+		{
+			rank = "Dungeon Gambler";
+		}
+		if (NumberValues.Times_Slept.count < 10)
+		{
+			rank = "Insomniac";
+		}
+		if (NumberValues.Items_Crafted.count > 50)
+		{
+			rank = "Dedicated Follower";
+		}
+		if (NumberValues.Items_Crafted.count > 70)
+		{
+			rank = "Westboro Craftist";
+		}
+		if (NumberValues.Times_Died.count < 10)
+		{
+			rank = "Played it Safe";
+		}
+		if (NumberValues.Items_Crafted.count > 100)
+		{
+			rank = "Newly Appointed Crafting God";
+		}
+		
+		return rank;
+	}
+	
 	/**
 	 * Values to keep track of over the course of the game
 	 * @author nhydock
@@ -33,14 +124,18 @@ public class Tracker {
 		@Override
 		public String toString()
 		{
-			return String.format("%s: %d", name().replace('_', ' '), count);
+			return String.format("%s", name().replace('_', ' '));
+		}
+
+		public int value() {
+			return count;
 		}
 	}
 	
 	public enum StringValues {
-		FavouriteFileType;
+		Favourite_File_Type;
 		
-		private ObjectMap<String, Integer> counters;
+		private final ObjectMap<String, Integer> counters = new ObjectMap<String, Integer>();
 		
 		public void increment(String value)
 		{
@@ -82,6 +177,12 @@ public class Tracker {
 				}
 			}
 			return m;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format("%s", name().replace('_', ' '));
 		}
 	}
 }

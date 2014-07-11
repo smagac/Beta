@@ -23,6 +23,7 @@ public class Inventory {
 		
 		required = new Array<Craftable>();
 		for (int i = 0; i < difficulty*2; i++)
+		//for (int i = 0; i < 1; i++)
 		{
 			required.add(cf.createRandomCraftable());
 		}
@@ -66,6 +67,10 @@ public class Inventory {
 
 	public int getProgress() {
 		return progress;
+	}
+	
+	public float getProgressPercentage() {
+		return (float)progress/(float)required.size;
 	}
 	
 	/**

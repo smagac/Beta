@@ -6,12 +6,14 @@ import java.util.Iterator;
 import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -49,7 +51,7 @@ public class TownUI extends GameUI {
 	private Group exploreImg;
 	private Image craftImg;
 	private Image character;
-	
+
 	private Table exploreSubmenu;
 	private List<String> fileList;
 	private Array<FileHandle> directoryList;
@@ -81,6 +83,7 @@ public class TownUI extends GameUI {
 	private static final int EXPLORE = 1;
 	private static final int SLEEP = 0;
 	private Iterator<String> dialog;
+	private boolean over;
 	
 	public TownUI(AssetManager manager, IPlayerContainer player) {
 		super(manager, player);
@@ -530,6 +533,41 @@ public class TownUI extends GameUI {
 		setMessage("What're we doing next?");
 	}
 	
+	protected void endGame()
+	{
+		InputMultiplexer input = (InputMultiplexer)Gdx.input.getInputProcessor();
+		input.removeProcessor(this);
+		
+		over = true;
+		restore();
+		getRoot().clearListeners();
+		getRoot().addAction(
+			Actions.sequence(
+				Actions.delay(3f),
+				Actions.forever(
+					Actions.sequence(
+						Actions.moveTo(5, 0, .1f, Interpolation.bounce),
+						Actions.moveTo(-5, 0, .1f, Interpolation.bounce)
+					)
+				)
+			)
+		);
+		fader.addAction(
+			Actions.sequence(
+				Actions.delay(3f),
+				Actions.alpha(1f, 5f),
+				Actions.run(new Runnable(){
+
+					@Override
+					public void run() {
+						SceneManager.switchToScene("endgame");
+					}
+					
+				})
+			)
+		);
+	}
+	
 	private void loadDir(FileHandle external) {
 		lastIndex = -1;
 		//disable input while loading directory
@@ -614,8 +652,12 @@ public class TownUI extends GameUI {
 					setMessage((made)?"Crafted an item!":"Not enough materials");
 					populateLoot();
 					
+					if (playerService.getInventory().getProgressPercentage() >= 1.0f)
+					{
+						endGame();
+					}
 					//show helpful tip after first item has been made!
-					if (count == 0 && made)
+					else if (count == 0 && made)
 					{
 						int hint = MathUtils.random(3);
 						if (hint == 0)
@@ -669,6 +711,7 @@ public class TownUI extends GameUI {
 								);
 						}
 					}
+					
 				}
 			}
 			else
@@ -898,6 +941,7 @@ public class TownUI extends GameUI {
 		setMessage("What're we doing next?");
 		
 		enableMenuInput();
+		refreshButtons();
 	}
 
 	@Override
@@ -921,7 +965,7 @@ public class TownUI extends GameUI {
 		{
 			return new String[]{"Return", "Explore Dungeon", "Random Dungeon"};
 		}
-		else if (menu == SLEEP)
+		else if (menu == SLEEP || over)
 		{
 			return null;
 		}

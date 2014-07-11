@@ -14,7 +14,7 @@ public class Scene extends scenes.Scene<TownUI> {
 	
 	@Override
 	public void resize(int width, int height) {
-		((TownUI)ui).resize(width, height);
+		ui.resize(width, height);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class Scene extends scenes.Scene<TownUI> {
 
 	@Override
 	protected void init() {
-		((TownUI)ui).init();
+		ui.init();
 		bgm = manager.get("data/audio/town.mp3");
 		bgm.play();
 		bgm.setLooping(true);

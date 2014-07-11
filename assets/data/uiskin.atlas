@@ -26,6 +26,13 @@ button_down
   orig: 16, 16
   offset: 0, 0
   index: -1
+fader
+  rotate: false
+  xy: 800, 754
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 button_up
   rotate: false
   xy: 872, 818
@@ -76,16 +83,9 @@ explore_back
   orig: 256, 256
   offset: 0, 0
   index: -1
-fader
-  rotate: false
-  xy: 2, 2
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
 goddess
   rotate: false
-  xy: 28, 36
+  xy: 2, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -106,7 +106,7 @@ other
   index: -1
 progback
   rotate: false
-  xy: 774, 694
+  xy: 54, 78
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -114,7 +114,7 @@ progback
   index: -1
 progfront
   rotate: false
-  xy: 800, 744
+  xy: 774, 694
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -122,7 +122,7 @@ progfront
   index: -1
 scroll-knob
   rotate: false
-  xy: 800, 744
+  xy: 774, 694
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -137,7 +137,7 @@ prompt_sm
   index: -1
 scroll
   rotate: false
-  xy: 54, 76
+  xy: 28, 42
   size: 10, 10
   orig: 10, 10
   offset: 0, 0

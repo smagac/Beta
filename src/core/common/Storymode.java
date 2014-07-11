@@ -71,6 +71,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		SceneManager.register("dungeon", scenes.dungeon.Scene.class);
 		SceneManager.register("title", scenes.title.Scene.class);
 		SceneManager.register("newgame", scenes.newgame.Scene.class);
+		SceneManager.register("endgame", scenes.endgame.Scene.class);
 		
 		SceneManager.switchToScene("title");
 		
@@ -78,6 +79,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		loadingFont = new BitmapFont(Gdx.files.internal("data/loading.fnt"));
 		
 		setLoadingMessage(null);
+
+		//startGame(3);
+		//SceneManager.switchToScene("endgame");
 		
 		//test dungeon
 		/*
@@ -313,6 +317,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		if (message == null || message.trim().length() == 0)
 			message = "Loading...";
 		this.loadingMessage = message;
+	}
+
+	@Override
+	public String getFullTime() {
+		// TODO Auto-generated method stub
+		return String.format("%d hours %d minutes and %d seconds", (int)(time/3600f), (int)(time/60f)%60, (int)(time % 60));
 	}
 
 }

@@ -19,6 +19,7 @@ import core.common.Storymode;
 public abstract class UI extends Stage {
 
 	protected Skin skin;
+	protected Image fader;
 	protected AssetManager manager;
 	
 	public UI(AssetManager manager)

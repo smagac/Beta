@@ -45,6 +45,8 @@ public class BossListener implements InputProcessor {
 		if (keycode == Keys.NUM_1) { nextCol = Palette.Original; }
 		if (keycode == Keys.NUM_2) { nextCol = Palette.Gameboy; }
 		if (keycode == Keys.NUM_3) { nextCol = Palette.VirtualBoy; }
+		if (keycode == Keys.NUM_4) { nextCol = Palette.Orange; }
+		if (keycode == Keys.NUM_5) { nextCol = Palette.Tandy; }
 		if (keycode == Keys.MINUS) { getColorService().darken(); return true; }
 		if (keycode == Keys.EQUALS) { getColorService().brighten(); return true; }
 		

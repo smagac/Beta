@@ -10,10 +10,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -262,6 +264,12 @@ public abstract class GameUI extends UI {
 		addAction(Actions.alpha(1f, .2f));
 		calculateScissors(displayBounds, tmpBound);
 		
+		fader = new Image(skin.getDrawable("fader"));
+		fader.setFillParent(true);
+		fader.addAction(Actions.alpha(0f));
+		fader.setTouchable(Touchable.disabled);
+		addActor(fader);
+		
 		act(0);
 	}
 	
@@ -296,6 +304,8 @@ public abstract class GameUI extends UI {
 		if (butt == null)
 		{
 			disableMenuInput();
+			buttonList.clearChildren();
+			buttons = null;
 			return;
 		}
 		

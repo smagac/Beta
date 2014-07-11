@@ -9,4 +9,5 @@ public interface IPlayerContainer extends Service {
 	public Stats getPlayer();
 	public void rest();
 	public String getTimeElapsed();
+	public String getFullTime();
 }
