@@ -47,14 +47,16 @@ public class DungeonFactory {
 	//private static final String acceptable = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	
 	private static TextureAtlas atlas;
+	private static TextureRegion character;
 	
-	public static void prepareFactory(TextureAtlas atlas)
+	public static void prepareFactory(TextureAtlas atlas, TextureRegion player)
 	{
 		DungeonFactory.atlas = atlas;
 		if (tileset == null)
 		{
 			tileset = new TiledMapTileSet();
 		}
+		DungeonFactory.character = player;
 		buildTileSet();
 	}
 	
@@ -187,7 +189,7 @@ public class DungeonFactory {
 		Entity e = world.createEntity();
 		e.addComponent(new Position(0,0));
 		e.addComponent(player);	//shared stats reference
-		e.addComponent(new Renderable(atlas.findRegion("character")));
+		e.addComponent(new Renderable(character));
 		e.addToWorld();
 		
 		world.getManager(TagManager.class).register("player", e);

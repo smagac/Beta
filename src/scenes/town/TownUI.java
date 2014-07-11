@@ -192,7 +192,7 @@ public class TownUI extends GameUI {
 		
 		//draw you
 		{
-			character = new Image(skin.getRegion("character"));
+			character = new Image(skin.getRegion(playerService.getGender()));
 			character.setSize(96f, 96f);
 			character.setPosition(display.getWidth()/2-character.getWidth()/2, 18f);
 			display.addActor(character);
@@ -516,7 +516,7 @@ public class TownUI extends GameUI {
 			display.addActor(exploreSubmenu);
 		}
 
-		goddess = new Image(skin.getRegion("goddess"));
+		goddess = new Image(skin.getRegion(playerService.getWorship()));
 		goddess.setSize(128f, 128f);
 		goddess.setScaling(Scaling.stretch);
 		goddessDialog = makeWindow(skin, 500, 150, true);

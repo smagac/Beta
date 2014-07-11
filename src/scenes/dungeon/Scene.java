@@ -293,7 +293,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	protected void init() {
 		ui.init();
 		
-		DungeonFactory.prepareFactory(manager.get("data/dungeon.atlas", TextureAtlas.class));
+		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+		DungeonFactory.prepareFactory(atlas, atlas.findRegion(playerService.getGender()));
 		
 		DungeonParam param =  new DungeonParam();
 		param.difficulty = difficulty;

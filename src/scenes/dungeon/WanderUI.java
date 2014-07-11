@@ -154,7 +154,7 @@ public class WanderUI extends GameUI {
 		
 		
 		
-		goddess = new Image(skin.getRegion("goddess"));
+		goddess = new Image(skin.getRegion(playerService.getWorship()));
 		goddess.setSize(128f, 128f);
 		goddess.setScaling(Scaling.stretch);
 		goddessDialog = makeWindow(skin, 500, 150, true);

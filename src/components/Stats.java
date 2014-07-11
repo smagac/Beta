@@ -17,6 +17,7 @@ public class Stats extends Component {
 	private float speed;
 	public int exp;
 	public int nextExp;
+	public boolean hidden;
 	
 	public Stats(int... values)
 	{

@@ -150,7 +150,9 @@
         "type" : "loot",
         "norm" : "0",
         "agro" : ".9",
-        "passive" : "true"
+        "passive" : "true",
+        "hideStats" : "true",
+        "hideName" : "true"
     },
     "treasure chest" : {
         "hp" : "1", "str" : "0", "def": "-10", "exp" : "0", "spd" : "0",
@@ -159,6 +161,8 @@
         "norm" : "0",
         "agro" : "0",
         "passive" : "true",
-        "die" : "%s was bashed open"
+        "die" : "%s was bashed open",
+        "hideStats" : "true",
+        "hideName" : "true"
     }
 }

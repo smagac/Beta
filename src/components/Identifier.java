@@ -7,18 +7,12 @@ public class Identifier extends Component {
 	String adjective;
 	String type;
 	String description;
+	boolean hidden;
 	
-	public Identifier(String base, String adjective)
+	public Identifier(String base, String adjective, boolean hidden)
 	{
 		this.type = base;
 		this.adjective = adjective;
-	}
-	
-	public Identifier(String base, String adjective, String description)
-	{
-		this.type = base;
-		this.adjective = adjective;
-		this.description = description;
 	}
 	
 	@Override
@@ -27,8 +21,8 @@ public class Identifier extends Component {
 		return this.adjective + " " + this.type;
 	}
 	
-	public String getDescription()
+	public boolean hidden()
 	{
-		return description;
+		return hidden;
 	}
 }

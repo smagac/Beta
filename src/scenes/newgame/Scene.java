@@ -7,18 +7,19 @@ import com.badlogic.gdx.audio.Sound;
 import core.DataDirs;
 import core.common.SceneManager;
 import core.service.IGame;
+import core.service.IPlayerContainer;
 import core.service.Inject;
 
 public class Scene extends scenes.Scene<NewUI> {
 
 	@Inject public IGame gameService;
+	@Inject public IPlayerContainer playerService;
 	
 	@Override
 	public void extend(float delta) {
 		if (ui.isDone())
 		{
 			
-			gameService.startGame(ui.getDifficulty());
 			SceneManager.switchToScene("town");
 			return;
 		}
@@ -33,7 +34,7 @@ public class Scene extends scenes.Scene<NewUI> {
 	
 	@Override
 	public void show() {
-		ui = new NewUI(this, manager);
+		ui = new NewUI(this, manager, playerService);
 		
 		manager.load("data/audio/story.mp3", Music.class);
 		
@@ -55,6 +56,7 @@ public class Scene extends scenes.Scene<NewUI> {
 	
 	protected void prepareStory()
 	{
+		gameService.startGame(ui.getDifficulty(), ui.getGender());
 		bgm = manager.get("data/audio/story.mp3", Music.class);
 		bgm.setLooping(true);
 		bgm.play();

@@ -10,4 +10,6 @@ public interface IPlayerContainer extends Service {
 	public void rest();
 	public String getTimeElapsed();
 	public String getFullTime();
+	public String getGender();
+	public String getWorship();
 }

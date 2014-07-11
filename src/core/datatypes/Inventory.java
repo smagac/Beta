@@ -22,11 +22,15 @@ public class Inventory {
 		cf = new CraftableFactory();
 		
 		required = new Array<Craftable>();
-		for (int i = 0; i < difficulty*2; i++)
-		//for (int i = 0; i < 1; i++)
+		do
 		{
-			required.add(cf.createRandomCraftable());
+			Craftable c = cf.createRandomCraftable();
+			if (!required.contains(c, false))
+			{
+				required.add(c);
+			}
 		}
+		while (required.size < difficulty*2);
 		
 		refreshCrafts();
 		
@@ -51,10 +55,16 @@ public class Inventory {
 	 */
 	public void refreshCrafts() {
 		todaysCrafts = new Array<Craftable>();
-		for (int i = 0; i < 5; i++)
+		todaysCrafts.clear();
+		do
 		{
-			todaysCrafts.add(cf.createRandomCraftable());
+			Craftable c = cf.createRandomCraftable();
+			if (!todaysCrafts.contains(c, false))
+			{
+				todaysCrafts.add(c);
+			}
 		}
+		while (todaysCrafts.size < 5);
 	}
 	
 	public Array<Craftable> getTodaysCrafts() {

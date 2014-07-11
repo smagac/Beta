@@ -90,14 +90,24 @@ public class RenderSystem extends EntityProcessingSystem {
 				{
 					Stats s = statMap.get(e);
 					Identifier id = idMap.get(e);
+					if (id.hidden())
+						return;
+					
 					Vector2 v = sprite.localToStageCoordinates(new Vector2(0, 0));
 					Vector2 v2 = sprite.localToStageCoordinates(new Vector2(0, sprite.getHeight()+6));
 					
 					//Gdx.app.log("[Input]", id.toString() + " has been hovered over. " + v.x + "," + v.y);
-					showStats(
-						v, v2, id.toString(), 
-						String.format("HP: %3d / %3d", s.hp, s.maxhp)
-					);	
+					if (s.hidden)
+					{
+						showStats( v, v2, id.toString(), "HP: ??? / ???");		
+					}
+					else
+					{
+						showStats(
+							v, v2, id.toString(), 
+							String.format("HP: %3d / %3d", s.hp, s.maxhp)
+						);
+					}
 				}
 				@Override
 				public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor)

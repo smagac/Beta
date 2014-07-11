@@ -50,6 +50,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	private String loadingMessage;
 	private boolean loading;
 	
+	private String goddess;
+	private String character;
+	
 	protected Storymode(){}
 	
 	@Override
@@ -93,7 +96,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	}
 
 	@Override
-	public void startGame(int difficulty) {
+	public void startGame(int difficulty, boolean gender) {
 		
 		//make a player
 		player = new Stats(10, 5, 5, 10, 0);
@@ -103,6 +106,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		
 		//reset game clock
 		time = 0f;
+		
+		character = (gender)?"male":"female";
+		goddess = (gender)?"goddess":"god";
 	}
 	
 	/**
@@ -124,7 +130,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	@Override
 	public void fastStart()
 	{
-		startGame(3);
+		startGame(3, true);
 		SceneManager.switchToScene("town");
 	}
 	
@@ -336,6 +342,16 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	public String getFullTime() {
 		// TODO Auto-generated method stub
 		return String.format("%d hours %d minutes and %d seconds", (int)(time/3600f), (int)(time/60f)%60, (int)(time % 60));
+	}
+
+	@Override
+	public String getGender() {
+		return character;
+	}
+
+	@Override
+	public String getWorship() {
+		return goddess;
 	}
 
 }

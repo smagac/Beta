@@ -100,6 +100,10 @@ public class MonsterFactory {
 		//sprite type to use
 		final String type;
 		
+		//certain monsters are able to hide their name and/or stat bubble
+		final boolean boss;     //hp turns into ???/???, this is useful for rare/boss enemies
+		final boolean hideName;	//hides the entire bubble if no name is available
+		
 		MonsterTemplate(final JsonValue src)
 		{
 			name = src.name;
@@ -114,6 +118,8 @@ public class MonsterFactory {
 			passive = src.getBoolean("passive", false);
 			location = src.getString("where", null);
 			type = src.getString("type", "rat");
+			boss = src.getBoolean("boss", false);
+			hideName = src.getBoolean("hideName", false);
 		}
 		
 		public int getHp(float floor) { return (int)MathUtils.lerp(hp, maxhp, floor/100f); }
@@ -194,13 +200,15 @@ public class MonsterFactory {
 	private Entity create(World world, MonsterTemplate t, Item item, int floor)
 	{
 		Entity e = world.createEntity();
-		e.addComponent(new Stats(
-						t.getHp(floor),
-						t.getStr(floor),
-						t.getDef(floor),
-						t.getSpd(floor),
-						t.getExp(floor)));
-		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective()));
+		Stats s = new Stats(
+				t.getHp(floor),
+				t.getStr(floor),
+				t.getDef(floor),
+				t.getSpd(floor),
+				t.getExp(floor));
+		s.hidden = t.boss;
+		e.addComponent(s);
+		e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective(), t.hideName));
 		e.addComponent(new Renderable(icons.findRegion(t.type)));
 		
 		Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
