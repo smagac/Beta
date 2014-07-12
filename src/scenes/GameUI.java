@@ -80,7 +80,6 @@ public abstract class GameUI extends UI {
 
 		manager.load(DataDirs.accept, Sound.class);
 		manager.load(DataDirs.tick, Sound.class);
-		
 	}
 	
 	/**
@@ -91,9 +90,6 @@ public abstract class GameUI extends UI {
 	{
 		skin = manager.get("data/uiskin.json", Skin.class);
 
-		//make sure the stage is empty
-		clear();
-		
 		//stat frame
 		{
 			Group window = makeWindow(skin, 384, 108);

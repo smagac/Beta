@@ -7,7 +7,6 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -33,7 +32,7 @@ import core.common.Tracker;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
 import core.service.IPlayerContainer;
-import static scenes.dungeon.Direction.*;
+import core.util.ScrollFocuser;
 
 public class WanderUI extends GameUI {
 
@@ -89,6 +88,7 @@ public class WanderUI extends GameUI {
 		log.setWidth(messageWindow.getWidth());
 		logPane = new ScrollPane(log, skin, "log");
 		logPane.setSize(messageWindow.getWidth(), messageWindow.getHeight());
+		logPane.addListener(new ScrollFocuser(logPane));
 		messageWindow.addActor(logPane);
 		
 		dialog = makeWindow(skin, 400, 250, true);
@@ -136,6 +136,8 @@ public class WanderUI extends GameUI {
 			lootPane.setScrollbarsOnTop(false);
 			lootPane.setScrollBarPositions(true, false);
 			lootPane.setFadeScrollBars(false);
+			lootPane.addListener(new ScrollFocuser(lootPane));
+			
 			//lootList.setFillParent(true);
 			lootList.setTouchable(Touchable.childrenOnly);
 			itemSubmenu.add(lootPane).width(230f).expandY().fillY().pad(4f).padTop(0f);
@@ -150,6 +152,7 @@ public class WanderUI extends GameUI {
 			sacrificePane.setScrollBarPositions(true, false);
 			sacrificePane.setFadeScrollBars(false);
 			sacrificeList.setTouchable(Touchable.childrenOnly);
+			sacrificePane.addListener(new ScrollFocuser(sacrificePane));
 			//sacrificeList.setFillParent(true);
 			itemSubmenu.add(sacrificePane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 			

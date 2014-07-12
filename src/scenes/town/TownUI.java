@@ -44,6 +44,7 @@ import core.datatypes.Item;
 import core.service.IPlayerContainer;
 import core.util.FileSort;
 import core.util.PathSort;
+import core.util.ScrollFocuser;
 
 public class TownUI extends GameUI {
 
@@ -279,6 +280,7 @@ public class TownUI extends GameUI {
 			});
 			
 			craftPane = new ScrollPane(craftList, skin);
+			craftPane.addListener(new ScrollFocuser(craftPane));
 			craftPane.setFadeScrollBars(false);
 			
 			craftSubmenu.top().add(craftPane).expand().fill().height(display.getHeight()/2-20).pad(2f).padTop(0f);
@@ -291,8 +293,11 @@ public class TownUI extends GameUI {
 			requirementList.pad(10);
 			requirementList.top().left();
 			
-			ScrollPane pane2 = new ScrollPane(requirementList, skin);
+			final ScrollPane pane2 = new ScrollPane(requirementList, skin);
 			pane2.setFadeScrollBars(false);
+			pane2.addListener(new ScrollFocuser(pane2));
+
+			
 			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-20).pad(2f);
 			craftSubmenu.pad(10f);
 			craftSubmenu.setPosition(display.getWidth(), 0);
@@ -315,6 +320,8 @@ public class TownUI extends GameUI {
 			lootPane.setScrollBarPositions(true, false);
 			lootPane.setFadeScrollBars(false);
 			lootPane.setScrollbarsOnTop(true);
+			lootPane.addListener(new ScrollFocuser(lootPane));
+
 			lootSubmenu.add(lootPane).expand().fill().pad(10f).padTop(0f);
 			
 			lootPane.addListener(new InputListener(){
@@ -485,6 +492,8 @@ public class TownUI extends GameUI {
 			pane.setFadeScrollBars(false);
 			pane.setScrollBarPositions(true, false);
 			pane.setScrollbarsOnTop(false);
+			pane.addListener(new ScrollFocuser(pane));
+
 			
 			exploreSubmenu.add(pane).expand().fill().pad(10f);
 			
