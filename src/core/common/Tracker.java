@@ -4,12 +4,46 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 public final class Tracker {
 
+	/**
+	 * Reset all the tracker's values
+	 */
+	public static void reset()
+	{
+		for (NumberValues nv : NumberValues.values())
+		{
+			nv.reset();
+		}
+		
+		for (StringValues sv : StringValues.values())
+		{
+			sv.reset();
+		}
+	}
+	
+	/**
+	 * @return calculated score from tracker values
+	 */
 	public static int score()
 	{
-		//TODO calculate score
-		int score = 0;
+		//calculate score
+		float score = 0;
 		
-		return score;
+		//more points awarded per item crafted
+		score += NumberValues.Items_Crafted.count*1000;
+		
+		//less files needed to explore per item crafted, better your score
+		score += ((10*NumberValues.Items_Crafted.count)-NumberValues.Files_Explored.count)*100; 
+		
+		//get cool points for enemy kdr 
+		score += (NumberValues.Monsters_Killed.count/NumberValues.Times_Died.count) * 100;
+		
+		//less you sleep more points you get
+		score += (NumberValues.Times_Slept.count + NumberValues.Loot_Sacrificed.count) * -50;
+		
+		//get points for each piece of loot you find
+		score += NumberValues.Loot_Found.count * 10;
+		
+		return (int)Math.max(0, score);
 	}
 	
 	/**
@@ -130,6 +164,10 @@ public final class Tracker {
 		public int value() {
 			return count;
 		}
+		
+		private void reset() {
+			count = 0;
+		}
 	}
 	
 	public enum StringValues {
@@ -183,6 +221,11 @@ public final class Tracker {
 		public String toString()
 		{
 			return String.format("%s", name().replace('_', ' '));
+		}
+		
+		private void reset()
+		{
+			counters.clear();
 		}
 	}
 }

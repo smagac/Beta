@@ -109,6 +109,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		
 		character = (gender)?"male":"female";
 		goddess = (gender)?"goddess":"god";
+		
+		Tracker.reset();
 	}
 	
 	/**

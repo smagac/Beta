@@ -78,6 +78,7 @@ public class BossListener implements InputProcessor {
 			if (Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT))
 			{
 				getGameService().toggleFullscreen();
+				return true;
 			}
 		}
 		
