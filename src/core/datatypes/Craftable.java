@@ -11,6 +11,8 @@ public class Craftable extends Item
 	 */
 	private ObjectMap<String, Integer> requirements;
 	
+	protected boolean canMake = false;
+	
 	public Craftable(String name, String adj, String... parts) {
 		super(name, adj);
 		
@@ -27,6 +29,12 @@ public class Craftable extends Item
 	public ObjectMap<String, Integer> getRequirements()
 	{
 		return requirements;
+	}
+
+	@Override
+	public String toString()
+	{
+		return ((canMake)?"*":"")+super.toString();
 	}
 	
 	@Override

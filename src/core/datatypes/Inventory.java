@@ -72,6 +72,10 @@ public class Inventory {
 	}
 	
 	public Array<Craftable> getRequiredCrafts() {
+		for (Craftable c : required)
+		{
+			c.canMake = canMake(c);
+		}
 		return required;
 	}
 
@@ -83,16 +87,10 @@ public class Inventory {
 		return (float)progress/(float)required.size;
 	}
 	
-	/**
-	 * Make a craftable out of the loot you have
-	 * @param c
-	 */
-	public boolean makeItem(Craftable c)
+	public boolean canMake(Craftable c)
 	{
 		ObjectMap<String, Integer> requirements = c.getRequirements();
 		boolean make = true;
-		
-		ObjectMap<Item, Integer> remove = new ObjectMap<Item, Integer>();
 		
 		for (String required : requirements.keys())
 		{
@@ -106,17 +104,11 @@ public class Inventory {
 					Integer amount = loot.get(lootName);
 					
 					have = have + amount;
-					
-					if (have > need)
+			
+					if (have >= need)
 					{
-						amount = have-need;
+						break;
 					}
-					remove.put(lootName, amount);
-				}
-				
-				if (have >= need)
-				{
-					break;
 				}
 			}
 		
@@ -126,45 +118,81 @@ public class Inventory {
 				break;
 			}
 		}
+		return make;
+	}
+	
+	/**
+	 * Make a craftable out of the loot you have
+	 * @param c
+	 */
+	public boolean makeItem(Craftable c)
+	{
+		ObjectMap<String, Integer> requirements = c.getRequirements();
 		
-		if (make)
+		if (!c.canMake)
 		{
-			for (Item i : remove.keys())
-			{
-				int amount = remove.get(i);
-				loot.put(i,  loot.get(i) - amount);
-				if (loot.get(i) <= 0)
-				{
-					loot.remove(i);
-				}
-				
-				//add the item to your loot
-				loot.put(c, 1);
-			}
-			Tracker.NumberValues.Items_Crafted.increment();
+			return false;
+		}
+		
+		for (String required : requirements.keys())
+		{
+			int need = requirements.get(required);
+			int have = 0;
 			
-			//count progress after making
-			progress = 0;
-			for (Craftable r : required)
+			for (Item i : loot.keys())
 			{
-				Item i = null;
-				
-				Keys<Item> keys = loot.keys();
-				for (; keys.hasNext && i == null;)
+				if (i.equals(required))
 				{
-					Item i2 = keys.next();
-					if (i2.fullname().equals(r.fullname())) {
-						i = i2;
+					Integer amount = loot.get(i);
+					
+					have = have + amount;
+					
+					if (have > need)
+					{
+						amount = have-need;
 					}
-				}
-				
-				if (i != null && loot.get(i, 0) > 0)
-				{
-					progress++;
+					loot.put(i,  loot.get(i) - amount);
+					
+					if (loot.get(i) <= 0)
+					{
+						loot.remove(i);
+					}
+					
+					if (have >= need)
+					{
+						break;
+					}
 				}
 			}
 		}
-		return make;
+		
+		//add the item to your loot
+		Item crafted = new Item(c.name, c.adj);
+		loot.put(crafted, loot.get(crafted, 1));
+		
+		Tracker.NumberValues.Items_Crafted.increment();
+			
+		//count progress after making
+		progress = 0;
+		for (Craftable r : required)
+		{
+			Item i = null;
+			
+			Keys<Item> keys = loot.keys();
+			for (; keys.hasNext && i == null;)
+			{
+				Item i2 = keys.next();
+				if (i2.fullname().equals(r.fullname())) {
+					i = i2;
+				}
+			}
+			
+			if (i != null && loot.get(i, 0) > 0)
+			{
+				progress++;
+			}
+		}
+		return true;
 	}
 
 	public ObjectMap<Item, Integer> getLoot() {
