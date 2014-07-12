@@ -9,6 +9,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -32,6 +33,7 @@ import core.common.Tracker;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
 import core.service.IPlayerContainer;
+import static scenes.dungeon.Direction.*;
 
 public class WanderUI extends GameUI {
 
@@ -64,6 +66,8 @@ public class WanderUI extends GameUI {
 	
 	InputProcessor wanderControls;
 	
+	float walkTimer;
+	
 	public WanderUI(AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
 		super(manager, playerService);
 		
@@ -73,6 +77,7 @@ public class WanderUI extends GameUI {
 		loot = new ObjectMap<Item, Integer>();
 		sacrifices = new ObjectMap<Item, Integer>();
 		healCost = 1;
+		walkTimer = -1f;
 	}
 
 	@Override
@@ -177,33 +182,20 @@ public class WanderUI extends GameUI {
 			@Override
 			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 			{
-				float dir = MathUtils.atan2(display.getHeight()/2-y, display.getWidth()/2-x);
-				
-				//LEFT
-				if (dir > -MathUtils.PI/4 && dir < MathUtils.PI/4)
+				Direction d = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
+				if (d != null)
 				{
-					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.LEFT);
-					return true;
-				}
-				//RIGHT
-				else if (dir < -3*MathUtils.PI/4 || dir > 3*MathUtils.PI/4)
-				{
-					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.RIGHT);
-					return true;
-				}
-				//UP
-				else if (dir < -MathUtils.PI/4 && dir > -3*MathUtils.PI/4)
-				{
-					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.UP);
-					return true;
-				}
-				//DOWN
-				else if (dir > MathUtils.PI/4 && dir < 3*MathUtils.PI/4)
-				{
-					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.DOWN);
+					dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(d);
+					walkTimer = 0f;
 					return true;
 				}
 				return false;
+			}
+			
+			@Override
+			public void touchUp(InputEvent evt, float x, float y, int pointer, int button)
+			{
+				walkTimer = -1f;
 			}
 		};
 		
@@ -213,26 +205,17 @@ public class WanderUI extends GameUI {
 			public boolean keyDown(int keycode) {
 				boolean moved = false;
 				
-				//allow 2 turn dashing
-				for (int i = 0; i < (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)?2:1); i++)
+				Direction to = Direction.valueOf(keycode);
+				if (to != null)
 				{
-					if (keycode == Keys.UP || keycode == Keys.W)
-					{
-						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.UP);
-					}
-					if (keycode == Keys.DOWN || keycode == Keys.S)
-					{
-						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.DOWN);
-					}
-					if (keycode == Keys.LEFT || keycode == Keys.A)
-					{
-						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.LEFT);
-					}
-					if (keycode == Keys.RIGHT || keycode == Keys.D)
-					{
-						moved = dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(MovementSystem.RIGHT);
-					}
+					moved = moved || dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(to);
 				}
+				
+				if (moved)
+				{
+					walkTimer = 0f;
+				}
+				
 				return moved;
 			}
 
@@ -272,12 +255,38 @@ public class WanderUI extends GameUI {
 		}
 	}
 	
+	private final Vector2 mousePos = new Vector2();
+	
 	@Override
 	protected void extendAct(float delta)
 	{
 		if (dungeonService.getCurrentFloor() != null)
 		{
 			dungeonService.getCurrentFloor().setDelta(delta);
+			
+			if (walkTimer >= 0f)
+			{
+				walkTimer += delta;
+				if (walkTimer > RenderSystem.MoveSpeed*2f)
+				{
+					Direction d = Direction.valueOf(Gdx.input);
+					if (d == null && Gdx.input.isButtonPressed(Buttons.LEFT))
+					{
+						mousePos.set(Gdx.input.getX(), Gdx.input.getY());
+						display.screenToLocalCoordinates(mousePos);
+						d = Direction.valueOf(mousePos, display.getWidth(), display.getHeight());
+					}
+					if (d != null)
+					{
+						dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(d);
+						walkTimer = 0f;
+					}
+					else
+					{
+						walkTimer = -1f;
+					}
+				}
+			}
 		}
 	}
 

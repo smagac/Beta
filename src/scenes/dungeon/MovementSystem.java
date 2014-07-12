@@ -23,6 +23,7 @@ import components.Position;
 import components.Renderable;
 import components.Stats;
 import core.common.Tracker;
+import static scenes.dungeon.Direction.*;
 
 /**
  * Handles all movement for dungeoning, as well as bump combat
@@ -48,12 +49,6 @@ public class MovementSystem extends EntityProcessingSystem {
 	Sound hit;
 
 	private boolean enabledInput;
-	
-	protected static final int
-		UP = 0,
-		DOWN = 1,
-		LEFT = 2,
-		RIGHT = 3;
 	
 	@SuppressWarnings("unchecked")
 	/**
@@ -193,8 +188,8 @@ public class MovementSystem extends EntityProcessingSystem {
 		aChar.getActor().clearActions();
 		aChar.getActor().addAction(
 			Actions.sequence(
-				Actions.moveTo(x + shiftX/4f, y + shiftY/4f, .1f),
-				Actions.moveTo(x, y, .1f)
+				Actions.moveTo(x + shiftX/4f, y + shiftY/4f, RenderSystem.MoveSpeed/2f),
+				Actions.moveTo(x, y, RenderSystem.MoveSpeed/2f)
 			)
 		);
 		
@@ -332,31 +327,31 @@ public class MovementSystem extends EntityProcessingSystem {
 		player = world.getManager(TagManager.class).getEntity("player");
 	}
 
-	public boolean movePlayer(int direction) {
+	public boolean movePlayer(Direction direction) {
 
 		if (!this.enabledInput){
 			return false;
 		}
 		
-		if (direction < UP || direction > RIGHT)
+		if (direction == null)
 			return false;
 		
 		Position playerPos = positionMap.get(player);
 		int x = playerPos.getX();
 		int y = playerPos.getY();
-		if (direction == UP)
+		if (direction == Up)
 		{
 			y++;
 		}
-		if (direction == DOWN)
+		if (direction == Down)
 		{
 			y--;
 		}
-		if (direction == RIGHT)
+		if (direction == Right)
 		{
 			x++;
 		}
-		if (direction == LEFT)
+		if (direction == Left)
 		{
 			x--;
 		}

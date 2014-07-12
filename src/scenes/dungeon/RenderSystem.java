@@ -38,6 +38,8 @@ import components.Stats;
 
 public class RenderSystem extends EntityProcessingSystem {
 
+	public static final float MoveSpeed = .25f;
+	
 	WanderUI parentScene;
 	
 	private SpriteBatch batch;
@@ -142,7 +144,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		
 		if (p.changed())
 		{
-			r.getActor().addAction(Actions.moveTo(p.getX()*scale, p.getY()*scale, .2f));
+			r.getActor().addAction(Actions.moveTo(p.getX()*scale, p.getY()*scale, MoveSpeed));
 			p.update();	
 		}
 	}
@@ -246,7 +248,6 @@ public class RenderSystem extends EntityProcessingSystem {
 		
 		Entity player = world.getManager(TagManager.class).getEntity("player");
 		Renderable r = renderMap.get(player);
-		
 		if (r.getActor() == null) return;
 		
 		camera.position.x = r.getActor().getX();
