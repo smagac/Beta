@@ -180,14 +180,20 @@ public class MovementSystem extends EntityProcessingSystem {
 		Renderable aChar = actor.getComponent(Renderable.class);
 		Renderable bChar = opponent.getComponent(Renderable.class);
 		
+		
 		float shiftX, shiftY, x, y;
-		x = aChar.getActor().getX();
-		y = aChar.getActor().getY();
+		
+		Position p = positionMap.get(actor);
+		float scale = world.getSystem(RenderSystem.class).getScale();
+		x = p.getX()*scale;
+		y = p.getY()*scale;
 		shiftX = bChar.getActor().getX()-x;
 		shiftY = bChar.getActor().getY()-y;
+		
 		aChar.getActor().clearActions();
 		aChar.getActor().addAction(
 			Actions.sequence(
+				Actions.moveTo(x, y),
 				Actions.moveTo(x + shiftX/4f, y + shiftY/4f, RenderSystem.MoveSpeed/2f),
 				Actions.moveTo(x, y, RenderSystem.MoveSpeed/2f)
 			)
@@ -205,6 +211,7 @@ public class MovementSystem extends EntityProcessingSystem {
 			{
 				Identifier id = idMap.get(opponent);
 				String name = id.toString();
+				id.show();
 				if (dmg == 0)
 				{
 					msg = name + " blocked your attack!";
@@ -224,6 +231,7 @@ public class MovementSystem extends EntityProcessingSystem {
 			{
 				Identifier id = idMap.get(actor);
 				String name = id.toString();
+				id.show();
 				if (dmg == 0)
 				{
 					msg = "You blocked " + name + "'s attack";
@@ -248,7 +256,7 @@ public class MovementSystem extends EntityProcessingSystem {
 					Combat combat = combatMap.get(opponent);
 					parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));
 					parentScene.getItem(combat.getDrop());
-					aStats.exp++;
+					aStats.exp += bStats.exp;
 					if (aStats.levelUp())
 					{
 						parentScene.log("You have gained a level!");
@@ -264,12 +272,14 @@ public class MovementSystem extends EntityProcessingSystem {
 			{
 				Identifier id = idMap.get(opponent);
 				String name = id.toString();
+				id.show();
 				parentScene.log("You attacked " + name + " but missed!");
 			}
 			else
 			{
 				Identifier id = idMap.get(actor);
 				String name = id.toString();
+				id.show();
 				parentScene.log(name + " attacked you and missed");
 			}
 		}

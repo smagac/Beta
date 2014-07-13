@@ -13,6 +13,7 @@ public class Identifier extends Component {
 	{
 		this.type = base;
 		this.adjective = adjective;
+		this.hidden = hidden;
 	}
 	
 	@Override
@@ -24,5 +25,10 @@ public class Identifier extends Component {
 	public boolean hidden()
 	{
 		return hidden;
+	}
+	
+	public void show()
+	{
+		hidden = false;
 	}
 }

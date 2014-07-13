@@ -52,8 +52,8 @@ public class RenderSystem extends EntityProcessingSystem {
 	@Mapper ComponentMapper<Identifier> idMap;
 	@Mapper ComponentMapper<Stats> statMap;
 	
-	float scale;
-	float height;
+	private float scale;
+	private float height;
 	private TiledMap map;
 	private TextureRegion nullTile;
 	

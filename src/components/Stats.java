@@ -28,7 +28,6 @@ public class Stats extends Component {
 		defense = values[2];
 		speed = values[3];
 		exp = values[4];
-		exp = 0;
 		nextExp = 10;
 	}
 	
