@@ -84,6 +84,15 @@ public class WanderUI extends GameUI {
 		
 		messageWindow.clear();
 		
+		fader = new Image(skin.getRegion("fader"));
+		fader.setScaling(Scaling.fill);
+		fader.setPosition(0, 0);
+		
+		fader.addAction(Actions.alpha(0f));
+		fader.act(0f);
+		fader.setFillParent(true);
+		display.addActor(fader);
+		
 		log = new Table(skin);
 		log.setWidth(messageWindow.getWidth());
 		logPane = new ScrollPane(log, skin, "log");
@@ -103,14 +112,6 @@ public class WanderUI extends GameUI {
 		
 		dialog.setPosition(display.getWidth()/2-dialog.getWidth()/2, display.getHeight()/2-dialog.getHeight()/2);
 		display.addActor(dialog);
-		
-		fader = new Image(skin.getRegion("fader"));
-		fader.setScaling(Scaling.fill);
-		fader.setSize(display.getWidth(), display.getHeight());
-		fader.setPosition(0, 0);
-		
-		fader.addAction(Actions.alpha(0f));
-		fader.act(0f);
 		
 		//loot List and buttons
 		{
@@ -567,6 +568,18 @@ public class WanderUI extends GameUI {
 		sacrificeList.pack();
 	}
 
+	public void fade(Runnable cmd)
+	{
+		fader.addAction(
+			Actions.sequence(
+				Actions.alpha(0f),
+				Actions.alpha(1f, .3f),
+				Actions.run(cmd),
+				Actions.alpha(0f, .3f)
+			)
+		);
+	}
+	
 	@Override
 	public String[] defineButtons() {
 		if (index == 1)
@@ -638,12 +651,13 @@ public class WanderUI extends GameUI {
 					//fade screen out and do stuff
 					fader.addAction(
 						Actions.sequence(
-							Actions.alpha(0f, .5f)
+							Actions.alpha(1f, .5f)
 						)
 					);
-					display.addAction(
+					dialog.addAction(
 						Actions.sequence(
-							Actions.alpha(0f, 3f),
+							Actions.alpha(0f, .5f),
+							Actions.delay(.5f),
 							Actions.run(new Runnable(){
 								@Override
 								public void run(){
@@ -661,13 +675,13 @@ public class WanderUI extends GameUI {
 		dialog.addAction(
 			Actions.sequence(
 				Actions.alpha(0f),
-				Actions.alpha(1f, .2f)
+				Actions.alpha(1f, .5f)
 			)
 		);
 		fader.addAction(
 			Actions.sequence(
 				Actions.alpha(0f),
-				Actions.alpha(.5f, .2f)
+				Actions.alpha(.5f, .5f)
 			)
 		);
 		
@@ -691,9 +705,15 @@ public class WanderUI extends GameUI {
 					Gdx.input.setInputProcessor(null); //disable input
 					
 					//fade screen out and do stuff
-					display.addAction(
+					fader.addAction(
 						Actions.sequence(
-							Actions.alpha(0f, 3f),
+							Actions.alpha(1f, .5f)
+						)
+					);
+					dialog.addAction(
+						Actions.sequence(
+							Actions.alpha(0f, .5f),
+							Actions.delay(.5f),
 							Actions.run(new Runnable(){
 								@Override
 								public void run(){
@@ -712,13 +732,13 @@ public class WanderUI extends GameUI {
 		dialog.addAction(
 			Actions.sequence(
 				Actions.alpha(0f),
-				Actions.alpha(1f, .2f)
+				Actions.alpha(1f, .5f)
 			)
 		);
 		fader.addAction(
 			Actions.sequence(
 				Actions.alpha(0f),
-				Actions.alpha(.5f, .2f)
+				Actions.alpha(.5f, .5f)
 			)
 		);
 		

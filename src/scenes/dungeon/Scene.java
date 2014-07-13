@@ -7,6 +7,7 @@ import com.badlogic.gdx.assets.loaders.resolvers.AbsoluteFileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
@@ -108,9 +109,12 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		}
 		else
 		{
-			World floor = getCurrentFloor();
-			floor.setDelta(delta);
-			floor.process();	
+			if (getCurrentFloor() != null)
+			{
+				World floor = getCurrentFloor();
+				floor.setDelta(delta);
+				floor.process();
+			}
 		}
 		
 		ui.act(delta);
@@ -229,9 +233,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		int depth = getCurrentFloorNumber();
 		
-		World floor = dungeonManager.get("floor", World.class);
+		final World floor = dungeonManager.get("floor", World.class);
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
-
+		
 		if (descending)
 		{
 			ms.moveToStart();
@@ -246,12 +250,19 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		
 		log("You move onto floor " + depth + " of " + dungeon.size) ;
 
-		input.addProcessor(ui);
-		input.addProcessor(ui.wanderControls);
-		setCurrentFloor(depth, floor);
+		final int d = depth;
 		
-		dungeonManager.unload("floor");
-		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		ui.fade(new Runnable(){
+
+			@Override
+			public void run() {
+				input.addProcessor(ui);
+				input.addProcessor(ui.wanderControls);
+				setCurrentFloor(d, floor);
+				dungeonManager.unload("floor");
+				resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			}
+		});
 	}
 	
 	protected void dead()
@@ -354,8 +365,13 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		currentFloor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
 		currentFloor.getSystem(RenderSystem.class).getStage().getBatch().setShader(color.getShader());;
 		
+		//hide processing but set up everything
+		currentFloor.getSystem(RenderSystem.class).process(true);
+		
 		input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 		currentFloorNumber = i;
+
+		
 	}
 
 	@Override

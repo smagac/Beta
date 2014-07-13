@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -53,7 +52,6 @@ public class RenderSystem extends EntityProcessingSystem {
 	@Mapper ComponentMapper<Stats> statMap;
 	
 	private float scale;
-	private float height;
 	private TiledMap map;
 	private TextureRegion nullTile;
 	
@@ -65,6 +63,8 @@ public class RenderSystem extends EntityProcessingSystem {
 	Label enemyName;
 	Label enemyHP;
 	private boolean statsVis;
+
+	private boolean invisible;
 	
 	@SuppressWarnings("unchecked")
 	public RenderSystem()
@@ -152,7 +152,6 @@ public class RenderSystem extends EntityProcessingSystem {
 	public void setMap(TiledMap map)
 	{
 		this.map = map;
-		this.height = ((TiledMapTileLayer)map.getLayers().get(0)).getHeight();
 	}
 	
 	public void setView(WanderUI view, Skin skin)
@@ -209,6 +208,11 @@ public class RenderSystem extends EntityProcessingSystem {
 			r.remove();
 		}
 		
+		if (invisible)
+		{
+			return;
+		}
+		
 		float x = camera.position.x;
 		float y = camera.position.y;
 		
@@ -239,6 +243,12 @@ public class RenderSystem extends EntityProcessingSystem {
 	protected void end()
 	{
 		stage.act(world.getDelta());
+		
+		if (invisible) {
+			invisible = false;
+			return;
+		}
+		
 		stage.draw();
 		
 		stage.getBatch().begin();
@@ -320,5 +330,10 @@ public class RenderSystem extends EntityProcessingSystem {
 		statsVis = false;
 		stats.clearActions();
 		stats.addAction(Actions.alpha(0f, .3f));
+	}
+
+	public void process(boolean b) {
+		invisible = b;
+		super.process();
 	}
 }
