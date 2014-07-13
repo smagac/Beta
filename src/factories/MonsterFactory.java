@@ -244,7 +244,7 @@ public class MonsterFactory {
 					mCount++;
 				}
 			}
-			float density = Math.max(1.0f, (mCount * 4 * 4) / (r.getWidth() * r.getHeight()));
+			float density = Math.min(1.0f, (mCount * 4 * 4) / (r.getWidth() * r.getHeight()));
 			
 			//randomly place a treasure chest
 			// higher chance of there being a chest if the room is empty

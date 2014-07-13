@@ -97,18 +97,50 @@ public class DungeonFactory {
 			difficulty = 3;
 		}
 		
-		Array<Dungeon> dungeon = new Array<Dungeon>();
 		
 		//please don't ask about my numbers, they're so randomly picked out from my head
 		// I don't even know what the curve looks like on a TI calculator ;_;
 		int floors = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		
+		Array<Dungeon> dungeon = new Array<Dungeon>();
+		dungeon.ensureCapacity(floors+1);
+		dungeon.addAll(new Dungeon[floors+1]);
+		final Thread[] makerThreads = new Thread[floors];
+		
+		Thread makeWatch = new Thread(
+			new Runnable(){
+				@Override
+				public void run(){
+					for (Thread t : makerThreads)
+					{
+						t.start();
+					}
+					
+					boolean alive = true;
+					while (alive)
+					{
+						alive = false;
+						for (int i = 0; i < makerThreads.length && !alive; i++)
+						{
+							Thread maker = makerThreads[i];
+							if (maker.isAlive())
+							{
+								alive = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+		);
 		
 		//to stress test, uncomment next line
 		//floors = 90;
 		
 		for (int floor = 1, width = 50, height = 50; floor <= floors; floor++)
 		{
-			Dungeon d = new Dungeon(type, difficulty, floor, width, height);
+			Runnable run = new FloorMaker(type, difficulty, floor, width, height, loader, dungeon);
+			makerThreads[floor-1] = new Thread(run);
 			
 			/* Use for dumping
 			//generate a serialized tmp file
@@ -130,8 +162,6 @@ public class DungeonFactory {
 			serializer.prettyPrint(d);
 			serializer.toJson(d, Dungeon.class, tmp);
 			*/
-			dungeon.add(d);
-			loader.progress = (int)(floor/(float)floors * 100);
 			
 			if (floor % 5 == 1)
 			{
@@ -139,6 +169,12 @@ public class DungeonFactory {
 				height += 5;
 			}
 		}
+		
+		makeWatch.start();
+		
+		//wait until threads are done
+		while (makeWatch.isAlive()) ;
+		
 		return dungeon;
 	}
 	
@@ -264,6 +300,45 @@ public class DungeonFactory {
 		}	
 	}
 	
+	/**
+	 * Simple runnable for making a floor of a dungeon and updating a loader's progress
+	 * @author nhydock
+	 *
+	 */
+	private static class FloorMaker implements Runnable {
+	
+		final FileType type;
+		final int difficulty;
+		final int floor;
+		final int width;
+		final int height;
+		final DungeonLoader loader;
+		final Array<Dungeon> dungeon;
+		
+		FloorMaker(FileType type, int difficulty, int floor, int width, int height, DungeonLoader loader, Array<Dungeon> dungeon)
+		{
+			this.type = type;
+			this.difficulty = difficulty;
+			this.floor = floor;
+			this.width = width;
+			this.height = height;
+			this.loader = loader;
+			this.dungeon = dungeon;
+		}
+		
+		@Override
+		public void run() {
+			Dungeon d = new Dungeon(type, difficulty, floor, width, height);
+			dungeon.set(floor-1, d);
+			loader.progress += (int)(1/(float)dungeon.size * 100);
+		}
+	}
+	
+	/**
+	 * Loader for entire dungeons as assets
+	 * @author nhydock
+	 *
+	 */
 	@SuppressWarnings("rawtypes")
 	public static class DungeonLoader extends AsynchronousAssetLoader<Array, DungeonLoader.DungeonParam> {
 
@@ -303,7 +378,12 @@ public class DungeonFactory {
 			public int difficulty;
 		}
 	}
-
+	
+	/**
+	 * Loader for entire floors as assets.  Makes artemis worlds!
+	 * @author nhydock
+	 *
+	 */
 	public static class FloorLoader extends AsynchronousAssetLoader<World, FloorLoader.FloorParam> {
 
 		public FloorLoader(FileHandleResolver resolver) {

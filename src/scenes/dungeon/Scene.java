@@ -227,9 +227,11 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	private void changeFloor()
 	{
+		int depth = getCurrentFloorNumber();
+		
 		World floor = dungeonManager.get("floor", World.class);
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		int depth = getCurrentFloorNumber();
+
 		if (descending)
 		{
 			ms.moveToStart();
@@ -242,7 +244,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		}
 		ms.setScene(this);
 		
-		log("You move onto floor " + depth) ;
+		log("You move onto floor " + depth + " of " + dungeon.size) ;
 
 		input.addProcessor(ui);
 		input.addProcessor(ui.wanderControls);
