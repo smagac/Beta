@@ -244,7 +244,7 @@ public class MonsterFactory {
 					mCount++;
 				}
 			}
-			float density = Math.min(1.0f, (mCount * 4 * 4) / (r.getWidth() * r.getHeight()));
+			float density = Math.min(1.0f, (mCount * 9) / (r.getWidth() * r.getHeight()));
 			
 			//randomly place a treasure chest
 			// higher chance of there being a chest if the room is empty
@@ -252,7 +252,7 @@ public class MonsterFactory {
 			{
 				//low chance of chest actually being a mimic
 				Entity monster;
-				if (MathUtils.randomBoolean(.08f + (floor/300f)))
+				if (MathUtils.randomBoolean(.02f + (floor/300f)))
 				{
 					monster = create(world, mimic, lootMaker.createItem(), floor);
 				}

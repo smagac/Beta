@@ -145,11 +145,11 @@
         "type" : "girl"
     },
     "mimic" : {
-        "hp" : "50", "str" : "15", "def": "11", "exp" : "5", "spd" : "10",
+        "hp" : "28", "str" : "13", "def": "9", "exp" : "5", "spd" : "10",
         "maxhp" : "450", "maxstr" : "160", "maxdef" : "95", "maxexp" : "50", "maxpsd" : "15",
         "type" : "loot",
         "norm" : "0",
-        "agro" : ".9",
+        "agro" : ".8",
         "passive" : "true",
         "hideStats" : "true",
         "hideName" : "true"
