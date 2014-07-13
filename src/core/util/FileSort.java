@@ -24,7 +24,7 @@ public class FileSort implements Comparator<FileHandle> {
 		{
 			return 1;
 		}
-		return o1.path().toLowerCase().compareTo(o2.path().toLowerCase());
+		return o1.name().toLowerCase().compareTo(o2.name().toLowerCase());
 	}
 
 }
