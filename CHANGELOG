@@ -7,6 +7,7 @@ Changes since Beta Announcement on July 7, 2014
 - There is now an end game when you craft all the required goods
 - GENDER SELECTION EXISTS.  Choose to be a boy or girl, serving the God Michael or Goddess Joann
 - Shift dashing has been removed in favour of now being able to hold down buttons to continuously move
+- UI sets mouse scrolling on scrollpanes automatically on hover to make things respond more predictably
 
 #### Backend Changes
 - Music for dungeons no longer uses the AssetManager because I didn't feel like having a separate manager just for loading music along absolute paths because of freakin' Window's file path format
@@ -16,7 +17,7 @@ Changes since Beta Announcement on July 7, 2014
 - some gpus don't like f being appened to numbers in GLSL (AMD APUs).  Remove f and just use standard decimal values in the fragment shader to fix this issue
 - Entities don't delete from the world until the next cycle.  Compensate for this by not processing entities with 0 hp.  Also means we don't pointlessly process treasure chests thinking they can move for fight.
 - Multiple highlight in craft menu when items have same base type is fixed by overriding equals in Craftable objects
-
+- Dungeon loading is now multithreaded in hopes of lightening the load of things (I probably have too many threads now, though.  Could be optimized more)
 
 Changes since TMG Alpha 2014
 ============================
