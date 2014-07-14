@@ -168,7 +168,7 @@ public class Inventory {
 		
 		//add the item to your loot
 		Item crafted = new Item(c.name, c.adj);
-		loot.put(crafted, loot.get(crafted, 1));
+		loot.put(crafted, loot.get(crafted, 0)+1);
 		
 		Tracker.NumberValues.Items_Crafted.increment();
 			
