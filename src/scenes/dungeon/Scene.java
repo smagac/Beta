@@ -7,12 +7,10 @@ import com.badlogic.gdx.assets.loaders.resolvers.AbsoluteFileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
@@ -193,7 +191,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		else
 		{
 			input.removeProcessor(ui);
-			input.removeProcessor(ui.wanderControls);
 			
 			FloorParam param = new FloorParam();
 			param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
@@ -219,7 +216,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		else
 		{
 			input.removeProcessor(ui);
-			input.removeProcessor(ui.wanderControls);
 			
 			FloorParam param = new FloorParam();
 			param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
@@ -263,7 +259,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			@Override
 			public void run() {
 				input.addProcessor(ui);
-				input.addProcessor(ui.wanderControls);
 				setCurrentFloor(d, floor);
 				dungeonManager.unload("floor");
 				resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -327,7 +322,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		Gdx.input.setInputProcessor(input);
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected void initPostDungeon()
 	{
 		setDungeon(dungeonManager.get("dungeon", Dungeon.class));
@@ -360,9 +354,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		{
 			input.removeProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
 			currentFloor.getSystem(RenderSystem.class).dispose();
-			currentFloor.getSystem(MovementSystem.class).setScene(null);
-			currentFloor.getSystem(RenderSystem.class).setNull(null);
-			currentFloor.process();
+			currentFloor.getSystem(MovementSystem.class).dispose();
 		}
 		currentFloor = world;
 		//make sure enemy list is populated at least once

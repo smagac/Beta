@@ -277,9 +277,8 @@ public abstract class GameUI extends UI {
 	
 	/**
 	 * Allow rendering into the display things that aren't stage2d elements
-	 * @param tmpBound - area to draw into
 	 */
-	protected void externalRender(Rectangle tmpBound){ }
+	protected void externalRender(){ }
 	
 	/**
 	 * Handles an action to be performed when a button in the menu is clicked
@@ -443,7 +442,7 @@ public abstract class GameUI extends UI {
 		Batch b = getBatch();
 		
 		ScissorStack.pushScissors(tmpBound);
-		externalRender(tmpBound);
+		externalRender();
 		b.setProjectionMatrix(getCamera().combined);
 		b.begin();
 		display.draw(b, getRoot().getColor().a);

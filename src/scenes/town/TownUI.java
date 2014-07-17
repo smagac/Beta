@@ -15,7 +15,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -630,7 +629,7 @@ public class TownUI extends GameUI {
 	}
 
 	@Override
-	protected void externalRender (Rectangle r) {
+	protected void extendAct (float delta) {
 		
 		if (queueDir != null)
 		{

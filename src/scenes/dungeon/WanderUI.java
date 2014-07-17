@@ -5,9 +5,7 @@ import scenes.GameUI;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -62,8 +60,6 @@ public class WanderUI extends GameUI {
 	
 	private IPlayerContainer playerService;
 	private IDungeonContainer dungeonService;
-	
-	InputProcessor wanderControls;
 	
 	float walkTimer;
 	
@@ -204,9 +200,9 @@ public class WanderUI extends GameUI {
 		};
 		
 		//mouse listener for moving the character by clicking within the display
-		wanderControls = new InputProcessor() {
+		addListener(new InputListener(){
 			@Override
-			public boolean keyDown(int keycode) {
+			public boolean keyDown(InputEvent evt, int keycode) {
 				boolean moved = false;
 				
 				Direction to = Direction.valueOf(keycode);
@@ -222,28 +218,7 @@ public class WanderUI extends GameUI {
 				
 				return moved;
 			}
-
-			@Override
-			public boolean keyUp(int keycode) {return false;}
-
-			@Override
-			public boolean keyTyped(char character) {return false;}
-
-			@Override
-			public boolean touchDown(int screenX, int screenY, int pointer, int button) { return false;	}
-
-			@Override
-			public boolean touchUp(int screenX, int screenY, int pointer, int button) {	return false; }
-
-			@Override
-			public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
-
-			@Override
-			public boolean mouseMoved(int screenX, int screenY) { return false;	}
-
-			@Override
-			public boolean scrolled(int amount) { return false;	}
-		};
+		});
 		
 		display.addListener(displayControl);
 		
@@ -251,7 +226,7 @@ public class WanderUI extends GameUI {
 	}
 	
 	@Override
-	protected void externalRender(Rectangle view)
+	protected void externalRender()
 	{
 		if (dungeonService.getCurrentFloor() != null)
 		{
@@ -747,8 +722,6 @@ public class WanderUI extends GameUI {
 		refreshButtons();
 	}
 	
-	
-
 	@Override
 	protected void unhook() {
 		playerService = null;

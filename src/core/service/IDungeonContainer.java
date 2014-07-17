@@ -1,7 +1,6 @@
 package core.service;
 
 import com.artemis.World;
-import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
