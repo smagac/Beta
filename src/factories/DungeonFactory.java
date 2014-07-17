@@ -1,6 +1,8 @@
 package factories;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import scenes.dungeon.MovementSystem;
 import scenes.dungeon.RenderSystem;
@@ -25,11 +27,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
 
 import components.Position;
 import components.Renderable;
 import components.Stats;
 import core.datatypes.Dungeon;
+import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.service.IDungeonContainer;
 
@@ -79,14 +83,60 @@ public class DungeonFactory {
 		tileset.putTile(4, new SimpleTile(atlas.findRegion("up"), 4, true)); 		//stairs up
 	}
 	
+	private static String bytesToHex(byte[] b) {
+		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                  '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+		StringBuffer buf = new StringBuffer();
+		for (int j=0; j<b.length; j++) {
+		  buf.append(hexDigit[(b[j] >> 4) & 0x0f]);
+		  buf.append(hexDigit[b[j] & 0x0f]);
+		}
+		return buf.toString();
+	}
+	
 	/**
 	 * Generate a new dungeon and save all its floors into a temp directory
 	 * @param difficulty - defines how large and how many monsters the dungeon will have, but also more loot
 	 * @throws IOException 
 	 * @return an array of the serial ids of the floors on the file system
 	 */
-	protected static Array<Dungeon> create(FileType type, int difficulty, DungeonLoader loader)
+	protected static Dungeon create(String fileName, FileType type, int difficulty, DungeonLoader loader)
 	{
+		//first check if the file has already been registered
+		FileHandle hashFile = null;
+		Json json = new Json();
+		if (fileName != null)
+		{
+			try {
+				MessageDigest md = MessageDigest.getInstance("SHA-1");
+			
+				byte[] hash = md.digest(fileName.getBytes());
+				String name = new String(bytesToHex(hash));
+				String tmpDir = System.getProperty("java.io.tmpdir");
+				hashFile = Gdx.files.absolute(tmpDir+"/storymode/"+name+".map");
+				//System.err.println(hashFile.path());
+				if (!hashFile.exists())
+				{
+					hashFile.parent().mkdirs();
+					hashFile.file().createNewFile();
+					hashFile.file().deleteOnExit();
+				}
+				else
+				{
+					return json.fromJson(Dungeon.class, hashFile);
+				}
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				//shouldn't happen, just java being overly safe
+				Gdx.app.exit();
+				return null;
+			} catch (IOException e) {
+				e.printStackTrace();
+				//might happen on read/write failure
+			}
+
+		}
+		
 		//make sure dungeon dir exists
 		//Gdx.files.absolute(tmpDir).mkdirs();
 		
@@ -102,9 +152,9 @@ public class DungeonFactory {
 		// I don't even know what the curve looks like on a TI calculator ;_;
 		int floors = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
 		
-		Array<Dungeon> dungeon = new Array<Dungeon>();
+		Array<Floor> dungeon = new Array<Floor>();
 		dungeon.ensureCapacity(floors+1);
-		dungeon.addAll(new Dungeon[floors+1]);
+		dungeon.addAll(new Floor[floors+1]);
 		final Thread[] makerThreads = new Thread[floors];
 		
 		Thread makeWatch = new Thread(
@@ -139,29 +189,8 @@ public class DungeonFactory {
 		
 		for (int floor = 1, width = 50, height = 50; floor <= floors; floor++)
 		{
-			Runnable run = new FloorMaker(type, difficulty, floor, width, height, loader, dungeon);
+			Runnable run = new FloorMaker(difficulty, floor, width, height, loader, dungeon);
 			makerThreads[floor-1] = new Thread(run);
-			
-			/* Use for dumping
-			//generate a serialized tmp file
-			String serial;
-			String suffix = String.format("%02d", floor);
-			do
-			{
-				serial = "";
-				for (int i = 0; i < 12; i++)
-				{
-					serial += acceptable.charAt(MathUtils.random(acceptable.length()-1));
-				}
-			}
-			while (Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix).exists());
-			FileHandle tmp = Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix);
-			tmp.file().createNewFile();
-			
-			Json serializer = new Json();
-			serializer.prettyPrint(d);
-			serializer.toJson(d, Dungeon.class, tmp);
-			*/
 			
 			if (floor % 5 == 1)
 			{
@@ -174,15 +203,25 @@ public class DungeonFactory {
 		
 		//wait until threads are done
 		while (makeWatch.isAlive()) ;
+		Dungeon d = new Dungeon(type, difficulty, dungeon);
 		
-		return dungeon;
+		//ignore random dungeons for caching
+		if (fileName != null)
+		{
+			//only try writing to file if we didn't get an i/o error
+			if (hashFile.exists())
+			{
+				json.toJson(d, Dungeon.class, hashFile);
+			}
+		}
+		return d;
 	}
 	
 	/**
 	 * Prepare a world to be loaded and stepped into
 	 * @param ts
 	 */
-	private static World create(Dungeon dungeon, Stats player, FloorLoader loader)
+	private static World create(Dungeon dungeon, int depth, Stats player, FloorLoader loader)
 	{
 		ItemFactory itemFactory = new ItemFactory(dungeon.type());
 		MonsterFactory monsterFactory = new MonsterFactory(atlas, dungeon.type());
@@ -192,9 +231,9 @@ public class DungeonFactory {
 		FileHandle file = Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix);
 		Dungeon dungeon = (new Json()).fromJson(Dungeon.class, file);
 		*/
-		int floor = dungeon.floor();
+		Floor floor = dungeon.getFloor(depth);
 		World world = new World();
-		MovementSystem ms = new MovementSystem(floor);
+		MovementSystem ms = new MovementSystem(depth);
 		
 		world.setManager(new TagManager());
 		world.setManager(new GroupManager());
@@ -204,7 +243,7 @@ public class DungeonFactory {
 		
 		TiledMap map = new TiledMap();
 		map.getTileSets().addTileSet(tileset);
-		TiledMapTileLayer layer = dungeon.paintLayer(tileset, 32, 32);
+		TiledMapTileLayer layer = floor.paintLayer(tileset, 32, 32);
 		map.getLayers().add(layer);
 		world.getSystem(RenderSystem.class).setMap(map);
 		ms.setMap(layer);
@@ -212,11 +251,11 @@ public class DungeonFactory {
 		
 		//add monsters to rooms
 		// monster count is anywhere between 5-20 on easy and 25-100 on hard
-		monsterFactory.makeMonsters(world, dungeon.monsterCount(), layer, itemFactory, floor);
+		monsterFactory.makeMonsters(world, floor.monsterCount(), layer, itemFactory, depth);
 		loader.progress = 80;
 		
 		//forcibly add some loot monsters
-		monsterFactory.makeTreasure(world, dungeon.rooms(), layer, itemFactory, floor);
+		monsterFactory.makeTreasure(world, floor.rooms(), layer, itemFactory, depth);
 		loader.progress = 90;
 		
 		world.initialize();
@@ -307,17 +346,15 @@ public class DungeonFactory {
 	 */
 	private static class FloorMaker implements Runnable {
 	
-		final FileType type;
 		final int difficulty;
 		final int floor;
 		final int width;
 		final int height;
 		final DungeonLoader loader;
-		final Array<Dungeon> dungeon;
+		final Array<Floor> dungeon;
 		
-		FloorMaker(FileType type, int difficulty, int floor, int width, int height, DungeonLoader loader, Array<Dungeon> dungeon)
+		FloorMaker(int difficulty, int floor, int width, int height, DungeonLoader loader, Array<Floor> dungeon)
 		{
-			this.type = type;
 			this.difficulty = difficulty;
 			this.floor = floor;
 			this.width = width;
@@ -328,7 +365,7 @@ public class DungeonFactory {
 		
 		@Override
 		public void run() {
-			Dungeon d = new Dungeon(type, difficulty, floor, width, height);
+			Floor d = new Floor(difficulty, floor, width, height);
 			dungeon.set(floor-1, d);
 			loader.progress += (int)(1/(float)dungeon.size * 100);
 		}
@@ -340,22 +377,22 @@ public class DungeonFactory {
 	 *
 	 */
 	@SuppressWarnings("rawtypes")
-	public static class DungeonLoader extends AsynchronousAssetLoader<Array, DungeonLoader.DungeonParam> {
+	public static class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoader.DungeonParam> {
 
 		public DungeonLoader(FileHandleResolver resolver) {
 			super(resolver);
 		}
 		
-		private Array<Dungeon> generatedDungeon;
+		private Dungeon generatedDungeon;
 		private int progress;
 		
 		@Override
 		public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-			generatedDungeon = create(param.type, param.difficulty, this);
+			generatedDungeon = create(param.fileName, param.type, param.difficulty, this);
 		}
 
 		@Override
-		public Array loadSync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
+		public Dungeon loadSync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
 			param.dungeonContainer.setDungeon(generatedDungeon);
 			
 			return generatedDungeon;
@@ -371,10 +408,11 @@ public class DungeonFactory {
 			return progress;
 		}
 		
-		public static class DungeonParam extends AssetLoaderParameters<Array>
+		public static class DungeonParam extends AssetLoaderParameters<Dungeon>
 		{
 			public IDungeonContainer dungeonContainer;
 			public FileType type;
+			public String fileName;
 			public int difficulty;
 		}
 	}
@@ -396,7 +434,7 @@ public class DungeonFactory {
 		
 		@Override
 		public void loadAsync(AssetManager manager, String fileName, FileHandle file, FloorLoader.FloorParam param) {
-			generatedFloor = create(param.floor, param.player, this);
+			generatedFloor = create(param.dungeon, param.depth, param.player, this);
 		}
 
 		@Override
@@ -421,7 +459,7 @@ public class DungeonFactory {
 			public IDungeonContainer dungeonContainer;
 			public TextureAtlas atlas;
 			
-			public Dungeon floor;
+			public Dungeon dungeon;
 			public Stats player;
 		}
 	}

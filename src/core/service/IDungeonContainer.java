@@ -4,12 +4,13 @@ import com.artemis.World;
 import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.Dungeon;
+import core.datatypes.Dungeon.Floor;
 
 public interface IDungeonContainer extends Service {
 
-	public void setDungeon(Array<Dungeon> floors);
+	public void setDungeon(Dungeon generatedDungeon);
 	void setCurrentFloor(int i, World world);
-	public Dungeon getFloor(int i);
+	public Floor getFloor(int i);
 	public int getCurrentFloorNumber();
 	public World getCurrentFloor();
 	public boolean hasPrevFloor();

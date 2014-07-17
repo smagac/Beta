@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.Dungeon;
+import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
@@ -47,9 +48,10 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	private FloorLoader floorLoader;
 	
 	//factory data
-	private Array<Dungeon> dungeon;
+	private Dungeon dungeon;
 	private int currentFloorNumber;
 	private World currentFloor;
+	private String fileName;
 	
 	public Scene()
 	{
@@ -57,7 +59,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		dungeonManager = new AssetManager(new AbsoluteFileHandleResolver());
 		dungeonLoader = new DungeonLoader(new InternalFileHandleResolver());
 		floorLoader = new FloorLoader(new InternalFileHandleResolver());
-		dungeonManager.setLoader(Array.class, dungeonLoader);
+		dungeonManager.setLoader(Dungeon.class, dungeonLoader);
 		dungeonManager.setLoader(World.class, floorLoader);
 	}
 	
@@ -65,10 +67,12 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		fileType = type;
 		this.difficulty = difficulty;
+		this.fileName = null;
 	}
 	
 	public void setDungeon(FileHandle file, int difficulty)
 	{
+		this.fileName = file.path();
 		fileType = FileType.getType(file.extension());
 		if (fileType == FileType.Audio)
 		{
@@ -195,7 +199,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
 			param.dungeonContainer = this;
 			param.depth = prevFloor();
-			param.floor = getFloor(param.depth);
+			param.dungeon = dungeon;
 			param.player = playerService.getPlayer();
 			
 			dungeonManager.load("floor", World.class, param);
@@ -220,7 +224,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
 			param.dungeonContainer = this;
 			param.depth = nextFloor();
-			param.floor = getFloor(param.depth);
+			param.dungeon = dungeon;
 			param.player = playerService.getPlayer();
 			
 			dungeonManager.load("floor", World.class, param);
@@ -248,7 +252,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		}
 		ms.setScene(this);
 		
-		log("You move onto floor " + depth + " of " + dungeon.size) ;
+		log("You move onto floor " + depth + " of " + dungeon.size()) ;
 
 		final int d = depth;
 		
@@ -310,26 +314,26 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		DungeonFactory.prepareFactory(atlas, atlas.findRegion(playerService.getGender()));
 		
 		DungeonParam param =  new DungeonParam();
+		param.fileName = fileName;
 		param.difficulty = difficulty;
 		param.dungeonContainer = this;
 		param.type = fileType;
 		
 		hitSound = manager.get(DataDirs.hit, Sound.class);
-		dungeonManager.load("dungeon", Array.class, param);
-		
-		
+		dungeonManager.load("dungeon", Dungeon.class, param);
+
 		Gdx.input.setInputProcessor(input);
 	}
 	
 	@SuppressWarnings("unchecked")
 	protected void initPostDungeon()
 	{
-		setDungeon((Array<Dungeon>)dungeonManager.get("dungeon", Array.class));
+		setDungeon(dungeonManager.get("dungeon", Dungeon.class));
 		descend();
 	}
 
 	@Override
-	public void setDungeon(Array<Dungeon> floors)
+	public void setDungeon(Dungeon floors)
 	{
 		this.dungeon = floors;
 		//currentFloorNumber = floors.size-2;
@@ -338,8 +342,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	}
 
 	@Override
-	public Dungeon getFloor(int i) {
-		return dungeon.get(i);
+	public Floor getFloor(int i) {
+		return dungeon.getFloor(i);
 	}
 	
 	/**
@@ -396,7 +400,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
 	@Override
 	public boolean hasNextFloor() {
-		return nextFloor() < dungeon.size;
+		return nextFloor() < dungeon.size();
 	}
 
 	@Override
