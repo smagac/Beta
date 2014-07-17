@@ -754,6 +754,7 @@ public class TownUI extends GameUI {
 						FileHandle f = directoryList.get(fileList.getSelectedIndex());
 						if (f != null && !f.isDirectory())
 						{
+							ext = FileType.getType(f.extension());
 							diff = ext.difficulty(f.length());
 							dungeon.setDungeon(f, diff);
 						}
