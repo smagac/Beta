@@ -9,6 +9,7 @@ import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -55,10 +56,39 @@ public class MovementSystem extends EntityProcessingSystem {
 	 * Creates a new movement and combat handler
 	 * @param floor - floor number representation of this system
 	 */
-	public MovementSystem(int floor)
+	public MovementSystem(int depth, TiledMap map)
 	{
 		super(Aspect.getAspectForAll(Monster.class));
 		enabledInput = true;
+		
+		//build collision map	
+		TiledMapTileLayer floor = (TiledMapTileLayer)map.getLayers().get(depth);
+		collision = new boolean[floor.getWidth()][floor.getHeight()];
+		for (int x = 0; x < collision.length; x++)
+		{
+			for (int y = 0; y < collision[0].length; y++)
+			{
+				Cell c = floor.getCell(x, y);
+				if (c == null)
+				{
+					collision[x][y] = false;
+				}
+				else
+				{
+					TiledMapTile t = c.getTile();
+					collision[x][y] = t.getProperties().get("passable", Boolean.class);
+					//set as start or end if they're step tiles
+					if (t.getId() == 4)
+					{
+						start = new Vector2(x, y);
+					}
+					else if (t.getId() == 3)
+					{
+						end = new Vector2(x, y);
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -284,37 +314,7 @@ public class MovementSystem extends EntityProcessingSystem {
 			}
 		}
 	}
-	
-	public void setMap(TiledMapTileLayer map) {
-		//build collision map	
-		collision = new boolean[map.getWidth()][map.getHeight()];
-		for (int x = 0; x < collision.length; x++)
-		{
-			for (int y = 0; y < collision[0].length; y++)
-			{
-				Cell c = map.getCell(x, y);
-				if (c == null)
-				{
-					collision[x][y] = false;
-				}
-				else
-				{
-					TiledMapTile t = c.getTile();
-					collision[x][y] = t.getProperties().get("passable", Boolean.class);
-					//set as start or end if they're step tiles
-					if (t.getId() == 4)
-					{
-						start = new Vector2(x, y);
-					}
-					else if (t.getId() == 3)
-					{
-						end = new Vector2(x, y);
-					}
-				}
-			}
-		}
-	}
-	
+
 	/**
 	 * Set the system's main player and moves them to their starting position
 	 */

@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.Array;
 public class PathMaker {
 
 	int[][] board;
-	Array<Room> rooms;
+	Array<Room> rooms = new Array<Room>();
 	
 	static final float MAX_SATURATION = .8f;
 	float filled;
@@ -37,13 +37,11 @@ public class PathMaker {
 	
 	public int[][] run(int roomCount, int w, int h)
 	{
-		rooms = new Array<Room>();
-		
 		board = new int[w][h];
 		size = w*h;
 		
-		filled = 0;
 		rooms.clear();
+		filled = 0;
 		
 		//place a handleful of random rooms until threshold is met
 		while (rooms.size < roomCount && !isSaturated())
@@ -113,11 +111,7 @@ public class PathMaker {
 	private Array<int[]> findAllOpenAreas(int width, int height)
 	{
 		Array<int[]> positions = new Array<int[]>();
-		int[][] good = new int[board.length][board[0].length];
-		
-		for (int y=0; y < board[0].length; ++y)
-			for (int x=0; x < board.length; ++x)
-				good[x][y] = 0;
+		boolean[][] good = new boolean[board.length][board[0].length];
 
 		//go across horizontally, finding areas where the rectangle may fit width wise
 		for (int y = 0; y < board[0].length; ++y)
@@ -136,7 +130,7 @@ public class PathMaker {
 				// we can mark that this is a safe place to measure from
 				if (horizontal_count == width)
 				{
-					good[x-width+1][y] = 1;
+					good[x-width+1][y] = true;
 					//increment back one in case the next space is also
 					// acceptable for being a rectangle
 					horizontal_count--;	
@@ -153,7 +147,7 @@ public class PathMaker {
 			for (int y = 0; y < board[0].length; ++y)
 			{
 				//check against only the points that we flagged as potentially okay
-				if (good[x][y] == 1)
+				if (good[x][y])
 					vertical_count++;
 				//if we didn't flag that point, then we can't fit a rectangle there vertically
 				else
@@ -460,8 +454,12 @@ public class PathMaker {
 		}
 	}
 	
-
 	public Array<Room> getRooms() {
 		return rooms;
+	}
+	
+	public void dispose() {
+		board = null;
+		rooms = null;
 	}
 }

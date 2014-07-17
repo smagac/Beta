@@ -65,13 +65,18 @@ public class RenderSystem extends EntityProcessingSystem {
 	private boolean statsVis;
 
 	private boolean invisible;
+
+	//selective map layer to draw
+	private int[] layers;
 	
 	@SuppressWarnings("unchecked")
-	public RenderSystem()
+	public RenderSystem(int depth, TiledMap map)
 	{
 		super(Aspect.getAspectForAll(Renderable.class, Position.class));
 		addQueue = new Array<Actor>();
 		removeQueue = new Array<Actor>();
+		this.layers = new int[]{depth};
+		this.map = map;
 	}
 	
 	@Override
@@ -149,11 +154,6 @@ public class RenderSystem extends EntityProcessingSystem {
 		}
 	}
 	
-	public void setMap(TiledMap map)
-	{
-		this.map = map;
-	}
-	
 	public void setView(WanderUI view, Skin skin)
 	{
 		parentScene = view;
@@ -190,7 +190,6 @@ public class RenderSystem extends EntityProcessingSystem {
 			stats.setBackground(skin.getDrawable("button_up"));
 			stats.setVisible(false);
 			stage.addActor(stats);
-
 		}
 	}
 	
@@ -236,7 +235,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		camera.position.set(x, y, 0);
 		camera.update();
 		mapRenderer.setView(camera);
-		mapRenderer.render();
+		mapRenderer.render(layers);
 	}
 	
 	@Override

@@ -10,6 +10,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -179,7 +180,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			bgm.stop();	
 		}
 		dungeonManager.dispose();
-		DungeonFactory.dispose();
 		super.dispose();	
 	}
 	
@@ -201,6 +201,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			param.depth = prevFloor();
 			param.dungeon = dungeon;
 			param.player = playerService.getPlayer();
+			param.character = param.atlas.findRegion(playerService.getGender());
 			
 			dungeonManager.load("floor", World.class, param);
 			descending = false;
@@ -226,6 +227,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			param.depth = nextFloor();
 			param.dungeon = dungeon;
 			param.player = playerService.getPlayer();
+			param.character = param.atlas.findRegion(playerService.getGender());
 			
 			dungeonManager.load("floor", World.class, param);
 			descending = true;
@@ -311,9 +313,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		ui.init();
 		
 		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
-		DungeonFactory.prepareFactory(atlas, atlas.findRegion(playerService.getGender()));
-		
+		TiledMapTileSet ts = DungeonFactory.buildTileSet(atlas);
 		DungeonParam param =  new DungeonParam();
+		param.tileset = ts;
 		param.fileName = fileName;
 		param.difficulty = difficulty;
 		param.dungeonContainer = this;

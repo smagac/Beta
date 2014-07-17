@@ -5,13 +5,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -22,7 +20,6 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
-import core.datatypes.Dungeon.Floor;
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
 
@@ -30,6 +27,9 @@ public class Dungeon implements Serializable{
 	FileType type;
 	Array<Floor> floors;
 	int difficulty;
+	TiledMap map;
+	
+	boolean prepared;
 	
 	public Dungeon(){}
 	
@@ -38,12 +38,24 @@ public class Dungeon implements Serializable{
 	 * @param type
 	 * @param d - difficulty
 	 * @param f - premade floors to register with the dungeon
+	 * @param map 
 	 */
 	
-	public Dungeon(FileType type, int d, Array<Floor> f) {
+	public Dungeon(FileType type, int d, Array<Floor> f, TiledMap map) {
 		this.type = type;
 		this.floors = f;
 		this.difficulty = d;
+		this.map = map;
+	}
+	
+	public void setMap(TiledMap map)
+	{
+		this.map = map;
+	}
+	
+	public TiledMap getMap()
+	{
+		return this.map;
 	}
 
 	public FileType type() {
@@ -65,7 +77,7 @@ public class Dungeon implements Serializable{
 		 * @param floor
 		 * @param maker
 		 */
-		public Floor(int difficulty, int floor, int width, int height)
+		public Floor(int difficulty, int floor, int width, int height, PathMaker maker)
 		{
 			int roomCount = MathUtils.random(Math.max(5, ((3*floor)/10)+floor), Math.max(5, ((5*floor)/10)+floor));
 			
@@ -73,7 +85,6 @@ public class Dungeon implements Serializable{
 			this.height = height;
 			this.floor = floor;
 			
-			PathMaker maker = new PathMaker();
 			tiles = maker.run(roomCount, width, height);
 			rooms = maker.getRooms();
 			monsters = MathUtils.random((int)(roomCount()*Math.max(1, difficulty*floor/100f)), (int)(roomCount()*Math.max(1, 2*difficulty*floor/100f)));
@@ -251,6 +262,7 @@ public class Dungeon implements Serializable{
 		json.writeValue("floors", this.floors);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void read(Json json, JsonValue jsonData) {
 		this.type = FileType.valueOf(jsonData.getString("type"));
@@ -264,5 +276,22 @@ public class Dungeon implements Serializable{
 
 	public int size() {
 		return floors.size;
+	}
+
+	public void build(TiledMapTileSet tileset) {
+		if (prepared) {
+			Gdx.app.error("Dungeon Builder", "Map has already been built, can not build again");
+			return;
+		}
+		
+		//build the tile layers
+		for (int i = 0; i < floors.size-1; i++)
+		{
+			Floor floor = floors.get(i);
+			TiledMapTileLayer layer = floor.paintLayer(tileset, 32, 32);
+			map.getLayers().add(layer);
+		}
+		
+		prepared = true;
 	}
 }

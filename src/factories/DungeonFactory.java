@@ -23,7 +23,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -36,6 +35,7 @@ import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.service.IDungeonContainer;
+import core.util.dungeon.PathMaker;
 
 /**
  * Generates tiled maps and populates them for you to explore
@@ -43,44 +43,23 @@ import core.service.IDungeonContainer;
  *
  */
 public class DungeonFactory {
-	private static TiledMapTileSet tileset;
 	//directory to save dungeon files into
 	//private final String tmpDir;
 	
 	//acceptable characters for serial id generation
 	//private static final String acceptable = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	
-	private static TextureAtlas atlas;
-	private static TextureRegion character;
-	
-	public static void prepareFactory(TextureAtlas atlas, TextureRegion player)
+	public static TiledMapTileSet buildTileSet(TextureAtlas atlas)
 	{
-		DungeonFactory.atlas = atlas;
-		if (tileset == null)
-		{
-			tileset = new TiledMapTileSet();
-		}
-		DungeonFactory.character = player;
-		buildTileSet();
-	}
-	
-	public static void dispose()
-	{
-		atlas = null;
-		tileset = null;
-	}
-	
-	private static void buildTileSet()
-	{
-		if (tileset == null)
-		{
-			tileset = new TiledMapTileSet();
-		}
+		TiledMapTileSet tileset = new TiledMapTileSet();
+		
 		tileset.putTile(0, new SimpleTile(atlas.findRegion("null"), 0, false));		//empty
 		tileset.putTile(1, new SimpleTile(atlas.findRegion("floor"), 1, true));		//room walls
 		tileset.putTile(2, new SimpleTile(atlas.findRegion("floor"), 2, true));		//floor
 		tileset.putTile(3, new SimpleTile(atlas.findRegion("down"), 3, true)); 		//stairs down
 		tileset.putTile(4, new SimpleTile(atlas.findRegion("up"), 4, true)); 		//stairs up
+		
+		return tileset;
 	}
 	
 	private static String bytesToHex(byte[] b) {
@@ -97,11 +76,16 @@ public class DungeonFactory {
 	/**
 	 * Generate a new dungeon and save all its floors into a temp directory
 	 * @param difficulty - defines how large and how many monsters the dungeon will have, but also more loot
+	 * @param tileset 
 	 * @throws IOException 
 	 * @return an array of the serial ids of the floors on the file system
 	 */
-	protected static Dungeon create(String fileName, FileType type, int difficulty, DungeonLoader loader)
+	protected static Dungeon create(String fileName, FileType type, int difficulty, final TiledMapTileSet tileset, DungeonLoader loader)
 	{
+		//prepare a tile map to hold the floor layers
+		final TiledMap map = new TiledMap();
+		map.getTileSets().addTileSet(tileset);
+		
 		//first check if the file has already been registered
 		FileHandle hashFile = null;
 		Json json = new Json();
@@ -123,7 +107,10 @@ public class DungeonFactory {
 				}
 				else
 				{
-					return json.fromJson(Dungeon.class, hashFile);
+					Dungeon d = json.fromJson(Dungeon.class, hashFile);
+					d.setMap(map);
+					d.build(tileset);
+					return d;
 				}
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
@@ -150,12 +137,12 @@ public class DungeonFactory {
 		
 		//please don't ask about my numbers, they're so randomly picked out from my head
 		// I don't even know what the curve looks like on a TI calculator ;_;
-		int floors = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		int depth = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
 		
-		Array<Floor> dungeon = new Array<Floor>();
-		dungeon.ensureCapacity(floors+1);
-		dungeon.addAll(new Floor[floors+1]);
-		final Thread[] makerThreads = new Thread[floors];
+		final Array<Floor> floors = new Array<Floor>();
+		floors.ensureCapacity(depth+1);
+		floors.addAll(new Floor[depth+1]);
+		final Thread[] makerThreads = new Thread[depth];
 		
 		Thread makeWatch = new Thread(
 			new Runnable(){
@@ -187,9 +174,10 @@ public class DungeonFactory {
 		//to stress test, uncomment next line
 		//floors = 90;
 		
-		for (int floor = 1, width = 50, height = 50; floor <= floors; floor++)
+		for (int floor = 1, width = 50, height = 50; floor <= depth; floor++)
 		{
-			Runnable run = new FloorMaker(difficulty, floor, width, height, loader, dungeon);
+			PathMaker maker = new PathMaker();
+			Runnable run = new FloorMaker(difficulty, floor, width, height, maker, loader, floors);
 			makerThreads[floor-1] = new Thread(run);
 			
 			if (floor % 5 == 1)
@@ -203,7 +191,9 @@ public class DungeonFactory {
 		
 		//wait until threads are done
 		while (makeWatch.isAlive()) ;
-		Dungeon d = new Dungeon(type, difficulty, dungeon);
+		
+		Dungeon d = new Dungeon(type, difficulty, floors, map);
+		d.build(tileset);
 		
 		//ignore random dungeons for caching
 		if (fileName != null)
@@ -221,8 +211,9 @@ public class DungeonFactory {
 	 * Prepare a world to be loaded and stepped into
 	 * @param ts
 	 */
-	private static World create(Dungeon dungeon, int depth, Stats player, FloorLoader loader)
+	private static World create(Dungeon dungeon, int depth, Stats player, TextureAtlas atlas, TextureRegion character, FloorLoader loader)
 	{
+		TiledMap map = dungeon.getMap();
 		ItemFactory itemFactory = new ItemFactory(dungeon.type());
 		MonsterFactory monsterFactory = new MonsterFactory(atlas, dungeon.type());
 		
@@ -233,29 +224,21 @@ public class DungeonFactory {
 		*/
 		Floor floor = dungeon.getFloor(depth);
 		World world = new World();
-		MovementSystem ms = new MovementSystem(depth);
-		
+		MovementSystem ms = new MovementSystem(depth, map);
+		RenderSystem rs = new RenderSystem(depth, map);
 		world.setManager(new TagManager());
 		world.setManager(new GroupManager());
-		world.setSystem(new RenderSystem(), true);
+		world.setSystem(rs);
 		world.setSystem(ms, true);
-		loader.progress = 5;
-		
-		TiledMap map = new TiledMap();
-		map.getTileSets().addTileSet(tileset);
-		TiledMapTileLayer layer = floor.paintLayer(tileset, 32, 32);
-		map.getLayers().add(layer);
-		world.getSystem(RenderSystem.class).setMap(map);
-		ms.setMap(layer);
-		loader.progress = 40;
+		loader.progress = 10;
 		
 		//add monsters to rooms
 		// monster count is anywhere between 5-20 on easy and 25-100 on hard
-		monsterFactory.makeMonsters(world, floor.monsterCount(), layer, itemFactory, depth);
-		loader.progress = 80;
+		monsterFactory.makeMonsters(world, floor.monsterCount(), map, itemFactory, depth);
+		loader.progress = 60;
 		
 		//forcibly add some loot monsters
-		monsterFactory.makeTreasure(world, floor.rooms(), layer, itemFactory, depth);
+		monsterFactory.makeTreasure(world, floor.rooms(), map, itemFactory, depth);
 		loader.progress = 90;
 		
 		world.initialize();
@@ -347,27 +330,30 @@ public class DungeonFactory {
 	private static class FloorMaker implements Runnable {
 	
 		final int difficulty;
-		final int floor;
+		final int depth;
 		final int width;
 		final int height;
 		final DungeonLoader loader;
 		final Array<Floor> dungeon;
+		final PathMaker maker;
 		
-		FloorMaker(int difficulty, int floor, int width, int height, DungeonLoader loader, Array<Floor> dungeon)
+		FloorMaker(int difficulty, int depth, int width, int height, PathMaker maker, DungeonLoader loader, Array<Floor> dungeon)
 		{
 			this.difficulty = difficulty;
-			this.floor = floor;
+			this.depth = depth;
 			this.width = width;
 			this.height = height;
 			this.loader = loader;
 			this.dungeon = dungeon;
+			this.maker = maker;
 		}
 		
 		@Override
 		public void run() {
-			Floor d = new Floor(difficulty, floor, width, height);
-			dungeon.set(floor-1, d);
+			Floor floor = new Floor(difficulty, depth, width, height, maker);
+			dungeon.set(depth-1, floor);
 			loader.progress += (int)(1/(float)dungeon.size * 100);
+			maker.dispose();
 		}
 	}
 	
@@ -388,7 +374,7 @@ public class DungeonFactory {
 		
 		@Override
 		public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-			generatedDungeon = create(param.fileName, param.type, param.difficulty, this);
+			generatedDungeon = create(param.fileName, param.type, param.difficulty, param.tileset, this);
 		}
 
 		@Override
@@ -414,6 +400,7 @@ public class DungeonFactory {
 			public FileType type;
 			public String fileName;
 			public int difficulty;
+			public TiledMapTileSet tileset;
 		}
 	}
 	
@@ -434,7 +421,7 @@ public class DungeonFactory {
 		
 		@Override
 		public void loadAsync(AssetManager manager, String fileName, FileHandle file, FloorLoader.FloorParam param) {
-			generatedFloor = create(param.dungeon, param.depth, param.player, this);
+			generatedFloor = create(param.dungeon, param.depth, param.player, param.atlas, param.character, this);
 		}
 
 		@Override
@@ -457,10 +444,10 @@ public class DungeonFactory {
 		{
 			public int depth;
 			public IDungeonContainer dungeonContainer;
-			public TextureAtlas atlas;
-			
 			public Dungeon dungeon;
 			public Stats player;
+			public TextureAtlas atlas;
+			public TextureRegion character;
 		}
 	}
 }
