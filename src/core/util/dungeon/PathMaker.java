@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import core.datatypes.Dungeon.FloorData;
+
 /**
  * System for generating a floor, its rooms, and connecting all paths in the room
  * <p></p>
@@ -21,12 +23,7 @@ import com.badlogic.gdx.utils.Array;
  */
 public class PathMaker {
 
-	int[][] board;
-	Array<Room> rooms = new Array<Room>();
-	
-	static final float MAX_SATURATION = .8f;
-	float filled;
-	float size;
+	public static final float MAX_SATURATION = .8f;
 	
 	public static final int NULL = 0;
 	public static final int ROOM = 1;
@@ -35,21 +32,27 @@ public class PathMaker {
 	public static final int UP   = 4;
 	public static final int DOWN = 5;
 	
-	public int[][] run(int roomCount, int w, int h)
+	private static final int X = 0;
+	private static final int Y = 1;
+	
+	//don't allow instantiation
+	private PathMaker(){}
+	
+	public static void run(FloorData f, int roomCount)
 	{
-		board = new int[w][h];
-		size = w*h;
+		float[] filled = {0};
+		float size = f.tiles.length * f.tiles[0].length;
 		
-		rooms.clear();
-		filled = 0;
+		int[][] board = f.tiles;
+		Array<Room> rooms = f.rooms;
 		
 		//place a handleful of random rooms until threshold is met
-		while (rooms.size < roomCount && !isSaturated())
+		while (f.rooms.size < roomCount && filled[0]/size < MAX_SATURATION)
 		{
 			int width = MathUtils.random(10)+3;
 			int height = MathUtils.random(10)+3;
 			
-			Array<int[]> locations = findAllOpenAreas(width, height);
+			Array<int[]> locations = findAllOpenAreas(board, width, height);
 			if (locations.size > 0)
 			{
 				int[] where = locations.random();
@@ -60,9 +63,10 @@ public class PathMaker {
 					for (int y = r.bottom(); y <= r.top(); y++)
 					{
 						board[x][y] = ROOM;
-						filled++;
 					}
 				}
+				
+				filled[0] += r.width * r.height;
 				
 				for (int x = r.left(); x <= r.right(); x++)
 				{
@@ -78,7 +82,7 @@ public class PathMaker {
 			locations = null;
 		}
 		
-		connectRooms();
+		connectRooms(board, rooms, filled);
 		
 		//find random spot to place start and end
 		int x = 0;
@@ -96,19 +100,13 @@ public class PathMaker {
 			y = MathUtils.random(0, board[0].length-1);
 		} while (board[x][y] != ROOM);
 		board[x][y] = DOWN;
-		
-		return board;
-	}
-	
-	private boolean isSaturated() {
-		return (filled/size) > MAX_SATURATION;
 	}
 
 	/**
 	 * Attempts to find all open areas on the board that this rectangle can fit
 	 * @param r
 	 */
-	private Array<int[]> findAllOpenAreas(int width, int height)
+	private static Array<int[]> findAllOpenAreas(int[][] board, int width, int height)
 	{
 		Array<int[]> positions = new Array<int[]>();
 		boolean[][] good = new boolean[board.length][board[0].length];
@@ -171,7 +169,7 @@ public class PathMaker {
 	 * <br></br>
 	 * For now we keep things simple and don't add doors
 	 */
-	private void connectRooms()
+	private static void connectRooms(int[][] board, Array<Room> rooms, float[] filled)
 	{
 		//no need to connect rooms if there's less than 2 rooms
 		if (rooms.size < 2)
@@ -182,7 +180,7 @@ public class PathMaker {
 		boolean[][] roomConnections = new boolean[rooms.size][rooms.size];
 		boolean[][] closure = new boolean[rooms.size][rooms.size];
 		float[][] distanceMatrix = new float[rooms.size][rooms.size];
-		Vector2[][][] closestMatrix = new Vector2[rooms.size][rooms.size][];
+		int[][][][] closestMatrix = new int[rooms.size][rooms.size][2][2];
 		
 		for (int i = 0; i < rooms.size; i++)
 		{
@@ -201,9 +199,9 @@ public class PathMaker {
 				Room roomB = rooms.get(b);
 				
 				//go around the border of each room to find the smallest distance
-				Vector2 cellA = new Vector2();
-				Vector2 cellB = new Vector2();
-				Vector2[] closestCells = {new Vector2(), new Vector2()};
+				int[] cellA = new int[2];
+				int[] cellB = new int[2];
+				int[][] closestCells = {new int[2], new int[2]};
 				
 				
 				for (int aX = roomA.left(); aX <= roomA.right(); aX++)
@@ -211,22 +209,22 @@ public class PathMaker {
 					for (int aY = roomA.bottom(); aY <= roomA.top(); aY++)
 					{
 						
-						cellA = new Vector2(aX, aY);
+						cellA[X] = aX; cellA[Y] = aY;
 						for (int bX = roomB.left(); bX <= roomB.right(); bX++)
 						{
 							for (int bY = roomB.bottom(); bY <= roomB.top(); bY++)
 							{
-								cellB = new Vector2(bX, bY);
+								cellB[X] = bX; cellB[Y] = bY;
 								
 								//find the smallest distance between any cell relation with CellA
-								float distance = cellA.dst(cellB);
+								float distance = Vector2.dst(cellA[X], cellA[Y], cellB[X], cellB[Y]);
 								if (distance < distanceMatrix[a][b] || distance == distanceMatrix[a][b] && MathUtils.randomBoolean())
 								{
 									distanceMatrix[a][b] = distance;
 									
 									//make sure to mark which cells it is that are the closest
-									closestCells[0].set(cellA);
-									closestCells[1].set(cellB);
+									closestCells[0] = cellA;
+									closestCells[1] = cellB;
 								}
 							}
 						}
@@ -256,11 +254,11 @@ public class PathMaker {
 				}
 			}
 			//get the connecting cells
-			Vector2 from = closestMatrix[a][closest][0];
-			Vector2 to = closestMatrix[a][closest][1];
+			int[] from = closestMatrix[a][closest][0];
+			int[] to = closestMatrix[a][closest][1];
 			
 			//create the tunnel to that closest room
-			if (!roomConnections[a][closest] && makeHallway(from, to))
+			if (!roomConnections[a][closest] && makeHallway(board, from, to, filled))
 			{
 				//flag the rooms as connected both ways
 				roomConnections[a][closest] = true;
@@ -324,11 +322,10 @@ public class PathMaker {
 				} 
 				while(conA==conB);
 				
-				Vector2[] closest = closestMatrix[conA][conB];
-				Vector2 from = closest[0];
-				Vector2 to = closest[1];
+				int[] from = closestMatrix[conA][conB][0];
+				int[] to = closestMatrix[conA][conB][1];
 
-				makeHallway(from, to);
+				makeHallway(board, from, to, filled);
 
 				roomConnections[conA][conB]=true;
 				roomConnections[conB][conA]=true;
@@ -344,24 +341,24 @@ public class PathMaker {
 	 * @return true if a hallway could be constructed between the two rooms
 	 * 		   false if the points are invalid/outside of the board
 	 */
-	private boolean makeHallway(Vector2 from, Vector2 to)
+	private static boolean makeHallway(int[][] board, int[] from, int[] to, float[] filled)
 	{
 		//ignore out of bounds attempts
-		if (!(from.x >= 0 && from.x < board.length && from.y >= 0 && from.y < board[0].length) || 
-			!(to.x >= 0 && to.x < board.length && to.y >= 0 && to.y < board[0].length))
+		if (!(from[X] >= 0 && from[X] < board.length && from[Y] >= 0 && from[Y] < board[0].length) || 
+			!(to[X] >= 0 && to[X] < board.length && to[Y] >= 0 && to[Y] < board[0].length))
 		{
 			return false;
 		}
 		
-		int x1 = (int)from.x;
-		int x2 = (int)to.x;
-		int y1 = (int)from.y;
-		int y2 = (int)to.y;
+		int x1 = from[X];
+		int x2 = to[X];
+		int y1 = from[Y];
+		int y2 = to[Y];
 		
 		board[x1][y1] = HALL;
 		board[x2][y2] = HALL;
 		
-		filled += 2;
+		filled[0] += 2;
 		
 		//keep track of directional motion
 		int dirX, dirY;
@@ -402,12 +399,12 @@ public class PathMaker {
 			if (board[x1][y1] == NULL)
 			{
 				board[x1][y1] = HALL;
-				filled++;
+				filled[0]++;
 			}
 			if (board[x2][y2] == NULL)
 			{
 				board[x2][y2] = HALL;
-				filled++;
+				filled[0]++;
 			}
 			//check once more if the iterators match after moving
 			// if the iterators are on the same level, try connecting them
@@ -420,13 +417,13 @@ public class PathMaker {
 					if (board[x1][y1] == NULL)
 					{
 						board[x1][y1] = HALL;
-						filled++;
+						filled[0]++;
 					}
 				}
 				if (board[x1][y1] == NULL)
 				{
 					board[x1][y1] = HALL;
-					filled++;
+					filled[0]++;
 				}
 				//return that we've connected the hallway successfully
 				return true;
@@ -441,25 +438,16 @@ public class PathMaker {
 					if (board[x1][y1] == NULL)
 					{
 						board[x1][y1] = HALL;
-						filled++;
+						filled[0]++;
 					}
 				}
 				if (board[x1][y1] == NULL)
 				{
 					board[x1][y1] = HALL;
-					filled++;
+					filled[0]++;
 				}
 				return true;
 			}
 		}
-	}
-	
-	public Array<Room> getRooms() {
-		return rooms;
-	}
-	
-	public void dispose() {
-		board = null;
-		rooms = null;
 	}
 }

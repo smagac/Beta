@@ -9,7 +9,6 @@ import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -24,6 +23,7 @@ import components.Position;
 import components.Renderable;
 import components.Stats;
 import core.common.Tracker;
+import core.datatypes.Dungeon;
 import static scenes.dungeon.Direction.*;
 
 /**
@@ -56,13 +56,13 @@ public class MovementSystem extends EntityProcessingSystem {
 	 * Creates a new movement and combat handler
 	 * @param floor - floor number representation of this system
 	 */
-	public MovementSystem(int depth, TiledMap map)
+	public MovementSystem(int depth, Dungeon map)
 	{
 		super(Aspect.getAspectForAll(Monster.class));
 		enabledInput = true;
 		
 		//build collision map	
-		TiledMapTileLayer floor = (TiledMapTileLayer)map.getLayers().get(depth);
+		TiledMapTileLayer floor = map.getFloor(depth).layer;
 		collision = new boolean[floor.getWidth()][floor.getHeight()];
 		for (int x = 0; x < collision.length; x++)
 		{
@@ -478,5 +478,12 @@ public class MovementSystem extends EntityProcessingSystem {
 	@Override
 	public void begin() {
 		monsters = world.getManager(GroupManager.class).getEntities("monsters");
+	}
+	
+	public void dispose()
+	{
+		parentScene = null;
+		hit = null;
+		monsters = null;
 	}
 }

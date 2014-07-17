@@ -5,6 +5,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -14,7 +16,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
@@ -24,9 +25,10 @@ import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
 
 public class Dungeon implements Serializable{
-	FileType type;
 	Array<Floor> floors;
+	Array<FloorData> floorData;
 	int difficulty;
+	FileType type;
 	TiledMap map;
 	
 	boolean prepared;
@@ -41,11 +43,12 @@ public class Dungeon implements Serializable{
 	 * @param map 
 	 */
 	
-	public Dungeon(FileType type, int d, Array<Floor> f, TiledMap map) {
+	public Dungeon(FileType type, int d, Array<FloorData> data, TiledMap map) {
 		this.type = type;
-		this.floors = f;
+		this.floors = new Array<Floor>();
 		this.difficulty = d;
 		this.map = map;
+		this.floorData = data;
 	}
 	
 	public void setMap(TiledMap map)
@@ -57,37 +60,56 @@ public class Dungeon implements Serializable{
 	{
 		return this.map;
 	}
+	
+	public int getDifficulty()
+	{
+		return difficulty;
+	}
 
 	public FileType type() {
 		return type;
 	}
 	
-	public static class Floor implements Serializable {
+	public static class Floor {
+		final public TiledMapTileLayer layer;
+		final public int roomCount;
+		final public int depth;
+		final public Array<Room> rooms;
+		
+		public Floor(TiledMapTileLayer layer, FloorData data){
+			this.layer = layer;
+			roomCount = data.rooms.size;
+			depth = data.floor;
+			rooms = data.rooms;
+		}
+	}
+	
+	public static class FloorData implements Serializable {
 		int monsters;
-		int[][] tiles;
-		Array<Room> rooms;
+		public int[][] tiles;
+		public Array<Room> rooms;
 		
 		int floor;
 		int width, height;
+		int size;
 		
-		public Floor(){}
+		public FloorData(){}
 		
 		/**
 		 * Make a new dungeon instance using a path maker
 		 * @param floor
 		 * @param maker
 		 */
-		public Floor(int difficulty, int floor, int width, int height, PathMaker maker)
+		public FloorData(int difficulty, int floor, int width, int height)
 		{
-			int roomCount = MathUtils.random(Math.max(5, ((3*floor)/10)+floor), Math.max(5, ((5*floor)/10)+floor));
 			
 			this.width = width;
 			this.height = height;
 			this.floor = floor;
+			this.size = width * height;
 			
-			tiles = maker.run(roomCount, width, height);
-			rooms = maker.getRooms();
-			monsters = MathUtils.random((int)(roomCount()*Math.max(1, difficulty*floor/100f)), (int)(roomCount()*Math.max(1, 2*difficulty*floor/100f)));
+			tiles = new int[width][height];
+			rooms = new Array<Room>();
 		}
 
 		/**
@@ -144,31 +166,28 @@ public class Dungeon implements Serializable{
 		@Override
 		public void write(Json json) {
 			
+			//zip and pack the tiles
+			Writer w = json.getWriter();
+			json.setWriter(new StringWriter());
+			String t = json.toJson(tiles, int[][].class);
+			json.setWriter(w);
+			 
+			try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+				GZIPOutputStream gzip = new GZIPOutputStream(out);
+				gzip.write(t.getBytes("ISO-8859-1"));
+				gzip.close();
+				String output = out.toString("ISO-8859-1");
+				json.writeValue("tiles", output, String.class);	
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+
 			//numerical properties
 			json.writeValue("floor", floor);
 			json.writeValue("width", width);
 			json.writeValue("height", height);
 			json.writeValue("monsters", monsters);
-			
-			//zip and pack the tiles
-			String t = ""+tiles[0][0];
-			for (int x = 0; x < width; x++)
-			{
-				for (int y = 0; y < height; y++)
-				{
-					t += ","+tiles[x][y];
-				}
-			}
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			try {
-				GZIPOutputStream gzip = new GZIPOutputStream(out);
-				gzip.write(t.getBytes());
-				gzip.close();
-				json.writeValue("tiles", out.toString("ISO-8859-1"));
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
 			
 			//write rooms
 			json.writeArrayStart("rooms");
@@ -210,20 +229,10 @@ public class Dungeon implements Serializable{
 		    	e.printStackTrace();
 				System.exit(-1);
 			}
-		    String[] tiles = outStr.split(",");
-		    int[][] t = new int[width][height];
-	        
-	        //throw tiles back in array
-	        for (int x = 0, i = 0; x < width; x++)
-	        {
-	        	for (int y = 0; y < height; y++, i++)
-	        	{
-	        		t[x][y] = Integer.parseInt(tiles[i]);
-	        	}
-	        }
-	        this.tiles = t;
+		    this.tiles = json.fromJson(int[][].class, outStr);
+	        //this.tiles = json.readValue(int[][].class, jsonData.get("tiles"));
 			
-			//load rooms
+		    //load rooms
 			Array<Room> rooms = new Array<Room>();
 			JsonValue roomsData = jsonData.get("rooms");
 			for (JsonValue room : roomsData)
@@ -236,22 +245,11 @@ public class Dungeon implements Serializable{
 			}
 			this.rooms = rooms;
 		}
-
-		public int roomCount() {
-			return rooms.size;
-		}
-		
-		public int monsterCount() {
-			return monsters;
-		}
-		
-		public int floor()
+	
+		private void dispose()
 		{
-			return floor;
-		}
-
-		public Array<Room> rooms() {
-			return rooms;
+			rooms = null;
+			tiles = null;
 		}
 	}
 
@@ -259,7 +257,7 @@ public class Dungeon implements Serializable{
 	public void write(Json json) {
 		json.writeValue("type", this.type.name());
 		json.writeValue("difficulty", this.difficulty);
-		json.writeValue("floors", this.floors);
+		json.writeValue("floors", this.floorData);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -267,11 +265,11 @@ public class Dungeon implements Serializable{
 	public void read(Json json, JsonValue jsonData) {
 		this.type = FileType.valueOf(jsonData.getString("type"));
 		this.difficulty = jsonData.getInt("difficulty");
-		this.floors = (Array<Floor>)json.readValue(Array.class, jsonData.get("floors"));
+		this.floorData = (Array<FloorData>)json.readValue(Array.class, jsonData.get("floors"));
 	}
 
 	public Floor getFloor(int depth) {
-		return floors.get(depth);
+		return floors.get(depth-1);
 	}
 
 	public int size() {
@@ -285,13 +283,17 @@ public class Dungeon implements Serializable{
 		}
 		
 		//build the tile layers
-		for (int i = 0; i < floors.size-1; i++)
+		floors = new Array<Floor>();
+		for (int i = 0; i < floorData.size; i++)
 		{
-			Floor floor = floors.get(i);
-			TiledMapTileLayer layer = floor.paintLayer(tileset, 32, 32);
+			FloorData data = floorData.get(i);
+			TiledMapTileLayer layer = data.paintLayer(tileset, 32, 32);
 			map.getLayers().add(layer);
+			floors.add(new Floor(layer, data));
+			data.dispose();
 		}
-		
+		floorData.clear();
+		floorData = null;
 		prepared = true;
 	}
 }

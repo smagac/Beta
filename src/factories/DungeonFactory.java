@@ -33,6 +33,7 @@ import components.Renderable;
 import components.Stats;
 import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
+import core.datatypes.Dungeon.FloorData;
 import core.datatypes.FileType;
 import core.service.IDungeonContainer;
 import core.util.dungeon.PathMaker;
@@ -121,9 +122,7 @@ public class DungeonFactory {
 				e.printStackTrace();
 				//might happen on read/write failure
 			}
-
 		}
-		
 		//make sure dungeon dir exists
 		//Gdx.files.absolute(tmpDir).mkdirs();
 		
@@ -137,12 +136,21 @@ public class DungeonFactory {
 		
 		//please don't ask about my numbers, they're so randomly picked out from my head
 		// I don't even know what the curve looks like on a TI calculator ;_;
-		int depth = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		//int depth = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		int depth = 99;
+		final Array<FloorData> floors = new Array<FloorData>();
+		floors.addAll(new FloorData[depth]);
+		final Thread[] makerThreads = new Thread[Math.min(depth, 4)];
 		
-		final Array<Floor> floors = new Array<Floor>();
-		floors.ensureCapacity(depth+1);
-		floors.addAll(new Floor[depth+1]);
-		final Thread[] makerThreads = new Thread[depth];
+		boolean[] unavailable = new boolean[depth];
+		
+		//to stress test, uncomment next line
+		//floors = 90;
+		for (int i = 0; i < makerThreads.length; i++)
+		{
+			Runnable run = new FloorMaker(difficulty, unavailable, loader, floors);
+			makerThreads[i] = new Thread(run);
+		}
 		
 		Thread makeWatch = new Thread(
 			new Runnable(){
@@ -170,40 +178,25 @@ public class DungeonFactory {
 				}
 			}
 		);
-		
-		//to stress test, uncomment next line
-		//floors = 90;
-		
-		for (int floor = 1, width = 50, height = 50; floor <= depth; floor++)
-		{
-			PathMaker maker = new PathMaker();
-			Runnable run = new FloorMaker(difficulty, floor, width, height, maker, loader, floors);
-			makerThreads[floor-1] = new Thread(run);
-			
-			if (floor % 5 == 1)
-			{
-				width += 5;
-				height += 5;
-			}
-		}
-		
 		makeWatch.start();
 		
 		//wait until threads are done
 		while (makeWatch.isAlive()) ;
 		
 		Dungeon d = new Dungeon(type, difficulty, floors, map);
-		d.build(tileset);
 		
 		//ignore random dungeons for caching
 		if (fileName != null)
 		{
 			//only try writing to file if we didn't get an i/o error
-			if (hashFile.exists())
+			if (hashFile != null && hashFile.exists())
 			{
 				json.toJson(d, Dungeon.class, hashFile);
 			}
 		}
+		json = null;
+		d.build(tileset);
+		
 		return d;
 	}
 	
@@ -213,7 +206,6 @@ public class DungeonFactory {
 	 */
 	private static World create(Dungeon dungeon, int depth, Stats player, TextureAtlas atlas, TextureRegion character, FloorLoader loader)
 	{
-		TiledMap map = dungeon.getMap();
 		ItemFactory itemFactory = new ItemFactory(dungeon.type());
 		MonsterFactory monsterFactory = new MonsterFactory(atlas, dungeon.type());
 		
@@ -223,22 +215,26 @@ public class DungeonFactory {
 		Dungeon dungeon = (new Json()).fromJson(Dungeon.class, file);
 		*/
 		Floor floor = dungeon.getFloor(depth);
+		int a = (int)(floor.roomCount*Math.max(1, dungeon.getDifficulty()*(depth)/100f));
+		int b = (int)((depth)*Math.max(1, 2*dungeon.getDifficulty()*(depth)/100f));
+		int monsters = MathUtils.random(Math.min(a,b), Math.max(a,b));
+		
 		World world = new World();
-		MovementSystem ms = new MovementSystem(depth, map);
-		RenderSystem rs = new RenderSystem(depth, map);
+		MovementSystem ms = new MovementSystem(depth, dungeon);
+		RenderSystem rs = new RenderSystem(depth, dungeon);
 		world.setManager(new TagManager());
 		world.setManager(new GroupManager());
-		world.setSystem(rs);
+		world.setSystem(rs, true);
 		world.setSystem(ms, true);
 		loader.progress = 10;
 		
 		//add monsters to rooms
 		// monster count is anywhere between 5-20 on easy and 25-100 on hard
-		monsterFactory.makeMonsters(world, floor.monsterCount(), map, itemFactory, depth);
+		monsterFactory.makeMonsters(world, monsters, itemFactory, dungeon.getFloor(depth));
 		loader.progress = 60;
 		
 		//forcibly add some loot monsters
-		monsterFactory.makeTreasure(world, floor.rooms(), map, itemFactory, depth);
+		monsterFactory.makeTreasure(world, itemFactory, dungeon.getFloor(depth));
 		loader.progress = 90;
 		
 		world.initialize();
@@ -330,30 +326,48 @@ public class DungeonFactory {
 	private static class FloorMaker implements Runnable {
 	
 		final int difficulty;
-		final int depth;
-		final int width;
-		final int height;
+		private int depth;
+		private int width;
+		private int height;
 		final DungeonLoader loader;
-		final Array<Floor> dungeon;
-		final PathMaker maker;
+		final Array<FloorData> dungeon;
+		volatile boolean[] unavailable;
 		
-		FloorMaker(int difficulty, int depth, int width, int height, PathMaker maker, DungeonLoader loader, Array<Floor> dungeon)
+		private FloorMaker(int difficulty, boolean[] unavailable, DungeonLoader loader, Array<FloorData> dungeon)
 		{
 			this.difficulty = difficulty;
-			this.depth = depth;
-			this.width = width;
-			this.height = height;
 			this.loader = loader;
 			this.dungeon = dungeon;
-			this.maker = maker;
+			this.unavailable = unavailable;
 		}
 		
 		@Override
 		public void run() {
-			Floor floor = new Floor(difficulty, depth, width, height, maker);
-			dungeon.set(depth-1, floor);
-			loader.progress += (int)(1/(float)dungeon.size * 100);
-			maker.dispose();
+			
+			while (depth < dungeon.size)
+			{
+				synchronized (unavailable)
+				{
+					while (depth < unavailable.length && unavailable[depth])
+					{
+						depth++;
+					}
+					if (depth >= dungeon.size)
+					{
+						break;
+					}
+					unavailable[depth] = true;	
+				}
+				width = 50 + (5*(depth/5));
+				height = 50 + (5*(depth/5));
+				FloorData floor = new FloorData(difficulty, depth+1, width, height);
+				
+				int roomCount = MathUtils.random(Math.max(5, ((3*depth)/10)+depth), Math.max(5, ((5*depth)/10)+depth));
+				PathMaker.run(floor, roomCount);
+					
+				dungeon.set(depth, floor);
+				loader.progress += (int)(1/(float)dungeon.size * 100);
+			}
 		}
 	}
 	

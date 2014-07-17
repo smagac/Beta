@@ -6,9 +6,7 @@ import com.artemis.managers.GroupManager;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -21,6 +19,7 @@ import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
+import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.util.dungeon.Room;
@@ -154,9 +153,8 @@ public class MonsterFactory {
 	 * @param map - list of rooms to lock each monster into
 	 * @return an array of all the monsters that have just been created and added to the world
 	 */
-	public void makeMonsters(World world, int size, TiledMap map, ItemFactory lootMaker, int depth)
+	public void makeMonsters(World world, int size, ItemFactory lootMaker, Floor floor)
 	{
-		TiledMapTileLayer floor = (TiledMapTileLayer)map.getLayers().get(depth);
 		Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
 		selection.addAll(MonsterFactory.monsters.get(area));
 		selection.addAll(MonsterFactory.monsters.get(FileType.Other)); 
@@ -172,7 +170,7 @@ public class MonsterFactory {
 			//don't allow mimics as normal enemies
 			while (t.name.equals("mimic"));
 			
-			Entity monster = create(world, t, lootMaker.createItem(), depth);
+			Entity monster = create(world, t, lootMaker.createItem(), floor.depth);
 			monster.addComponent(new Monster());
 			
 			//add its position into a random room
@@ -181,9 +179,10 @@ public class MonsterFactory {
 			TiledMapTile tile;
 			do
 			{
-				x = MathUtils.random(0, floor.getWidth()-1);
-				y = MathUtils.random(0, floor.getHeight()-1);
-				tile = floor.getCell(x, y).getTile();
+				Room r = floor.rooms.random();
+				x = MathUtils.random(r.innerLeft(), r.innerRight());
+				y = MathUtils.random(r.innerBottom(), r.innerTop());
+				tile = floor.layer.getCell(x, y).getTile();
 			} while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
 			monster.addComponent(new Position(x, y));
 			
@@ -228,12 +227,11 @@ public class MonsterFactory {
 	 * @param lootMaker
 	 * @param depth
 	 */
-	public void makeTreasure(World world, Array<Room> rooms, TiledMap map, ItemFactory lootMaker, int depth) {
+	public void makeTreasure(World world, ItemFactory lootMaker, Floor floor) {
 		GroupManager gm = world.getManager(GroupManager.class);
 		MonsterTemplate treasure = allMonsters.get("treasure chest");
 		MonsterTemplate mimic = allMonsters.get("mimic");
-		TiledMapTileLayer floor = (TiledMapTileLayer)map.getLayers().get(depth);
-		for (Room r : rooms)
+		for (Room r : floor.rooms)
 		{
 			//calculate population density
 			int mCount = 0;
@@ -254,13 +252,13 @@ public class MonsterFactory {
 			{
 				//low chance of chest actually being a mimic
 				Entity monster;
-				if (MathUtils.randomBoolean(.02f + (depth/300f)))
+				if (MathUtils.randomBoolean(.02f + (floor.depth/300f)))
 				{
-					monster = create(world, mimic, lootMaker.createItem(), depth);
+					monster = create(world, mimic, lootMaker.createItem(), floor.depth);
 				}
 				else
 				{
-					monster = create(world, treasure, lootMaker.createItem(), depth);	
+					monster = create(world, treasure, lootMaker.createItem(), floor.depth);	
 				}
 				monster.addComponent(new Monster());
 				int x = 0;
@@ -268,9 +266,9 @@ public class MonsterFactory {
 				TiledMapTile tile;
 				do
 				{
-					x = MathUtils.random(r.left(), r.right());
-					y = MathUtils.random(r.bottom(), r.top());
-					tile = floor.getCell(x, y).getTile();
+					x = MathUtils.random(r.innerLeft(), r.innerRight());
+					y = MathUtils.random(r.innerBottom(), r.innerTop());
+					tile = floor.layer.getCell(x, y).getTile();
 				} while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
 				monster.addComponent(new Position(x, y));
 					

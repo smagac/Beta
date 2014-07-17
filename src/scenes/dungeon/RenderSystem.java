@@ -34,12 +34,11 @@ import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
+import core.datatypes.Dungeon;
 
 public class RenderSystem extends EntityProcessingSystem {
 
 	public static final float MoveSpeed = .25f;
-	
-	WanderUI parentScene;
 	
 	private SpriteBatch batch;
 	private OrthographicCamera camera;
@@ -70,13 +69,13 @@ public class RenderSystem extends EntityProcessingSystem {
 	private int[] layers;
 	
 	@SuppressWarnings("unchecked")
-	public RenderSystem(int depth, TiledMap map)
+	public RenderSystem(int depth, Dungeon dungeon)
 	{
 		super(Aspect.getAspectForAll(Renderable.class, Position.class));
 		addQueue = new Array<Actor>();
 		removeQueue = new Array<Actor>();
-		this.layers = new int[]{depth};
-		this.map = map;
+		this.layers = new int[]{depth-1};
+		this.map = dungeon.getMap();
 	}
 	
 	@Override
@@ -156,17 +155,9 @@ public class RenderSystem extends EntityProcessingSystem {
 	
 	public void setView(WanderUI view, Skin skin)
 	{
-		parentScene = view;
 		Viewport v = view.getViewport();
-		stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
-		stage.addListener(new InputListener(){
-			@Override
-			public boolean mouseMoved(InputEvent evt, float x, float y)
-			{
-				//Gdx.app.log("[Input]", "Mouse is moving");
-				return true;
-			}
-		});
+		this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
+		
 		this.batch = (SpriteBatch) this.stage.getBatch();
 		this.camera = (OrthographicCamera) this.stage.getCamera();
 		
@@ -203,7 +194,6 @@ public class RenderSystem extends EntityProcessingSystem {
 		
 		for (Actor r : removeQueue)
 		{
-			//Gdx.app.log("[Entity]", "removing an actor");
 			r.remove();
 		}
 		
@@ -268,7 +258,11 @@ public class RenderSystem extends EntityProcessingSystem {
 		batch = null;
 		camera = null;
 		stage.clear();
+		stage.dispose();
 		stage = null;
+		map = null;
+		mapRenderer = null;
+		nullTile = null;
 	}
 
 	@Override
