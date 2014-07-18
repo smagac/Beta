@@ -1,6 +1,6 @@
 
 dungeon.png
-size: 120,124
+size: 126,124
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
@@ -88,23 +88,23 @@ gnome
   orig: 16, 16
   offset: 0, 0
   index: -1
-horse
+grump
   rotate: false
   xy: 88, 38
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-loot
+horse
   rotate: false
   xy: 56, 6
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-mimic
+loot
   rotate: false
-  xy: 56, 6
+  xy: 74, 20
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -118,28 +118,28 @@ null
   index: -1
 ogre
   rotate: false
-  xy: 74, 20
+  xy: 74, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 plant
   rotate: false
-  xy: 74, 2
+  xy: 92, 20
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 rat
   rotate: false
-  xy: 92, 20
+  xy: 92, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 snake
   rotate: false
-  xy: 92, 2
+  xy: 110, 90
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
