@@ -130,14 +130,25 @@ public class Dungeon implements Serializable{
 				{
 					Cell cell = new Cell();
 					
-					TiledMapTile tile;
+					TiledMapTile tile = null;
 					if (x < 0 || x >= tiles.length || y < 0 || y >= tiles[0].length)
 					{
 						tile = tileset.getTile(0);
 					}
 					else if (tiles[x][y] == PathMaker.NULL)
 					{
-						tile = tileset.getTile(0);
+						boolean set = false;
+						for (int i = Math.max(0, x-1); i <= Math.min(x+1, tiles.length-1) && !set; i++)
+						{
+							for (int j = Math.max(0, y-1); j <= Math.min(y+1, tiles[0].length-1) && !set; j++)
+							{
+								if (tiles[i][j] != PathMaker.NULL)
+								{
+									tile = tileset.getTile(0);
+									set = true;
+								}
+							}
+						}
 					}
 					else if (tiles[x][y] == PathMaker.WALL)
 					{

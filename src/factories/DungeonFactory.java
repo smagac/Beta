@@ -141,9 +141,7 @@ public class DungeonFactory {
 		final Array<FloorData> floors = new Array<FloorData>();
 		floors.addAll(new FloorData[depth]);
 		final Thread[] makerThreads = new Thread[Math.min(depth, 4)];
-		
-		boolean[] unavailable = new boolean[depth];
-		
+		int[] unavailable = {0};
 		//to stress test, uncomment next line
 		//floors = 90;
 		for (int i = 0; i < makerThreads.length; i++)
@@ -331,14 +329,15 @@ public class DungeonFactory {
 		private int height;
 		final DungeonLoader loader;
 		final Array<FloorData> dungeon;
-		volatile boolean[] unavailable;
+		volatile int[] unavailable;
 		
-		private FloorMaker(int difficulty, boolean[] unavailable, DungeonLoader loader, Array<FloorData> dungeon)
+		private FloorMaker(int difficulty, int[] unavailable, DungeonLoader loader, Array<FloorData> dungeon)
 		{
 			this.difficulty = difficulty;
 			this.loader = loader;
 			this.dungeon = dungeon;
 			this.unavailable = unavailable;
+			this.depth = unavailable[0];
 		}
 		
 		@Override
@@ -348,15 +347,11 @@ public class DungeonFactory {
 			{
 				synchronized (unavailable)
 				{
-					while (depth < unavailable.length && unavailable[depth])
-					{
-						depth++;
-					}
+					depth = unavailable[0]++;
 					if (depth >= dungeon.size)
 					{
 						break;
-					}
-					unavailable[depth] = true;	
+					}	
 				}
 				width = 50 + (5*(depth/5));
 				height = 50 + (5*(depth/5));

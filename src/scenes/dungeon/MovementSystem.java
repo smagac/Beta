@@ -69,7 +69,7 @@ public class MovementSystem extends EntityProcessingSystem {
 			for (int y = 0; y < collision[0].length; y++)
 			{
 				Cell c = floor.getCell(x, y);
-				if (c == null)
+				if (c == null || c.getTile() == null)
 				{
 					collision[x][y] = false;
 				}
