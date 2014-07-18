@@ -1,3 +1,17 @@
+Changes since Beta 2 Announcement on July 13, 2014
+============================
+- You can now revisit dungeons by selecting the same file again!
+-- File generated dungeons are stored as tmp files and do not persist between sessions
+-- UI remembers previously entered files as well as the last directory you were in to make revisiting more convenient
+- Loot found in the current dungeon run is now included in loot you can sacrifice
+
+#### Backend Changes
+- Dungeon multithreading is now better balanced, using only 4 threads and synchronization
+- Tons of memory optimizations with handling the dungeon metadata so it is no longer lingering after a floor has been created
+-- Combined with the threading fixes, the dungeon scene now leaves the game running at around 200-250mb with a 99 floor dungeon
+-- That's a 50% decrease in memory usage
+- Loot is handled better, with a 3-tier inventory system
+
 Changes since Beta Announcement on July 7, 2014
 ============================
 - Difficulty now determines how many crafts you need to make x2.  This way on level 1 difficulty you won't be done with the game after crafting your first required item
@@ -55,14 +69,10 @@ Changes since TMG Alpha 2014
 
 TODO List of Features
 =============================
-- Choose your Gender which affects your character sprite and who you serve 
--- requires a new individual story and in-game texts that need to be set instead of hard code into the uis
 - Enemies at higher levels should have a chance of turning into a treasure chest upon dying to provide extra loot
-- End game still needs implementing
 - Change player's growth curve into stat point allocation system
 -- Menu needs to be accessible in the main menu, requiring you to leave a dungeon to allocate stat points
 -- Roll for stats after choosing your gender and difficulty
-- For official release, inventory needs to be empty when starting a game
 
 If you read all this, thank you, it means a lot to me that you actually are interested in the development of StoryMode
 

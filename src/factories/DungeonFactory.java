@@ -124,7 +124,6 @@ public class DungeonFactory {
 						
 					    String line;
 				        while ((line=bf.readLine())!=null) {
-				        	System.out.println(line);
 				        	outStr += line;
 				        }
 				        
