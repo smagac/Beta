@@ -257,9 +257,10 @@ public class DungeonFactory {
 		Dungeon dungeon = (new Json()).fromJson(Dungeon.class, file);
 		*/
 		Floor floor = dungeon.getFloor(depth);
-		int a = (int)(floor.roomCount*Math.max(1, dungeon.getDifficulty()*(depth)/100f));
-		int b = (int)((depth)*Math.max(1, 2*dungeon.getDifficulty()*(depth)/100f));
-		int monsters = MathUtils.random(Math.min(a,b), Math.max(a,b));
+		int base = Math.min(floor.roomCount, depth*2);
+		int a = (int)(base*Math.max(1, dungeon.getDifficulty()*depth/50f));
+		int b = (int)(base*Math.max(2, 2*dungeon.getDifficulty()*depth/50f));
+		int monsters = MathUtils.random(a, b);
 		
 		World world = new World();
 		MovementSystem ms = new MovementSystem(depth, dungeon);

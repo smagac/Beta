@@ -9,4 +9,6 @@ import com.artemis.Component;
  */
 public class Monster extends Component {
 
+	public static final String Loot = "treasure chest";
+	
 }

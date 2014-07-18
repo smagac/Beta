@@ -1,6 +1,9 @@
 package scenes.dungeon;
 
+import com.artemis.Entity;
 import com.artemis.World;
+import com.artemis.managers.GroupManager;
+import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.AbsoluteFileHandleResolver;
@@ -12,6 +15,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 
+import components.Identifier;
+import components.Monster;
 import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.Dungeon;
@@ -49,6 +54,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	private World currentFloor;
 	private String fileName;
 	
+	protected Progress progress;
+	
 	public Scene()
 	{
 		super();
@@ -57,6 +64,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		floorLoader = new FloorLoader(new InternalFileHandleResolver());
 		dungeonManager.setLoader(Dungeon.class, dungeonLoader);
 		dungeonManager.setLoader(World.class, floorLoader);
+		progress = new Progress();
 	}
 	
 	public void setDungeon(FileType type, int difficulty)
@@ -296,9 +304,23 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		ui.setMessage("Obtained " + item.fullname());
 	}
 	
+	/**
+	 * Adds a new message to the combat log in the bottom right corner of the screen
+	 * @param message
+	 */
 	protected void log(String message)
 	{
 		ui.setMessage(message);
+	}
+	
+	/**
+	 * Refreshes the HUD at the top of the screen to display the proper current progress of the dungeon
+	 */
+	protected void refresh()
+	{
+		ui.floorLabel.setText(String.format("Floor %d/%d", progress.depth, progress.floors));
+		ui.lootLabel.setText(String.format("%d", progress.lootFound));
+		ui.monsterLabel.setText(String.format("%d/%d", progress.monstersKilled, progress.monstersTotal));
 	}
 
 	@Override
@@ -330,9 +352,10 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	public void setDungeon(Dungeon floors)
 	{
 		this.dungeon = floors;
-		//currentFloorNumber = floors.size-2;
+		//currentFloorNumber = floors.size()-1;
 		currentFloorNumber = 0;
 		currentFloor = null;
+		progress.floors = dungeon.size();
 	}
 
 	@Override
@@ -342,11 +365,11 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	/**
 	 * Allow setting/overriding the current world
-	 * @param i
+	 * @param depth
 	 * @param world
 	 */
 	@Override
-	public void setCurrentFloor(int i, World world)
+	public void setCurrentFloor(int depth, World world)
 	{
 		if (currentFloor != null)
 		{
@@ -355,6 +378,31 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			currentFloor.getSystem(MovementSystem.class).dispose();
 		}
 		currentFloor = world;
+		
+		//setup progress
+		{
+			progress.depth = depth;
+			progress.monstersKilled = 0;
+			progress.monstersTotal = 0;
+			progress.lootTotal = 0;
+			
+			ImmutableBag<Entity> monsters = currentFloor.getManager(GroupManager.class).getEntities("monsters");
+			for (int i = 0; i < monsters.size(); i++)
+			{
+				Identifier id = monsters.get(i).getComponent(Identifier.class);
+				if (id.toString().endsWith(Monster.Loot))
+				{
+					progress.lootTotal++;
+				}
+				else
+				{
+					progress.monstersTotal++;
+				}
+			}
+			
+			refresh();
+		}
+		
 		//make sure enemy list is populated at least once
 		currentFloor.getSystem(MovementSystem.class).begin();
 		currentFloor.getSystem(RenderSystem.class).setView(ui, ui.getSkin());
@@ -365,9 +413,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		currentFloor.getSystem(RenderSystem.class).process(true);
 		
 		input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
-		currentFloorNumber = i;
-
-		
+		currentFloorNumber = depth;
 	}
 
 	@Override

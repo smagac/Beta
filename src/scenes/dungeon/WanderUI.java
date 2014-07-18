@@ -6,6 +6,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
@@ -40,6 +42,11 @@ public class WanderUI extends GameUI {
 	Table log;
 	
 	Label message;
+	
+	Label floorLabel;
+	Label monsterLabel;
+	Label lootLabel;
+	
 	Group dialog;
 	
 	Image goddess;
@@ -79,6 +86,50 @@ public class WanderUI extends GameUI {
 	protected void extend() {
 		
 		messageWindow.clear();
+		
+		//header bar
+		{
+			Table table = new Table();
+			TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+			table.setBackground(new TextureRegionDrawable(atlas.findRegion("floor")));
+			table.setHeight(32f);
+			table.setWidth(display.getWidth());
+			
+			//monsters
+			{
+				Table set = new Table();
+				Image icon = new Image(atlas.findRegion("ogre"));
+				Label label = monsterLabel = new Label("0/0", skin, "prompt");
+				
+				set.add(icon).size(32f).padRight(10f);
+				set.add(label).expandX().fillX();
+				table.add(set).expandX().align(Align.left).colspan(1);
+			}
+			
+			//treasure
+			{
+				Table set = new Table();
+				Image icon = new Image(atlas.findRegion("loot"));
+				Label label = lootLabel = new Label("0", skin, "prompt");
+				
+				set.add(icon).size(32f).padRight(10f);
+				set.add(label).expandX().fillX();
+				table.add(set).expandX().colspan(1);
+			}
+			//floors
+			{
+				Table set = new Table();
+				Image icon = new Image(atlas.findRegion("up"));
+				Label label = floorLabel = new Label("Floor 0/0", skin, "prompt");
+				
+				set.add(icon).size(32f).padRight(10f);
+				set.add(label).expandX().fillX();
+				table.add(set).expandX().align(Align.right).colspan(1);
+			}
+			table.setPosition(0, display.getHeight()-32f);
+			display.addActor(table);
+		}
+		
 		
 		fader = new Image(skin.getRegion("fader"));
 		fader.setScaling(Scaling.fill);

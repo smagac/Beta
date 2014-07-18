@@ -38,7 +38,6 @@ public class MovementSystem extends EntityProcessingSystem {
 	boolean[][] collision;
 	Vector2 start, end;
 	
-	@Mapper ComponentMapper<Monster> monsterMap;
 	@Mapper ComponentMapper<Position> positionMap;
 	@Mapper ComponentMapper<Stats> statMap;
 	@Mapper ComponentMapper<Combat> combatMap;
@@ -293,6 +292,17 @@ public class MovementSystem extends EntityProcessingSystem {
 					}
 					Tracker.NumberValues.Monsters_Killed.increment();
 					opponent.deleteFromWorld();
+					
+					Identifier id = idMap.get(opponent);
+					
+					if (id.toString().endsWith(Monster.Loot))
+					{
+						parentScene.progress.lootFound++;
+					}
+					else
+					{
+						parentScene.progress.monstersKilled++;
+					}
 				}
 			}
 		}
@@ -478,6 +488,11 @@ public class MovementSystem extends EntityProcessingSystem {
 	@Override
 	public void begin() {
 		monsters = world.getManager(GroupManager.class).getEntities("monsters");
+	}
+	
+	@Override
+	public void end() {
+		parentScene.refresh();
 	}
 	
 	public void dispose()

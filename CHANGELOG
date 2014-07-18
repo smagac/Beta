@@ -4,6 +4,8 @@ Changes since Beta 2 Announcement on July 13, 2014
 -- File generated dungeons are stored as tmp files and do not persist between sessions
 -- UI remembers previously entered files as well as the last directory you were in to make revisiting more convenient
 - Loot found in the current dungeon run is now included in loot you can sacrifice
+- New Floor Bar across the top of dungeoning is now visible
+-- Shows Monsters left, loot gathered, and current floor number
 
 #### Backend Changes
 - Dungeon multithreading is now better balanced, using only 4 threads and synchronization
