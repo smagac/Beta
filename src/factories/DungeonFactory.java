@@ -1,8 +1,16 @@
 package factories;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import scenes.dungeon.MovementSystem;
 import scenes.dungeon.RenderSystem;
@@ -89,7 +97,6 @@ public class DungeonFactory {
 		
 		//first check if the file has already been registered
 		FileHandle hashFile = null;
-		Json json = new Json();
 		if (fileName != null)
 		{
 			try {
@@ -98,7 +105,7 @@ public class DungeonFactory {
 				byte[] hash = md.digest(fileName.getBytes());
 				String name = new String(bytesToHex(hash));
 				String tmpDir = System.getProperty("java.io.tmpdir");
-				hashFile = Gdx.files.absolute(tmpDir+"/storymode/"+name+".map");
+				hashFile = Gdx.files.absolute(tmpDir+"/storymode/"+name+".tmp");
 				//System.err.println(hashFile.path());
 				if (!hashFile.exists())
 				{
@@ -108,7 +115,28 @@ public class DungeonFactory {
 				}
 				else
 				{
-					Dungeon d = json.fromJson(Dungeon.class, hashFile);
+					String outStr = "";
+				    try {
+				    	FileInputStream in = new FileInputStream(hashFile.file());
+				    	GZIPInputStream unzipper = new GZIPInputStream(in);
+						InputStreamReader zipRead = new InputStreamReader(unzipper);
+						BufferedReader bf = new BufferedReader(zipRead);
+						
+					    String line;
+				        while ((line=bf.readLine())!=null) {
+				        	System.out.println(line);
+				        	outStr += line;
+				        }
+				        
+				        bf.close();
+				        zipRead.close();
+				    } catch (IOException e) {
+				    	e.printStackTrace();
+						System.exit(-1);
+					}
+					
+					Json json = new Json();
+					Dungeon d = json.fromJson(Dungeon.class, outStr);
 					d.setMap(map);
 					d.build(tileset);
 					return d;
@@ -136,14 +164,13 @@ public class DungeonFactory {
 		
 		//please don't ask about my numbers, they're so randomly picked out from my head
 		// I don't even know what the curve looks like on a TI calculator ;_;
-		//int depth = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
-		int depth = 99;
+		int depth = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		//to stress test, uncomment next line
+		//int depth = 99;
 		final Array<FloorData> floors = new Array<FloorData>();
 		floors.addAll(new FloorData[depth]);
 		final Thread[] makerThreads = new Thread[Math.min(depth, 4)];
 		int[] unavailable = {0};
-		//to stress test, uncomment next line
-		//floors = 90;
 		for (int i = 0; i < makerThreads.length; i++)
 		{
 			Runnable run = new FloorMaker(difficulty, unavailable, loader, floors);
@@ -189,10 +216,28 @@ public class DungeonFactory {
 			//only try writing to file if we didn't get an i/o error
 			if (hashFile != null && hashFile.exists())
 			{
-				json.toJson(d, Dungeon.class, hashFile);
+				BufferedWriter writer = null;
+				try {
+					FileOutputStream out = new FileOutputStream(hashFile.file());
+					GZIPOutputStream gzip = new GZIPOutputStream(out);
+					writer = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));
+					
+					Json json = new Json();
+					json.toJson(d, Dungeon.class, writer);
+				
+					out.close();
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(-1);
+				} finally {
+					if (writer != null)
+					{
+						try { writer.close(); } catch (IOException e) {	e.printStackTrace(); }
+					}
+				}
 			}
 		}
-		json = null;
 		d.build(tileset);
 		
 		return d;
