@@ -55,7 +55,10 @@ public class TownUI extends GameUI {
 	private Table exploreSubmenu;
 	private List<String> fileList;
 	private Array<FileHandle> directoryList;
-	private FileHandle directory;
+	private Array<String> paths;
+	private static Array<String> historyPaths = new Array<String>();
+	private static Array<FileHandle> history = new Array<FileHandle>();
+	private static FileHandle directory;
 	private Table fileDetails;
 	
 	private Table craftSubmenu;
@@ -84,6 +87,10 @@ public class TownUI extends GameUI {
 	private static final int SLEEP = 0;
 	private Iterator<String> dialog;
 	private boolean over;
+	private ButtonGroup exploreTabs;
+	
+	private ChangeListener browseListener;
+	private ChangeListener historyListener;
 	
 	public TownUI(AssetManager manager, IPlayerContainer player) {
 		super(manager, player);
@@ -378,13 +385,71 @@ public class TownUI extends GameUI {
 			exploreSubmenu.setHeight(display.getHeight());
 			exploreSubmenu.setPosition(-exploreSubmenu.getWidth(), 0);
 			
+			if (history.size > 0)
+			{
+				Group tabs = new HorizontalGroup();
+				exploreTabs = new ButtonGroup();
+				final TextButton myButton = new TextButton("Browse", skin);
+				tabs.addActor(myButton);
+				myButton.setName("browse");
+				exploreTabs.add(myButton);
+				myButton.addListener(new ChangeListener(){
+	
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (actor == myButton)
+						{
+							if (myButton.isChecked())
+							{
+								manager.get(DataDirs.tick, Sound.class).play();
+								fileList.setItems(paths);
+								fileList.setSelectedIndex(0);
+								fileList.removeListener(historyListener);
+								fileList.addListener(browseListener);
+							}
+						}
+					}
+					
+				});
+				
+				final TextButton todayButton = new TextButton("Recent Files", skin);
+				todayButton.setName("history");
+				tabs.addActor(todayButton);
+				exploreTabs.add(todayButton);
+				todayButton.addListener(new ChangeListener(){
+	
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (actor == todayButton)
+						{
+							if (todayButton.isChecked())
+							{
+								fileList.setItems(historyPaths);
+								fileList.setSelectedIndex(0);
+								fileList.removeListener(browseListener);
+								fileList.addListener(historyListener);
+							}
+						}
+					}
+				});
+				
+				exploreSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
+				exploreSubmenu.row();
+			}
 			//list of required crafts
 			fileList = new List<String>(skin);
 			
-			loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));
+			if (directory == null)
+			{
+				loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));	
+			}
+			else
+			{
+				loadDir(directory);
+			}
 			changeDir = false;
 
-			fileList.addListener(new ChangeListener(){
+			browseListener = new ChangeListener(){
 
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
@@ -483,18 +548,56 @@ public class TownUI extends GameUI {
 					}
 					lastIndex = listIndex;
 				}
-			});
+			};
+			historyListener = new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					final FileHandle selected = history.get(fileList.getSelectedIndex());
+					fileDetails.clear();
+					
+					//generate a details panel
+					Table contents = new Table();
+					
+					FileType ext = FileType.getType(selected.extension());
+					Image icon = new Image(skin.getRegion(ext.toString()));
+					Label type = new Label("File Type: " + ext, skin);
+					Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
+					Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
+					
+					icon.setAlign(Align.center);
+					icon.setSize(96f, 96f);
+					icon.setScaling(Scaling.fit);
+					
+					contents.pad(10f);
+					contents.add(icon).size(96f, 96f).expandX();
+					contents.row();
+					contents.add(type).expandX().fillX();
+					contents.row();
+					contents.add(size).expandX().fillX();
+					contents.row();
+					contents.add(diff).expandX().fillX();
+					
+					ScrollPane pane2 = new ScrollPane(contents, skin);
+					pane2.setScrollingDisabled(true, true);
+					fileDetails.add(pane2).expand().fill();
+					fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+				}
+				
+			};
+			
+			fileList.addListener(browseListener);
 			
 			final ScrollPane pane = new ScrollPane(fileList, skin);
+			pane.setWidth(250f);
 			pane.setHeight(display.getHeight());
 			pane.setScrollingDisabled(true, false);
 			pane.setFadeScrollBars(false);
 			pane.setScrollBarPositions(true, false);
 			pane.setScrollbarsOnTop(false);
 			pane.addListener(new ScrollFocuser(pane));
-
 			
-			exploreSubmenu.add(pane).expand().fill().pad(10f);
+			exploreSubmenu.add(pane).expand().fill();
 			
 			fileList.addListener(new InputListener(){
 				@Override
@@ -590,7 +693,7 @@ public class TownUI extends GameUI {
 		
 		FileHandle[] handles = external.list();
 		Array<FileHandle> acceptable = new Array<FileHandle>();
-		Array<String> paths = new Array<String>();
+		paths = new Array<String>();
 		
 		for (FileHandle handle : handles)
 		{
@@ -622,7 +725,7 @@ public class TownUI extends GameUI {
 		this.fileList.setItems(paths);
 		this.fileList.setSelectedIndex(0);
 		this.directoryList = acceptable;
-		this.directory = external;
+		directory = external;
 		this.fileList.act(0f);
 		
 		Gdx.input.setInputProcessor(input);
@@ -750,16 +853,28 @@ public class TownUI extends GameUI {
 					//load selected file dungeon
 					if (index == 1)
 					{
-						FileHandle f = directoryList.get(fileList.getSelectedIndex());
-						if (f != null && !f.isDirectory())
+						if (exploreTabs != null && exploreTabs.getChecked().getName().equals("history"))
 						{
+							FileHandle f = history.get(fileList.getSelectedIndex());
 							ext = FileType.getType(f.extension());
 							diff = ext.difficulty(f.length());
 							dungeon.setDungeon(f, diff);
 						}
 						else
 						{
-							return;
+							FileHandle f = directoryList.get(fileList.getSelectedIndex());
+							if (f != null && !f.isDirectory())
+							{
+								ext = FileType.getType(f.extension());
+								diff = ext.difficulty(f.length());
+								dungeon.setDungeon(f, diff);
+								history.add(f);
+								historyPaths.add(f.name());
+							}
+							else
+							{
+								return;
+							}
 						}
 					}
 					//random dungeonas
@@ -768,6 +883,7 @@ public class TownUI extends GameUI {
 						ext = FileType.values()[MathUtils.random(FileType.values().length-1)];
 						diff = MathUtils.random(1, 5);
 						dungeon.setDungeon(ext, diff);
+						directory = null;
 					}
 				
 					SceneManager.switchToScene(dungeon);
