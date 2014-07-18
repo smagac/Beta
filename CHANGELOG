@@ -1,18 +1,24 @@
 Changes since Beta 2 Announcement on July 13, 2014
 ============================
 - You can now revisit dungeons by selecting the same file again!
--- File generated dungeons are stored as tmp files and do not persist between sessions
 -- UI remembers previously entered files as well as the last directory you were in to make revisiting more convenient
 - Loot found in the current dungeon run is now included in loot you can sacrifice
-- New Floor Bar across the top of dungeoning is now visible
+- New Dungeoning HUD across the top of dungeoning is now visible
 -- Shows Monsters left, loot gathered, and current floor number
+- Upon level up, stats can now be altered through allocating points into them
+-- Always start with a standard stat setup, giving you full flexibility of where to grind your character
+- A few enemy sprites have been redrawn
+- Disabled being able to hover over treasure chests and mimics to see what type they are
+-- because that's cheating
 
 #### Backend Changes
 - Dungeon multithreading is now better balanced, using only 4 threads and synchronization
 - Tons of memory optimizations with handling the dungeon metadata so it is no longer lingering after a floor has been created
 -- Combined with the threading fixes, the dungeon scene now leaves the game running at around 200-250mb with a 99 floor dungeon
 -- That's a 50% decrease in memory usage
-- Loot is handled better, with a 3-tier inventory system
+-- File generated dungeon metadata is stored as gzipped tmp files to allow revisiting.  
+-- Load time for parsing is near to 0, thus making revisiting dungeons really fast
+- Loot is handled better, with a 3-tier inventory hashmap, making it easy to have a temp inventory as well as total cumulative inventory for sacrificing
 
 Changes since Beta Announcement on July 7, 2014
 ============================
@@ -72,9 +78,6 @@ Changes since TMG Alpha 2014
 TODO List of Features
 =============================
 - Enemies at higher levels should have a chance of turning into a treasure chest upon dying to provide extra loot
-- Change player's growth curve into stat point allocation system
--- Menu needs to be accessible in the main menu, requiring you to leave a dungeon to allocate stat points
--- Roll for stats after choosing your gender and difficulty
 
 If you read all this, thank you, it means a lot to me that you actually are interested in the development of StoryMode
 

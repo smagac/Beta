@@ -51,24 +51,34 @@ public class Stats extends Component {
 		return speed;
 	}
 	
+	public int getEvasion()
+	{
+		return (int)(speed);
+	}
+	
+	public int getVitality()
+	{
+		return maxhp/2;
+	}
+	
 	public float getExp()
 	{
 		return exp;
 	}
 	
-	public boolean levelUp()
+	public boolean canLevelUp()
 	{
-		if (exp >= nextExp)
-		{
-			level++;
-			maxhp += 5;
-			hp = maxhp;
-			strength++;
-			defense++;
-			nextExp += 10;
-			exp = 0;
-			return true;
-		}
-		return false;
+		return exp >= nextExp;
+	}
+	
+	public void levelUp(int[] stats)
+	{
+		level++;
+		strength = stats[0];
+		defense = stats[1];
+		speed = stats[2];
+		maxhp = stats[3]*2;
+		exp = 0;
+		nextExp = level * 10;
 	}
 }

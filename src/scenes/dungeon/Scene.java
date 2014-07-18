@@ -14,9 +14,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
-
 import components.Identifier;
 import components.Monster;
+
 import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.Dungeon;
@@ -273,7 +273,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		World floor = getCurrentFloor();
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		ms.inputEnabled(false);
 		ui.dead();
 		
 		//lose all found items
@@ -287,7 +286,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	{
 		World floor = getCurrentFloor();
 		MovementSystem ms = floor.getSystem(MovementSystem.class);
-		ms.inputEnabled(false);
 		ui.leave();
 		
 		//merge loot into inventory
@@ -444,5 +442,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	@Override
 	public int getCurrentFloorNumber() {
 		return currentFloorNumber;
+	}
+
+	public void levelUp() {
+		ui.levelUp();
 	}
 }

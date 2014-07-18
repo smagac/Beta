@@ -150,13 +150,13 @@ public abstract class GameUI extends UI {
 			display.setSize(window.getWidth()-64f, window.getHeight()-64f);
 			display.setPosition(32f, 32f);
 			displayBounds = new Rectangle(window.getX()+display.getX(), window.getY()+display.getY(), display.getWidth(), display.getHeight());
+			window.addActor(display);
+			window.addActor(frame);
+			addActor(window);
 			
 			//populate the window frame
 			extend();
 			
-			window.addActor(display);
-			window.addActor(frame);
-			addActor(window);
 		}
 		
 		String[] butt = defineButtons();

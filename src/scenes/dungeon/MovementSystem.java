@@ -51,8 +51,6 @@ public class MovementSystem extends EntityProcessingSystem {
 	ImmutableBag<Entity> monsters;
 	
 	Sound hit;
-
-	private boolean enabledInput;
 	
 	@SuppressWarnings("unchecked")
 	/**
@@ -62,7 +60,6 @@ public class MovementSystem extends EntityProcessingSystem {
 	public MovementSystem(int depth, Dungeon map)
 	{
 		super(Aspect.getAspectForAll(Monster.class));
-		enabledInput = true;
 		
 		//build collision map	
 		TiledMapTileLayer floor = map.getFloor(depth).layer;
@@ -290,9 +287,9 @@ public class MovementSystem extends EntityProcessingSystem {
 					parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));
 					parentScene.getItem(combat.getDrop());
 					aStats.exp += bStats.exp;
-					if (aStats.levelUp())
+					if (aStats.canLevelUp())
 					{
-						parentScene.log("You have gained a level!");
+						parentScene.levelUp();
 					}
 					Tracker.NumberValues.Monsters_Killed.increment();
 					opponent.deleteFromWorld();
@@ -352,11 +349,6 @@ public class MovementSystem extends EntityProcessingSystem {
 	}
 
 	public boolean movePlayer(Direction direction) {
-
-		if (!this.enabledInput){
-			return false;
-		}
-		
 		if (direction == null)
 			return false;
 		
@@ -388,11 +380,6 @@ public class MovementSystem extends EntityProcessingSystem {
 		}
 		
 		return false;
-	}
-
-	public void inputEnabled(boolean enable)
-	{
-		this.enabledInput = enable;
 	}
 	
 	@Override

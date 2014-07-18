@@ -1,11 +1,13 @@
 package scenes.dungeon;
 
 import scenes.GameUI;
+import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -16,17 +18,20 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.LabeledTicker;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
 
 import components.Stats;
+import core.DataDirs;
 import core.common.SceneManager;
 import core.common.Tracker;
 import core.datatypes.Item;
@@ -37,26 +42,24 @@ import core.util.ScrollFocuser;
 public class WanderUI extends GameUI {
 
 	Image fader;
+	
 	//logger
 	ScrollPane logPane;
 	Table log;
-	
 	Label message;
 	
+	//header bar
 	Label floorLabel;
 	Label monsterLabel;
 	Label lootLabel;
 	
-	Group dialog;
-	
-	Image goddess;
-	
 	//variables for sacrifice menu
+	Group dialog;
+	Image goddess;
 	int index, menu;
 	int healCost;
 	private Group goddessDialog;
 	private Label gMsg;
-	
 	private Table itemSubmenu;
 	private Table lootList;
 	private ObjectMap<Item, Integer> loot;
@@ -65,11 +68,21 @@ public class WanderUI extends GameUI {
 	private ScrollPane lootPane;
 	private ScrollPane sacrificePane;
 	
+	//level up dialog
+	Group levelUpDialog;
+	int points;
+	LabeledTicker<Integer> strTicker;
+	LabeledTicker<Integer> defTicker;
+	LabeledTicker<Integer> spdTicker;
+	LabeledTicker<Integer> vitTicker;
+	
+	//services
 	private IPlayerContainer playerService;
 	private IDungeonContainer dungeonService;
 	
 	float walkTimer;
-	
+	private boolean movementEnabled;
+
 	public WanderUI(AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
 		super(manager, playerService);
 		
@@ -140,99 +153,218 @@ public class WanderUI extends GameUI {
 		fader.setFillParent(true);
 		display.addActor(fader);
 		
-		log = new Table(skin);
-		log.setWidth(messageWindow.getWidth());
-		logPane = new ScrollPane(log, skin, "log");
-		logPane.setSize(messageWindow.getWidth(), messageWindow.getHeight());
-		logPane.addListener(new ScrollFocuser(logPane));
-		messageWindow.addActor(logPane);
-		
-		dialog = makeWindow(skin, 400, 250, true);
-		message = new Label("", skin, "promptsm");
-		message.setWrap(true);
-		message.setAlignment(Align.center);
-		message.setPosition(40f, 40f);
-		message.setWidth(320f);
-		message.setHeight(170f);
-		dialog.addActor(message);
-		dialog.setVisible(false);
-		
-		dialog.setPosition(display.getWidth()/2-dialog.getWidth()/2, display.getHeight()/2-dialog.getHeight()/2);
-		display.addActor(dialog);
-		
-		//loot List and buttons
+		//combat log
 		{
-			itemSubmenu = new Table();
-			itemSubmenu.setWidth(460f);
-			itemSubmenu.setHeight(200f);
-			itemSubmenu.setPosition(66f, 10f);
-			
-			Label lootLabel = new Label("My Loot", skin, "header");
-			lootLabel.setAlignment(Align.center);
-			itemSubmenu.top().add(lootLabel).width(230f).pad(4f).padBottom(0f);
-			Label sacrificeLabel = new Label("Sacrifice", skin, "header");
-			sacrificeLabel.setAlignment(Align.center);
-			itemSubmenu.top().add(sacrificeLabel).width(230f).pad(4f).padBottom(0f);
-			itemSubmenu.row();
-			
-			lootList = new Table();
-			lootList.top();
-			lootList.pad(0f);
-			
-			lootPane = new ScrollPane(lootList, skin);
-			lootPane.setScrollingDisabled(true, false);
-			lootPane.setScrollbarsOnTop(false);
-			lootPane.setScrollBarPositions(true, false);
-			lootPane.setFadeScrollBars(false);
-			lootPane.addListener(new ScrollFocuser(lootPane));
-			
-			//lootList.setFillParent(true);
-			lootList.setTouchable(Touchable.childrenOnly);
-			itemSubmenu.add(lootPane).width(230f).expandY().fillY().pad(4f).padTop(0f);
-			
-			sacrificeList = new Table();
-			sacrificeList.bottom();
-			sacrificeList.pad(4f).padRight(10f);
-			
-			sacrificePane = new ScrollPane(sacrificeList, skin);
-			sacrificePane.setScrollingDisabled(true, false);
-			sacrificePane.setScrollbarsOnTop(false);
-			sacrificePane.setScrollBarPositions(true, false);
-			sacrificePane.setFadeScrollBars(false);
-			sacrificeList.setTouchable(Touchable.childrenOnly);
-			sacrificePane.addListener(new ScrollFocuser(sacrificePane));
-			//sacrificeList.setFillParent(true);
-			itemSubmenu.add(sacrificePane).width(230f).expandY().fillY().pad(4f).padTop(0f);
-			
-			itemSubmenu.addAction(Actions.alpha(0f));
-			display.addActor(itemSubmenu);
+			log = new Table(skin);
+			log.setWidth(messageWindow.getWidth());
+			logPane = new ScrollPane(log, skin, "log");
+			logPane.setSize(messageWindow.getWidth(), messageWindow.getHeight());
+			logPane.addListener(new ScrollFocuser(logPane));
+			messageWindow.addActor(logPane);
 		}
 		
+		//goddess sacrifice view
+		{
+			dialog = makeWindow(skin, 400, 250, true);
+			message = new Label("", skin, "promptsm");
+			message.setWrap(true);
+			message.setAlignment(Align.center);
+			message.setPosition(40f, 40f);
+			message.setWidth(320f);
+			message.setHeight(170f);
+			dialog.addActor(message);
+			dialog.setVisible(false);
+			
+			dialog.setPosition(display.getWidth()/2-dialog.getWidth()/2, display.getHeight()/2-dialog.getHeight()/2);
+			display.addActor(dialog);
+			
+			//loot List and buttons
+			{
+				itemSubmenu = new Table();
+				itemSubmenu.setWidth(460f);
+				itemSubmenu.setHeight(200f);
+				itemSubmenu.setPosition(66f, 10f);
+				
+				Label lootLabel = new Label("My Loot", skin, "header");
+				lootLabel.setAlignment(Align.center);
+				itemSubmenu.top().add(lootLabel).width(230f).pad(4f).padBottom(0f);
+				Label sacrificeLabel = new Label("Sacrifice", skin, "header");
+				sacrificeLabel.setAlignment(Align.center);
+				itemSubmenu.top().add(sacrificeLabel).width(230f).pad(4f).padBottom(0f);
+				itemSubmenu.row();
+				
+				lootList = new Table();
+				lootList.top();
+				lootList.pad(0f);
+				
+				lootPane = new ScrollPane(lootList, skin);
+				lootPane.setScrollingDisabled(true, false);
+				lootPane.setScrollbarsOnTop(false);
+				lootPane.setScrollBarPositions(true, false);
+				lootPane.setFadeScrollBars(false);
+				lootPane.addListener(new ScrollFocuser(lootPane));
+				
+				//lootList.setFillParent(true);
+				lootList.setTouchable(Touchable.childrenOnly);
+				itemSubmenu.add(lootPane).width(230f).expandY().fillY().pad(4f).padTop(0f);
+				
+				sacrificeList = new Table();
+				sacrificeList.bottom();
+				sacrificeList.pad(4f).padRight(10f);
+				
+				sacrificePane = new ScrollPane(sacrificeList, skin);
+				sacrificePane.setScrollingDisabled(true, false);
+				sacrificePane.setScrollbarsOnTop(false);
+				sacrificePane.setScrollBarPositions(true, false);
+				sacrificePane.setFadeScrollBars(false);
+				sacrificeList.setTouchable(Touchable.childrenOnly);
+				sacrificePane.addListener(new ScrollFocuser(sacrificePane));
+				//sacrificeList.setFillParent(true);
+				itemSubmenu.add(sacrificePane).width(230f).expandY().fillY().pad(4f).padTop(0f);
+				
+				itemSubmenu.addAction(Actions.alpha(0f));
+				display.addActor(itemSubmenu);
+			}
+			
+			
+			
+			goddess = new Image(skin.getRegion(playerService.getWorship()));
+			goddess.setSize(128f, 128f);
+			goddess.setScaling(Scaling.stretch);
+			goddessDialog = makeWindow(skin, 500, 150, true);
+			goddessDialog.setPosition(40f, display.getHeight()/2f-goddessDialog.getHeight()/2f);
+			Table gMessage = new Table();
+			gMessage.setFillParent(true);
+			gMessage.pad(36f);
+			gMsg = new Label("", skin, "small");
+			gMsg.setWrap(true);
+			gMessage.add(gMsg).expand().fill();
+			goddessDialog.addActor(gMessage);
+			
+			display.addActor(goddess);
+			display.addActor(goddessDialog);
+			
+			goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f));
+			goddessDialog.addAction(Actions.alpha(0f));
+		}
 		
-		
-		goddess = new Image(skin.getRegion(playerService.getWorship()));
-		goddess.setSize(128f, 128f);
-		goddess.setScaling(Scaling.stretch);
-		goddessDialog = makeWindow(skin, 500, 150, true);
-		goddessDialog.setPosition(40f, display.getHeight()/2f-goddessDialog.getHeight()/2f);
-		Table gMessage = new Table();
-		gMessage.setFillParent(true);
-		gMessage.pad(36f);
-		gMsg = new Label("", skin, "small");
-		gMsg.setWrap(true);
-		gMessage.add(gMsg).expand().fill();
-		goddessDialog.addActor(gMessage);
-		
-		display.addActor(goddess);
-		display.addActor(goddessDialog);
-		
-		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f));
-		goddessDialog.addAction(Actions.alpha(0f));
+		//level up dialog
+		{
+			levelUpDialog = UI.makeWindow(skin, 500, 480, true);
+			levelUpDialog.setPosition(getWidth()/2-levelUpDialog.getWidth()/2, getHeight());
+			final Table window = new Table();
+			window.setFillParent(true);
+			window.center().top().pack();
+			
+			Label prompt = new Label("You've Leveled Up!", skin, "prompt");
+			prompt.setAlignment(Align.center);
+			window.add(prompt).expandX().fillX().padBottom(20).colspan(3);
+			window.row();
+			
+			final Label pointLabel = new Label("Points 0", skin, "prompt");
+			pointLabel.setAlignment(Align.center);
+			
+			@SuppressWarnings("rawtypes")
+			LabeledTicker[] tickers = new LabeledTicker[4];
+			tickers[0] = strTicker = new LabeledTicker<Integer>("Strength", new Integer[]{0}, skin);
+			tickers[1] = defTicker = new LabeledTicker<Integer>("Defense", new Integer[]{0}, skin);
+			tickers[2] = spdTicker = new LabeledTicker<Integer>("Speed", new Integer[]{0}, skin);
+			tickers[3] = vitTicker = new LabeledTicker<Integer>("Vitality", new Integer[]{0}, skin);
+			for (final LabeledTicker<Integer> ticker : tickers)
+			{
+				ticker.setLeftAction(new Runnable(){
+
+					@Override
+					public void run() {
+						manager.get(DataDirs.tick, Sound.class).play();
+						if (ticker.getValueIndex() > 0)
+						{
+							ticker.defaultLeftClick.run();
+							points++;
+							pointLabel.setText(String.format("Points %d", points));
+						}
+					}
+					
+				});
+				ticker.setRightAction(new Runnable(){
+					
+					@Override
+					public void run() {
+						manager.get(DataDirs.tick, Sound.class).play();
+						if (ticker.getValueIndex() < ticker.length() && points > 0)
+						{
+							ticker.defaultRightClick.run();
+							points--;
+							pointLabel.setText(String.format("Points %d", points));
+						}
+					}
+					
+				});
+				
+				window.center();
+				window.add(ticker).expandX().fillX().pad(0, 50f, 10f, 50f).colspan(3);
+				window.row();
+			}
+			
+			window.add(pointLabel).expandX().fillX().colspan(3);
+			levelUpDialog.addActor(window);
+			
+			final TextButton accept = new TextButton("START", skin);
+			accept.align(Align.center);
+			accept.setSize(80, 32);
+			accept.pad(5);
+			accept.setPosition(levelUpDialog.getWidth()/2-accept.getWidth()/2, 10f);
+			accept.addListener(new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (points > 0)
+					{
+						manager.get(DataDirs.tick, Sound.class).play();
+						return;
+					}
+					
+					levelUpDialog.addAction(
+						Actions.sequence(
+							Actions.run(new Runnable(){
+
+								@Override
+								public void run() {
+									levelUpDialog.setTouchable(Touchable.disabled);
+									playerService.getPlayer().levelUp(new int[]{
+											strTicker.getValue(),
+											defTicker.getValue(),
+											spdTicker.getValue(),
+											vitTicker.getValue()
+									});
+									strTicker.setValue(0);
+									defTicker.setValue(0);
+									spdTicker.setValue(0);
+									vitTicker.setValue(0);
+									points = 0;
+									manager.get(DataDirs.accept, Sound.class).play();
+								}
+								
+							}),
+							Actions.moveTo(levelUpDialog.getX(), getHeight())
+						)
+					);
+				}
+			});
+			levelUpDialog.addActor(accept);
+			
+			addActor(levelUpDialog);
+			
+			//levelUp();
+		}
 		
 		final InputListener displayControl = new InputListener(){
 			@Override
 			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 			{
+				if (!movementEnabled)
+					return false;
+				
 				Direction d = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
 				if (d != null)
 				{
@@ -249,11 +381,15 @@ public class WanderUI extends GameUI {
 				walkTimer = -1f;
 			}
 		};
+		display.addListener(displayControl);
 		
 		//mouse listener for moving the character by clicking within the display
 		addListener(new InputListener(){
 			@Override
 			public boolean keyDown(InputEvent evt, int keycode) {
+				if (!movementEnabled)
+					return false;
+				
 				boolean moved = false;
 				
 				Direction to = Direction.valueOf(keycode);
@@ -271,9 +407,8 @@ public class WanderUI extends GameUI {
 			}
 		});
 		
-		display.addListener(displayControl);
-		
 		index = 0;
+		movementEnabled = true;
 	}
 	
 	@Override
@@ -425,7 +560,8 @@ public class WanderUI extends GameUI {
 	}
 
 	private void showGoddess(String string) {
-		dungeonService.getCurrentFloor().getSystem(MovementSystem.class).inputEnabled(false);
+		movementEnabled = false;
+		dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
 		gMsg.setText(string);
 		
 		goddess.clearActions();
@@ -440,7 +576,8 @@ public class WanderUI extends GameUI {
 	}
 	
 	private void hideGoddess() {
-		dungeonService.getCurrentFloor().getSystem(MovementSystem.class).inputEnabled(true);
+		movementEnabled = true;
+		dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
 		goddess.clearActions();
 		goddessDialog.clearActions();
 		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));
@@ -659,11 +796,39 @@ public class WanderUI extends GameUI {
 		
 		logPane.setScrollPercentY(1.0f);
 	}
+	
+	public void levelUp()
+	{
+		points = 5;
+		
+		Stats s = playerService.getPlayer();
+		Integer[] str = new Integer[6];
+		Integer[] def = new Integer[6];
+		Integer[] spd = new Integer[6];
+		Integer[] vit = new Integer[6];
+		for (int i = 0; i < points+1; i++)
+		{
+			str[i] = s.getStrength()+i;
+			def[i] = s.getDefense()+i;
+			spd[i] = s.getEvasion()+i;
+			vit[i] = s.getVitality()+i;
+		};
+		
+		strTicker.changeValues(str);
+		defTicker.changeValues(def);
+		spdTicker.changeValues(spd);
+		vitTicker.changeValues(vit);
+		
+		levelUpDialog.addAction(Actions.moveTo(levelUpDialog.getX(), getHeight()/2-levelUpDialog.getHeight()/2, .3f));
+		levelUpDialog.setTouchable(Touchable.enabled);
+		movementEnabled = false;
+	}
 
 	/**
 	 * Player is dead. drop loot and make fun of him
 	 */
 	protected void dead() {
+		movementEnabled = false;
 		message.setText("You are dead.\n\nYou have dropped all your new loot.\nSucks to be you.");
 		dialog.clearListeners();
 		dialog.addListener(new InputListener(){
@@ -720,6 +885,7 @@ public class WanderUI extends GameUI {
 	 * Player is dead. drop loot and make fun of him
 	 */
 	protected void leave() {
+		movementEnabled = false;
 		message.setText("You decide to leave the dungeon.\nWhether that was smart of you or not, you got some sweet loot, and that's what matters.");
 		dialog.clearListeners();
 		dialog.addListener(new InputListener(){
