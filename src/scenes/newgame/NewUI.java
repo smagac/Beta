@@ -2,6 +2,8 @@ package scenes.newgame;
 
 import java.util.Scanner;
 
+import scenes.UI;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -15,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.LabeledTicker;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -24,7 +27,6 @@ import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.service.IPlayerContainer;
-import scenes.UI;
 
 public class NewUI extends UI {
 	
@@ -63,106 +65,48 @@ public class NewUI extends UI {
 		frame.setPosition(getWidth()/2-frame.getWidth()/2, getHeight()/2-frame.getHeight()/2);
 		
 		final Table window = new Table(skin);
-		window.center();
-		window.top();
 		window.setFillParent(true);
-		window.pad(40f);
-		window.pack();
+		window.center().top().pad(40f).pack();
 		window.debug();
 		
 		Label prompt = new Label("Please create a character", skin, "prompt");
 		prompt.setAlignment(Align.center);
 		
-		window.top();
-		window.add(prompt).expandX().fillX().colspan(3).padBottom(20);
-		window.row().pad(0, 50f, 0f, 50f);
-		
+		window.add(prompt).expandX().fillX().padBottom(20);
+		window.row();
 		//Difficulty
 		{
-			prompt = new Label("Difficulty", skin, "prompt");
-			prompt.setAlignment(Align.left);
-			
-			window.add(prompt).expandX().fillX().colspan(1);
-			
-			number = new Label(""+difficulty, skin, "promptsm");
-			number.setAlignment(Align.center);
-			
-			Table buttons = new Table();
-			buttons.debug();
-			
-			final TextButton left = new TextButton("<", skin);
-			left.pad(10);
-			left.addListener(new InputListener() {
-				
+			Integer[] values = {1, 2, 3, 4, 5};
+			final LabeledTicker<Integer> ticker = new LabeledTicker<Integer>("Difficulty", values, skin);
+			ticker.setLeftAction(new Runnable(){
+
 				@Override
-				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-				{
-					if (button == Buttons.LEFT)
-					{
-						difficulty = Math.max(0, difficulty-1);
-						number.setText(""+difficulty);
-						manager.get(DataDirs.tick, Sound.class).play();
-						return true;
-					}
-					return false;
-				}
-	
-				@Override
-				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
-				{
-					left.setChecked(true);
+				public void run() {
+					manager.get(DataDirs.tick, Sound.class).play();
+					ticker.defaultLeftClick.run();
 				}
 				
-				@Override
-				public void exit(InputEvent evt, float x, float y, int pointer, Actor fromActor)
-				{
-					left.setChecked(false);
-				}
 			});
 			
-			final TextButton right = new TextButton(">", skin);
-			right.pad(10);
-			right.addListener(new InputListener() {
+			ticker.setRightAction(new Runnable(){
 				
 				@Override
-				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-				{
-					if (button == Buttons.LEFT)
-					{
-						difficulty = Math.min(5, difficulty+1);
-						number.setText(""+difficulty);
-						manager.get(DataDirs.tick, Sound.class).play();
-						return true;
-					}
-					return false;
-				}
-	
-				@Override
-				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
-				{
-					right.setChecked(true);
+				public void run() {
+					manager.get(DataDirs.tick, Sound.class).play();
+					ticker.defaultRightClick.run();
 				}
 				
-				@Override
-				public void exit(InputEvent evt, float x, float y, int pointer, Actor fromActor)
-				{
-					right.setChecked(false);
-				}
 			});
-			
-			buttons.add(left).width(48f).colspan(1).right();
-			buttons.add(number).width(60f).colspan(1).center();
-			buttons.add(right).width(48f).colspan(1).left();
-			
-			window.add(buttons).colspan(2).center();
+			window.add(ticker).expandX().fillX().pad(0, 50f, 10f, 50f);
 		}
-		window.row().pad(0, 50f, 0f, 50f);
+		window.row();
+		
 		//Gender
 		{
+			Table table = new Table();
 			prompt = new Label("Gender", skin, "prompt");
 			prompt.setAlignment(Align.left);
-			window.add(prompt).expandX().fillX().colspan(1);
-			
+			table.add(prompt).expandX().fillX();
 			
 			TextButton left = new TextButton("Male", skin, "big");
 			left.pad(10);
@@ -174,10 +118,10 @@ public class NewUI extends UI {
 			gender = new ButtonGroup(left, right);
 			
 			window.center();
-			window.add(left).pad(10f).colspan(1).width(80f).right();
-			window.add(right).pad(10f).colspan(1).width(80f).left();
+			table.add(left).width(80f).right().padRight(10f);
+			table.add(right).width(80f).right();
+			window.add(table).expandX().fillX().pad(0, 50f, 10f, 50f);
 		}
-		window.pack();
 		
 		
 		final TextButton accept = new TextButton("START", skin);
