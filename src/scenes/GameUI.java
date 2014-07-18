@@ -23,8 +23,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-
 import components.Stats;
+
 import core.DataDirs;
 import core.datatypes.Inventory;
 import core.service.IPlayerContainer;
@@ -61,7 +61,7 @@ public abstract class GameUI extends UI {
 	
 	private Label hpStats;
 	private Label expStats;
-	
+
 	private IPlayerContainer playerService;
 
 	public GameUI(AssetManager manager, IPlayerContainer playerService)

@@ -4,8 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
@@ -266,7 +266,7 @@ public class Dungeon implements Serializable{
 	    
 		this.type = FileType.valueOf(jsonData.getString("type"));
 		this.difficulty = jsonData.getInt("difficulty");
-		this.floorData = (Array<FloorData>)json.readValue(Array.class, jsonData.get("floors"));
+		this.floorData = json.readValue(Array.class, jsonData.get("floors"));
 	}
 
 	public Floor getFloor(int depth) {

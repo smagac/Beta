@@ -1,6 +1,7 @@
 package core.service;
 
 import components.Stats;
+
 import core.datatypes.Inventory;
 
 public interface IPlayerContainer extends Service {

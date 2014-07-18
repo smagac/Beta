@@ -2,6 +2,8 @@ package scenes.endgame;
 
 import java.util.Scanner;
 
+import scenes.UI;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -25,7 +27,6 @@ import core.common.Tracker;
 import core.common.Tracker.NumberValues;
 import core.common.Tracker.StringValues;
 import core.service.IPlayerContainer;
-import scenes.UI;
 
 public class EndUI extends UI {
 

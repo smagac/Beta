@@ -1,5 +1,10 @@
 package scenes.dungeon;
 
+import static scenes.dungeon.Direction.Down;
+import static scenes.dungeon.Direction.Left;
+import static scenes.dungeon.Direction.Right;
+import static scenes.dungeon.Direction.Up;
+
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -15,16 +20,15 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-
 import components.Combat;
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
+
 import core.common.Tracker;
 import core.datatypes.Dungeon;
-import static scenes.dungeon.Direction.*;
 
 /**
  * Handles all movement for dungeoning, as well as bump combat

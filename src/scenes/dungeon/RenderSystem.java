@@ -28,12 +28,12 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
+
 import core.datatypes.Dungeon;
 
 public class RenderSystem extends EntityProcessingSystem {

@@ -1,12 +1,10 @@
 package core.datatypes;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Keys;
 
 import core.common.Tracker;
-import factories.AdjectiveFactory;
 import factories.CraftableFactory;
 
 public class Inventory {

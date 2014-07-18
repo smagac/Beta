@@ -1,5 +1,7 @@
 package scenes.title;
 
+import scenes.UI;
+
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -10,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 import core.common.SceneManager;
-import scenes.UI;
 
 public class TitleSequence extends UI {
 

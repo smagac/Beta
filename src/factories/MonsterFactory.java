@@ -12,13 +12,13 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
-
 import components.Combat;
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
+
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.datatypes.Item;

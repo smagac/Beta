@@ -1,9 +1,9 @@
 package factories;
 
+import com.badlogic.gdx.utils.Array;
+
 import core.datatypes.FileType;
 import core.datatypes.Item;
-
-import com.badlogic.gdx.utils.Array;
 
 public class ItemFactory {
 	
