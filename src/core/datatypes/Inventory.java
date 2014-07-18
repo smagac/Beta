@@ -15,6 +15,9 @@ public class Inventory {
 	Array<Craftable> required;
 	Array<Craftable> todaysCrafts;
 	ObjectMap<Item, Integer> loot;
+	ObjectMap<Item, Integer> tmp;
+	ObjectMap<Item, Integer> all;
+	
 	private int progress = 0;
 	
 	public Inventory(int difficulty)
@@ -35,19 +38,21 @@ public class Inventory {
 		refreshCrafts();
 		
 		loot = new ObjectMap<Item, Integer>();
+		tmp = new ObjectMap<Item, Integer>();
+		all = new ObjectMap<Item, Integer>();
 		
-		//debug add loot to test crafting
-		for (int i = 0; i < 30; i++)
-		{
-			loot.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
-		}
-		
-		//debug add loot to be able to craft at least one item
-		Craftable c = required.random();
-		for (String s : c.getRequirements().keys())
-		{
-			loot.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
-		}
+//		//debug add loot to test crafting
+//		for (int i = 0; i < 30; i++)
+//		{
+//			loot.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
+//		}
+//		
+//		//debug add loot to be able to craft at least one item
+//		Craftable c = required.random();
+//		for (String s : c.getRequirements().keys())
+//		{
+//			loot.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
+//		}
 	}
 	
 	/**
@@ -196,7 +201,7 @@ public class Inventory {
 	}
 
 	public ObjectMap<Item, Integer> getLoot() {
-		return loot;
+		return all;
 	}
 
 	/**
@@ -209,7 +214,7 @@ public class Inventory {
 		for (Item item : sacrifices.keys())
 		{
 			Integer i = sacrifices.get(item);
-			if (loot.get(item, 0) < i)
+			if (all.get(item, 0) < i)
 			{
 				canSacrifice = false;
 				break;
@@ -229,15 +234,26 @@ public class Inventory {
 		{
 			for (Item item : sacrifices.keys())
 			{
-				Integer i = sacrifices.get(item);
-				Integer k = loot.get(item) - i;
-				if (k == 0)
+				int total = sacrifices.get(item);
+				int tmpSub = Math.min(total, tmp.get(item, 0));
+				int lootSub = Math.min(total-tmpSub, loot.get(item, 0));
+				
+				if (loot.containsKey(item))	
 				{
-					loot.remove(item);
+					int count = loot.get(item, 0) - lootSub;
+					if (count == 0) { loot.remove(item); }
+					else { loot.put(item, count); }
 				}
-				else
+				if (tmp.containsKey(item))
 				{
-					loot.put(item, k);
+					int count = tmp.get(item, 0) - tmpSub;
+					if (count == 0){ tmp.remove(item); }
+					else { tmp.put(item, count);	}
+				}
+				if (all.containsKey(item)){ 
+					int count = all.get(item, 0) - (tmpSub + lootSub);
+					if (count == 0){ all.remove(item); }
+					else { all.put(item, count); }
 				}
 			}
 		}
@@ -245,11 +261,23 @@ public class Inventory {
 		return canSacrifice;
 	}
 	
-	public void merge(ObjectMap<Item, Integer> more)
+	public void pickup(Item i)
 	{
-		for (Item item : more.keys())
-		{
-			loot.put(item, loot.get(item, 0) + more.get(item));
-		}
+		tmp.put(i, tmp.get(i, 0)+1);
+		all.put(i, all.get(i, 0)+1);
+	}
+	
+	public void merge()
+	{
+		tmp.clear();
+		loot.clear();
+		loot.putAll(all);
+	}
+	
+	public void abandon()
+	{
+		tmp.clear();
+		all.clear();
+		all.putAll(loot);
 	}
 }

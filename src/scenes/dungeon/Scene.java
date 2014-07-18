@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
 import core.common.Tracker;
@@ -33,8 +32,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
 	private int difficulty;
 	private FileType fileType;
-	
-	ObjectMap<Item, Integer> loot;
 	
 	@Inject public IPlayerContainer playerService;
 	
@@ -137,8 +134,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		manager.load(DataDirs.dead, Sound.class);
 		
 		ui = new WanderUI(manager, playerService, this);
-		
-		loot = new ObjectMap<Item, Integer>();
 		
 		if (bgm == null)
 		{
@@ -273,6 +268,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		ms.inputEnabled(false);
 		ui.dead();
 		
+		//lose all found items
+		playerService.getInventory().abandon();
+		
 		Tracker.NumberValues.Times_Died.increment();
 		manager.get(DataDirs.dead, Sound.class).play();
 	}
@@ -285,7 +283,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		ui.leave();
 		
 		//merge loot into inventory
-		playerService.getInventory().merge(this.loot);
+		playerService.getInventory().merge();
 	}
 	
 	/**
@@ -294,7 +292,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	 */
 	protected void getItem(Item item)
 	{
-		loot.put(item, loot.get(item, 0) + 1);
+		playerService.getInventory().pickup(item);
 		ui.setMessage("Obtained " + item.fullname());
 	}
 	
