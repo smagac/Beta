@@ -92,7 +92,7 @@ public class TitleSequence extends UI {
 			textGrid.setFillParent(true);
 			textGrid.pad(40f);
 			
-			Label text = new Label("Graphics & Programming", skin);
+			Label text = new Label("Graphics, Programming, Project Lead", skin);
 			text.setAlignment(Align.center);
 			textGrid.add(text).expandX().fillX();
 			textGrid.row();
