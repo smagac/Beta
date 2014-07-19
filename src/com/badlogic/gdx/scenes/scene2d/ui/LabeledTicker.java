@@ -122,10 +122,10 @@ public class LabeledTicker<T> extends Table {
 		rightClick = r;
 	}
 	
-	public void setValue(int index)
+	public void setValue(int i)
 	{
-		this.index = Math.max(0, Math.min(values.length-1, index));
-		valueLabel.setText(values[index].toString());
+		this.index = Math.max(0, Math.min(values.length-1, i));
+		valueLabel.setText(values[this.index].toString());
 	}
 	
 	public void changeValues(T[] values)

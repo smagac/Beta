@@ -94,6 +94,7 @@ public class WanderUI extends GameUI {
 		walkTimer = -1f;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void extend() {
 		
