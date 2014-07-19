@@ -115,7 +115,7 @@ public class WanderUI extends GameUI {
 				
 				set.add(icon).size(32f).padRight(10f);
 				set.add(label).expandX().fillX();
-				table.add(set).expandX().align(Align.left).colspan(1);
+				table.add(set).expandX().align(Align.left).colspan(1).padLeft(10f);
 			}
 			
 			//treasure
@@ -136,7 +136,7 @@ public class WanderUI extends GameUI {
 				
 				set.add(icon).size(32f).padRight(10f);
 				set.add(label).expandX().fillX();
-				table.add(set).expandX().align(Align.right).colspan(1);
+				table.add(set).expandX().align(Align.right).colspan(1).padRight(10f);
 			}
 			table.setPosition(0, display.getHeight()-32f);
 			display.addActor(table);

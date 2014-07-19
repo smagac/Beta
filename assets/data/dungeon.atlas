@@ -46,16 +46,23 @@ duck
   orig: 16, 16
   offset: 0, 0
   index: -1
-elf
+dude
   rotate: false
   xy: 70, 56
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-female
+elf
   rotate: false
   xy: 38, 6
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+female
+  rotate: false
+  xy: 70, 38
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -69,26 +76,19 @@ floor
   index: -1
 ghost
   rotate: false
-  xy: 70, 38
+  xy: 88, 74
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 girl
   rotate: false
-  xy: 88, 74
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-gnome
-  rotate: false
   xy: 88, 56
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-grump
+gnome
   rotate: false
   xy: 88, 38
   size: 16, 16

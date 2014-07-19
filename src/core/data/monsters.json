@@ -144,6 +144,22 @@
         "maxhp" : "125", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "25",
         "type" : "girl"
     },
+    "husband" : {
+        "hp" : "10", "str" : "5", "def" : "5", "exp" : "1", "spd" : "10",
+        "maxhp" : "99", "maxstr" : "105", "maxdef" : "105", "maxexp" : "10", "maxpsd" : "30",
+        "type" : "dude"
+    },
+    "jock" : {
+        "hp" : "4", "str" : "9", "def" : "3", "exp" : "1", "spd" : "25",
+        "maxhp" : "80", "maxstr" : "129", "maxdef" : "75", "maxexp" : "20", "maxpsd" : "45",
+        "type" : "dude",
+        "die" : "%s was late for school"
+    },
+    "galcia" : {
+        "hp" : "15", "str" : "7", "def" : "4", "exp" : "1", "spd" : "8",
+        "maxhp" : "125", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "25",
+        "type" : "dude"
+    },
     "mimic" : {
         "hp" : "28", "str" : "13", "def": "9", "exp" : "5", "spd" : "10",
         "maxhp" : "450", "maxstr" : "160", "maxdef" : "95", "maxexp" : "50", "maxpsd" : "15",
