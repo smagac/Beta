@@ -24,7 +24,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
@@ -314,14 +313,24 @@ public class WanderUI extends GameUI {
 			accept.setSize(80, 32);
 			accept.pad(5);
 			accept.setPosition(levelUpDialog.getWidth()/2-accept.getWidth()/2, 10f);
-			accept.addListener(new ChangeListener(){
-
+			accept.addListener(new InputListener(){
 				@Override
-				public void changed(ChangeEvent event, Actor actor) {
+				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
+				{
+					accept.setChecked(true);
+				}
+				
+				@Override
+				public void exit(InputEvent evt, float x, float y, int pointer, Actor fromActor)
+				{
+					accept.setChecked(false);
+				}
+				@Override
+				public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 					if (points > 0)
 					{
 						manager.get(DataDirs.tick, Sound.class).play();
-						return;
+						return false;
 					}
 					
 					levelUpDialog.addAction(
@@ -343,12 +352,14 @@ public class WanderUI extends GameUI {
 									vitTicker.setValue(0);
 									points = 0;
 									manager.get(DataDirs.accept, Sound.class).play();
+									movementEnabled = true;
 								}
 								
 							}),
-							Actions.moveTo(levelUpDialog.getX(), getHeight())
+							Actions.moveTo(levelUpDialog.getX(), getHeight(), .3f)
 						)
 					);
+					return true;
 				}
 			});
 			levelUpDialog.addActor(accept);

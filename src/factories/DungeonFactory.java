@@ -168,7 +168,7 @@ public class DungeonFactory {
 		//int depth = 99;
 		final Array<FloorData> floors = new Array<FloorData>();
 		floors.addAll(new FloorData[depth]);
-		final Thread[] makerThreads = new Thread[Math.min(depth, 4)];
+		final Thread[] makerThreads = new Thread[Math.min(Math.max(1, depth/8), 4)];
 		int[] unavailable = {0};
 		for (int i = 0; i < makerThreads.length; i++)
 		{

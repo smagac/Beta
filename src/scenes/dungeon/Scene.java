@@ -32,7 +32,6 @@ import factories.DungeonFactory.DungeonLoader.DungeonParam;
 import factories.DungeonFactory.FloorLoader;
 import factories.DungeonFactory.FloorLoader.FloorParam;
 
-
 public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
 	private int difficulty;
@@ -271,8 +270,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	protected void dead()
 	{
-		World floor = getCurrentFloor();
-		MovementSystem ms = floor.getSystem(MovementSystem.class);
 		ui.dead();
 		
 		//lose all found items
@@ -284,8 +281,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	protected void leave()
 	{
-		World floor = getCurrentFloor();
-		MovementSystem ms = floor.getSystem(MovementSystem.class);
 		ui.leave();
 		
 		//merge loot into inventory

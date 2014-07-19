@@ -1,5 +1,7 @@
 package core.common;
 
+import scenes.town.TownUI;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Screen;
@@ -10,8 +12,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import components.Stats;
 
+import components.Stats;
 import core.Palette;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
@@ -111,6 +113,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		goddess = (gender)?"goddess":"god";
 		
 		Tracker.reset();
+		
+		TownUI.clearHistory();
 	}
 	
 	/**

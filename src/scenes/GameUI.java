@@ -218,7 +218,7 @@ public abstract class GameUI extends UI {
 				
 				if (getKeyboardFocus() == buttonList && buttonList != null)
 				{
-					if (keycode == Keys.TAB)
+					if (keycode == Keys.TAB || keycode == Keys.CONTROL_RIGHT)
 					{
 						buttons.uncheckAll();
 						focus = 0;

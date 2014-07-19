@@ -47,6 +47,16 @@ import core.util.ScrollFocuser;
 
 public class TownUI extends GameUI {
 
+	public static void clearHistory()
+	{
+		historyPaths.clear();
+		history.clear();
+	}
+	
+	private static Array<String> historyPaths = new Array<String>();
+	private static Array<FileHandle> history = new Array<FileHandle>();
+	private static FileHandle directory;
+	
 	private Image sleepImg;
 	private Group exploreImg;
 	private Image craftImg;
@@ -56,9 +66,6 @@ public class TownUI extends GameUI {
 	private List<String> fileList;
 	private Array<FileHandle> directoryList;
 	private Array<String> paths;
-	private static Array<String> historyPaths = new Array<String>();
-	private static Array<FileHandle> history = new Array<FileHandle>();
-	private static FileHandle directory;
 	private Table fileDetails;
 	
 	private Table craftSubmenu;
@@ -384,22 +391,24 @@ public class TownUI extends GameUI {
 			exploreSubmenu.setWidth(250f);
 			exploreSubmenu.setHeight(display.getHeight());
 			exploreSubmenu.setPosition(-exploreSubmenu.getWidth(), 0);
+			//list of required crafts
+			fileList = new List<String>(skin);
 			
 			if (history.size > 0)
 			{
 				Group tabs = new HorizontalGroup();
 				exploreTabs = new ButtonGroup();
-				final TextButton myButton = new TextButton("Browse", skin);
-				tabs.addActor(myButton);
-				myButton.setName("browse");
-				exploreTabs.add(myButton);
-				myButton.addListener(new ChangeListener(){
+				final TextButton browseButton = new TextButton("Browse", skin);
+				tabs.addActor(browseButton);
+				browseButton.setName("browse");
+				exploreTabs.add(browseButton);
+				browseButton.addListener(new ChangeListener(){
 	
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
-						if (actor == myButton)
+						if (actor == browseButton)
 						{
-							if (myButton.isChecked())
+							if (browseButton.isChecked())
 							{
 								manager.get(DataDirs.tick, Sound.class).play();
 								fileList.setItems(paths);
@@ -412,17 +421,17 @@ public class TownUI extends GameUI {
 					
 				});
 				
-				final TextButton todayButton = new TextButton("Recent Files", skin);
-				todayButton.setName("history");
-				tabs.addActor(todayButton);
-				exploreTabs.add(todayButton);
-				todayButton.addListener(new ChangeListener(){
+				final TextButton recentButton = new TextButton("Recent Files", skin);
+				recentButton.setName("history");
+				tabs.addActor(recentButton);
+				exploreTabs.add(recentButton);
+				recentButton.addListener(new ChangeListener(){
 	
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
-						if (actor == todayButton)
+						if (actor == recentButton)
 						{
-							if (todayButton.isChecked())
+							if (recentButton.isChecked())
 							{
 								fileList.setItems(historyPaths);
 								fileList.setSelectedIndex(0);
@@ -435,9 +444,257 @@ public class TownUI extends GameUI {
 				
 				exploreSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
 				exploreSubmenu.row();
+				
+				historyListener = new ChangeListener(){
+
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (!recentButton.isChecked())
+						{
+							return;
+						}
+						
+						final FileHandle selected = history.get(fileList.getSelectedIndex());
+						fileDetails.clear();
+						
+						//generate a details panel
+						Table contents = new Table();
+						
+						FileType ext = FileType.getType(selected.extension());
+						Image icon = new Image(skin.getRegion(ext.toString()));
+						Label type = new Label("File Type: " + ext, skin);
+						Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
+						Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
+						
+						icon.setAlign(Align.center);
+						icon.setSize(96f, 96f);
+						icon.setScaling(Scaling.fit);
+						
+						contents.pad(10f);
+						contents.add(icon).size(96f, 96f).expandX();
+						contents.row();
+						contents.add(type).expandX().fillX();
+						contents.row();
+						contents.add(size).expandX().fillX();
+						contents.row();
+						contents.add(diff).expandX().fillX();
+						
+						ScrollPane pane2 = new ScrollPane(contents, skin);
+						pane2.setScrollingDisabled(true, true);
+						fileDetails.add(pane2).expand().fill();
+						fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+					}
+				};
+				browseListener = new ChangeListener(){
+
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (!browseButton.isChecked())
+						{
+							return;
+						}
+						
+						if (changeDir)
+						{
+							changeDir = false;
+							event.cancel();
+							return;
+						}
+						
+						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+						
+						int listIndex;
+						final FileHandle selected;
+						try
+						{
+							listIndex = fileList.getSelectedIndex();
+							selected = directoryList.get(listIndex);
+						}
+						catch (java.lang.IndexOutOfBoundsException e)
+						{
+							listIndex = 0;
+							System.out.println("file loader derp");
+							return;
+						}
+						
+						if (selected == null && lastIndex == listIndex)
+						{
+							//go to parent directory
+							queueDir = directory.parent();
+							manager.get(DataDirs.tick, Sound.class).play();
+							return;
+						}
+						else if (selected != null)
+						{
+							if (selected.isDirectory())
+							{
+								fileDetails.clearActions();
+								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+								
+								if (lastIndex == listIndex)
+								{
+									changeDir = true;
+									fileList.setItems();
+									fileList.addAction(Actions.sequence(
+										Actions.moveTo(-fileList.getWidth(), 0, .3f),
+										Actions.run(new Runnable(){
+
+											@Override
+											public void run() {
+												queueDir = selected;
+											}
+											
+										}),
+										Actions.moveTo(0, 0, .3f)
+									));
+									return;
+								}
+							}
+							else
+							{
+								fileDetails.clear();
+								
+								//generate a details panel
+								Table contents = new Table();
+								
+								FileType ext = FileType.getType(selected.extension());
+								Image icon = new Image(skin.getRegion(ext.toString()));
+								Label type = new Label("File Type: " + ext, skin);
+								Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
+								Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
+								
+								icon.setAlign(Align.center);
+								icon.setSize(96f, 96f);
+								icon.setScaling(Scaling.fit);
+								
+								contents.pad(10f);
+								contents.add(icon).size(96f, 96f).expandX();
+								contents.row();
+								contents.add(type).expandX().fillX();
+								contents.row();
+								contents.add(size).expandX().fillX();
+								contents.row();
+								contents.add(diff).expandX().fillX();
+								
+								ScrollPane pane2 = new ScrollPane(contents, skin);
+								pane2.setScrollingDisabled(true, true);
+								fileDetails.add(pane2).expand().fill();
+								fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+							}
+						}
+						
+						if (lastIndex != -1)
+						{
+							manager.get(DataDirs.tick, Sound.class).play();
+						}
+						lastIndex = listIndex;
+					}
+				};
+				fileList.addListener(historyListener);
 			}
-			//list of required crafts
-			fileList = new List<String>(skin);
+			else
+			{
+				browseListener = new ChangeListener(){
+
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						if (changeDir)
+						{
+							changeDir = false;
+							event.cancel();
+							return;
+						}
+						
+						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+						
+						int listIndex;
+						final FileHandle selected;
+						try
+						{
+							listIndex = fileList.getSelectedIndex();
+							selected = directoryList.get(listIndex);
+						}
+						catch (java.lang.IndexOutOfBoundsException e)
+						{
+							listIndex = 0;
+							System.out.println("file loader derp");
+							return;
+						}
+						
+						if (selected == null && lastIndex == listIndex)
+						{
+							//go to parent directory
+							queueDir = directory.parent();
+							manager.get(DataDirs.tick, Sound.class).play();
+							return;
+						}
+						else if (selected != null)
+						{
+							if (selected.isDirectory())
+							{
+								fileDetails.clearActions();
+								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+								
+								if (lastIndex == listIndex)
+								{
+									changeDir = true;
+									fileList.setItems();
+									fileList.addAction(Actions.sequence(
+										Actions.moveTo(-fileList.getWidth(), 0, .3f),
+										Actions.run(new Runnable(){
+
+											@Override
+											public void run() {
+												queueDir = selected;
+											}
+											
+										}),
+										Actions.moveTo(0, 0, .3f)
+									));
+									return;
+								}
+							}
+							else
+							{
+								fileDetails.clear();
+								
+								//generate a details panel
+								Table contents = new Table();
+								
+								FileType ext = FileType.getType(selected.extension());
+								Image icon = new Image(skin.getRegion(ext.toString()));
+								Label type = new Label("File Type: " + ext, skin);
+								Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
+								Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
+								
+								icon.setAlign(Align.center);
+								icon.setSize(96f, 96f);
+								icon.setScaling(Scaling.fit);
+								
+								contents.pad(10f);
+								contents.add(icon).size(96f, 96f).expandX();
+								contents.row();
+								contents.add(type).expandX().fillX();
+								contents.row();
+								contents.add(size).expandX().fillX();
+								contents.row();
+								contents.add(diff).expandX().fillX();
+								
+								ScrollPane pane2 = new ScrollPane(contents, skin);
+								pane2.setScrollingDisabled(true, true);
+								fileDetails.add(pane2).expand().fill();
+								fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+							}
+						}
+						
+						if (lastIndex != -1)
+						{
+							manager.get(DataDirs.tick, Sound.class).play();
+						}
+						lastIndex = listIndex;
+					}
+				};
+			}
 			
 			if (directory == null)
 			{
@@ -448,143 +705,6 @@ public class TownUI extends GameUI {
 				loadDir(directory);
 			}
 			changeDir = false;
-
-			browseListener = new ChangeListener(){
-
-				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					if (changeDir)
-					{
-						changeDir = false;
-						event.cancel();
-						return;
-					}
-					
-					fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-					
-					int listIndex;
-					final FileHandle selected;
-					try
-					{
-						listIndex = fileList.getSelectedIndex();
-						selected = directoryList.get(listIndex);
-					}
-					catch (java.lang.IndexOutOfBoundsException e)
-					{
-						listIndex = 0;
-						System.out.println("file loader derp");
-						return;
-					}
-					
-					if (selected == null && lastIndex == listIndex)
-					{
-						//go to parent directory
-						queueDir = directory.parent();
-						manager.get(DataDirs.tick, Sound.class).play();
-						return;
-					}
-					else if (selected != null)
-					{
-						if (selected.isDirectory())
-						{
-							fileDetails.clearActions();
-							fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-							
-							if (lastIndex == listIndex)
-							{
-								changeDir = true;
-								fileList.setItems();
-								fileList.addAction(Actions.sequence(
-									Actions.moveTo(-fileList.getWidth(), 0, .3f),
-									Actions.run(new Runnable(){
-
-										@Override
-										public void run() {
-											queueDir = selected;
-										}
-										
-									}),
-									Actions.moveTo(0, 0, .3f)
-								));
-								return;
-							}
-						}
-						else
-						{
-							fileDetails.clear();
-							
-							//generate a details panel
-							Table contents = new Table();
-							
-							FileType ext = FileType.getType(selected.extension());
-							Image icon = new Image(skin.getRegion(ext.toString()));
-							Label type = new Label("File Type: " + ext, skin);
-							Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-							Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
-							
-							icon.setAlign(Align.center);
-							icon.setSize(96f, 96f);
-							icon.setScaling(Scaling.fit);
-							
-							contents.pad(10f);
-							contents.add(icon).size(96f, 96f).expandX();
-							contents.row();
-							contents.add(type).expandX().fillX();
-							contents.row();
-							contents.add(size).expandX().fillX();
-							contents.row();
-							contents.add(diff).expandX().fillX();
-							
-							ScrollPane pane2 = new ScrollPane(contents, skin);
-							pane2.setScrollingDisabled(true, true);
-							fileDetails.add(pane2).expand().fill();
-							fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
-						}
-					}
-					
-					if (lastIndex != -1)
-					{
-						manager.get(DataDirs.tick, Sound.class).play();
-					}
-					lastIndex = listIndex;
-				}
-			};
-			historyListener = new ChangeListener(){
-
-				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					final FileHandle selected = history.get(fileList.getSelectedIndex());
-					fileDetails.clear();
-					
-					//generate a details panel
-					Table contents = new Table();
-					
-					FileType ext = FileType.getType(selected.extension());
-					Image icon = new Image(skin.getRegion(ext.toString()));
-					Label type = new Label("File Type: " + ext, skin);
-					Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-					Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
-					
-					icon.setAlign(Align.center);
-					icon.setSize(96f, 96f);
-					icon.setScaling(Scaling.fit);
-					
-					contents.pad(10f);
-					contents.add(icon).size(96f, 96f).expandX();
-					contents.row();
-					contents.add(type).expandX().fillX();
-					contents.row();
-					contents.add(size).expandX().fillX();
-					contents.row();
-					contents.add(diff).expandX().fillX();
-					
-					ScrollPane pane2 = new ScrollPane(contents, skin);
-					pane2.setScrollingDisabled(true, true);
-					fileDetails.add(pane2).expand().fill();
-					fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
-				}
-				
-			};
 			
 			fileList.addListener(browseListener);
 			
