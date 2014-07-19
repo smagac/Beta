@@ -43,7 +43,7 @@ public class NewUI extends UI {
 	
 	Scene parent;
 	private ButtonGroup gender;
-	private Label number;
+	private LabeledTicker<Integer> number;
 	
 	private IPlayerContainer player;
 	
@@ -77,27 +77,27 @@ public class NewUI extends UI {
 		//Difficulty
 		{
 			Integer[] values = {1, 2, 3, 4, 5};
-			final LabeledTicker<Integer> ticker = new LabeledTicker<Integer>("Difficulty", values, skin);
-			ticker.setLeftAction(new Runnable(){
+			number = new LabeledTicker<Integer>("Difficulty", values, skin);
+			number.setLeftAction(new Runnable(){
 
 				@Override
 				public void run() {
 					manager.get(DataDirs.tick, Sound.class).play();
-					ticker.defaultLeftClick.run();
+					number.defaultLeftClick.run();
 				}
 				
 			});
 			
-			ticker.setRightAction(new Runnable(){
+			number.setRightAction(new Runnable(){
 				
 				@Override
 				public void run() {
 					manager.get(DataDirs.tick, Sound.class).play();
-					ticker.defaultRightClick.run();
+					number.defaultRightClick.run();
 				}
 				
 			});
-			window.add(ticker).expandX().fillX().pad(0, 50f, 10f, 50f);
+			window.add(number).expandX().fillX().pad(0, 50f, 10f, 50f);
 		}
 		window.row();
 		
@@ -140,6 +140,9 @@ public class NewUI extends UI {
 
 							@Override
 							public void run() {
+								accept.clearListeners();
+								number.clearListeners();
+								frame.clearListeners();
 								manager.get(DataDirs.accept, Sound.class).play();
 							}
 							
@@ -149,6 +152,8 @@ public class NewUI extends UI {
 							
 							@Override
 							public void run() {
+								frame.clear();
+								frame.remove();
 								next();
 							}
 						})
@@ -166,32 +171,17 @@ public class NewUI extends UI {
 			)
 		);
 		
-		addListener(new InputListener(){
+		frame.addListener(new InputListener(){
 			@Override
 			public boolean keyDown(InputEvent evt, int keycode)
 			{
 				boolean hit = false;
-				if (keycode == Keys.LEFT || keycode == Keys.A)
-				{
-					hit = true;
-					
-					difficulty = Math.max(1, difficulty-1);
-					manager.get(DataDirs.tick, Sound.class).play();
-					number.setText(""+difficulty);		
-				}
-				else if (keycode == Keys.RIGHT || keycode == Keys.D)
-				{
-					hit = true;
-					difficulty = Math.min(5, difficulty+1);
-					manager.get(DataDirs.tick, Sound.class).play();
-					number.setText(""+difficulty);		
-				}
-				else if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+				
+				if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 				{
 					hit = true;
 					accept.setChecked(true);
 				}
-				
 				return hit;
 			}
 		});
@@ -201,10 +191,12 @@ public class NewUI extends UI {
 		addActor(frame);
 		
 		act();
+		
+		setKeyboardFocus(number);
 	}
 
 	public int getDifficulty() {
-		return difficulty;
+		return number.getValue();
 	}
 	
 	private void next()

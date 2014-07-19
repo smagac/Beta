@@ -1,5 +1,6 @@
 package com.badlogic.gdx.scenes.scene2d.ui;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -93,21 +94,34 @@ public class LabeledTicker<T> extends Table {
 			{
 				right.setChecked(false);
 			}
-			
-			@Override
-			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-			{
-				if (rightClick != null)
-				{
-					rightClick.run();
-					return true;
-				}
-				return false;
-			}
 		});
 		
 		setLeftAction(defaultLeftClick);
 		setRightAction(defaultRightClick);	
+		
+		addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				if (keycode == Keys.A || keycode == Keys.LEFT)
+				{
+					if (leftClick != null)
+					{
+						leftClick.run();	
+						return true;
+					}
+				}
+				if (keycode == Keys.D || keycode == Keys.RIGHT)
+				{
+					if (rightClick != null)
+					{
+						rightClick.run();
+						return true;
+					}
+				}
+				return false;
+			}
+		});
 		
 		pack();
 	}
