@@ -22,3 +22,31 @@ The following specifications are required in order to play properly
     Recommended 512mb of RAM dedicated for the game
 	
     *An internet connection is recommended in order to update the game.
+
+Playing the Game
+=========================
+Input is rather simple and is designed to have an emphasis on being able to play with one hand.
+
+For Keyboard, things will be following this naming scheme to identify input
+    Directions - Arrow keys or WASD
+    Accept/Start - Enter or Space
+    Cancel - Backspace or Escape
+    Focus - Tab or Right Control
+
+## Interacting with Menus
+- Focus switches current keyboard focus of multipane menus
+- Up/Down navigates through lists
+- Left/Right used as incrementing and decrementing, or switching tabs
+- Accept will execute the currently selected menu button
+- Cancel automatically selects the first menu buttons (usually just reverts choice or exits the menu)
+
+## Dungeoning
+Like any classic roguelike, all you gotta do is bump into enemies to attack them.
+Movement is turn based, meaning enemies will only move when you do.  Unless you know what you're
+doing and your reflexes are god-like, rushing will usually just get you killed really fast.
+
+You can press a Direction key or click around the character to move them in that direction.
+- Holding down the key allows for a relaxing pace of actions with turns occuring at a steady rate.
+- If you want to speed things up, you can tap rapidly to send off a stream of turns
+
+Hovering your mouse over any enemy sprite will show you their name and current amount of HP.
