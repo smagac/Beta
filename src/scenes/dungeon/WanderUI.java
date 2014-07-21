@@ -750,10 +750,34 @@ public class WanderUI extends GameUI {
 
 	@Override
 	protected void triggerAction(int index) {
-		if (this.index == 0)
+		if (this.index == -1)
 		{
-			this.index = 1;
-			showGoddess("Hello there, what is it that you need?");
+			dialog.addAction(Actions.alpha(0f, 1f));
+			fader.addAction(
+				Actions.sequence(
+					Actions.alpha(1f, 2f),
+					Actions.run(new Runnable(){
+						@Override
+						public void run(){
+							SceneManager.switchToScene("town");
+						}
+					})
+				)
+			);
+		}
+		else if (this.index == 0)
+		{
+			if (index == 0)
+			{
+				this.index = 1;
+				showGoddess("Hello there, what is it that you need?");
+			}
+		}
+		else if (index <= 0)
+		{
+			this.index = 0;
+			this.menu = 0;
+			hideGoddess();
 		}
 		else if (this.index == 1)
 		{
@@ -771,47 +795,12 @@ public class WanderUI extends GameUI {
 				menu = 2;
 			}
 			
-			if (index == 0)
-			{
-				this.index = 0;
-				hideGoddess();
-			}
-			else 
-			{
-				showLoot();
-			}
+			showLoot();
 			
 		}
 		else if (this.index == 2)
 		{
-			if (index == 0)
-			{
-				hideGoddess();
-				this.index = 0;
-				this.menu = 0;
-			}
-			else
-			{
-				sacrifice();
-			}
-		}
-		else if (this.index == -1)
-		{
-			if (index == 0)
-			{
-				dialog.addAction(Actions.alpha(0f, 1f));
-				fader.addAction(
-					Actions.sequence(
-						Actions.alpha(1f, 2f),
-						Actions.run(new Runnable(){
-							@Override
-							public void run(){
-								SceneManager.switchToScene("town");
-							}
-						})
-					)
-				);
-			}
+			sacrifice();
 		}
 	}
 
@@ -1081,7 +1070,7 @@ public class WanderUI extends GameUI {
 		{
 			return levelUpGroup;
 		}
-		if (this.index == 0)
+		if (this.index != 2)
 		{
 			return null;
 		}
