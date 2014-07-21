@@ -1,5 +1,7 @@
 package scenes;
 
+import scene2d.ui.extras.FocusGroup;
+
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
@@ -23,8 +25,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import components.Stats;
 
+import components.Stats;
 import core.DataDirs;
 import core.datatypes.Inventory;
 import core.service.IPlayerContainer;
@@ -56,8 +58,9 @@ public abstract class GameUI extends UI {
 	private Rectangle displayBounds;
 	private Rectangle tmpBound;
 	
-	private HorizontalGroup buttonList;
+	protected final HorizontalGroup buttonList;
 	private ButtonGroup buttons;
+	protected final ChangeListener focusListener;
 	
 	private Label hpStats;
 	private Label expStats;
@@ -75,8 +78,30 @@ public abstract class GameUI extends UI {
 		
 		tmpBound = new Rectangle();
 		displayBounds = new Rectangle();
-}
+		
+		focusListener = new ChangeListener(){
+
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if (actor != focusList())
+					return;
+				
+				if (focusList().getFocused() == buttonList)
+				{
+					hidePointer();
+				}
+				else
+				{
+					showPointer(focusList().getFocused(), Align.left, Align.top);
+				}
+
+				setFocus(focusList().getFocused());
+			}
+			
+		};
+	}
 	
+	@Override
 	protected void load()
 	{
 		manager.load("data/uiskin.json", Skin.class);
@@ -164,10 +189,6 @@ public abstract class GameUI extends UI {
 		String[] butt = defineButtons();
 		if (butt != null)
 		{
-			buttonList = new HorizontalGroup();
-			
-			setButtons(butt);
-			
 			window.addActor(buttonList);	
 			
 			buttonList.addListener(new InputListener(){
@@ -177,84 +198,52 @@ public abstract class GameUI extends UI {
 					if (keycode == Keys.LEFT || keycode == Keys.A)
 					{
 						setIndex(getIndex()-1);
+						return true;
 					}
 					if (keycode == Keys.RIGHT || keycode == Keys.D)
 					{
 						setIndex(getIndex()+1);
+						return true;
 					}
 					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 					{
 						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
 						refreshButtons();
+						hidePointer();
+						return true;
 					}
 					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
 					{
 						triggerAction(-1);
 						refreshButtons();
+						hidePointer();
+						return true;
 					}
 					return false;
 				}
 			});
 			
-			setFocus(buttonList);
-		}
-		
-		if (buttonList == null)
-		{
-			setKeyboardFocus(focusList()[0]);
+			refreshButtons();
 		}
 		
 		//focus handler
 		addListener(new InputListener(){
-			
-			int focus = -1;
 			
 			@Override
 			public boolean keyDown(InputEvent evt, int keycode)
 			{
 				if (focusList()==null)
 				{
+					setFocus(buttonList);
 					return false;
 				}
 				
-				if (getKeyboardFocus() == buttonList && buttonList != null)
+				if (keycode == Keys.TAB || keycode == Keys.CONTROL_RIGHT)
 				{
-					if (keycode == Keys.TAB || keycode == Keys.CONTROL_RIGHT)
-					{
-						buttons.uncheckAll();
-						focus = 0;
-						setFocus(focusList()[0]);
-					}
+					focusList().next(true);
+					return true;
 				}
-				else
-				{
-					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
-					{
-						if (getKeyboardFocus() == buttonList)
-						{
-							manager.get(DataDirs.accept, Sound.class).play();
-							triggerAction(0);
-							refreshButtons();
-						}
-						else
-						{
-							focus = 0;
-							buttons.getButtons().first().setChecked(true);
-							setFocus(buttonList);
-						}
-					}
-					else if (keycode == Keys.TAB)
-					{
-						focus++;
-						if (focus >= focusList().length)
-						{
-							focus = 0;
-						}
-						setFocus(focusList()[focus]);
-					}
-				}
-
 				return false;
 			}
 		});
@@ -268,6 +257,10 @@ public abstract class GameUI extends UI {
 		fader.addAction(Actions.alpha(0f));
 		fader.setTouchable(Touchable.disabled);
 		addActor(fader);
+		
+		pointer = new Image(skin.getDrawable("pointersm"));
+		addActor(pointer);
+		hidePointer();
 		
 		act(0);
 	}
@@ -288,7 +281,7 @@ public abstract class GameUI extends UI {
 	 */
 	protected abstract void triggerAction(int index);
 	
-	protected abstract Actor[] focusList();
+	protected abstract FocusGroup focusList();
 	
 	public abstract String[] defineButtons();
 	
@@ -335,22 +328,13 @@ public abstract class GameUI extends UI {
 					return false;
 				}
 			});
-			button.addListener(new ChangeListener(){
-
-				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					if (button.isChecked())
-					{
-						//manager.get(DataDirs.tick, Sound.class).play();
-					}
-				}
-				
-			});
 			buttonList.addActor(button);
 			buttons.add(button);
 		}
 		
 		buttonList.setPosition(window.getWidth() / 2 - buttonList.getPrefWidth() / 2, 32f);
+		
+		setFocus(buttonList);
 	}
 
 	protected final void forceButtonFocus()

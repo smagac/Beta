@@ -3,12 +3,14 @@ package scenes;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Scaling;
@@ -128,11 +130,43 @@ public abstract class UI extends Stage {
 	/**
 	 * Positions the pointer next to an actor
 	 * @param focus
+	 * @param center 
 	 */
-	public void showPointer(float x, float y, Actor focus, boolean right)
+	public void showPointer(Actor focus, int hAlignment, int vAlignment)
 	{
-		pointer.setPosition(x+((right)?(focus.getWidth()+pointer.getWidth()):-pointer.getWidth()), y);
-		pointer.setScale((right)?-1:1, 1);
+		Vector2 v = new Vector2();
+		focus.localToStageCoordinates(v);
+		float xOffset = 0,
+			  yOffset = 0;
+		if (hAlignment == Align.left)
+		{
+			xOffset = -pointer.getWidth();
+		}
+		else if (hAlignment == Align.center)
+		{
+			xOffset = focus.getWidth()/2 - pointer.getWidth()/2;
+		}
+		else if (hAlignment == Align.right)
+		{
+			xOffset = focus.getWidth() + pointer.getWidth();
+		}
+		
+		if (vAlignment == Align.top)
+		{
+			yOffset = focus.getHeight() - pointer.getHeight();
+		}
+		else if (vAlignment == Align.center)
+		{
+			yOffset = focus.getHeight()/2 - pointer.getHeight()/2;
+		}
+		else if (vAlignment == Align.bottom)
+		{
+			yOffset = 0;
+		}
+		
+		
+		pointer.setPosition(v.x+xOffset, v.y+yOffset);
+		pointer.setScale((hAlignment == Align.right)?-1:1, 1);
 		pointer.setVisible(true);
 	}
 	

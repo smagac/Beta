@@ -3,6 +3,8 @@ package scenes.newgame;
 import java.util.Iterator;
 import java.util.Scanner;
 
+import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.LabeledTicker;
 import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
@@ -17,10 +19,8 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.FocusGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.LabeledTicker;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -156,15 +156,12 @@ public class NewUI extends UI {
 		}
 		
 		focus.addListener(new ChangeListener(){
-			Vector2 vec = new Vector2();
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				Actor a = focus.getFocused();
 				setKeyboardFocus(a);
 				
-				a.localToStageCoordinates(vec);
-				showPointer(vec.x-8f, vec.y, a, false);
-				vec.setZero();
+				showPointer(a, Align.left, Align.center);
 			}
 		});
 		
@@ -258,7 +255,6 @@ public class NewUI extends UI {
 		setKeyboardFocus(number);
 		
 		pointer = new Image(skin.getDrawable("pointer"));
-		pointer.setSize(32f, 32f);
 		hidePointer();
 		addActor(pointer);
 	}

@@ -314,6 +314,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	@Override
 	protected void init() {
 		ui.init();
+		ui.levelUp();
 		
 		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
 		TiledMapTileSet ts = DungeonFactory.buildTileSet(atlas);

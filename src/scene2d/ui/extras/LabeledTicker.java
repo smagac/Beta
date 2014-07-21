@@ -1,11 +1,22 @@
-package com.badlogic.gdx.scenes.scene2d.ui;
+package scene2d.ui.extras;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
+/**
+ * Simple two button ticker that has a label.  Useful for having a consistent table
+ * layout with mutable data elements with values that are defined within a set/range.
+ * @author nhydock
+ *
+ * @param <T> Data type of the set of data the ticker manages
+ */
 public class LabeledTicker<T> extends Table {
 
 	private TextButton left;

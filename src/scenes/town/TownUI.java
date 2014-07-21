@@ -3,6 +3,7 @@ package scenes.town;
 import java.io.File;
 import java.util.Iterator;
 
+import scene2d.ui.extras.FocusGroup;
 import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
@@ -56,18 +57,22 @@ public class TownUI extends GameUI {
 	private static Array<String> historyPaths = new Array<String>();
 	private static Array<FileHandle> history = new Array<FileHandle>();
 	private static FileHandle directory;
-	
+
 	private Image sleepImg;
 	private Group exploreImg;
 	private Image craftImg;
 	private Image character;
 
+	private FocusGroup exploreGroup;
 	private Table exploreSubmenu;
 	private List<String> fileList;
 	private Array<FileHandle> directoryList;
 	private Array<String> paths;
 	private Table fileDetails;
+	private ScrollPane fileDetailsPane;
+	private Table fileDetailsContent;
 	
+	private FocusGroup craftGroup;
 	private Table craftSubmenu;
 	private Table lootSubmenu;
 	private List<Craftable> craftList;
@@ -95,10 +100,7 @@ public class TownUI extends GameUI {
 	private Iterator<String> dialog;
 	private boolean over;
 	private ButtonGroup exploreTabs;
-	
-	private ChangeListener browseListener;
-	private ChangeListener historyListener;
-	
+
 	public TownUI(AssetManager manager, IPlayerContainer player) {
 		super(manager, player);
 		this.playerService = player;
@@ -112,7 +114,7 @@ public class TownUI extends GameUI {
 	
 	@Override
 	public void extend()
-	{
+	{	
 		//explore icon
 		{
 			exploreImg = new Group();
@@ -382,6 +384,9 @@ public class TownUI extends GameUI {
 			});
 			
 			display.addActor(lootSubmenu);
+			
+			craftGroup = new FocusGroup(buttonList, lootPane, craftPane);
+			craftGroup.addListener(focusListener);
 		}
 		
 
@@ -391,8 +396,44 @@ public class TownUI extends GameUI {
 			exploreSubmenu.setWidth(250f);
 			exploreSubmenu.setHeight(display.getHeight());
 			exploreSubmenu.setPosition(-exploreSubmenu.getWidth(), 0);
+			
+			//pane for showing details about the selected file
+			fileDetails = new Table();
+			fileDetails.setSize(250f, display.getHeight());
+			fileDetails.setPosition(display.getWidth(), 0);
+			
+			fileDetailsContent = new Table();
+			fileDetailsPane = new ScrollPane(fileDetailsContent, skin);
+			fileDetailsPane.setScrollingDisabled(true, true);
+			fileDetails.add(fileDetailsPane).expand().fill();
+			
+			display.addActor(fileDetails);
+			
 			//list of required crafts
 			fileList = new List<String>(skin);
+
+			final ScrollPane pane = new ScrollPane(fileList, skin);
+			pane.setWidth(250f);
+			pane.setHeight(display.getHeight());
+			pane.setScrollingDisabled(true, false);
+			pane.setFadeScrollBars(false);
+			pane.setScrollBarPositions(true, false);
+			pane.setScrollbarsOnTop(false);
+			pane.addListener(new ScrollFocuser(pane));
+			
+			exploreSubmenu.add(pane).expand().fill();
+			
+			
+			//prep file browsing
+			if (directory == null)
+			{
+				loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));	
+			}
+			else
+			{
+				loadDir(directory);
+			}
+			changeDir = false;
 			
 			if (history.size > 0)
 			{
@@ -413,8 +454,6 @@ public class TownUI extends GameUI {
 								manager.get(DataDirs.tick, Sound.class).play();
 								fileList.setItems(paths);
 								fileList.setSelectedIndex(0);
-								fileList.removeListener(historyListener);
-								fileList.addListener(browseListener);
 							}
 						}
 					}
@@ -435,8 +474,6 @@ public class TownUI extends GameUI {
 							{
 								fileList.setItems(historyPaths);
 								fileList.setSelectedIndex(0);
-								fileList.removeListener(browseListener);
-								fileList.addListener(historyListener);
 							}
 						}
 					}
@@ -445,7 +482,7 @@ public class TownUI extends GameUI {
 				exploreSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
 				exploreSubmenu.row();
 				
-				historyListener = new ChangeListener(){
+				ChangeListener historyListener = new ChangeListener(){
 
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
@@ -454,38 +491,11 @@ public class TownUI extends GameUI {
 							return;
 						}
 						
-						final FileHandle selected = history.get(fileList.getSelectedIndex());
-						fileDetails.clear();
-						
-						//generate a details panel
-						Table contents = new Table();
-						
-						FileType ext = FileType.getType(selected.extension());
-						Image icon = new Image(skin.getRegion(ext.toString()));
-						Label type = new Label("File Type: " + ext, skin);
-						Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-						Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
-						
-						icon.setAlign(Align.center);
-						icon.setSize(96f, 96f);
-						icon.setScaling(Scaling.fit);
-						
-						contents.pad(10f);
-						contents.add(icon).size(96f, 96f).expandX();
-						contents.row();
-						contents.add(type).expandX().fillX();
-						contents.row();
-						contents.add(size).expandX().fillX();
-						contents.row();
-						contents.add(diff).expandX().fillX();
-						
-						ScrollPane pane2 = new ScrollPane(contents, skin);
-						pane2.setScrollingDisabled(true, true);
-						fileDetails.add(pane2).expand().fill();
-						fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+						FileHandle selected = history.get(fileList.getSelectedIndex());
+						updateFileDetails(selected);
 					}
 				};
-				browseListener = new ChangeListener(){
+				ChangeListener browseListener = new ChangeListener(){
 
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
@@ -552,34 +562,7 @@ public class TownUI extends GameUI {
 							}
 							else
 							{
-								fileDetails.clear();
-								
-								//generate a details panel
-								Table contents = new Table();
-								
-								FileType ext = FileType.getType(selected.extension());
-								Image icon = new Image(skin.getRegion(ext.toString()));
-								Label type = new Label("File Type: " + ext, skin);
-								Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-								Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
-								
-								icon.setAlign(Align.center);
-								icon.setSize(96f, 96f);
-								icon.setScaling(Scaling.fit);
-								
-								contents.pad(10f);
-								contents.add(icon).size(96f, 96f).expandX();
-								contents.row();
-								contents.add(type).expandX().fillX();
-								contents.row();
-								contents.add(size).expandX().fillX();
-								contents.row();
-								contents.add(diff).expandX().fillX();
-								
-								ScrollPane pane2 = new ScrollPane(contents, skin);
-								pane2.setScrollingDisabled(true, true);
-								fileDetails.add(pane2).expand().fill();
-								fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+								updateFileDetails(selected);
 							}
 						}
 						
@@ -591,10 +574,66 @@ public class TownUI extends GameUI {
 					}
 				};
 				fileList.addListener(historyListener);
+				fileList.addListener(browseListener);
+				
+				pane.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.LEFT || keycode == Keys.A)
+						{
+							browseButton.setChecked(true);
+							return true;
+						}
+						if (keycode == Keys.RIGHT || keycode == Keys.D)
+						{
+							recentButton.setChecked(true);
+							return true;
+						}
+						if (keycode == Keys.ENTER || keycode == Keys.SPACE && browseButton.isChecked())
+						{
+							int listIndex = fileList.getSelectedIndex();
+							final FileHandle selected = directoryList.get(listIndex);
+							if (selected == null && lastIndex == listIndex)
+							{
+								//go to parent directory
+								queueDir = directory.parent();
+								manager.get(DataDirs.tick, Sound.class).play();
+								return true;
+							}
+							if (selected.isDirectory())
+							{
+								fileDetails.clearActions();
+								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+								
+								if (lastIndex == listIndex)
+								{
+									changeDir = true;
+									fileList.setItems();
+									fileList.addAction(Actions.sequence(
+										Actions.moveTo(-fileList.getWidth(), 0, .3f),
+										Actions.run(new Runnable(){
+
+											@Override
+											public void run() {
+												queueDir = selected;
+											}
+											
+										}),
+										Actions.moveTo(0, 0, .3f)
+									));
+									return true;
+								}
+							}
+						}
+						
+						return false;
+					}
+				});
 			}
 			else
 			{
-				browseListener = new ChangeListener(){
+				ChangeListener browseListener = new ChangeListener(){
 
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
@@ -656,34 +695,7 @@ public class TownUI extends GameUI {
 							}
 							else
 							{
-								fileDetails.clear();
-								
-								//generate a details panel
-								Table contents = new Table();
-								
-								FileType ext = FileType.getType(selected.extension());
-								Image icon = new Image(skin.getRegion(ext.toString()));
-								Label type = new Label("File Type: " + ext, skin);
-								Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-								Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);
-								
-								icon.setAlign(Align.center);
-								icon.setSize(96f, 96f);
-								icon.setScaling(Scaling.fit);
-								
-								contents.pad(10f);
-								contents.add(icon).size(96f, 96f).expandX();
-								contents.row();
-								contents.add(type).expandX().fillX();
-								contents.row();
-								contents.add(size).expandX().fillX();
-								contents.row();
-								contents.add(diff).expandX().fillX();
-								
-								ScrollPane pane2 = new ScrollPane(contents, skin);
-								pane2.setScrollingDisabled(true, true);
-								fileDetails.add(pane2).expand().fill();
-								fileDetails.addAction(Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f));
+								updateFileDetails(selected);
 							}
 						}
 						
@@ -694,32 +706,54 @@ public class TownUI extends GameUI {
 						lastIndex = listIndex;
 					}
 				};
+				fileList.addListener(browseListener);
+				pane.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+						{
+							int listIndex = fileList.getSelectedIndex();
+							final FileHandle selected = directoryList.get(listIndex);
+							if (selected == null && lastIndex == listIndex)
+							{
+								//go to parent directory
+								queueDir = directory.parent();
+								manager.get(DataDirs.tick, Sound.class).play();
+								return true;
+							}
+							if (selected.isDirectory())
+							{
+								fileDetails.clearActions();
+								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+								
+								if (lastIndex == listIndex)
+								{
+									changeDir = true;
+									fileList.setItems();
+									fileList.addAction(Actions.sequence(
+										Actions.moveTo(-fileList.getWidth(), 0, .3f),
+										Actions.run(new Runnable(){
+
+											@Override
+											public void run() {
+												queueDir = selected;
+											}
+											
+										}),
+										Actions.moveTo(0, 0, .3f)
+									));
+									return true;
+								}
+							}
+						}
+						
+						return false;
+					}
+				});
 			}
-			
-			if (directory == null)
-			{
-				loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));	
-			}
-			else
-			{
-				loadDir(directory);
-			}
-			changeDir = false;
-			
-			fileList.addListener(browseListener);
-			
-			final ScrollPane pane = new ScrollPane(fileList, skin);
-			pane.setWidth(250f);
-			pane.setHeight(display.getHeight());
-			pane.setScrollingDisabled(true, false);
-			pane.setFadeScrollBars(false);
-			pane.setScrollBarPositions(true, false);
-			pane.setScrollbarsOnTop(false);
-			pane.addListener(new ScrollFocuser(pane));
-			
-			exploreSubmenu.add(pane).expand().fill();
-			
-			fileList.addListener(new InputListener(){
+
+			pane.addListener(new InputListener(){
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
@@ -739,12 +773,10 @@ public class TownUI extends GameUI {
 				}
 			});
 			
-			fileDetails = new Table();
-			fileDetails.setSize(250f, display.getHeight());
-			fileDetails.setPosition(display.getWidth(), 0);
-			
-			display.addActor(fileDetails);
 			display.addActor(exploreSubmenu);
+			
+			exploreGroup = new FocusGroup(buttonList, pane);
+			exploreGroup.addListener(focusListener);
 		}
 
 		goddess = new Image(skin.getRegion(playerService.getWorship()));
@@ -850,6 +882,50 @@ public class TownUI extends GameUI {
 		
 		Gdx.input.setInputProcessor(input);
 	}
+	
+	/**
+	 * Updates the information in the right side file panel to reflect the metadata of the specified file
+	 * @param selected
+	 */
+	private void updateFileDetails(final FileHandle selected)
+	{
+		fileDetails.addAction(Actions.sequence(
+			Actions.moveTo(display.getWidth(),  0, .3f),
+			Actions.run(new Runnable(){
+				
+				@Override
+				public void run() {
+					//generate a details panel
+					Table contents = fileDetailsContent;
+					contents.clear();
+					
+					FileType ext = FileType.getType(selected.extension());
+					Image icon = new Image(skin.getRegion(ext.toString()));
+					Label type = new Label("File Type: " + ext, skin);
+					Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
+					Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);	
+					
+					icon.setAlign(Align.center);
+					icon.setSize(96f, 96f);
+					icon.setScaling(Scaling.fit);
+					
+					contents.pad(10f);
+					contents.add(icon).size(96f, 96f).expandX();
+					contents.row();
+					contents.add(type).expandX().fillX();
+					contents.row();
+					contents.add(size).expandX().fillX();
+					contents.row();
+					contents.add(diff).expandX().fillX();
+					
+					contents.pack();
+					fileDetailsPane.pack();
+				}
+			}),
+			Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f)
+		));
+	}
+	
 
 	@Override
 	protected void extendAct (float delta) {
@@ -1193,6 +1269,8 @@ public class TownUI extends GameUI {
 		
 		enableMenuInput();
 		refreshButtons();
+		
+		hidePointer();
 	}
 
 	@Override
@@ -1224,14 +1302,14 @@ public class TownUI extends GameUI {
 	}
 
 	@Override
-	protected Actor[] focusList() {
+	protected FocusGroup focusList() {
 		if (menu == CRAFT)
 		{
-			return new Actor[]{lootPane, craftPane};
+			return craftGroup;
 		}
 		else if (menu == EXPLORE)
 		{
-			return new Actor[]{fileList};
+			return exploreGroup;
 		}
 		return null;
 	}

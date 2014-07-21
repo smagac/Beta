@@ -1,5 +1,7 @@
 package scenes.dungeon;
 
+import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.LabeledTicker;
 import scenes.GameUI;
 import scenes.UI;
 
@@ -11,6 +13,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -19,12 +22,12 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.LabeledTicker;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
@@ -67,6 +70,7 @@ public class WanderUI extends GameUI {
 	private ObjectMap<Item, Integer> sacrifices;
 	private ScrollPane lootPane;
 	private ScrollPane sacrificePane;
+	private FocusGroup sacrificeGroup;
 	
 	//level up dialog
 	Group levelUpDialog;
@@ -75,6 +79,7 @@ public class WanderUI extends GameUI {
 	LabeledTicker<Integer> defTicker;
 	LabeledTicker<Integer> spdTicker;
 	LabeledTicker<Integer> vitTicker;
+	private FocusGroup levelUpGroup;
 	
 	//services
 	private IPlayerContainer playerService;
@@ -93,6 +98,8 @@ public class WanderUI extends GameUI {
 		sacrifices = new ObjectMap<Item, Integer>();
 		healCost = 1;
 		walkTimer = -1f;
+
+		movementEnabled = true;
 	}
 	
 	protected void load()
@@ -260,8 +267,14 @@ public class WanderUI extends GameUI {
 		
 		//level up dialog
 		{
+
+			levelUpGroup = new FocusGroup();
+			levelUpGroup.setVisible(false);
+			
 			levelUpDialog = UI.makeWindow(skin, 500, 480, true);
 			levelUpDialog.setPosition(getWidth()/2-levelUpDialog.getWidth()/2, getHeight());
+			levelUpDialog.setVisible(false);
+			
 			final Table window = new Table();
 			window.setFillParent(true);
 			window.center().top().pack();
@@ -314,6 +327,8 @@ public class WanderUI extends GameUI {
 				window.center();
 				window.add(ticker).expandX().fillX().pad(0, 50f, 10f, 50f).colspan(3);
 				window.row();
+				
+				levelUpGroup.add(ticker);
 			}
 			
 			window.add(pointLabel).expandX().fillX().colspan(3);
@@ -324,6 +339,40 @@ public class WanderUI extends GameUI {
 			accept.setSize(80, 32);
 			accept.pad(5);
 			accept.setPosition(levelUpDialog.getWidth()/2-accept.getWidth()/2, 10f);
+			
+			final Action close = 
+				Actions.sequence(
+					Actions.run(new Runnable(){
+
+						@Override
+						public void run() {
+							levelUpDialog.setTouchable(Touchable.disabled);
+							playerService.getPlayer().levelUp(new int[]{
+									strTicker.getValue(),
+									defTicker.getValue(),
+									spdTicker.getValue(),
+									vitTicker.getValue()
+							});
+							strTicker.setValue(0);
+							defTicker.setValue(0);
+							spdTicker.setValue(0);
+							vitTicker.setValue(0);
+							points = 0;
+							manager.get(DataDirs.accept, Sound.class).play();
+							movementEnabled = true;
+						}
+						
+					}),
+					Actions.moveTo(levelUpDialog.getX(), getHeight(), .3f),
+					Actions.run(new Runnable(){
+
+						@Override
+						public void run() {
+							levelUpDialog.setVisible(false);
+						}
+						
+					})
+				);
 			accept.addListener(new InputListener(){
 				@Override
 				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
@@ -344,40 +393,54 @@ public class WanderUI extends GameUI {
 						return false;
 					}
 					
-					levelUpDialog.addAction(
-						Actions.sequence(
-							Actions.run(new Runnable(){
-
-								@Override
-								public void run() {
-									levelUpDialog.setTouchable(Touchable.disabled);
-									playerService.getPlayer().levelUp(new int[]{
-											strTicker.getValue(),
-											defTicker.getValue(),
-											spdTicker.getValue(),
-											vitTicker.getValue()
-									});
-									strTicker.setValue(0);
-									defTicker.setValue(0);
-									spdTicker.setValue(0);
-									vitTicker.setValue(0);
-									points = 0;
-									manager.get(DataDirs.accept, Sound.class).play();
-									movementEnabled = true;
-								}
-								
-							}),
-							Actions.moveTo(levelUpDialog.getX(), getHeight(), .3f)
-						)
-					);
+					levelUpDialog.addAction(close);
 					return true;
 				}
 			});
 			levelUpDialog.addActor(accept);
+			levelUpDialog.addListener(new InputListener(){
+				@Override
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					if (keycode == Keys.DOWN || keycode == Keys.S)
+					{
+						levelUpGroup.next();
+						return true;
+					}
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						levelUpGroup.prev();
+						return true;
+					}
+					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+					{
+						if (points > 0)
+						{
+							manager.get(DataDirs.tick, Sound.class).play();
+							return false;
+						}
+						
+						levelUpDialog.addAction(close);
+						return true;
+					}
+					return false;
+				}
+			});
+			levelUpGroup.addListener(new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (focusList() == null)
+						return;
+					
+					Actor a = focusList().getFocused();
+					setFocus(a);
+					
+					showPointer(a, Align.left, Align.center);
+				}
+			});
 			
 			addActor(levelUpDialog);
-			
-			//levelUp();
+			addActor(levelUpGroup);
 		}
 		
 		final InputListener displayControl = new InputListener(){
@@ -405,12 +468,14 @@ public class WanderUI extends GameUI {
 		};
 		display.addListener(displayControl);
 		
-		//mouse listener for moving the character by clicking within the display
+		//key listener for moving the character by pressing the arrow keys or WASD
 		addListener(new InputListener(){
 			@Override
 			public boolean keyDown(InputEvent evt, int keycode) {
 				if (!movementEnabled)
+				{
 					return false;
+				}
 				
 				boolean moved = false;
 				
@@ -430,7 +495,6 @@ public class WanderUI extends GameUI {
 		});
 		
 		index = 0;
-		movementEnabled = true;
 	}
 	
 	@Override
@@ -528,9 +592,10 @@ public class WanderUI extends GameUI {
 		{
 			if (index == 0)
 			{
-				display.addAction(
+				dialog.addAction(Actions.alpha(0f, 1f));
+				fader.addAction(
 					Actions.sequence(
-						Actions.alpha(0f, 3f),
+						Actions.alpha(1f, 2f),
 						Actions.run(new Runnable(){
 							@Override
 							public void run(){
@@ -786,12 +851,16 @@ public class WanderUI extends GameUI {
 	}
 
 	@Override
-	protected Actor[] focusList() {
+	protected FocusGroup focusList() {
+		if (levelUpDialog.isVisible())
+		{
+			return levelUpGroup;
+		}
 		if (this.index == 0)
 		{
 			return null;
 		}
-		return new Actor[]{dialog};
+		return sacrificeGroup;
 	}
 	
 	@Override
@@ -821,6 +890,8 @@ public class WanderUI extends GameUI {
 	
 	public void levelUp()
 	{
+		levelUpGroup.setFocus(levelUpGroup.getActors().first());
+		
 		points = 5;
 		
 		Stats s = playerService.getPlayer();
@@ -841,9 +912,13 @@ public class WanderUI extends GameUI {
 		spdTicker.changeValues(spd);
 		vitTicker.changeValues(vit);
 		
+		levelUpDialog.setVisible(true);
+		levelUpGroup.setVisible(true);
 		levelUpDialog.addAction(Actions.moveTo(levelUpDialog.getX(), getHeight()/2-levelUpDialog.getHeight()/2, .3f));
 		levelUpDialog.setTouchable(Touchable.enabled);
 		movementEnabled = false;
+		
+		setFocus(levelUpDialog);
 	}
 
 	/**
@@ -853,37 +928,6 @@ public class WanderUI extends GameUI {
 		movementEnabled = false;
 		message.setText("You are dead.\n\nYou have dropped all your new loot.\nSucks to be you.");
 		dialog.clearListeners();
-		dialog.addListener(new InputListener(){
-			@Override
-			public boolean keyDown(InputEvent evt, int keycode)
-			{
-				if (keycode == Keys.ENTER || keycode == Keys.SPACE)
-				{
-					Gdx.input.setInputProcessor(null); //disable input
-					
-					//fade screen out and do stuff
-					fader.addAction(
-						Actions.sequence(
-							Actions.alpha(1f, .5f)
-						)
-					);
-					dialog.addAction(
-						Actions.sequence(
-							Actions.alpha(0f, .5f),
-							Actions.delay(.5f),
-							Actions.run(new Runnable(){
-								@Override
-								public void run(){
-									SceneManager.switchToScene("town");
-								}
-							})
-						)
-					);
-					return true;
-				}
-				return false;
-			}
-		});
 		dialog.setVisible(true);
 		dialog.addAction(
 			Actions.sequence(
@@ -910,37 +954,6 @@ public class WanderUI extends GameUI {
 		movementEnabled = false;
 		message.setText("You decide to leave the dungeon.\nWhether that was smart of you or not, you got some sweet loot, and that's what matters.");
 		dialog.clearListeners();
-		dialog.addListener(new InputListener(){
-			@Override
-			public boolean keyDown(InputEvent evt, int keycode)
-			{
-				if (keycode == Keys.ENTER || keycode == Keys.SPACE)
-				{
-					Gdx.input.setInputProcessor(null); //disable input
-					
-					//fade screen out and do stuff
-					fader.addAction(
-						Actions.sequence(
-							Actions.alpha(1f, .5f)
-						)
-					);
-					dialog.addAction(
-						Actions.sequence(
-							Actions.alpha(0f, .5f),
-							Actions.delay(.5f),
-							Actions.run(new Runnable(){
-								@Override
-								public void run(){
-									SceneManager.switchToScene("town");
-								}
-							})
-						)
-					);
-					return true;
-				}
-				return false;
-			}
-		});
 		
 		dialog.setVisible(true);
 		dialog.addAction(

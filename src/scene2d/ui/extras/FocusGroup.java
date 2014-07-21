@@ -1,4 +1,4 @@
-package com.badlogic.gdx.scenes.scene2d.ui;
+package scene2d.ui.extras;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -153,7 +153,6 @@ public class FocusGroup extends Actor{
 			}
 		}
 		focus = actors.get(focusIndex);
-		focus = actors.get(focusIndex);
 		ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
 		fire(changeEvent);
 		Pools.free(changeEvent);
@@ -198,6 +197,9 @@ public class FocusGroup extends Actor{
 	{
 		focus = null;
 		focusIndex = -1;
+		ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
+		fire(changeEvent);
+		Pools.free(changeEvent);
 	}
 	
 	/**
@@ -207,7 +209,10 @@ public class FocusGroup extends Actor{
 	public void setFocus(Actor a)
 	{
 		if (!actors.contains(a, true))
+		{
+			System.out.println("not a valid actor");
 			return;
+		}
 		focus = a;
 		focusIndex = actors.indexOf(a, true);
 		ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
