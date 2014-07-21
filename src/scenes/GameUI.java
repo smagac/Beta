@@ -258,7 +258,7 @@ public abstract class GameUI extends UI {
 		fader.setTouchable(Touchable.disabled);
 		addActor(fader);
 		
-		pointer = new Image(skin.getDrawable("pointersm"));
+		pointer = new Image(skin.getDrawable("pointer"));
 		addActor(pointer);
 		hidePointer();
 		

@@ -52,6 +52,7 @@ public class EndUI extends UI {
 		this.player = player;
 	}
 
+	@Override
 	protected void load()
 	{
 		manager.load("data/end.json", Skin.class);	
