@@ -20,6 +20,8 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -66,8 +68,11 @@ public class WanderUI extends GameUI {
 	private Table itemSubmenu;
 	private Table lootList;
 	private ObjectMap<Item, Integer> loot;
+	private ButtonGroup lootButtons;
 	private Table sacrificeList;
 	private ObjectMap<Item, Integer> sacrifices;
+	private ButtonGroup sacrificeButtons;
+	
 	private ScrollPane lootPane;
 	private ScrollPane sacrificePane;
 	private FocusGroup sacrificeGroup;
@@ -102,6 +107,7 @@ public class WanderUI extends GameUI {
 		movementEnabled = true;
 	}
 	
+	@Override
 	protected void load()
 	{
 		super.load();
@@ -221,7 +227,6 @@ public class WanderUI extends GameUI {
 				lootPane.setFadeScrollBars(false);
 				lootPane.addListener(new ScrollFocuser(lootPane));
 				
-				//lootList.setFillParent(true);
 				lootList.setTouchable(Touchable.childrenOnly);
 				itemSubmenu.add(lootPane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 				
@@ -234,16 +239,218 @@ public class WanderUI extends GameUI {
 				sacrificePane.setScrollbarsOnTop(false);
 				sacrificePane.setScrollBarPositions(true, false);
 				sacrificePane.setFadeScrollBars(false);
-				sacrificeList.setTouchable(Touchable.childrenOnly);
 				sacrificePane.addListener(new ScrollFocuser(sacrificePane));
-				//sacrificeList.setFillParent(true);
+				
+				sacrificeList.setTouchable(Touchable.childrenOnly);
 				itemSubmenu.add(sacrificePane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 				
 				itemSubmenu.addAction(Actions.alpha(0f));
 				display.addActor(itemSubmenu);
+				
+				lootPane.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.RIGHT || keycode == Keys.D)
+						{
+							sacrificeGroup.setFocus(sacrificePane);
+							return true;
+						}
+						
+						if (loot.size <= 0)
+						{
+							return false;
+						}
+						
+						if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+						{
+							Item item = (Item)lootButtons.getChecked().getUserObject();
+							Integer k = loot.get(item);
+								
+							if (k - 1 >= 0)
+							{
+								sacrifices.put(item, sacrifices.get(item, 0)+1);
+								loot.put(item, k-1);
+								populateSacrifices();
+								populateLoot();
+							}
+							return true;
+						}
+						
+						if (keycode == Keys.DOWN || keycode == Keys.S)
+						{
+							if (lootButtons.getChecked() == null)
+							{
+								Button next = lootButtons.getButtons().first();
+								if (next != null)
+								{
+									next.setChecked(true);
+								}
+							}
+							else
+							{
+								int selected = lootButtons.getButtons().indexOf(lootButtons.getChecked(), true);
+								
+								if (selected + 1 >= lootButtons.getButtons().size)
+								{
+									return false;
+								}
+								else
+								{
+									Button next = lootButtons.getButtons().get(selected+1);
+									next.setChecked(true);
+								}
+							}
+							return true;
+						}
+						if (keycode == Keys.UP || keycode == Keys.W)
+						{
+							if (lootButtons.getChecked() == null)
+							{
+								Button next = lootButtons.getButtons().first();
+								if (next != null)
+								{
+									next.setChecked(true);
+								}
+							}
+							else
+							{
+								int selected = lootButtons.getButtons().indexOf(lootButtons.getChecked(), true);
+								if (selected - 1 < 0)
+								{
+									return false;
+								}
+								else
+								{
+									Button next = lootButtons.getButtons().get(selected-1);
+									next.setChecked(true);
+								}
+							}
+							return true;
+						}
+						
+						return false;
+					}
+				});
+				
+				sacrificePane.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.LEFT || keycode == Keys.A)
+						{
+							sacrificeGroup.setFocus(lootPane);
+							return true;
+						}
+						
+						if (sacrifices.size <= 0)
+						{
+							return false;
+						}
+						
+						if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+						{
+							Item item = (Item)sacrificeButtons.getChecked().getUserObject();
+							Integer k = sacrifices.get(item);
+								
+							if (k - 1 >= 0)
+							{
+								loot.put(item, loot.get(item, 0)+1);
+								sacrifices.put(item, k-1);
+								if (k - 1 == 0)
+								{
+									sacrifices.remove(item);
+								}
+								populateSacrifices();
+								populateLoot();
+							}
+							return true;
+						}
+						
+						if (keycode == Keys.DOWN || keycode == Keys.S)
+						{
+							if (sacrificeButtons.getChecked() == null)
+							{
+								Button next = sacrificeButtons.getButtons().first();
+								if (next != null)
+								{
+									next.setChecked(true);
+								}
+							}
+							else
+							{
+								int selected = sacrificeButtons.getButtons().indexOf(sacrificeButtons.getChecked(), true);
+								
+								if (selected + 1 >= sacrificeButtons.getButtons().size)
+								{
+									return false;
+								}
+								else
+								{
+									Button next = sacrificeButtons.getButtons().get(selected+1);
+									next.setChecked(true);
+								}
+							}
+							return true;
+						}
+						if (keycode == Keys.UP || keycode == Keys.W)
+						{
+							if (sacrificeButtons.getChecked() == null)
+							{
+								Button next = sacrificeButtons.getButtons().first();
+								if (next != null)
+								{
+									next.setChecked(true);
+								}
+							}
+							else
+							{
+								int selected = sacrificeButtons.getButtons().indexOf(sacrificeButtons.getChecked(), true);
+								if (selected - 1 < 0)
+								{
+									return false;
+								}
+								else
+								{
+									Button next = sacrificeButtons.getButtons().get(selected-1);
+									next.setChecked(true);
+								}
+							}
+							return true;
+						}
+						
+						return false;
+					}
+				});
 			}
 			
-			
+			sacrificeGroup = new FocusGroup(buttonList, lootPane, sacrificePane);
+			sacrificeGroup.addListener(new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (focusList() == null)
+						return;
+					
+					Actor a = focusList().getFocused();
+					
+					if (a == lootPane)
+					{
+						showPointer(a, Align.left, Align.top);
+					}
+					else if (a == sacrificePane)
+					{
+						showPointer(a, Align.right, Align.top);
+					}
+					else
+					{
+						hidePointer();
+					}
+					
+					setFocus(a);
+				}
+			});
+			lootButtons = new ButtonGroup();
+			sacrificeButtons = new ButtonGroup();
 			
 			goddess = new Image(skin.getRegion(playerService.getWorship()));
 			goddess.setSize(128f, 128f);
@@ -684,6 +891,15 @@ public class WanderUI extends GameUI {
 		populateLoot();
 		populateSacrifices();
 		
+		if (loot.size > 0)
+		{
+			lootButtons.getButtons().first().setChecked(true);
+		}
+		if (sacrifices.size > 0)
+		{
+			sacrificeButtons.getButtons().first().setChecked(true);
+		}
+		
 		goddessDialog.clearActions();
 		goddessDialog.addAction(Actions.moveTo(goddessDialog.getX(), display.getHeight()-goddessDialog.getHeight(), .2f));
 		itemSubmenu.addAction(Actions.alpha(1f, .2f));
@@ -695,18 +911,23 @@ public class WanderUI extends GameUI {
 	private void populateLoot() {
 		lootList.clear();
 		lootList.top().left();
+		lootButtons.getAllChecked().clear();
+		lootButtons.getButtons().clear();
+		
 		if (loot.keys().hasNext)
 		{
 			for (final Item item : loot.keys())
 			{
 				final TextButton l = new TextButton(item.toString(), skin);
+				l.setName(item.toString());
+				l.setUserObject(item);
 				l.setDisabled(true);
 				lootList.add(l).width(190f);
 				Label i = new Label(""+loot.get(item), skin, "smaller");
 				i.setAlignment(Align.right);
 				lootList.add(i).width(20f);
 				lootList.row();
-				
+				lootButtons.add(l);
 				l.addListener(new InputListener(){
 					@Override
 					public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
@@ -749,7 +970,6 @@ public class WanderUI extends GameUI {
 			l.setAlignment(Align.center);
 			lootList.add(l).expandX().fillX();
 		}
-		lootList.bottom();
 		lootList.pack();
 	}
 	
@@ -757,18 +977,23 @@ public class WanderUI extends GameUI {
 	{
 		sacrificeList.clear();
 		sacrificeList.top().left();
+		sacrificeButtons.getAllChecked().clear();
+		sacrificeButtons.getButtons().clear();
+		
 		if (sacrifices.keys().hasNext)
 		{
 			for (final Item item : sacrifices.keys())
 			{
 				final TextButton l = new TextButton(item.toString(), skin);
+				l.setName(item.toString());
+				l.setUserObject(item);
 				l.setDisabled(true);
 				sacrificeList.add(l).width(190f);
 				Label i = new Label(""+sacrifices.get(item), skin, "smaller");
 				i.setAlignment(Align.right);
 				sacrificeList.add(i).width(20f);
 				sacrificeList.row();
-				
+				sacrificeButtons.add(l);
 				l.addListener(new InputListener(){
 					@Override
 					public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)

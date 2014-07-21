@@ -233,9 +233,9 @@ public class TownUI extends GameUI {
 				public void changed(ChangeEvent event, Actor actor) {
 					if (actor == myButton)
 					{
+						manager.get(DataDirs.tick, Sound.class).play();
 						if (myButton.isChecked())
 						{
-							manager.get(DataDirs.tick, Sound.class).play();
 							craftList.setItems(playerService.getInventory().getRequiredCrafts());
 							craftList.setSelectedIndex(0);
 						}
@@ -273,10 +273,12 @@ public class TownUI extends GameUI {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					requirementList.clear();
-					manager.get(DataDirs.tick, Sound.class).play();
 					
 					//build requirements list
 					Craftable c = craftList.getSelected();
+					if (c == null)
+						return;
+					
 					ObjectMap<String, Integer> items = c.getRequirements();
 					for (String name : items.keys())
 					{
@@ -303,7 +305,6 @@ public class TownUI extends GameUI {
 			craftSubmenu.row();
 			//current highlighted craft item requirements
 			requirementList = new Table();
-			requirementList.clear();
 			requirementList.row();
 			requirementList.pad(10);
 			requirementList.top().left();
@@ -1155,8 +1156,9 @@ public class TownUI extends GameUI {
 	{
 		menu = CRAFT;
 		//populate the submenu's data
-		craftList.setItems(playerService.getInventory().getRequiredCrafts());	
-		requirementList.clear();
+		craftList.setSelectedIndex(-1);;
+		craftList.setItems(playerService.getInventory().getRequiredCrafts());
+		craftList.setSelectedIndex(0);
 		craftTabs.setChecked(craftTabs.getButtons().first().getName());
 		//create loot menu
 		populateLoot();

@@ -22,6 +22,7 @@ public class TitleSequence extends UI {
 		this.parent = parent;
 	}
 	
+	@Override
 	protected void load() {
 		manager.load("data/title.json", Skin.class);	
 	}
