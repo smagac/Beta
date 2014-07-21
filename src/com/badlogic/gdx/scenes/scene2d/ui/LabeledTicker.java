@@ -94,6 +94,17 @@ public class LabeledTicker<T> extends Table {
 			{
 				right.setChecked(false);
 			}
+			
+			@Override
+			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+			{
+				if (rightClick != null)
+				{
+					rightClick.run();
+					return true;
+				}
+				return false;
+			}
 		});
 		
 		setLeftAction(defaultLeftClick);
