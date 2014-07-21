@@ -422,8 +422,6 @@ public class TownUI extends GameUI {
 			pane.setScrollbarsOnTop(false);
 			pane.addListener(new ScrollFocuser(pane));
 			
-			exploreSubmenu.add(pane).expand().fill();
-			
 			
 			//prep file browsing
 			if (directory == null)
@@ -480,6 +478,7 @@ public class TownUI extends GameUI {
 					}
 				});
 				
+				exploreSubmenu.top();
 				exploreSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
 				exploreSubmenu.row();
 				
@@ -591,7 +590,7 @@ public class TownUI extends GameUI {
 							recentButton.setChecked(true);
 							return true;
 						}
-						if (keycode == Keys.ENTER || keycode == Keys.SPACE && browseButton.isChecked())
+						if ((keycode == Keys.ENTER || keycode == Keys.SPACE) && browseButton.isChecked())
 						{
 							int listIndex = fileList.getSelectedIndex();
 							final FileHandle selected = directoryList.get(listIndex);
@@ -754,6 +753,8 @@ public class TownUI extends GameUI {
 				});
 			}
 
+			exploreSubmenu.add(pane).expand().fill();
+			
 			pane.addListener(new InputListener(){
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)

@@ -195,6 +195,9 @@ public abstract class GameUI extends UI {
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
+					if (!buttonList.isVisible())
+						return false;
+					
 					if (keycode == Keys.LEFT || keycode == Keys.A)
 					{
 						setIndex(getIndex()-1);

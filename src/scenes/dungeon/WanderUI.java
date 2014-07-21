@@ -576,6 +576,7 @@ public class WanderUI extends GameUI {
 						@Override
 						public void run() {
 							levelUpDialog.setVisible(false);
+							hidePointer();
 						}
 						
 					})
