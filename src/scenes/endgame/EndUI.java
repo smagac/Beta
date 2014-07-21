@@ -50,9 +50,13 @@ public class EndUI extends UI {
 		super(manager);
 		parent = scene;
 		this.player = player;
-		manager.load("data/end.json", Skin.class);
 	}
 
+	protected void load()
+	{
+		manager.load("data/end.json", Skin.class);	
+	}
+	
 	@Override
 	public void init() {
 		skin = manager.get("data/end.json", Skin.class);

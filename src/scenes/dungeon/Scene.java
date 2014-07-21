@@ -135,11 +135,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
 	@Override
 	public void show() {
-		manager.load("data/dungeon.atlas", TextureAtlas.class);
-		manager.load("data/null.png", Texture.class);
-		manager.load(DataDirs.hit, Sound.class);
-		manager.load(DataDirs.dead, Sound.class);
-		
 		ui = new WanderUI(manager, playerService, this);
 		
 		if (bgm == null)

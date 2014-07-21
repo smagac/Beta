@@ -8,6 +8,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -92,6 +93,15 @@ public class WanderUI extends GameUI {
 		sacrifices = new ObjectMap<Item, Integer>();
 		healCost = 1;
 		walkTimer = -1f;
+	}
+	
+	protected void load()
+	{
+		super.load();
+		manager.load("data/dungeon.atlas", TextureAtlas.class);
+		manager.load("data/null.png", Texture.class);
+		manager.load(DataDirs.hit, Sound.class);
+		manager.load(DataDirs.dead, Sound.class);
 	}
 
 	@SuppressWarnings("unchecked")

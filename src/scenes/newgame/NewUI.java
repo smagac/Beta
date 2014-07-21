@@ -1,5 +1,6 @@
 package scenes.newgame;
 
+import java.util.Iterator;
 import java.util.Scanner;
 
 import scenes.UI;
@@ -9,12 +10,14 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.FocusGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.LabeledTicker;
@@ -23,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
@@ -30,10 +34,9 @@ import core.service.IPlayerContainer;
 
 public class NewUI extends UI {
 	
-	private int difficulty = 3;
 	private int index = -1;
 
-	private Scanner story;
+	Iterator<String> story;
 	private Table textTable;
 	private Label text;
 	private Image goddess;
@@ -47,11 +50,16 @@ public class NewUI extends UI {
 	
 	private IPlayerContainer player;
 	
+	
 	public NewUI(Scene scene, AssetManager manager, IPlayerContainer p) {
 		super(manager);
 		parent = scene;
-		manager.load("data/uiskin.json", Skin.class);
 		player = p;
+	}
+	
+	@Override
+	protected void load() {
+		manager.load("data/uiskin.json", Skin.class);	
 	}
 
 	@Override
@@ -74,6 +82,8 @@ public class NewUI extends UI {
 		
 		window.add(prompt).expandX().fillX().padBottom(20);
 		window.row();
+		
+		final FocusGroup focus = new FocusGroup();
 		//Difficulty
 		{
 			Integer[] values = {1, 2, 3, 4, 5};
@@ -98,6 +108,7 @@ public class NewUI extends UI {
 				
 			});
 			window.add(number).expandX().fillX().pad(0, 50f, 10f, 50f);
+			focus.add(number);
 		}
 		window.row();
 		
@@ -108,11 +119,11 @@ public class NewUI extends UI {
 			prompt.setAlignment(Align.left);
 			table.add(prompt).expandX().fillX();
 			
-			TextButton left = new TextButton("Male", skin, "big");
+			final TextButton left = new TextButton("Male", skin, "big");
 			left.pad(10);
 			left.setChecked(true);
 			
-			TextButton right = new TextButton("Female", skin, "big");
+			final TextButton right = new TextButton("Female", skin, "big");
 			right.pad(10);
 			
 			gender = new ButtonGroup(left, right);
@@ -121,7 +132,41 @@ public class NewUI extends UI {
 			table.add(left).width(80f).right().padRight(10f);
 			table.add(right).width(80f).right();
 			window.add(table).expandX().fillX().pad(0, 50f, 10f, 50f);
+			focus.add(table);
+			
+			table.addListener(new InputListener(){
+				@Override
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					boolean hit = false;
+					
+					if (keycode == Keys.LEFT || keycode == Keys.A)
+					{
+						hit = true;
+						left.setChecked(true);
+					}
+					if (keycode == Keys.RIGHT || keycode == Keys.D)
+					{
+						hit = true;
+						right.setChecked(true);
+					}
+					return hit;
+				}
+			});
 		}
+		
+		focus.addListener(new ChangeListener(){
+			Vector2 vec = new Vector2();
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				Actor a = focus.getFocused();
+				setKeyboardFocus(a);
+				
+				a.localToStageCoordinates(vec);
+				showPointer(vec.x-8f, vec.y, a, false);
+				vec.setZero();
+			}
+		});
 		
 		
 		final TextButton accept = new TextButton("START", skin);
@@ -143,6 +188,7 @@ public class NewUI extends UI {
 								accept.clearListeners();
 								number.clearListeners();
 								frame.clearListeners();
+								hidePointer();
 								manager.get(DataDirs.accept, Sound.class).play();
 							}
 							
@@ -167,7 +213,14 @@ public class NewUI extends UI {
 			Actions.sequence(
 				Actions.alpha(0f),
 				Actions.delay(1.5f),
-				Actions.alpha(1f, .3f)
+				Actions.alpha(1f, .3f),
+				Actions.run(new Runnable(){
+					@Override
+					public void run() {
+						frame.addActor(focus);
+						focus.setFocus(number);
+					}
+				})
 			)
 		);
 		
@@ -182,6 +235,16 @@ public class NewUI extends UI {
 					hit = true;
 					accept.setChecked(true);
 				}
+				if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					hit = true;
+					focus.next();
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					hit = true;
+					focus.prev();
+				}
 				return hit;
 			}
 		});
@@ -193,6 +256,11 @@ public class NewUI extends UI {
 		act();
 		
 		setKeyboardFocus(number);
+		
+		pointer = new Image(skin.getDrawable("pointer"));
+		pointer.setSize(32f, 32f);
+		hidePointer();
+		addActor(pointer);
 	}
 
 	public int getDifficulty() {
@@ -205,7 +273,7 @@ public class NewUI extends UI {
 		{
 			parent.prepareStory();
 		}
-		else if (story.hasNextLine())
+		else if (story.hasNext())
 		{
 			advanceStory();
 		}
@@ -277,7 +345,7 @@ public class NewUI extends UI {
 
 					@Override
 					public void run() {
-						String dialog = story.nextLine();
+						String dialog = story.next();
 						text.setText(dialog);
 						textTable.pack();
 					}
@@ -294,7 +362,27 @@ public class NewUI extends UI {
 	}
 	
 	public void prepareStory() {
-		story = new Scanner(Gdx.files.classpath("core/data/title_"+player.getGender()+".txt").read());
+		Array<String> data = new Array<String>();
+		setKeyboardFocus(null);
+		addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+				{
+					over = true;
+					return true;
+				}
+				return false;
+			}
+		});
+		Scanner s = new Scanner(Gdx.files.classpath("core/data/title_"+player.getGender()+".txt").read());
+		while (s.hasNextLine())
+		{
+			data.add(s.nextLine());
+		}
+		s.close();
+		story = data.iterator();
 		
 		you = new Image(skin.getRegion(player.getGender()));
 		you.setScaling(Scaling.stretch);
@@ -348,23 +436,16 @@ public class NewUI extends UI {
 	
 					@Override
 					public void run() {
-						
 						addListener(new InputListener(){
 							@Override
 							public boolean keyDown(InputEvent evt, int keycode)
 							{
-								boolean hit = false;
-								if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+								if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 								{
-									hit = true;
-									end();
-								}
-								else if (keycode == Keys.ENTER || keycode == Keys.SPACE)
-								{
-									hit = true;
 									next();
+									return true;
 								}						
-								return hit;
+								return false;
 							}
 							
 							@Override
@@ -373,6 +454,7 @@ public class NewUI extends UI {
 								if (button == Buttons.LEFT)
 								{
 									next();
+									return true;
 								}
 								return false;
 							}
@@ -391,9 +473,6 @@ public class NewUI extends UI {
 	public void dispose()
 	{
 		super.dispose();
-		if (story != null) {
-			story.close();
-		}
 	}
 
 	public boolean getGender() {

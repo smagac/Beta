@@ -20,7 +20,10 @@ public class TitleSequence extends UI {
 	public TitleSequence(scenes.title.Scene parent, AssetManager manager) {
 		super( manager);
 		this.parent = parent;
-		manager.load("data/title.json", Skin.class);
+	}
+	
+	protected void load() {
+		manager.load("data/title.json", Skin.class);	
 	}
 
 	@Override

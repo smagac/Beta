@@ -75,18 +75,20 @@ public abstract class GameUI extends UI {
 		
 		tmpBound = new Rectangle();
 		displayBounds = new Rectangle();
-		
+}
+	
+	protected void load()
+	{
 		manager.load("data/uiskin.json", Skin.class);
-
 		manager.load(DataDirs.accept, Sound.class);
-		manager.load(DataDirs.tick, Sound.class);
+		manager.load(DataDirs.tick, Sound.class);	
 	}
 	
 	/**
 	 * Initialize the ui after all assets have been loaded
 	 */
 	@Override
-	public void init()
+	public final void init()
 	{
 		skin = manager.get("data/uiskin.json", Skin.class);
 

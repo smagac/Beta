@@ -3,6 +3,7 @@ package scenes;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -21,19 +22,25 @@ public abstract class UI extends Stage {
 	protected Skin skin;
 	protected Image fader;
 	protected AssetManager manager;
+	protected Image pointer;
 	
 	public UI(AssetManager manager)
 	{
 		super(new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]));
 		this.manager = manager;
-		manager.load("data/uiskin.json", Skin.class);
-
-		manager.load(DataDirs.accept, Sound.class);
-		manager.load(DataDirs.tick, Sound.class);
+		
+		load();
 	}
+
+	/**
+	 * Load any resources needed by this ui
+	 */
+	protected abstract void load();
 	
+	/**
+	 * Initializes all elements of the ui after the manager has finished loading
+	 */
 	public abstract void init();
-	
 	
 	public static Group makeWindow(Skin skin, int width, int height)
 	{
@@ -116,6 +123,22 @@ public abstract class UI extends Stage {
 	
 	public void resize(int width, int height){
 		getViewport().update(width, height);
+	}
+	
+	/**
+	 * Positions the pointer next to an actor
+	 * @param focus
+	 */
+	public void showPointer(float x, float y, Actor focus, boolean right)
+	{
+		pointer.setPosition(x+((right)?(focus.getWidth()+pointer.getWidth()):-pointer.getWidth()), y);
+		pointer.setScale((right)?-1:1, 1);
+		pointer.setVisible(true);
+	}
+	
+	public void hidePointer()
+	{
+		pointer.setVisible(false);
 	}
 	
 	@Override
