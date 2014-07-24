@@ -17,12 +17,12 @@ void main(void) {
     
     if (any(greaterThan(texCol.rgb, h)))
     {
-        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(0, .5, contrast));
+        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(0.0, .5, contrast));
         
     }
     else
     {  
-        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(.5, 1, contrast));
+        texCol.rgb = mix(low.rgb, high.rgb, smoothstep(.5, 1.0, contrast));
     }
     
     gl_FragColor = texCol;
