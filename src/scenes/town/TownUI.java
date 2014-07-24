@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Iterator;
 
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ScrollFollower;
+import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
@@ -23,7 +25,6 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
@@ -66,6 +67,7 @@ public class TownUI extends GameUI {
 	private FocusGroup exploreGroup;
 	private Table exploreSubmenu;
 	private List<String> fileList;
+	private List<String> recentFileList;
 	private Array<FileHandle> directoryList;
 	private Array<String> paths;
 	private Table fileDetails;
@@ -75,9 +77,10 @@ public class TownUI extends GameUI {
 	private FocusGroup craftGroup;
 	private Table craftSubmenu;
 	private Table lootSubmenu;
+	private TabbedPane craftMenu;
 	private List<Craftable> craftList;
+	private List<Craftable> todayList;
 	private ScrollPane lootPane;
-	private ScrollPane craftPane;
 	private Table lootList;
 	private Table requirementList;
 	
@@ -221,88 +224,132 @@ public class TownUI extends GameUI {
 			craftSubmenu.setHeight(display.getHeight());
 			
 			
-			Group tabs = new HorizontalGroup();
 			craftTabs = new ButtonGroup();
 			final TextButton myButton = new TextButton("My List", skin);
-			tabs.addActor(myButton);
 			myButton.setName("required");
 			craftTabs.add(myButton);
-			myButton.addListener(new ChangeListener(){
-
-				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					if (actor == myButton)
-					{
-						manager.get(DataDirs.tick, Sound.class).play();
-						if (myButton.isChecked())
-						{
-							craftList.setItems(playerService.getInventory().getRequiredCrafts());
-							craftList.setSelectedIndex(0);
-						}
-					}
-				}
-			});
 			
 			final TextButton todayButton = new TextButton("Today's Special", skin);
 			todayButton.setName("extra");
-			tabs.addActor(todayButton);
 			craftTabs.add(todayButton);
-			todayButton.addListener(new ChangeListener(){
-
-				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					if (actor == todayButton)
-					{
-						if (todayButton.isChecked())
-						{
-							craftList.setItems(playerService.getInventory().getTodaysCrafts());
-							craftList.setSelectedIndex(0);
-						}
-					}
-				}
-			});
-			
-			craftSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
-			craftSubmenu.row();
 			
 			//list of required crafts
-			craftList = new List<Craftable>(skin);
-			craftList.setItems(playerService.getInventory().getRequiredCrafts());
-			craftList.addListener(new ChangeListener(){
+			{
+				final List<Craftable> list = craftList = new List<Craftable>(skin);
+				list.setItems(playerService.getInventory().getRequiredCrafts());
+	
+				final ScrollPane p = new ScrollPane(list, skin);
+				p.addListener(new ScrollFocuser(p));
+				p.setFadeScrollBars(false);
+				list.addListener(new ChangeListener(){
+					
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+						requirementList.clear();
+						
+						//build requirements list
+						refreshRequirements(list.getSelected());
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
+				});
+				p.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.DOWN || keycode == Keys.S)
+						{
+							list.setSelectedIndex(Math.min(list.getItems().size-1, list.getSelectedIndex()+1));
+							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+							return true;
+						}
+						if (keycode == Keys.UP || keycode == Keys.W)
+						{
+							list.setSelectedIndex(Math.max(0, list.getSelectedIndex()-1));
+							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+							return true;
+						}
+						
+						return false;
+					}
+				});
+				myButton.setUserObject(p);
+			}
+			
+			//list of today's crafts
+			{
+				final List<Craftable> list = todayList = new List<Craftable>(skin);
+				list.setItems(playerService.getInventory().getTodaysCrafts());
+				
+				final ScrollPane p = new ScrollPane(list, skin);
+				p.addListener(new ScrollFocuser(p));
+				p.setFadeScrollBars(false);
+				
+				list.addListener(new ChangeListener(){
+					
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
+						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+						refreshRequirements(list.getSelected());
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
+				});
+				
+				p.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.DOWN || keycode == Keys.S)
+						{
+							list.setSelectedIndex(Math.min(list.getItems().size-1, list.getSelectedIndex()+1));
+							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+							return true;
+						}
+						if (keycode == Keys.UP || keycode == Keys.W)
+						{
+							list.setSelectedIndex(Math.max(0, list.getSelectedIndex()-1));
+							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+							return true;
+						}
+						
+						return false;
+					}
+				});
+				todayButton.setUserObject(p);
+			}
+			
+			
+			craftMenu = new TabbedPane(craftTabs, false);
+			
+			craftMenu.setTabAction(new Runnable(){
 
 				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					requirementList.clear();
+				public void run() {
+					craftList.setSelectedIndex(0);
+					todayList.setSelectedIndex(0);
 					
-					//build requirements list
-					Craftable c = craftList.getSelected();
-					if (c == null)
-						return;
-					
-					ObjectMap<String, Integer> items = c.getRequirements();
-					for (String name : items.keys())
+					if (craftMenu.getOpenTabIndex() == 0)
 					{
-						Label l = new Label(name, skin, "smallest");
-						l.setAlignment(Align.left);
-						requirementList.add(l).expandX().fillX();
-						Label i = new Label(""+items.get(name), skin, "smallest");
-						i.setAlignment(Align.right);
-						requirementList.add(i).width(30f);
-						requirementList.row();
+						refreshRequirements(craftList.getSelected());
 					}
-					
-					requirementList.pack();
+					else
+					{
+						refreshRequirements(todayList.getSelected());
+					}
 				}
-
+				
 			});
 			
-			craftPane = new ScrollPane(craftList, skin);
-			craftPane.addListener(new ScrollFocuser(craftPane));
-			craftPane.setFadeScrollBars(false);
-			
-			craftSubmenu.top().add(craftPane).expand().fill().height(display.getHeight()/2-20).pad(2f).padTop(0f);
+			craftSubmenu.top().add(craftMenu).expand().fill().height(display.getHeight()/2-10).pad(2f).padTop(0f);
 			
 			craftSubmenu.row();
+			
 			//current highlighted craft item requirements
 			requirementList = new Table();
 			requirementList.row();
@@ -313,8 +360,7 @@ public class TownUI extends GameUI {
 			pane2.setFadeScrollBars(false);
 			pane2.addListener(new ScrollFocuser(pane2));
 
-			
-			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-20).pad(2f);
+			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-10).pad(2f);
 			craftSubmenu.pad(10f);
 			craftSubmenu.setPosition(display.getWidth(), 0);
 			display.addActor(craftSubmenu);
@@ -355,38 +401,10 @@ public class TownUI extends GameUI {
 					return false;
 				}
 			});
-			craftPane.addListener(new InputListener(){
-				@Override
-				public boolean keyDown(InputEvent evt, int keycode)
-				{
-					if (keycode == Keys.DOWN || keycode == Keys.S)
-					{
-						craftList.setSelectedIndex(Math.min(craftList.getItems().size-1, craftList.getSelectedIndex()+1));
-						float y = Math.max(0, (craftList.getSelectedIndex() * craftList.getItemHeight()) + craftPane.getHeight()/2);
-						craftPane.scrollTo(0, craftList.getHeight()-y, craftPane.getWidth(), craftPane.getHeight());
-					}
-					if (keycode == Keys.UP || keycode == Keys.W)
-					{
-						craftList.setSelectedIndex(Math.max(0, craftList.getSelectedIndex()-1));
-						float y = Math.max(0, (craftList.getSelectedIndex() * craftList.getItemHeight()) + craftPane.getHeight()/2);
-						craftPane.scrollTo(0, craftList.getHeight()-y, craftPane.getWidth(), craftPane.getHeight());
-					}
-					if (keycode == Keys.LEFT || keycode == Keys.A)
-					{
-						myButton.setChecked(true);
-					}
-					if (keycode == Keys.RIGHT || keycode == Keys.D )
-					{
-						todayButton.setChecked(true);
-					}
-					
-					return false;
-				}
-			});
 			
 			display.addActor(lootSubmenu);
 			
-			craftGroup = new FocusGroup(buttonList, lootPane, craftPane);
+			craftGroup = new FocusGroup(buttonList, lootPane, craftMenu);
 			craftGroup.addListener(focusListener);
 		}
 		
@@ -412,21 +430,13 @@ public class TownUI extends GameUI {
 			
 			//list of required crafts
 			fileList = new List<String>(skin);
-
-			final ScrollPane pane = new ScrollPane(fileList, skin);
-			pane.setWidth(250f);
-			pane.setHeight(display.getHeight());
-			pane.setScrollingDisabled(true, false);
-			pane.setFadeScrollBars(false);
-			pane.setScrollBarPositions(true, false);
-			pane.setScrollbarsOnTop(false);
-			pane.addListener(new ScrollFocuser(pane));
-			
+			recentFileList = new List<String>(skin);
+			recentFileList.setItems(historyPaths);
 			
 			//prep file browsing
 			if (directory == null)
 			{
-				loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()));	
+				loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()).parent());	
 			}
 			else
 			{
@@ -434,350 +444,208 @@ public class TownUI extends GameUI {
 			}
 			changeDir = false;
 			
-			if (history.size > 0)
+			exploreTabs = new ButtonGroup();
+			
 			{
-				Group tabs = new HorizontalGroup();
-				exploreTabs = new ButtonGroup();
 				final TextButton browseButton = new TextButton("Browse", skin);
-				tabs.addActor(browseButton);
 				browseButton.setName("browse");
 				exploreTabs.add(browseButton);
-				browseButton.addListener(new ChangeListener(){
+				
+				final ScrollPane pane = new ScrollPane(fileList, skin);
+				pane.setWidth(250f);
+				pane.setHeight(display.getHeight());
+				pane.setScrollingDisabled(true, false);
+				pane.setFadeScrollBars(false);
+				pane.setScrollBarPositions(true, false);
+				pane.setScrollbarsOnTop(false);
+				pane.addListener(new ScrollFocuser(pane));
+				
+				browseButton.setUserObject(pane);
+				
+				fileList.addListener(new ScrollFollower(pane, fileList));
+				fileList.addListener(new ChangeListener(){
 	
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
-						if (actor == browseButton)
+						if (changeDir)
 						{
-							if (browseButton.isChecked())
-							{
-								manager.get(DataDirs.tick, Sound.class).play();
-								fileList.setItems(paths);
-								fileList.setSelectedIndex(0);
-							}
-						}
-					}
-					
-				});
-				
-				final TextButton recentButton = new TextButton("Recent Files", skin);
-				recentButton.setName("history");
-				tabs.addActor(recentButton);
-				exploreTabs.add(recentButton);
-				recentButton.addListener(new ChangeListener(){
-	
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (actor == recentButton)
-						{
-							if (recentButton.isChecked())
-							{
-								fileList.setItems(historyPaths);
-								fileList.setSelectedIndex(0);
-							}
-						}
-					}
-				});
-				
-				exploreSubmenu.top();
-				exploreSubmenu.add(tabs).fillX().expandX().padLeft(2f).padBottom(0f);
-				exploreSubmenu.row();
-				
-				ChangeListener historyListener = new ChangeListener(){
-
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (!recentButton.isChecked())
-						{
+							changeDir = false;
+							event.cancel();
 							return;
 						}
 						
+						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+						
+						int listIndex;
+						final FileHandle selected;
+						try
+						{
+							listIndex = fileList.getSelectedIndex();
+							selected = directoryList.get(listIndex);
+						}
+						catch (java.lang.IndexOutOfBoundsException e)
+						{
+							listIndex = 0;
+							System.out.println("file loader derp");
+							return;
+						}
+						
+						if (selected == null && lastIndex == listIndex)
+						{
+							//go to parent directory
+							queueDir = directory.parent();
+							manager.get(DataDirs.tick, Sound.class).play();
+							return;
+						}
+						else if (selected != null)
+						{
+							if (selected.isDirectory())
+							{
+								fileDetails.clearActions();
+								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+								
+								if (lastIndex == listIndex)
+								{
+									changeDir = true;
+									fileList.setItems();
+									fileList.addAction(Actions.sequence(
+										Actions.moveTo(-fileList.getWidth(), 0, .3f),
+										Actions.run(new Runnable(){
+	
+											@Override
+											public void run() {
+												queueDir = selected;
+											}
+											
+										}),
+										Actions.moveTo(0, 0, .3f)
+									));
+									return;
+								}
+							}
+							else
+							{
+								updateFileDetails(selected);
+							}
+						}
+						
+						if (lastIndex != -1)
+						{
+							manager.get(DataDirs.tick, Sound.class).play();
+						}
+						lastIndex = listIndex;
+					}
+				});
+			}
+		
+			{
+				final TextButton recentButton = new TextButton("Recent Files", skin);
+				recentButton.setName("history");
+				exploreTabs.add(recentButton);
+				
+				recentFileList.addListener(new ChangeListener(){
+
+					@Override
+					public void changed(ChangeEvent event, Actor actor) {
 						FileHandle selected = history.get(fileList.getSelectedIndex());
 						updateFileDetails(selected);
 					}
-				};
-				ChangeListener browseListener = new ChangeListener(){
-
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (!browseButton.isChecked())
-						{
-							return;
-						}
-						
-						if (changeDir)
-						{
-							changeDir = false;
-							event.cancel();
-							return;
-						}
-						
-						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-						
-						int listIndex;
-						final FileHandle selected;
-						try
-						{
-							listIndex = fileList.getSelectedIndex();
-							selected = directoryList.get(listIndex);
-						}
-						catch (java.lang.IndexOutOfBoundsException e)
-						{
-							listIndex = 0;
-							System.out.println("file loader derp");
-							return;
-						}
-						
-						if (selected == null && lastIndex == listIndex)
-						{
-							//go to parent directory
-							queueDir = directory.parent();
-							manager.get(DataDirs.tick, Sound.class).play();
-							return;
-						}
-						else if (selected != null)
-						{
-							if (selected.isDirectory())
-							{
-								fileDetails.clearActions();
-								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-								
-								if (lastIndex == listIndex)
-								{
-									changeDir = true;
-									fileList.setItems();
-									fileList.addAction(Actions.sequence(
-										Actions.moveTo(-fileList.getWidth(), 0, .3f),
-										Actions.run(new Runnable(){
-
-											@Override
-											public void run() {
-												queueDir = selected;
-											}
-											
-										}),
-										Actions.moveTo(0, 0, .3f)
-									));
-									return;
-								}
-							}
-							else
-							{
-								updateFileDetails(selected);
-							}
-						}
-						
-						if (lastIndex != -1)
-						{
-							manager.get(DataDirs.tick, Sound.class).play();
-						}
-						lastIndex = listIndex;
-					}
-				};
-				fileList.addListener(historyListener);
-				fileList.addListener(browseListener);
 				
-				pane.addListener(new InputListener(){
-					@Override
-					public boolean keyDown(InputEvent evt, int keycode)
-					{
-						if (keycode == Keys.LEFT || keycode == Keys.A)
-						{
-							browseButton.setChecked(true);
-							return true;
-						}
-						if (keycode == Keys.RIGHT || keycode == Keys.D)
-						{
-							recentButton.setChecked(true);
-							return true;
-						}
-						if ((keycode == Keys.ENTER || keycode == Keys.SPACE) && browseButton.isChecked())
-						{
-							int listIndex = fileList.getSelectedIndex();
-							final FileHandle selected = directoryList.get(listIndex);
-							if (selected == null && lastIndex == listIndex)
-							{
-								//go to parent directory
-								queueDir = directory.parent();
-								manager.get(DataDirs.tick, Sound.class).play();
-								return true;
-							}
-							if (selected.isDirectory())
-							{
-								fileDetails.clearActions();
-								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-								
-								if (lastIndex == listIndex)
-								{
-									changeDir = true;
-									fileList.setItems();
-									fileList.addAction(Actions.sequence(
-										Actions.moveTo(-fileList.getWidth(), 0, .3f),
-										Actions.run(new Runnable(){
-
-											@Override
-											public void run() {
-												queueDir = selected;
-											}
-											
-										}),
-										Actions.moveTo(0, 0, .3f)
-									));
-									return true;
-								}
-							}
-						}
-						
-						return false;
-					}
 				});
-			}
-			else
-			{
-				ChangeListener browseListener = new ChangeListener(){
-
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (changeDir)
-						{
-							changeDir = false;
-							event.cancel();
-							return;
-						}
-						
-						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-						
-						int listIndex;
-						final FileHandle selected;
-						try
-						{
-							listIndex = fileList.getSelectedIndex();
-							selected = directoryList.get(listIndex);
-						}
-						catch (java.lang.IndexOutOfBoundsException e)
-						{
-							listIndex = 0;
-							System.out.println("file loader derp");
-							return;
-						}
-						
-						if (selected == null && lastIndex == listIndex)
-						{
-							//go to parent directory
-							queueDir = directory.parent();
-							manager.get(DataDirs.tick, Sound.class).play();
-							return;
-						}
-						else if (selected != null)
-						{
-							if (selected.isDirectory())
-							{
-								fileDetails.clearActions();
-								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-								
-								if (lastIndex == listIndex)
-								{
-									changeDir = true;
-									fileList.setItems();
-									fileList.addAction(Actions.sequence(
-										Actions.moveTo(-fileList.getWidth(), 0, .3f),
-										Actions.run(new Runnable(){
-
-											@Override
-											public void run() {
-												queueDir = selected;
-											}
-											
-										}),
-										Actions.moveTo(0, 0, .3f)
-									));
-									return;
-								}
-							}
-							else
-							{
-								updateFileDetails(selected);
-							}
-						}
-						
-						if (lastIndex != -1)
-						{
-							manager.get(DataDirs.tick, Sound.class).play();
-						}
-						lastIndex = listIndex;
-					}
-				};
-				fileList.addListener(browseListener);
-				pane.addListener(new InputListener(){
-					@Override
-					public boolean keyDown(InputEvent evt, int keycode)
-					{
-						if (keycode == Keys.ENTER || keycode == Keys.SPACE)
-						{
-							int listIndex = fileList.getSelectedIndex();
-							final FileHandle selected = directoryList.get(listIndex);
-							if (selected == null && lastIndex == listIndex)
-							{
-								//go to parent directory
-								queueDir = directory.parent();
-								manager.get(DataDirs.tick, Sound.class).play();
-								return true;
-							}
-							if (selected.isDirectory())
-							{
-								fileDetails.clearActions();
-								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-								
-								if (lastIndex == listIndex)
-								{
-									changeDir = true;
-									fileList.setItems();
-									fileList.addAction(Actions.sequence(
-										Actions.moveTo(-fileList.getWidth(), 0, .3f),
-										Actions.run(new Runnable(){
-
-											@Override
-											public void run() {
-												queueDir = selected;
-											}
-											
-										}),
-										Actions.moveTo(0, 0, .3f)
-									));
-									return true;
-								}
-							}
-						}
-						
-						return false;
-					}
-				});
+				
+				final ScrollPane pane = new ScrollPane(recentFileList, skin);
+				pane.setWidth(250f);
+				pane.setHeight(display.getHeight());
+				pane.setScrollingDisabled(true, false);
+				pane.setFadeScrollBars(false);
+				pane.setScrollBarPositions(true, false);
+				pane.setScrollbarsOnTop(false);
+				pane.addListener(new ScrollFocuser(pane));
+				
+				recentButton.setUserObject(pane);
+				recentFileList.addListener(new ScrollFollower(pane, recentFileList));
 			}
 
-			exploreSubmenu.add(pane).expand().fill();
+			final TabbedPane exploreMenu = new TabbedPane(exploreTabs, false);
 			
-			pane.addListener(new InputListener(){
+			exploreSubmenu.add(exploreMenu).fill().expand();
+			
+			exploreMenu.addListener(new InputListener(){
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
+				
+					if ((keycode == Keys.ENTER || keycode == Keys.SPACE) && exploreMenu.getOpenTabIndex() == 0)
+					{
+						int listIndex = fileList.getSelectedIndex();
+						final FileHandle selected = directoryList.get(listIndex);
+						if (selected == null)
+						{
+							//go to parent directory
+							queueDir = directory.parent();
+							manager.get(DataDirs.tick, Sound.class).play();
+							return true;
+						}
+						if (selected.isDirectory())
+						{
+							fileDetails.clearActions();
+							fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+							
+							if (lastIndex == listIndex)
+							{
+								changeDir = true;
+								fileList.setItems();
+								fileList.addAction(Actions.sequence(
+									Actions.moveTo(-fileList.getWidth(), 0, .3f),
+									Actions.run(new Runnable(){
+
+										@Override
+										public void run() {
+											queueDir = selected;
+										}
+										
+									}),
+									Actions.moveTo(0, 0, .3f)
+								));
+								return true;
+							}
+						}
+					}
+					
+					return false;
+				}
+			});
+
+			exploreMenu.addListener(new InputListener(){
+				@Override
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					List<?> l;
+					if (exploreMenu.getOpenTabIndex() == 0)
+					{
+						l = fileList;
+					}
+					else
+					{
+						l = recentFileList;
+					}
+					
 					if (keycode == Keys.DOWN || keycode == Keys.S)
 					{
-						fileList.setSelectedIndex(Math.min(fileList.getItems().size-1, fileList.getSelectedIndex()+1));
+						l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
 					}
 					if (keycode == Keys.UP || keycode == Keys.W)
 					{
-						fileList.setSelectedIndex(Math.max(0, fileList.getSelectedIndex()-1));
+						l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
 					}
 
-					float y = Math.max(0, (fileList.getSelectedIndex() * fileList.getItemHeight()) + pane.getHeight()/2);
-					pane.scrollTo(0, fileList.getHeight()-y, pane.getWidth(), pane.getHeight());
-					
 					return false;
 				}
 			});
 			
 			display.addActor(exploreSubmenu);
 			
-			exploreGroup = new FocusGroup(buttonList, pane);
+			exploreGroup = new FocusGroup(buttonList, exploreMenu);
 			exploreGroup.addListener(focusListener);
 		}
 
@@ -870,7 +738,7 @@ public class TownUI extends GameUI {
 		paths.sort(new PathSort());
 		acceptable.sort(new FileSort());
 		
-		if (external.parent() != null || !external.path().equals(external.parent().path()))
+		if (external.parent() != null && !external.path().equals(external.parent().path()))
 		{
 			paths.insert(0, "..");
 			acceptable.insert(0, null);
@@ -959,7 +827,15 @@ public class TownUI extends GameUI {
 		{
 			if (index == 1)
 			{
-				Craftable c = craftList.getSelected();
+				Craftable c;
+				if (craftMenu.getOpenTabIndex() == 1)
+				{
+					c = craftList.getSelected();
+				}
+				else
+				{
+					c = todayList.getSelected();
+				}
 				int count = playerService.getInventory().getProgress();
 				if (c != null)
 				{
@@ -1026,7 +902,6 @@ public class TownUI extends GameUI {
 								);
 						}
 					}
-					
 				}
 			}
 			else
@@ -1156,11 +1031,9 @@ public class TownUI extends GameUI {
 	private void showCraftSubmenu()
 	{
 		menu = CRAFT;
+		
 		//populate the submenu's data
-		craftList.setSelectedIndex(-1);;
-		craftList.setItems(playerService.getInventory().getRequiredCrafts());
-		craftList.setSelectedIndex(0);
-		craftTabs.setChecked(craftTabs.getButtons().first().getName());
+		craftMenu.showTab(0);
 		//create loot menu
 		populateLoot();
 	
@@ -1203,6 +1076,33 @@ public class TownUI extends GameUI {
 		setMessage("Where to?");
 	}
 	
+	/**
+	 * 
+	 * @param c
+	 */
+	private void refreshRequirements(Craftable c)
+	{
+		if (c == null)
+		{
+			throw new NullPointerException("Craftable object can not be null");
+		}
+		
+		//build requirements list
+		requirementList.clear();
+		
+		ObjectMap<String, Integer> items = c.getRequirements();
+		for (String name : items.keys())
+		{
+			Label l = new Label(name, skin, "smallest");
+			l.setAlignment(Align.left);
+			requirementList.add(l).expandX().fillX();
+			Label i = new Label(""+items.get(name), skin, "smallest");
+			i.setAlignment(Align.right);
+			requirementList.add(i).width(30f);
+			requirementList.row();
+		}	
+		requirementList.pack();
+	}
 	private void sleep()
 	{
 		menu = SLEEP;
@@ -1227,6 +1127,8 @@ public class TownUI extends GameUI {
 					
 					//new crafts appear each day!
 					playerService.getInventory().refreshCrafts();
+					
+					todayList.setItems(playerService.getInventory().getTodaysCrafts());
 				}
 				
 			}),
