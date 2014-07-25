@@ -347,6 +347,33 @@ public class TownUI extends GameUI {
 				
 			});
 			
+			craftMenu.addListener(new InputListener(){
+				@Override
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					List<?> l;
+					if (craftMenu.getOpenTabIndex() == 0)
+					{
+						l = craftList;
+					}
+					else
+					{
+						l = todayList;
+					}
+					
+					if (keycode == Keys.DOWN || keycode == Keys.S)
+					{
+						l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
+					}
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
+					}
+
+					return false;
+				}
+			});
+			
 			craftSubmenu.top().add(craftMenu).expand().fill().height(display.getHeight()/2-10).pad(2f).padTop(0f);
 			
 			craftSubmenu.row();
