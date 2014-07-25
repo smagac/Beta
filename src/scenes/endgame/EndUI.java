@@ -1,5 +1,6 @@
 package scenes.endgame;
 
+import java.util.Iterator;
 import java.util.Scanner;
 
 import scenes.UI;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
@@ -30,7 +32,7 @@ import core.service.IPlayerContainer;
 
 public class EndUI extends UI {
 
-	private Scanner story;
+	private Iterator<String> story;
 	private Table textTable;
 	private Label text;
 	
@@ -61,9 +63,15 @@ public class EndUI extends UI {
 	@Override
 	public void init() {
 		skin = manager.get("data/end.json", Skin.class);
-		story = new Scanner(Gdx.files.classpath("core/data/end.txt").read());
 		
-		clear();
+		Array<String> data = new Array<String>();
+		Scanner s = new Scanner(Gdx.files.classpath("core/data/end.txt").read());
+		while (s.hasNextLine())
+		{
+			data.add(s.nextLine());
+		}
+		s.close();
+		story = data.iterator();
 		
 		//explore icon
 		{
@@ -244,7 +252,7 @@ public class EndUI extends UI {
 
 	private void next()
 	{
-		if (story.hasNextLine())
+		if (story.hasNext())
 		{
 			advanceStory();
 		}
@@ -343,7 +351,7 @@ public class EndUI extends UI {
 
 					@Override
 					public void run() {
-						String dialog = story.nextLine();
+						String dialog = story.next();
 						if (dialog.equals("#"))
 						{
 							text.setText("");
@@ -366,14 +374,5 @@ public class EndUI extends UI {
 
 	public boolean isDone() {
 		return over;
-	}
-	
-	@Override
-	public void dispose()
-	{
-		super.dispose();
-		if (story != null) {
-			story.close();
-		}
 	}
 }

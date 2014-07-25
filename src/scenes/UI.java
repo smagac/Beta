@@ -1,6 +1,8 @@
 package scenes;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -23,11 +25,16 @@ public abstract class UI extends Stage {
 	protected Image fader;
 	protected AssetManager manager;
 	protected Image pointer;
+	protected final Image fill;
 	
 	public UI(AssetManager manager)
 	{
 		super(new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]));
 		this.manager = manager;
+		fill = new Image(new Texture(Gdx.files.internal("data/fill.png")));
+			
+		fill.setFillParent(true);
+		this.addActor(fill);
 		
 		load();
 	}

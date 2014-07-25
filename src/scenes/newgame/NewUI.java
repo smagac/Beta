@@ -64,9 +64,6 @@ public class NewUI extends UI {
 	@Override
 	public void init() {
 		skin = manager.get("data/uiskin.json", Skin.class);
-		
-		clear();
-		
 
 		final Group frame = UI.makeWindow(skin, 580, 300);
 		frame.setPosition(getWidth()/2-frame.getWidth()/2, getHeight()/2-frame.getHeight()/2);

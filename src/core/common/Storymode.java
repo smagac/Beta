@@ -7,6 +7,7 @@ import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -55,8 +56,16 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	
 	private String goddess;
 	private String character;
+	private Texture fill;
 	
 	protected Storymode(){}
+	
+	@Override
+	public void resize(int width, int height) {
+		hueify.begin();
+		hueify.setUniformf("u_resolution", width, height);
+		hueify.end();
+	}
 	
 	@Override
 	public void create() {
@@ -83,7 +92,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		
 		loadingBatch = new SpriteBatch();
 		loadingFont = new BitmapFont(Gdx.files.internal("data/loading.fnt"));
-		
+		fill = new Texture(Gdx.files.internal("data/fill.png"));
 		setLoadingMessage(null);
 
 		//startGame(3);
@@ -210,6 +219,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 			hueify.setUniformf("low", p.low);
 			hueify.setUniformf("high",p.high);
 		}
+		hueify.setUniformi("vignette", p.vignette?1:0);
 		hueify.end();
 		
 		
@@ -232,6 +242,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 			//draw load screen
 			loadingBatch.setShader(hueify);
 			loadingBatch.begin();
+			loadingBatch.setColor(clear);
+			loadingBatch.draw(fill, 0, 0, InternalRes[0], InternalRes[1]);
+			loadingBatch.setColor(Color.WHITE);
 			loadingFont.draw(loadingBatch, loadingMessage, InternalRes[0]/2-loadingFont.getBounds(loadingMessage).width/2, 35f);
 			loadingBatch.end();
 		}

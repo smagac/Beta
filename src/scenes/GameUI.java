@@ -430,6 +430,11 @@ public abstract class GameUI extends UI {
 	{
 		Batch b = getBatch();
 		
+		b.setProjectionMatrix(getCamera().combined);
+		b.begin();
+		fill.draw(b, 1.0f);
+		b.end();
+		
 		ScissorStack.pushScissors(tmpBound);
 		externalRender();
 		b.setProjectionMatrix(getCamera().combined);
@@ -440,9 +445,11 @@ public abstract class GameUI extends UI {
 		
 		//hide display during rendering of the stage
 		display.setVisible(false);
+		fill.setVisible(false);
 		super.draw();
 
 		//make sure it's set as visible so it accepts input between frames
+		fill.setVisible(true);
 		display.setVisible(true);
 	}
 	
