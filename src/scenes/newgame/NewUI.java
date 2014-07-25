@@ -154,16 +154,6 @@ public class NewUI extends UI {
 			});
 		}
 		
-		focus.addListener(new ChangeListener(){
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				Actor a = focus.getFocused();
-				setKeyboardFocus(a);
-				
-				showPointer(a, Align.left, Align.center);
-			}
-		});
-		
 		
 		final TextButton accept = new TextButton("START", skin);
 		accept.align(Align.center);
@@ -214,6 +204,15 @@ public class NewUI extends UI {
 					@Override
 					public void run() {
 						frame.addActor(focus);
+						focus.addListener(new ChangeListener(){
+							@Override
+							public void changed(ChangeEvent event, Actor actor) {
+								Actor a = focus.getFocused();
+								setKeyboardFocus(a);
+								
+								showPointer(a, Align.left, Align.center);
+							}
+						});
 						focus.setFocus(number);
 					}
 				})
