@@ -1,13 +1,13 @@
-package core.common;
+package github.nhydock.ssm;
 
 
 import java.lang.reflect.Field;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import core.service.Inject;
-import core.service.Service;
+import core.common.Storymode;
 
 /**
  * Very simple manager for storing all saved scene names.  Much like a route
@@ -17,7 +17,7 @@ import core.service.Service;
  */
 public class SceneManager {
 
-	private static Storymode service;
+	private static Game service;
 	private static ObjectMap<String, Class<? extends Screen>> map;
 	
 	static

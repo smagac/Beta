@@ -1,9 +1,12 @@
 package scenes.town;
 
+import github.nhydock.ssm.SceneManager;
+
 import java.io.File;
 import java.util.Iterator;
 
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
@@ -38,14 +41,12 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
-import core.common.SceneManager;
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.IPlayerContainer;
 import core.util.FileSort;
 import core.util.PathSort;
-import core.util.ScrollFocuser;
 
 public class TownUI extends GameUI {
 

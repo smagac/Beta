@@ -1,7 +1,9 @@
 package scenes.dungeon;
 
+import github.nhydock.ssm.SceneManager;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
+import scene2d.ui.extras.ScrollFocuser;
 import scenes.GameUI;
 import scenes.UI;
 
@@ -37,12 +39,10 @@ import com.badlogic.gdx.utils.SnapshotArray;
 
 import components.Stats;
 import core.DataDirs;
-import core.common.SceneManager;
 import core.common.Tracker;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
 import core.service.IPlayerContainer;
-import core.util.ScrollFocuser;
 
 public class WanderUI extends GameUI {
 

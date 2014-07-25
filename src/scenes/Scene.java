@@ -1,5 +1,7 @@
 package scenes;
 
+import github.nhydock.ssm.Inject;
+
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
@@ -8,7 +10,6 @@ import com.badlogic.gdx.audio.Music;
 import core.common.BossListener;
 import core.service.IColorMode;
 import core.service.ILoader;
-import core.service.Inject;
 
 /**
  * Generic scene class with injectable service support and provided assumed ui

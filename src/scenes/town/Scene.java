@@ -1,12 +1,13 @@
 package scenes.town;
 
+import github.nhydock.ssm.Inject;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 
 import core.common.BossListener;
 import core.service.IPlayerContainer;
-import core.service.Inject;
 
 public class Scene extends scenes.Scene<TownUI> {
 

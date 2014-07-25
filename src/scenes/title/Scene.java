@@ -1,5 +1,7 @@
 package scenes.title;
 
+import github.nhydock.ssm.SceneManager;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
@@ -8,7 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 import core.common.BossListener;
-import core.common.SceneManager;
 
 public class Scene extends scenes.Scene<TitleSequence> {
 	

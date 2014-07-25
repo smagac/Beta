@@ -1,7 +1,7 @@
 package core.service;
 
+import github.nhydock.ssm.Service;
 import components.Stats;
-
 import core.datatypes.Inventory;
 
 public interface IPlayerContainer extends Service {

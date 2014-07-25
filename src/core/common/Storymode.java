@@ -23,6 +23,7 @@ import core.service.ILoader;
 import core.service.IPlayerContainer;
 import factories.AdjectiveFactory;
 import factories.MonsterFactory;
+import github.nhydock.ssm.SceneManager;
 
 public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, IPlayerContainer, ILoader {
 

@@ -1,5 +1,7 @@
 package core.service;
 
+import github.nhydock.ssm.Service;
+
 import com.artemis.World;
 
 import core.datatypes.Dungeon;

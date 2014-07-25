@@ -1,5 +1,7 @@
 package core.service;
 
+import github.nhydock.ssm.Service;
+
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 import core.Palette;

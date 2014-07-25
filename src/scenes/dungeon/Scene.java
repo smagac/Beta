@@ -14,9 +14,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
+
 import components.Identifier;
 import components.Monster;
-
 import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.Dungeon;
@@ -25,12 +25,12 @@ import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.IDungeonContainer;
 import core.service.IPlayerContainer;
-import core.service.Inject;
 import factories.DungeonFactory;
 import factories.DungeonFactory.DungeonLoader;
 import factories.DungeonFactory.DungeonLoader.DungeonParam;
 import factories.DungeonFactory.FloorLoader;
 import factories.DungeonFactory.FloorLoader.FloorParam;
+import github.nhydock.ssm.Inject;
 
 public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 

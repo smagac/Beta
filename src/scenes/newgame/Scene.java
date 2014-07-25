@@ -1,14 +1,15 @@
 package scenes.newgame;
 
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.SceneManager;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
 import core.DataDirs;
-import core.common.SceneManager;
 import core.service.IGame;
 import core.service.IPlayerContainer;
-import core.service.Inject;
 
 public class Scene extends scenes.Scene<NewUI> {
 

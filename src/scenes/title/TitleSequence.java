@@ -1,5 +1,6 @@
 package scenes.title;
 
+import github.nhydock.ssm.SceneManager;
 import scenes.UI;
 
 import com.badlogic.gdx.assets.AssetManager;
@@ -10,8 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-
-import core.common.SceneManager;
 
 public class TitleSequence extends UI {
 

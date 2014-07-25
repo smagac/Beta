@@ -35,10 +35,10 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
+
 import components.Position;
 import components.Renderable;
 import components.Stats;
-
 import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.Dungeon.FloorData;

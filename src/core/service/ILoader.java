@@ -1,5 +1,7 @@
 package core.service;
 
+import github.nhydock.ssm.Service;
+
 public interface ILoader extends Service {
 
 	public void setLoadingMessage(String message);
