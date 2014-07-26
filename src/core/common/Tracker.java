@@ -35,7 +35,7 @@ public final class Tracker {
 		score += ((10*NumberValues.Items_Crafted.count)-NumberValues.Files_Explored.count)*100; 
 		
 		//get cool points for enemy kdr 
-		score += (NumberValues.Monsters_Killed.count/NumberValues.Times_Died.count) * 100;
+		score += (NumberValues.Monsters_Killed.count/(NumberValues.Times_Died.count+1)) * 100;
 		
 		//less you sleep more points you get
 		score += (NumberValues.Times_Slept.count + NumberValues.Loot_Sacrificed.count) * -50;
@@ -76,6 +76,10 @@ public final class Tracker {
 		if (NumberValues.Files_Explored.count > 10)
 		{
 			rank = "Logger";
+		}
+		if (NumberValues.Deepest_Floor_Traveled.count < 20)
+		{
+			rank = "Scaredy Cat";
 		}
 		if (NumberValues.Times_Slept.count > 100)
 		{
@@ -141,9 +145,15 @@ public final class Tracker {
 		Loot_Found,
 		Times_Died,
 		Loot_Sacrificed,
-		Files_Explored;
+		Files_Explored,
+		Deepest_Floor_Traveled,
+		Largest_File("kb");
 		
+		private String tag;
 		private int count = 0;
+		
+		NumberValues(){}
+		NumberValues(String tag){this.tag = tag;}
 		
 		public void increment()
 		{
@@ -155,10 +165,24 @@ public final class Tracker {
 			count--;
 		}
 		
+		public void set(int val)
+		{
+			count = val;
+		}
+		
 		@Override
 		public String toString()
 		{
 			return String.format("%s", name().replace('_', ' '));
+		}
+		
+		public String valString()
+		{
+			if (tag != null)
+			{
+				return String.format("%d %s", count, tag);
+			}
+			return ""+count;
 		}
 
 		public int value() {

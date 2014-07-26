@@ -48,7 +48,7 @@ public class MovementSystem extends EntityProcessingSystem {
 	@Mapper private ComponentMapper<Identifier> idMap;
 	
 	private Entity player;
-	private ImmutableBag<Entity> monsters;
+	protected ImmutableBag<Entity> monsters;
 	
 	private Sound hit;
 	

@@ -3,6 +3,7 @@ package scenes.endgame;
 import java.util.Iterator;
 import java.util.Scanner;
 
+import scene2d.ui.extras.ScrollFocuser;
 import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -21,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
@@ -81,14 +84,14 @@ public class EndUI extends UI {
 			addActor(bg);
 		}
 		
-		you = new Image(skin.getRegion("character"));
+		you = new Image(skin.getRegion(player.getGender()));
 		you.setScaling(Scaling.stretch);
 		you.setSize(64f, 64f);
 		you.setPosition(getWidth()*.4f, 48f);
 		addActor(you);
 		
 		//goddess
-		goddess = new Image(skin.getRegion("goddess"));
+		goddess = new Image(skin.getRegion(player.getWorship()));
 		goddess.setScaling(Scaling.stretch);
 		goddess.setSize(128f, 128f);
 		goddess.setPosition(getWidth() * .6f, getHeight());
@@ -121,6 +124,9 @@ public class EndUI extends UI {
 							@Override
 							public boolean keyDown(InputEvent evt, int keycode)
 							{
+								if (stats.isVisible())
+									return false;
+								
 								boolean hit = false;
 								if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
 								{
@@ -138,6 +144,9 @@ public class EndUI extends UI {
 							@Override
 							public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 							{
+								if (stats.isVisible())
+									return false;
+								
 								if (button == Buttons.LEFT)
 								{
 									next();
@@ -187,6 +196,7 @@ public class EndUI extends UI {
 		addActor(fader);
 		
 		stats = UI.makeWindow(skin, 400, 320, true);
+		final ScrollPane p;
 		stats.setPosition(getWidth()/2-stats.getWidth()/2, getHeight()/2-stats.getHeight()/2);
 		{
 			Table view = new Table();
@@ -205,22 +215,21 @@ public class EndUI extends UI {
 			
 			Table t = new Table();
 			t.setFillParent(true);
-			t.pad(16f);
-			
+			t.pad(16f).padTop(0).padBottom(32f);
+			t.bottom();
 			for (NumberValues val : Tracker.NumberValues.values())
 			{
 				Label title = new Label(val.toString(), skin);
-				Label value = new Label(""+val.value(), skin);
+				Label value = new Label(val.valString(), skin);
 				
 				title.setAlignment(Align.left);
 				value.setAlignment(Align.right);
-				t.top();
 				t.add(title).expandX().fillX();
 				t.add(value).expandX().fillX();
 				t.row();
 			}
 			
-			t.add();
+			t.add().expandX().height(16f);
 			t.row();
 			
 			for (StringValues val : Tracker.StringValues.values())
@@ -230,19 +239,78 @@ public class EndUI extends UI {
 				
 				title.setAlignment(Align.left);
 				value.setAlignment(Align.right);
-				t.top();
 				t.add(title).expandX().fillX();
 				t.add(value).expandX().fillX();
 				t.row();
 			}
 			
-			ScrollPane p = new ScrollPane(t, skin);
+			p = new ScrollPane(t, skin);
 			p.setFillParent(false);
 			p.setFadeScrollBars(false);
 			view.add(p).expand().fill();
-			
+			p.addListener(new ScrollFocuser(p));
+			p.addListener(new InputListener(){
+				
+			});
 			stats.addActor(view);
 		}
+		final TextButton done = new TextButton("DONE", skin);
+		done.align(Align.center);
+		done.setSize(80, 32);
+		done.pad(5);
+		done.setPosition(stats.getWidth()/2-done.getWidth()/2, 10f);
+		done.addListener(new ChangeListener(){
+
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				
+				stats.addAction(
+					Actions.sequence(
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								done.clearListeners();
+								manager.get(DataDirs.accept, Sound.class).play();
+							}
+							
+						}),
+						Actions.alpha(0f, .5f),
+						Actions.run(new Runnable(){
+							
+							@Override
+							public void run() {
+								next();
+							}
+						})
+					)
+				);
+			}
+		});
+		
+		stats.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+				{
+					done.setChecked(true);
+					return true;
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					p.setScrollY(p.getScrollY()-16);
+					return true;
+				}
+				else if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					p.setScrollY(p.getScrollY()+16);
+					return true;
+				}
+				return false;
+			}
+		});
+		stats.addActor(done);
 		stats.setVisible(false);
 		addActor(stats);
 		
@@ -273,11 +341,13 @@ public class EndUI extends UI {
 			Actions.alpha(0),
 			Actions.alpha(1f, .2f)
 		));
+		setKeyboardFocus(stats);
 	}
 
 	protected void hideStats() {
 		textTable.setVisible(true);
 		stats.setVisible(false);
+		setKeyboardFocus(null);
 	}
 
 	private void end()

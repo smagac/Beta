@@ -8,4 +8,5 @@ public interface IGame extends Service {
 	public void fastStart();
 	public void softReset();
 	public void toggleFullscreen();
+	public void endGame();
 }

@@ -85,6 +85,10 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			}
 		}
 		this.difficulty = difficulty;
+		
+		Tracker.NumberValues.Files_Explored.increment();
+		Tracker.StringValues.Favourite_File_Type.increment(fileType.name());
+		Tracker.NumberValues.Largest_File.set((int)Math.max(Tracker.NumberValues.Largest_File.value(), file.length() / 1000f));
 	}
 	
 	@Override
@@ -363,8 +367,17 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		if (currentFloor != null)
 		{
 			input.removeProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
+			
+			MovementSystem ms = currentFloor.getSystem(MovementSystem.class);
+			//prevent more monsters from respawning after clearing a floor so then you can't
+			// just keep grinding on lower levels in a single dungeon run
+			if (ms.monsters != null)
+			{
+				Floor floor = dungeon.getFloor(currentFloorNumber);
+				floor.monsters = ms.monsters.size();
+			}
 			currentFloor.getSystem(RenderSystem.class).dispose();
-			currentFloor.getSystem(MovementSystem.class).dispose();
+			ms.dispose();
 		}
 		currentFloor = world;
 		

@@ -374,4 +374,13 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		return goddess;
 	}
 
+	@Override
+	public void endGame() {
+		if (player != null)
+		{
+			SceneManager.switchToScene("endgame");
+			System.out.println("cheater");
+		}
+	}
+
 }

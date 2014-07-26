@@ -74,14 +74,13 @@ public class BossListener implements InputProcessor {
 		{
 			//EXIT LIKE A BITCH
 			Gdx.app.exit();
+			return true;
 		}
-		
-		//fullscreen toggle
-		if (keycode == Keys.ENTER)
+		if (keycode == Keys.F12)
 		{
-			if (Gdx.input.isKeyPressed(Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Keys.ALT_RIGHT))
+			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Keys.E))
 			{
-				getGameService().toggleFullscreen();
+				getGameService().endGame();
 				return true;
 			}
 		}

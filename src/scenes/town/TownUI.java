@@ -727,7 +727,7 @@ public class TownUI extends GameUI {
 
 					@Override
 					public void run() {
-						SceneManager.switchToScene("endgame");
+						
 					}
 					
 				})
@@ -978,7 +978,7 @@ public class TownUI extends GameUI {
 							}
 						}
 					}
-					//random dungeonas
+					//random dungeons
 					else
 					{
 						ext = FileType.values()[MathUtils.random(FileType.values().length-1)];

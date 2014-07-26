@@ -65,12 +65,14 @@ public class Dungeon implements Serializable{
 		final public int roomCount;
 		final public int depth;
 		final public Array<Room> rooms;
+		public int monsters;
 		
 		public Floor(TiledMapTileLayer layer, FloorData data){
 			this.layer = layer;
 			roomCount = data.rooms.size;
 			depth = data.floor;
 			rooms = data.rooms;
+			monsters = -1;
 		}
 	}
 	
@@ -202,27 +204,7 @@ public class Dungeon implements Serializable{
 
 		@Override
 		public void read(Json json, JsonValue jsonData) {
-			
-			//decrypt tiles
-//			String tileData = jsonData.getString("tiles");
-//			System.out.println(tileData);
-//			String outStr = "";
-//		    try {
-//		    	ByteArrayInputStream in = new ByteArrayInputStream(tileData.getBytes("UTF-8"));
-//				GZIPInputStream unzipper = new GZIPInputStream(in);
-//				InputStreamReader zipRead = new InputStreamReader(unzipper);
-//				BufferedReader bf = new BufferedReader(zipRead);
-//				
-//			    String line;
-//		        while ((line=bf.readLine())!=null) {
-//		        	System.out.println(line);
-//		        	outStr += line;
-//		        }
-//		    } catch (IOException e) {
-//		    	e.printStackTrace();
-//				System.exit(-1);
-//			}
-//		    this.tiles = json.fromJson(int[][].class, outStr);
+
 	        this.tiles = json.readValue(int[][].class, jsonData.get("tiles"));
 			
 

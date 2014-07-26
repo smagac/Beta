@@ -258,9 +258,13 @@ public class DungeonFactory {
 		*/
 		Floor floor = dungeon.getFloor(depth);
 		int base = Math.min(floor.roomCount, depth*2);
-		int a = (int)(base*Math.max(1, dungeon.getDifficulty()*depth/50f));
-		int b = (int)(base*Math.max(2, 2*dungeon.getDifficulty()*depth/50f));
-		int monsters = MathUtils.random(a, b);
+		int monsters = floor.monsters;
+		if (monsters == -1)
+		{
+			int a = (int)(base*Math.max(1, dungeon.getDifficulty()*depth/50f));
+			int b = (int)(base*Math.max(2, 2*dungeon.getDifficulty()*depth/50f));
+			monsters = MathUtils.random(a, b);
+		}
 		
 		World world = new World();
 		MovementSystem ms = new MovementSystem(depth, dungeon);
