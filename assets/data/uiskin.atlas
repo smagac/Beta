@@ -1,26 +1,26 @@
 
 uiskin.png
-size: 914,868
+size: 914,902
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 audio
   rotate: false
-  xy: 774, 738
+  xy: 516, 354
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 big
   rotate: false
-  xy: 2, 740
+  xy: 2, 774
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
   index: -1
 button_down
   rotate: false
-  xy: 872, 818
+  xy: 774, 754
   size: 16, 16
   split: 2, 2, 2, 2
   orig: 16, 16
@@ -28,14 +28,14 @@ button_down
   index: -1
 fader
   rotate: false
-  xy: 872, 818
+  xy: 774, 754
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 button_up
   rotate: false
-  xy: 898, 852
+  xy: 800, 788
   size: 16, 16
   split: 2, 3, 4, 3
   orig: 16, 16
@@ -43,35 +43,42 @@ button_up
   index: -1
 character
   rotate: false
-  xy: 2, 2
+  xy: 872, 852
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 male
   rotate: false
-  xy: 2, 2
+  xy: 872, 852
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 compressed
   rotate: false
-  xy: 872, 836
+  xy: 774, 772
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 craft
   rotate: false
-  xy: 516, 612
+  xy: 516, 646
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
+dmg
+  rotate: false
+  xy: 2, 414
+  size: 512, 32
+  orig: 512, 32
+  offset: 0, 0
+  index: -1
 executable
   rotate: false
-  xy: 2, 20
+  xy: 872, 870
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
@@ -85,42 +92,42 @@ explore
   index: -1
 explore_back
   rotate: false
-  xy: 516, 354
+  xy: 516, 388
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 female
   rotate: false
-  xy: 28, 36
+  xy: 898, 886
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 god
   rotate: false
-  xy: 62, 70
+  xy: 2, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 goddess
   rotate: false
-  xy: 774, 686
+  xy: 28, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 image
   rotate: false
-  xy: 36, 54
+  xy: 2, 20
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 other
   rotate: false
-  xy: 774, 704
+  xy: 36, 54
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
@@ -134,14 +141,14 @@ pointer
   index: -1
 pointersm
   rotate: false
-  xy: 800, 720
+  xy: 62, 70
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 progback
   rotate: false
-  xy: 872, 808
+  xy: 774, 744
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -149,7 +156,7 @@ progback
   index: -1
 progfront
   rotate: false
-  xy: 898, 842
+  xy: 800, 778
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -157,7 +164,7 @@ progfront
   index: -1
 scroll-knob
   rotate: false
-  xy: 898, 842
+  xy: 800, 778
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -165,14 +172,14 @@ scroll-knob
   index: -1
 prompt_sm
   rotate: false
-  xy: 2, 414
+  xy: 2, 448
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 scroll
   rotate: false
-  xy: 826, 760
+  xy: 568, 376
   size: 10, 10
   orig: 10, 10
   offset: 0, 0
@@ -186,7 +193,7 @@ sleep
   index: -1
 small
   rotate: false
-  xy: 2, 610
+  xy: 2, 644
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
@@ -207,21 +214,21 @@ smallest
   index: -1
 titlefnt
   rotate: false
-  xy: 2, 480
+  xy: 2, 514
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
   index: -1
 video
   rotate: false
-  xy: 800, 738
+  xy: 542, 354
   size: 24, 32
   orig: 24, 32
   offset: 0, 0
   index: -1
 window
   rotate: false
-  xy: 774, 772
+  xy: 774, 806
   size: 96, 96
   orig: 96, 96
   offset: 0, 0

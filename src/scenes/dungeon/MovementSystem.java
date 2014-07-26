@@ -229,6 +229,8 @@ public class MovementSystem extends EntityProcessingSystem {
 			)
 		);
 		
+		RenderSystem rs = world.getSystem(RenderSystem.class);
+		
 		if (MathUtils.randomBoolean(1f-(MathUtils.random(.8f, MULT)*bStats.getSpeed())/100f))
 		{
 			hit.play();
@@ -245,6 +247,7 @@ public class MovementSystem extends EntityProcessingSystem {
 				if (dmg == 0)
 				{
 					msg = name + " blocked your attack!";
+					rs.hit(opponent, "Block");
 				}
 				else
 				{
@@ -253,6 +256,7 @@ public class MovementSystem extends EntityProcessingSystem {
 						msg = "CRITICAL HIT!\n";
 					}
 					msg += "You attacked " + name + " for " + dmg + " damage";
+					rs.hit(opponent, ""+dmg);
 				}
 				Combat combatProp = combatMap.get(opponent);
 				combatProp.aggress();
@@ -265,10 +269,12 @@ public class MovementSystem extends EntityProcessingSystem {
 				if (dmg == 0)
 				{
 					msg = "You blocked " + name + "'s attack";
+					rs.hit(opponent, "Block");
 				}
 				else
 				{
 					msg = name + " attacked you for " + dmg + " damage";
+					rs.hit(opponent, ""+dmg);
 				}
 			}
 			parentScene.log(msg);
@@ -323,6 +329,7 @@ public class MovementSystem extends EntityProcessingSystem {
 				id.show();
 				parentScene.log(name + " attacked you and missed");
 			}
+			rs.hit(opponent, "Miss");
 		}
 	}
 

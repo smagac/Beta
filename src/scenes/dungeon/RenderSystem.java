@@ -13,8 +13,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -28,12 +30,12 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
-
 import core.datatypes.Dungeon;
 
 public class RenderSystem extends EntityProcessingSystem {
@@ -57,6 +59,8 @@ public class RenderSystem extends EntityProcessingSystem {
 	private final Array<Actor> addQueue;
 	private final Array<Actor> removeQueue;
 	private Stage stage;
+	private Group damageNumbers;
+	private Skin uiSkin;
 	
 	Table stats;
 	Label enemyName;
@@ -164,6 +168,8 @@ public class RenderSystem extends EntityProcessingSystem {
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
 		scale = 32f * mapRenderer.getUnitScale();
 		
+		uiSkin = skin;
+		
 		//enemy stats
 		{
 			stats = new Table();
@@ -181,6 +187,13 @@ public class RenderSystem extends EntityProcessingSystem {
 			stats.setBackground(skin.getDrawable("button_up"));
 			stats.setVisible(false);
 			stage.addActor(stats);
+		}
+		
+		//dmg popups
+		{
+			damageNumbers = new Group();
+			damageNumbers.setVisible(false);
+			stage.addActor(damageNumbers);
 		}
 	}
 	
@@ -242,6 +255,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		
 		stage.getBatch().begin();
 		stats.draw(stage.getBatch(), stats.getColor().a);
+		damageNumbers.draw(stage.getBatch(), damageNumbers.getColor().a);
 		stage.getBatch().end();
 		stage.getBatch().setColor(1f, 1f, 1f, 1f);
 		
@@ -292,7 +306,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		return stage;
 	}
 	
-	public void showStats(Vector2 v, Vector2 v2, String name, String hp)
+	private void showStats(Vector2 v, Vector2 v2, String name, String hp)
 	{
 		if (statsVis && name.equals(enemyName.getText().toString())) {
 			return;
@@ -316,6 +330,41 @@ public class RenderSystem extends EntityProcessingSystem {
 				)
 			)
 		);
+	}
+	
+	/**
+	 * Shows damage pop up over any entities when they take damage
+	 * Call this from the movement system only
+	 * @param e
+	 * @param dmg
+	 */
+	protected void hit(Entity e, String dmg)
+	{
+		Position p = positionMap.get(e);
+		
+		float x = p.getX()*scale+(scale*.5f);
+		float y = p.getY()*scale+(scale*.5f);
+		
+		final Label popup = new Label(dmg, uiSkin, "dmg");
+		popup.setPosition(x-(popup.getPrefWidth()*.5f), y-(popup.getPrefHeight()));
+		popup.addAction(Actions.sequence(
+			Actions.alpha(0f),
+			Actions.parallel(
+				Actions.fadeIn(.2f),
+				Actions.moveBy(0, scale, .3f, Interpolation.sineOut)	
+			),
+			Actions.fadeOut(.2f),
+			Actions.run(new Runnable(){
+
+				@Override
+				public void run() {
+					popup.remove();
+				}
+				
+			})
+		));
+	
+		damageNumbers.addActor(popup);
 	}
 	
 	public void hideStats()

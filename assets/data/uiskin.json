@@ -5,7 +5,8 @@ com.badlogic.gdx.graphics.g2d.BitmapFont: {
     smallest: { file: smallest.fnt },
     big: { file: big.fnt },
     prompt: { file: titlefnt.fnt },
-    promptsm: { file: prompt_sm.fnt }
+    promptsm: { file: prompt_sm.fnt },
+    dmg: { file: dmg.fnt }
 },
 com.badlogic.gdx.graphics.Color: {
 	white: { a: 1, b: 1, g: 1, r: 1 },
@@ -53,7 +54,8 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	prompt: { font: prompt, fontColor: white },
 	promptsm: { font: promptsm, fontColor: white },
 	hover: { font: small, fontColor: black, background: button_down },
-	header: { font: smaller, fontColor: white, background: button_up }
+	header: { font: smaller, fontColor: white, background: button_up },
+        dmg: { font: dmg, fontColor: white }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }
