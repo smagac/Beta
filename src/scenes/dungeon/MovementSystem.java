@@ -37,20 +37,20 @@ import core.datatypes.Dungeon;
  */
 public class MovementSystem extends EntityProcessingSystem {
 
-	scenes.dungeon.Scene parentScene;
+	private scenes.dungeon.Scene parentScene;
 	
-	boolean[][] collision;
-	Vector2 start, end;
+	private boolean[][] collision;
+	private Vector2 start, end;
 	
-	@Mapper ComponentMapper<Position> positionMap;
-	@Mapper ComponentMapper<Stats> statMap;
-	@Mapper ComponentMapper<Combat> combatMap;
-	@Mapper ComponentMapper<Identifier> idMap;
+	@Mapper private ComponentMapper<Position> positionMap;
+	@Mapper private ComponentMapper<Stats> statMap;
+	@Mapper private ComponentMapper<Combat> combatMap;
+	@Mapper private ComponentMapper<Identifier> idMap;
 	
-	Entity player;
-	ImmutableBag<Entity> monsters;
+	private Entity player;
+	private ImmutableBag<Entity> monsters;
 	
-	Sound hit;
+	private Sound hit;
 	
 	@SuppressWarnings("unchecked")
 	/**
@@ -116,7 +116,7 @@ public class MovementSystem extends EntityProcessingSystem {
 	 * @param e - the entity to move
 	 * @return true if there is no other entity or wall blocking its way
 	 */
-	protected boolean checkTile(int x, int y, Entity e)
+	private boolean checkTile(int x, int y, Entity e)
 	{
 		boolean passable = !isWall(x, y);
 		if (monsters != null)
@@ -136,7 +136,13 @@ public class MovementSystem extends EntityProcessingSystem {
 		return passable;
 	}
 	
-	protected void moveTo(int x, int y, Entity e)
+	/**
+	 * Moves an entity to a specified location on the map
+	 * @param x
+	 * @param y
+	 * @param e
+	 */
+	private void moveTo(int x, int y, Entity e)
 	{
 		Position p = positionMap.get(e);
 		if (checkTile(x, y, e))
@@ -335,6 +341,7 @@ public class MovementSystem extends EntityProcessingSystem {
 
 	/**
 	 * Set the system's main player and moves them to their starting position
+	 * Used to descend to the next level
 	 */
 	public void moveToStart()
 	{
@@ -343,6 +350,10 @@ public class MovementSystem extends EntityProcessingSystem {
 		p.move((int)start.x, (int)start.y);
 	}
 	
+	/**
+	 * Sets the player to the end position of a level.
+	 * Used when ascending to a previous level
+	 */
 	public void moveToEnd()
 	{
 		Position p = positionMap.get(player);
@@ -350,11 +361,19 @@ public class MovementSystem extends EntityProcessingSystem {
 		p.move((int)end.x, (int)end.y);	
 	}
 	
+	/**
+	 * Assigns a direct reference to the player in the system for faster access
+	 */
 	public void setPlayer()
 	{
 		player = world.getManager(TagManager.class).getEntity("player");
 	}
 
+	/**
+	 * Moves just the player entity and executes a turn
+	 * @param direction
+	 * @return
+	 */
 	public boolean movePlayer(Direction direction) {
 		if (direction == null)
 			return false;
@@ -493,10 +512,14 @@ public class MovementSystem extends EntityProcessingSystem {
 		parentScene.refresh();
 	}
 	
+	/**
+	 * Dereference as much as we can
+	 */
 	public void dispose()
 	{
 		parentScene = null;
 		hit = null;
 		monsters = null;
+		player = null;
 	}
 }

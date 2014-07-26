@@ -46,11 +46,11 @@ public class RenderSystem extends EntityProcessingSystem {
 	private OrthographicCamera camera;
 	private OrthogonalTiledMapRenderer mapRenderer;
 	
-	@Mapper ComponentMapper<Position> positionMap;
-	@Mapper ComponentMapper<Renderable> renderMap;
-	@Mapper ComponentMapper<Monster> monsterMap;
-	@Mapper ComponentMapper<Identifier> idMap;
-	@Mapper ComponentMapper<Stats> statMap;
+	@Mapper private ComponentMapper<Position> positionMap;
+	@Mapper private ComponentMapper<Renderable> renderMap;
+	@Mapper private ComponentMapper<Monster> monsterMap;
+	@Mapper private ComponentMapper<Identifier> idMap;
+	@Mapper private ComponentMapper<Stats> statMap;
 	
 	private float scale;
 	private TiledMap map;
@@ -62,9 +62,9 @@ public class RenderSystem extends EntityProcessingSystem {
 	private Group damageNumbers;
 	private Skin uiSkin;
 	
-	Table stats;
-	Label enemyName;
-	Label enemyHP;
+	private Table stats;
+	private Label enemyName;
+	private Label enemyHP;
 	private boolean statsVis;
 
 	private boolean invisible;
