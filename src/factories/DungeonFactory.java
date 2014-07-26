@@ -264,6 +264,7 @@ public class DungeonFactory {
 			int a = (int)(base*Math.max(1, dungeon.getDifficulty()*depth/50f));
 			int b = (int)(base*Math.max(2, 2*dungeon.getDifficulty()*depth/50f));
 			monsters = MathUtils.random(a, b);
+			floor.monsters = monsters;
 		}
 		
 		World world = new World();

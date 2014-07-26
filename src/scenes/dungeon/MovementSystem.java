@@ -311,6 +311,7 @@ public class MovementSystem extends EntityProcessingSystem {
 					if (id.toString().endsWith(Monster.Loot))
 					{
 						parentScene.progress.lootFound++;
+						parentScene.progress.totalLootFound++;
 					}
 					else
 					{

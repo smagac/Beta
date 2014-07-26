@@ -168,7 +168,7 @@ public class MonsterFactory {
 				t = selection.random();
 			}
 			//don't allow mimics as normal enemies
-			while (t.name.equals("mimic"));
+			while (t.name.equals("mimic") || t.name.equals("treasure chest"));
 			
 			Entity monster = create(world, t, lootMaker.createItem(), floor.depth);
 			monster.addComponent(new Monster());
@@ -218,6 +218,25 @@ public class MonsterFactory {
 		
 		return e;
 	}
+	
+	private float calculateDensity(World world, Room r)
+	{
+		
+		//calculate population density
+		int mCount = 0;
+		ImmutableBag<Entity> m = world.getManager(GroupManager.class).getEntities("monsters");
+		for (int i = 0; i < m.size(); i++)
+		{
+			Position position = m.get(i).getComponent(Position.class);
+			if (r.contains(position.getX(), position.getY()))
+			{
+				mCount++;
+			}
+		}
+		float density = Math.min(.75f, (mCount * 9) / (r.getWidth() * r.getHeight()));
+	
+		return density;
+	}
 
 	/**
 	 * Populates empty parts of the dungeon with random treasure chests
@@ -231,20 +250,16 @@ public class MonsterFactory {
 		GroupManager gm = world.getManager(GroupManager.class);
 		MonsterTemplate treasure = allMonsters.get("treasure chest");
 		MonsterTemplate mimic = allMonsters.get("mimic");
+		
+		int limit = floor.loot;
+		int made = 0;
+		
 		for (Room r : floor.rooms)
 		{
-			//calculate population density
-			int mCount = 0;
-			ImmutableBag<Entity> m = world.getManager(GroupManager.class).getEntities("monsters");
-			for (int i = 0; i < m.size(); i++)
-			{
-				Position position = m.get(i).getComponent(Position.class);
-				if (r.contains(position.getX(), position.getY()))
-				{
-					mCount++;
-				}
-			}
-			float density = Math.min(.75f, (mCount * 9) / (r.getWidth() * r.getHeight()));
+			if (limit == 0)
+				break;
+			
+			float density = calculateDensity(world, r);
 			
 			//randomly place a treasure chest
 			// higher chance of there being a chest if the room is empty
@@ -275,7 +290,13 @@ public class MonsterFactory {
 				monster.addToWorld();
 				
 				gm.add(monster, "monsters");
+				limit--;
+				made++;
 			}
+		}
+		if (limit < 0)
+		{
+			floor.loot = made;
 		}
 	}
 }

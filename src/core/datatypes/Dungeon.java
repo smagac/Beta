@@ -66,6 +66,7 @@ public class Dungeon implements Serializable{
 		final public int depth;
 		final public Array<Room> rooms;
 		public int monsters;
+		public int loot;
 		
 		public Floor(TiledMapTileLayer layer, FloorData data){
 			this.layer = layer;
@@ -73,6 +74,7 @@ public class Dungeon implements Serializable{
 			depth = data.floor;
 			rooms = data.rooms;
 			monsters = -1;
+			loot = -1;
 		}
 	}
 	

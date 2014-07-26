@@ -7,6 +7,7 @@ public class Progress {
 	
 	public int lootFound;
 	public int lootTotal;
+	public int totalLootFound;
 	
 	public int depth;
 	public int floors;

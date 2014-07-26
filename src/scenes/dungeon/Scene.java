@@ -311,7 +311,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	protected void refresh()
 	{
 		ui.floorLabel.setText(String.format("Floor %d/%d", progress.depth, progress.floors));
-		ui.lootLabel.setText(String.format("%d", progress.lootFound));
+		ui.lootLabel.setText(String.format("%d", progress.totalLootFound));
 		ui.monsterLabel.setText(String.format("%d/%d", progress.monstersKilled, progress.monstersTotal));
 	}
 
@@ -374,7 +374,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			if (ms.monsters != null)
 			{
 				Floor floor = dungeon.getFloor(currentFloorNumber);
-				floor.monsters = ms.monsters.size();
+				floor.monsters = progress.monstersTotal - progress.monstersKilled;
+				floor.loot = floor.loot - progress.lootFound;
 			}
 			currentFloor.getSystem(RenderSystem.class).dispose();
 			ms.dispose();
@@ -387,6 +388,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			progress.monstersKilled = 0;
 			progress.monstersTotal = 0;
 			progress.lootTotal = 0;
+			progress.lootFound = 0;
 			
 			ImmutableBag<Entity> monsters = currentFloor.getManager(GroupManager.class).getEntities("monsters");
 			for (int i = 0; i < monsters.size(); i++)
