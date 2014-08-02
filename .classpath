@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="assets"/>
+	<classpathentry kind="lib" path="libs/artemis.jar" sourcepath="libs/sources/artemis-src.jar"/>
+	<classpathentry kind="lib" path="libs/gdx-backend-lwjgl-natives.jar"/>
+	<classpathentry kind="lib" path="libs/gdx-backend-lwjgl.jar" sourcepath="libs/sources/gdx-backend-lwjgl-sources.jar"/>
+	<classpathentry kind="lib" path="libs/gdx-natives.jar"/>
+	<classpathentry kind="lib" path="libs/gdx.jar" sourcepath="libs/sources/gdx-sources.jar"/>
+	<classpathentry kind="lib" path="libs/gdx-ai.jar" sourcepath="libs/sources/gdx-ai-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ArtemisEntitySystem"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/libGdx"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
