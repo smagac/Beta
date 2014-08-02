@@ -62,8 +62,6 @@ public class Scene extends scenes.Scene<NewUI> {
 		bgm = manager.get("data/audio/story.mp3", Music.class);
 		bgm.setLooping(true);
 		bgm.play();
-		
-		ui.prepareStory();
 	}
 	
 	@Override

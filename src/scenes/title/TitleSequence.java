@@ -3,6 +3,7 @@ package scenes.title;
 import github.nhydock.ssm.SceneManager;
 import scenes.UI;
 
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -322,6 +323,18 @@ public class TitleSequence extends UI {
 
 		//make sure all initial steps are set
 		act();
+	}
+
+	@Override
+	public void update(float delta) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean handleMessage(Telegram msg) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

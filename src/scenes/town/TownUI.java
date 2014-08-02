@@ -16,6 +16,11 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.State;
+import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
@@ -66,6 +71,7 @@ public class TownUI extends GameUI {
 	private Image character;
 
 	private FocusGroup exploreGroup;
+	private ButtonGroup exploreTabs;
 	private Table exploreSubmenu;
 	private List<String> fileList;
 	private List<String> recentFileList;
@@ -96,18 +102,13 @@ public class TownUI extends GameUI {
 	
 	private IPlayerContainer playerService;
 	
-	private int menu = -1;
-	private static final int GODDESS = 3;
-	private static final int CRAFT = 2;
-	private static final int EXPLORE = 1;
-	private static final int SLEEP = 0;
-	private Iterator<String> dialog;
-	private boolean over;
-	private ButtonGroup exploreTabs;
+	private StateMachine<TownUI> menu;
 
 	public TownUI(AssetManager manager, IPlayerContainer player) {
 		super(manager, player);
 		this.playerService = player;
+		
+		menu = new DefaultStateMachine<TownUI>(this, TownState.Main);
 	}
 	
 	@Override
@@ -119,6 +120,8 @@ public class TownUI extends GameUI {
 	@Override
 	public void extend()
 	{	
+		final TownUI ui = this;
+		
 		//explore icon
 		{
 			exploreImg = new Group();
@@ -147,11 +150,12 @@ public class TownUI extends GameUI {
 				{
 					if (button == Buttons.LEFT)
 					{
-						if (menu == -1)
+						if (menu.isInState(TownState.Main))
 						{
-							triggerAction(1);
+							MessageDispatcher
+								.getInstance()
+								.dispatchMessage(0f, ui, ui, TownState.MenuMessage.Explore);
 							manager.get(DataDirs.accept, Sound.class).play();
-							refreshButtons();
 						}
 						return true;
 					}
@@ -166,23 +170,25 @@ public class TownUI extends GameUI {
 		{
 			sleepImg = new Image(skin.getRegion("sleep"));
 			sleepImg.setPosition(0f, 0f);
-			sleepImg.addListener(new InputListener(){
-				@Override
-				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-				{
-					if (button == Buttons.LEFT)
+			sleepImg.addListener(
+				new InputListener(){
+					@Override
+					public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
 					{
-						if (menu == -1)
+						if (button == Buttons.LEFT)
 						{
-							triggerAction(0);
-							manager.get(DataDirs.accept, Sound.class).play();
-							refreshButtons();
+							
+							if (menu.isInState(TownState.Main))
+							{
+								triggerAction(TownState.MenuMessage.Sleep);
+								manager.get(DataDirs.accept, Sound.class).play();
+							}
+							return true;
 						}
-						return true;
+						return false;
 					}
-					return false;
 				}
-			});
+			);
 			display.addActor(sleepImg);
 		}
 		
@@ -196,9 +202,9 @@ public class TownUI extends GameUI {
 				{
 					if (button == Buttons.LEFT)
 					{
-						if (menu == -1)
+						if (menu.isInState(TownState.Main))
 						{
-							triggerAction(2);
+							menu.changeState(TownState.Craft);
 							manager.get(DataDirs.accept, Sound.class).play();
 							refreshButtons();
 						}
@@ -553,7 +559,7 @@ public class TownUI extends GameUI {
 							}
 							else
 							{
-								updateFileDetails(selected);
+								MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
 							}
 						}
 						
@@ -576,7 +582,7 @@ public class TownUI extends GameUI {
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
 						FileHandle selected = history.get(fileList.getSelectedIndex());
-						updateFileDetails(selected);
+						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
 					}
 				
 				});
@@ -700,41 +706,6 @@ public class TownUI extends GameUI {
 		setMessage("What're we doing next?");
 	}
 	
-	protected void endGame()
-	{
-		InputMultiplexer input = (InputMultiplexer)Gdx.input.getInputProcessor();
-		input.removeProcessor(this);
-		
-		over = true;
-		restore();
-		getRoot().clearListeners();
-		getRoot().addAction(
-			Actions.sequence(
-				Actions.delay(3f),
-				Actions.forever(
-					Actions.sequence(
-						Actions.moveTo(5, 0, .1f, Interpolation.bounce),
-						Actions.moveTo(-5, 0, .1f, Interpolation.bounce)
-					)
-				)
-			)
-		);
-		fader.addAction(
-			Actions.sequence(
-				Actions.delay(3f),
-				Actions.alpha(1f, 5f),
-				Actions.run(new Runnable(){
-
-					@Override
-					public void run() {
-						
-					}
-					
-				})
-			)
-		);
-	}
-	
 	private void loadDir(FileHandle external) {
 		lastIndex = -1;
 		//disable input while loading directory
@@ -779,51 +750,7 @@ public class TownUI extends GameUI {
 		this.fileList.act(0f);
 		
 		Gdx.input.setInputProcessor(input);
-	}
-	
-	/**
-	 * Updates the information in the right side file panel to reflect the metadata of the specified file
-	 * @param selected
-	 */
-	private void updateFileDetails(final FileHandle selected)
-	{
-		fileDetails.addAction(Actions.sequence(
-			Actions.moveTo(display.getWidth(),  0, .3f),
-			Actions.run(new Runnable(){
-				
-				@Override
-				public void run() {
-					//generate a details panel
-					Table contents = fileDetailsContent;
-					contents.clear();
-					
-					FileType ext = FileType.getType(selected.extension());
-					Image icon = new Image(skin.getRegion(ext.toString()));
-					Label type = new Label("File Type: " + ext, skin);
-					Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", skin);
-					Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), skin);	
-					
-					icon.setAlign(Align.center);
-					icon.setSize(96f, 96f);
-					icon.setScaling(Scaling.fit);
-					
-					contents.pad(10f);
-					contents.add(icon).size(96f, 96f).expandX();
-					contents.row();
-					contents.add(type).expandX().fillX();
-					contents.row();
-					contents.add(size).expandX().fillX();
-					contents.row();
-					contents.add(diff).expandX().fillX();
-					
-					contents.pack();
-					fileDetailsPane.pack();
-				}
-			}),
-			Actions.moveTo(display.getWidth()-fileDetails.getWidth(), 0, .3f)
-		));
-	}
-	
+	}	
 
 	@Override
 	protected void extendAct (float delta) {
@@ -838,270 +765,8 @@ public class TownUI extends GameUI {
 	@Override
 	protected void triggerAction(int index)
 	{
-		if (menu == GODDESS)
-		{
-			if (dialog.hasNext())
-			{
-				gMsg.setText(dialog.next());
-			}
-			else
-			{
-				dialog = null;
-				hideGoddess();
-				menu = -1;
-			}
-		}
-		else if (menu == CRAFT)
-		{
-			if (index == 1)
-			{
-				Craftable c;
-				if (craftMenu.getOpenTabIndex() == 1)
-				{
-					c = craftList.getSelected();
-				}
-				else
-				{
-					c = todayList.getSelected();
-				}
-				int count = playerService.getInventory().getProgress();
-				if (c != null)
-				{
-					boolean made = playerService.getInventory().makeItem(c);
-					setMessage((made)?"Crafted an item!":"Not enough materials");
-					populateLoot();
-					
-					if (playerService.getInventory().getProgressPercentage() >= 1.0f)
-					{
-						endGame();
-					}
-					//show helpful tip after first item has been made!
-					else if (count == 0 && made)
-					{
-						int hint = MathUtils.random(3);
-						if (hint == 0)
-						{
-							showGoddess(
-								"Hooray~  You crafted something for me!",
-								"For actually going through with all this and actually helping me, let me tell you a secret!",
-								"If you press any button between 0-9 you can change the color of the world!",
-								"And if you press + or - you can change the contrast of those colors~",
-								"You can do this at any point in time in the world of StoryMode, even during the intro scene!",
-								"Hope you have fun with this secret!  Goodbye~"
-							);
-						}
-						else if (hint == 1)
-						{
-							showGoddess(
-									"Hooray~  You crafted something for me!",
-									"For actually going through with all this and actually helping me, let me tell you a secret!",
-									"The great developer of your reality kind of forgot to remove debug keys from your world",
-									"Pressing F5 will soft reset your world back to the introduction sequence.",
-									"This can be helpful if your current difficulty is too hard or you want to start over to get a good score",
-									"You can do this at any point in time in the world of StoryMode!",
-									"Though I don't know why you'd want to use it before you've even really started the game.",
-									"Hope you have fun with this secret!  Goodbye~"
-								);
-						}
-						else if (hint == 2)
-						{
-							showGoddess(
-									"Hooray~  You crafted something for me!",
-									"For actually going through with all this and actually helping me, let me tell you a secret!",
-									"The great developer of your reality kind of forgot to remove debug keys from your world",
-									"Pressing F9 will immediately kill the application",
-									"He calls it \"The Boss Key\" and told me once it's a homage to DOS Games. Whatever that means.",
-									"You can do this at any point in time in the world of StoryMode!",
-									"Be warned as it's a bit dangerous to use!  Hopefully you won't accidentally bump the key at any point in time~",
-									"Hope you have fun with this secret!  Goodbye~"
-								);
-						}
-						else if (hint == 3)
-						{
-							showGoddess(
-									"Hooray~  You crafted something for me!",
-									"For actually going through with all this and actually helping me, let me tell you a secret!",
-									"The great developer of your reality kind of forgot to remove debug keys from your world",
-									"Pressing F6 will immediately throw you into a game session of level 3 difficulty.",
-									"It's great if you want to skip the cool cinematic and my blabbering mouth at the beginning of the game.",
-									"Though I don't know why you'd ever want to do that!",
-									"Like most other secrets, you can use this key at any point in the world of StoryMode!",
-									"Hope you have fun with this secret!  Goodbye~"
-								);
-						}
-					}
-				}
-			}
-			else
-			{
-				restore();
-			}
-		}
-		else if (menu == EXPLORE)
-		{
-			if (index == 1 || index == 2)
-			{
-				if (playerService.getPlayer().hp <= 0)
-				{
-					setMessage("You need to rest first!");
-				}
-				else
-				{
-					FileType ext = FileType.Other;
-					int diff = 1;
-					
-					scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
-					//load selected file dungeon
-					if (index == 1)
-					{
-						if (exploreTabs != null && exploreTabs.getChecked().getName().equals("history"))
-						{
-							FileHandle f = history.get(fileList.getSelectedIndex());
-							ext = FileType.getType(f.extension());
-							diff = ext.difficulty(f.length());
-							dungeon.setDungeon(f, diff);
-						}
-						else
-						{
-							FileHandle f = directoryList.get(fileList.getSelectedIndex());
-							if (f != null && !f.isDirectory())
-							{
-								ext = FileType.getType(f.extension());
-								diff = ext.difficulty(f.length());
-								dungeon.setDungeon(f, diff);
-								history.add(f);
-								historyPaths.add(f.name());
-							}
-							else
-							{
-								return;
-							}
-						}
-					}
-					//random dungeons
-					else
-					{
-						ext = FileType.values()[MathUtils.random(FileType.values().length-1)];
-						diff = MathUtils.random(1, 5);
-						dungeon.setDungeon(ext, diff);
-						directory = null;
-					}
-				
-					SceneManager.switchToScene(dungeon);
-					
-				}
-			}
-			else
-			{
-				restore();
-			}
-		}
-		else if (menu == SLEEP)
-		{
-			//ignore input
-		}
-		else
-		{
-			//craft menu
-			if (index == 2)
-			{
-				showCraftSubmenu();
-			}
-			else if (index == 1)
-			{
-				showExploreSubmenu();
-			}
-			else if (index == 0)
-			{
-				sleep();
-			}
-			else
-			{
-				restore();
-			}
-		}
-	}
-	
-	private void populateLoot()
-	{
-		lootList.clear();
-		lootList.top().left();
-		
-		ObjectMap<Item, Integer> loot = playerService.getInventory().getLoot();
-		if (loot.keys().hasNext)
-		{
-			lootList.setWidth(lootPane.getWidth());
-			lootList.pad(10f);
-			for (Item item : loot.keys())
-			{
-				Label l = new Label(item.toString(), skin, "smaller");
-				l.setAlignment(Align.left);
-				lootList.add(l).expandX().fillX();
-				Label i = new Label(""+loot.get(item), skin, "smaller");
-				i.setAlignment(Align.right);
-				lootList.add(i).width(30f);
-				lootList.row();
-				
-			}
-			lootList.setTouchable(Touchable.disabled);
-		}
-		else
-		{
-			lootList.center();
-			Label l = new Label("Looks like you don't have any loot!  You should go exploring", skin);
-			l.setWrap(true);
-			l.setAlignment(Align.center);
-			lootList.add(l).expandX().fillX();
-		}
-		lootList.pack();
-	}
-	
-	private void showCraftSubmenu()
-	{
-		menu = CRAFT;
-		
-		//populate the submenu's data
-		craftMenu.showTab(0);
-		//create loot menu
-		populateLoot();
-	
-		sleepImg.addAction(Actions.moveTo(-sleepImg.getWidth(), 0, 1.5f));
-		exploreImg.addAction(Actions.moveTo(-exploreImg.getWidth(), 118f, 1.5f));
-		craftImg.addAction(
-			Actions.sequence(
-				Actions.moveTo(display.getWidth()-craftImg.getWidth(), display.getHeight() - craftImg.getHeight(), .5f),
-				Actions.moveTo(display.getWidth()/2-craftImg.getWidth()/2, 118f, 1f)
-			)
-		);
-	
-		craftSubmenu.addAction(Actions.sequence(
-			Actions.moveTo(display.getWidth(), 0),
-			Actions.delay(1.5f),
-			Actions.moveTo(display.getWidth()-craftSubmenu.getWidth(), 0, .3f)
-		));
-		
-		lootSubmenu.addAction(Actions.sequence(
-			Actions.moveTo(-lootSubmenu.getWidth(), 0),
-			Actions.delay(1.5f),
-			Actions.moveTo(0, 0, .3f)
-		));
-		
-		setMessage("Tink Tink");
-	}
-	
-	private void showExploreSubmenu()
-	{
-		menu = EXPLORE;
-		sleepImg.addAction(Actions.moveTo(-sleepImg.getWidth(), 0, 1.5f));
-		craftImg.addAction(Actions.moveTo(display.getWidth(), 0, 1.5f));
-	
-		exploreSubmenu.addAction(Actions.sequence(
-			Actions.moveTo(-exploreSubmenu.getWidth(), 0),
-			Actions.delay(1.5f),
-			Actions.moveTo(0, 0, .3f)
-		));
-		
-		setMessage("Where to?");
+		MessageDispatcher.getInstance().dispatchMessage(0, this, this, index);
+		menu.update();
 	}
 	
 	/**
@@ -1131,56 +796,12 @@ public class TownUI extends GameUI {
 		}	
 		requirementList.pack();
 	}
-	private void sleep()
-	{
-		menu = SLEEP;
-		disableMenuInput();
-		setMessage("Good night!");
-		sleepImg.addAction(Actions.sequence(
-			Actions.moveTo(32f, display.getHeight()/2 - sleepImg.getHeight()/2, .5f),
-			Actions.moveTo(display.getWidth()/2 - sleepImg.getWidth()/2, display.getHeight()/2 - sleepImg.getHeight()/2, 1f)
-		));
-		exploreImg.addAction(Actions.moveTo(display.getWidth(), 118f, 1.5f));
-		craftImg.addAction(Actions.moveTo(display.getWidth(), 0f, 1.5f));
-		
-		display.addAction(Actions.sequence(
-			Actions.delay(2f),
-			Actions.alpha(0f, 2f),
-			Actions.delay(3f),
-			Actions.run(new Runnable(){
-
-				@Override
-				public void run() {
-					playerService.rest();
-					
-					//new crafts appear each day!
-					playerService.getInventory().refreshCrafts();
-					
-					todayList.setItems(playerService.getInventory().getTodaysCrafts());
-				}
-				
-			}),
-			Actions.alpha(1f, 2f),
-			Actions.delay(.3f),
-			Actions.run(new Runnable() {
-				
-				@Override
-				public void run()
-				{
-					restore();
-				}
-				
-			})
-		));
-	}
 	
 	/**
 	 * restores the original positions of all the images
 	 */
 	private void restore()
 	{
-		menu = -1;
-		
 		exploreImg.clearActions();
 		sleepImg.clearActions();
 		craftImg.clearActions();
@@ -1208,71 +829,576 @@ public class TownUI extends GameUI {
 
 	@Override
 	public String[] defineButtons() {
-		if (menu == GODDESS)
-		{
-			if (dialog.hasNext())
-			{
-				return new String[]{"Continue"};
-			}
-			else
-			{
-				return new String[]{"Good-bye"};
-			}
-		}
-		else if (menu == CRAFT)
-		{
-			return new String[]{"Return", "Make Item"};
-		}
-		else if (menu == EXPLORE)
-		{
-			return new String[]{"Return", "Explore Dungeon", "Random Dungeon"};
-		}
-		else if (menu == SLEEP || over)
-		{
-			return null;
-		}
-		return new String[]{"sleep", "explore", "craft"};
+		return ((UIState)menu.getCurrentState()).defineButtons();
 	}
 
 	@Override
 	protected FocusGroup focusList() {
-		if (menu == CRAFT)
+		if (menu.isInState(TownState.Craft))
 		{
 			return craftGroup;
 		}
-		else if (menu == EXPLORE)
+		else if (menu.isInState(TownState.Explore))
 		{
 			return exploreGroup;
 		}
 		return null;
 	}
 
+	@Override
+	public void update(float delta) {
+		// Do nothing
+	}
 
-	private void showGoddess(String... text) {
-		dialog = new Array<String>(text).iterator();
-		gMsg.setText(dialog.next());
-		
-		goddess.clearActions();
-		goddess.addAction(Actions.moveTo(display.getWidth()-128f, display.getHeight()/2-64f, .3f));
-		
-		goddessDialog.clearActions();
-		goddessDialog.addAction(Actions.alpha(1f, .2f));
-		goddessDialog.setVisible(true);
-		restore();
-		
-		menu = GODDESS;
-		refreshButtons();
+	@Override
+	public boolean handleMessage(Telegram msg) {
+		return menu.handleMessage(msg);
 	}
 	
-	private void hideGoddess() {
-		goddess.clearActions();
-		goddessDialog.clearActions();
-		goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight()/2-64f, .3f));
-		goddessDialog.addAction(Actions.sequence(Actions.alpha(0f, .2f), Actions.run(new Runnable(){
+	/**
+	 * Wrapped state for wander ui, forcing define buttons
+	 * @author nhydock
+	 *
+	 */
+	private interface UIState extends State<TownUI> {
+		public String[] defineButtons();
+	}
+	
+	/**
+	 * Handles state based ui menu logic and switching
+	 * @author nhydock
+	 *
+	 */
+	private enum TownState implements UIState {	
+		Main(){
+
 			@Override
-			public void run() {
-				goddessDialog.setVisible(false);
+			public void enter(TownUI entity) {
+				entity.restore();
+				entity.refreshButtons();
 			}
-		})));
+			
+			@Override
+			public String[] defineButtons(){
+				return new String[]{"sleep", "explore", "craft"};
+			}
+			
+			/**
+			 * Use on message to switch between menus based on button index
+			 */
+			@Override
+			public boolean onMessage(TownUI entity, Telegram t)
+			{
+				if (t.message == MenuMessage.Sleep)
+				{
+					entity.menu.changeState(Sleep);
+				}
+				else if (t.message == MenuMessage.Explore)
+				{
+					entity.menu.changeState(Explore);
+				}
+				else if (t.message == MenuMessage.Craft)
+				{
+					entity.menu.changeState(Craft);
+				}
+				
+				return false;
+			}
+		},
+		Craft(){
+
+			private void populateLoot(TownUI ui)
+			{
+				ui.lootList.clear();
+				ui.lootList.top().left();
+				
+				ObjectMap<Item, Integer> loot = ui.playerService.getInventory().getLoot();
+				if (loot.keys().hasNext)
+				{
+					ui.lootList.setWidth(ui.lootPane.getWidth());
+					ui.lootList.pad(10f);
+					for (Item item : loot.keys())
+					{
+						Label l = new Label(item.toString(), ui.skin, "smaller");
+						l.setAlignment(Align.left);
+						ui.lootList.add(l).expandX().fillX();
+						Label i = new Label(""+loot.get(item), ui.skin, "smaller");
+						i.setAlignment(Align.right);
+						ui.lootList.add(i).width(30f);
+						ui.lootList.row();
+						
+					}
+					ui.lootList.setTouchable(Touchable.disabled);
+				}
+				else
+				{
+					ui.lootList.center();
+					Label l = new Label("Looks like you don't have any loot!  You should go exploring", ui.skin);
+					l.setWrap(true);
+					l.setAlignment(Align.center);
+					ui.lootList.add(l).expandX().fillX();
+				}
+				ui.lootList.pack();
+			}
+			
+			@Override
+			public void enter(TownUI ui) {
+				//populate the submenu's data
+				ui.craftMenu.showTab(0);
+				//create loot menu
+				populateLoot(ui);
+			
+				ui.sleepImg.addAction(Actions.moveTo(-ui.sleepImg.getWidth(), 0, 1.5f));
+				ui.exploreImg.addAction(Actions.moveTo(-ui.exploreImg.getWidth(), 118f, 1.5f));
+				ui.craftImg.addAction(
+					Actions.sequence(
+						Actions.moveTo(ui.display.getWidth()-ui.craftImg.getWidth(), ui.display.getHeight() - ui.craftImg.getHeight(), .5f),
+						Actions.moveTo(ui.display.getWidth()/2-ui.craftImg.getWidth()/2, 118f, 1f)
+					)
+				);
+			
+				ui.craftSubmenu.addAction(Actions.sequence(
+					Actions.moveTo(ui.display.getWidth(), 0),
+					Actions.delay(1.5f),
+					Actions.moveTo(ui.display.getWidth()-ui.craftSubmenu.getWidth(), 0, .3f)
+				));
+				
+				ui.lootSubmenu.addAction(Actions.sequence(
+					Actions.moveTo(-ui.lootSubmenu.getWidth(), 0),
+					Actions.delay(1.5f),
+					Actions.moveTo(0, 0, .3f)
+				));
+				
+				ui.setMessage("Tink Tink");
+				ui.refreshButtons();
+			}
+			
+			@Override
+			public String[] defineButtons(){
+				return new String[]{"Return", "Make Item"};
+			}
+			
+			@Override
+			public boolean onMessage(TownUI ui, Telegram t)
+			{
+				if (t.message == MenuMessage.Make)
+				{				
+					Craftable c;
+					if (ui.craftMenu.getOpenTabIndex() == 1)
+					{
+						c = ui.craftList.getSelected();
+					}
+					else
+					{
+						c = ui.todayList.getSelected();
+					}
+					int count = ui.playerService.getInventory().getProgress();
+					if (c != null)
+					{
+						boolean made = ui.playerService.getInventory().makeItem(c);
+						ui.setMessage((made)?"Crafted an item!":"Not enough materials");
+						populateLoot(ui);
+						
+						if (ui.playerService.getInventory().getProgressPercentage() >= 1.0f)
+						{
+							ui.menu.changeState(Over);
+						}
+						//show helpful tip after first item has been made!
+						else if (count == 0 && made)
+						{
+							int hint = MathUtils.random(3);
+							String[] text = null;
+							if (hint == 0)
+							{
+								text = new String[]{
+											"Hooray~  You crafted something for me!",
+											"For actually going through with all this and actually helping me, let me tell you a secret!",
+											"If you press any button between 0-9 you can change the color of the world!",
+											"And if you press + or - you can change the contrast of those colors~",
+											"You can do this at any point in time in the world of StoryMode, even during the intro scene!",
+											"Hope you have fun with this secret!  Goodbye~"
+										};
+							}
+							else if (hint == 1)
+							{
+								text = new String[]{
+										"Hooray~  You crafted something for me!",
+										"For actually going through with all this and actually helping me, let me tell you a secret!",
+										"The great developer of your reality kind of forgot to remove debug keys from your world",
+										"Pressing F5 will soft reset your world back to the introduction sequence.",
+										"This can be helpful if your current difficulty is too hard or you want to start over to get a good score",
+										"You can do this at any point in time in the world of StoryMode!",
+										"Though I don't know why you'd want to use it before you've even really started the game.",
+										"Hope you have fun with this secret!  Goodbye~"
+								};
+							}
+							else if (hint == 2)
+							{
+								text = new String[]{
+										"Hooray~  You crafted something for me!",
+										"For actually going through with all this and actually helping me, let me tell you a secret!",
+										"The great developer of your reality kind of forgot to remove debug keys from your world",
+										"Pressing F9 will immediately kill the application",
+										"He calls it \"The Boss Key\" and told me once it's a homage to DOS Games. Whatever that means.",
+										"You can do this at any point in time in the world of StoryMode!",
+										"Be warned as it's a bit dangerous to use!  Hopefully you won't accidentally bump the key at any point in time~",
+										"Hope you have fun with this secret!  Goodbye~"
+								};
+							}
+							else
+							{
+								text = new String[]{
+										"Hooray~  You crafted something for me!",
+										"For actually going through with all this and actually helping me, let me tell you a secret!",
+										"The great developer of your reality kind of forgot to remove debug keys from your world",
+										"Pressing F6 will immediately throw you into a game session of level 3 difficulty.",
+										"It's great if you want to skip the cool cinematic and my blabbering mouth at the beginning of the game.",
+										"Though I don't know why you'd ever want to do that!",
+										"Like most other secrets, you can use this key at any point in the world of StoryMode!",
+										"Hope you have fun with this secret!  Goodbye~"
+								};
+							}
+							
+							//modify telegram to include text
+							Object info = t.extraInfo;
+							t.extraInfo = text;
+							Goddess.onMessage(ui, t);
+							t.extraInfo = info;
+							
+							ui.menu.changeState(Goddess);
+						}
+						return true;
+					}
+				}
+				else
+				{
+					ui.menu.changeState(Main);
+				}
+				return false;
+			}
+		},
+		Explore(){
+
+			@Override
+			public void enter(TownUI entity) {
+				entity.sleepImg.addAction(Actions.moveTo(-entity.sleepImg.getWidth(), 0, 1.5f));
+				entity.craftImg.addAction(Actions.moveTo(entity.display.getWidth(), 0, 1.5f));
+			
+				entity.exploreSubmenu.addAction(Actions.sequence(
+					Actions.moveTo(-entity.exploreSubmenu.getWidth(), 0),
+					Actions.delay(1.5f),
+					Actions.moveTo(0, 0, .3f)
+				));
+				
+				entity.setMessage("Where to?");
+				entity.refreshButtons();
+			}
+		
+			@Override
+			public String[] defineButtons(){
+				return new String[]{"Return", "Explore Dungeon", "Random Dungeon"};
+			}
+			
+			@Override
+			public boolean onMessage(final TownUI entity, final Telegram t)
+			{
+				if (t.message == MenuMessage.Explore || t.message == MenuMessage.Random)
+				{
+					if (entity.playerService.getPlayer().hp <= 0)
+					{
+						entity.setMessage("You need to rest first!");
+					}
+					else
+					{
+						FileType ext = FileType.Other;
+						int diff = 1;
+						
+						scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
+						//load selected file dungeon
+						if (t.message == MenuMessage.Explore)
+						{
+							if (entity.exploreTabs.getChecked().getName().equals("history"))
+							{
+								FileHandle f = history.get(entity.fileList.getSelectedIndex());
+								ext = FileType.getType(f.extension());
+								diff = ext.difficulty(f.length());
+								dungeon.setDungeon(f, diff);
+							}
+							else
+							{
+								FileHandle f = entity.directoryList.get(entity.fileList.getSelectedIndex());
+								if (f != null && !f.isDirectory())
+								{
+									ext = FileType.getType(f.extension());
+									diff = ext.difficulty(f.length());
+									dungeon.setDungeon(f, diff);
+									history.add(f);
+									historyPaths.add(f.name());
+								}
+								else
+								{
+									return false;
+								}
+							}
+						}
+						//random dungeons
+						else
+						{
+							ext = FileType.values()[MathUtils.random(FileType.values().length-1)];
+							diff = MathUtils.random(1, 5);
+							dungeon.setDungeon(ext, diff);
+							directory = null;
+						}
+					
+						SceneManager.switchToScene(dungeon);
+						return true;
+					}
+				}
+				/**
+				 * Updates the information in the right side file panel to reflect the metadata of the specified file
+				 */
+				else if (t.message == MenuMessage.Selected)
+				{
+					final FileHandle selected = (FileHandle)t.extraInfo;
+					
+					entity.fileDetails.addAction(
+						Actions.sequence(
+							Actions.moveTo(entity.display.getWidth(),  0, .3f),
+							Actions.run(new Runnable(){
+								
+								@Override
+								public void run() {
+									//generate a details panel
+									Table contents = entity.fileDetailsContent;
+									contents.clear();
+									
+									FileType ext = FileType.getType(selected.extension());
+									Image icon = new Image(entity.skin.getRegion(ext.toString()));
+									Label type = new Label("File Type: " + ext, entity.skin);
+									Label size = new Label("File Size: " + (selected.length()/1000f) + " kb", entity.skin);
+									Label diff = new Label("Difficulty: " + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'), entity.skin);	
+									
+									icon.setAlign(Align.center);
+									icon.setSize(96f, 96f);
+									icon.setScaling(Scaling.fit);
+									
+									contents.pad(10f);
+									contents.add(icon).size(96f, 96f).expandX();
+									contents.row();
+									contents.add(type).expandX().fillX();
+									contents.row();
+									contents.add(size).expandX().fillX();
+									contents.row();
+									contents.add(diff).expandX().fillX();
+									
+									contents.pack();
+									entity.fileDetailsPane.pack();
+								}
+							}),
+							Actions.moveTo(entity.display.getWidth()-entity.fileDetails.getWidth(), 0, .3f)
+						)
+					);
+				}
+				else
+				{
+					entity.menu.changeState(Main);
+					return true;
+				}
+				
+				return false;
+			}
+		},
+		Sleep(){
+
+			@Override
+			public void enter(final TownUI entity) {
+				entity.setMessage("Good night!");
+				entity.sleepImg.addAction(Actions.sequence(
+					Actions.moveTo(32f, entity.display.getHeight()/2 - entity.sleepImg.getHeight()/2, .5f),
+					Actions.moveTo(entity.display.getWidth()/2 - entity.sleepImg.getWidth()/2, entity.display.getHeight()/2 - entity.sleepImg.getHeight()/2, 1f)
+				));
+				entity.exploreImg.addAction(Actions.moveTo(entity.display.getWidth(), 118f, 1.5f));
+				entity.craftImg.addAction(Actions.moveTo(entity.display.getWidth(), 0f, 1.5f));
+				
+				entity.display.addAction(Actions.sequence(
+					Actions.delay(2f),
+					Actions.alpha(0f, 2f),
+					Actions.delay(3f),
+					Actions.run(new Runnable(){
+
+						@Override
+						public void run() {
+							entity.playerService.rest();
+							
+							//new crafts appear each day!
+							entity.playerService.getInventory().refreshCrafts();
+							
+							entity.todayList.setItems(entity.playerService.getInventory().getTodaysCrafts());
+						}
+						
+					}),
+					Actions.alpha(1f, 2f),
+					Actions.delay(.3f),
+					Actions.run(new Runnable() {
+						
+						@Override
+						public void run()
+						{
+							entity.menu.changeState(TownState.Main);
+						}
+						
+					})
+				));
+				entity.refreshButtons();
+			}
+
+			@Override
+			public String[] defineButtons() {
+				return null;
+			}
+
+			@Override
+			public boolean onMessage(TownUI entity, Telegram telegram) { return false; }
+			
+		},
+		Goddess(){
+
+			public Iterator<String> dialog;
+			
+			@Override
+			public void enter(TownUI entity) {
+				entity.goddess.clearActions();
+				entity.goddess.addAction(Actions.moveTo(entity.display.getWidth()-128f, entity.display.getHeight()/2-64f, .3f));
+				
+				entity.goddessDialog.clearActions();
+				entity.goddessDialog.addAction(Actions.alpha(1f, .2f));
+				entity.goddessDialog.setVisible(true);
+				entity.restore();
+				
+				entity.refreshButtons();
+			}
+			
+			@Override
+			public void exit(final TownUI entity) {
+				entity.goddess.clearActions();
+				entity.goddessDialog.clearActions();
+				entity.goddess.addAction(Actions.moveTo(entity.display.getWidth(), entity.display.getHeight()/2-64f, .3f));
+				entity.goddessDialog.addAction(Actions.sequence(Actions.alpha(0f, .2f), Actions.run(new Runnable(){
+					@Override
+					public void run() {
+						entity.goddessDialog.setVisible(false);
+					}
+				})));
+			}
+
+			@Override
+			public void update(TownUI entity) {
+				if (dialog.hasNext())
+				{
+					entity.gMsg.setText(dialog.next());
+				}
+				else
+				{
+					dialog = null;
+					entity.menu.changeState(Main);
+				}
+			}
+			
+			@Override
+			public String[] defineButtons()
+			{
+				if (dialog.hasNext())
+				{
+					return new String[]{"Continue"};
+				}
+				else
+				{
+					return new String[]{"Good-bye"};
+				}
+			}
+			
+			@Override
+			public boolean onMessage(TownUI entity, Telegram t)
+			{
+				if (t.extraInfo instanceof String[])
+				{
+					dialog = new Array<String>((String[])t.extraInfo).iterator();
+					entity.gMsg.setText(dialog.next());
+					return true;
+				}
+				return false;
+			}
+		},
+		Over(){
+
+			@Override
+			public String[] defineButtons() {
+				return null;
+			}
+
+			@Override
+			public void enter(TownUI entity) {
+				InputMultiplexer input = (InputMultiplexer)Gdx.input.getInputProcessor();
+				input.removeProcessor(entity);
+				
+				entity.restore();
+				entity.getRoot().clearListeners();
+				entity.getRoot().addAction(
+					Actions.sequence(
+						Actions.delay(3f),
+						Actions.forever(
+							Actions.sequence(
+								Actions.moveTo(5, 0, .1f, Interpolation.bounce),
+								Actions.moveTo(-5, 0, .1f, Interpolation.bounce)
+							)
+						)
+					)
+				);
+				entity.fader.addAction(
+					Actions.sequence(
+						Actions.delay(3f),
+						Actions.alpha(1f, 5f),
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								SceneManager.switchToScene("endgame");
+							}
+						})
+					)
+				);
+			}
+
+			@Override
+			public boolean onMessage(TownUI entity, Telegram telegram) {
+				return false;
+			}
+			
+		};
+		
+		/**
+		 * Message types for the main state
+		 * @author nhydock
+		 *
+		 */
+		private static class MenuMessage
+		{
+			static final int Sleep = 0;
+			static final int Explore = 1;
+			static final int Craft = 2;
+			
+			static final int Make = 1;
+			
+			static final int Random = 2;
+			
+			//used when an item in a list is selected
+			static final int Selected = -1;
+		}
+
+		@Override
+		public void exit(TownUI ui) {}
+
+		@Override
+		public void update(TownUI ui){}
 	}
 }

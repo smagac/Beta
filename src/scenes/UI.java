@@ -1,6 +1,7 @@
 package scenes;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -19,7 +20,7 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 
 import core.common.Storymode;
 
-public abstract class UI extends Stage {
+public abstract class UI extends Stage implements Agent {
 
 	protected Skin skin;
 	protected Image fader;

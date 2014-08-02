@@ -212,14 +212,12 @@ public abstract class GameUI extends UI {
 					{
 						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
-						refreshButtons();
 						hidePointer();
 						return true;
 					}
 					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
 					{
 						triggerAction(-1);
-						refreshButtons();
 						hidePointer();
 						return true;
 					}
@@ -326,7 +324,6 @@ public abstract class GameUI extends UI {
 					{
 						manager.get(DataDirs.accept, Sound.class).play();
 						triggerAction(getIndex());
-						refreshButtons();
 					}
 					return false;
 				}

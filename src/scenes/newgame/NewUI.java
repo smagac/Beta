@@ -10,6 +10,10 @@ import scenes.UI;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.State;
+import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -32,16 +36,14 @@ import core.DataDirs;
 import core.service.IPlayerContainer;
 
 public class NewUI extends UI {
-	
-	private int index = -1;
 
-	Iterator<String> story;
 	private Table textTable;
 	private Label text;
 	private Image goddess;
 	private Image you;
 	
-	private boolean over;
+	private Group frame;
+	private FocusGroup focus;
 	
 	Scene parent;
 	private ButtonGroup gender;
@@ -49,11 +51,15 @@ public class NewUI extends UI {
 	
 	private IPlayerContainer player;
 	
+	private StateMachine<NewUI> sm;
+
 	
 	public NewUI(Scene scene, AssetManager manager, IPlayerContainer p) {
 		super(manager);
 		parent = scene;
 		player = p;
+		
+		sm = new DefaultStateMachine<NewUI>(this);
 	}
 	
 	@Override
@@ -65,13 +71,12 @@ public class NewUI extends UI {
 	public void init() {
 		skin = manager.get("data/uiskin.json", Skin.class);
 
-		final Group frame = UI.makeWindow(skin, 580, 300);
+		frame = UI.makeWindow(skin, 580, 300);
 		frame.setPosition(getWidth()/2-frame.getWidth()/2, getHeight()/2-frame.getHeight()/2);
 		
 		final Table window = new Table(skin);
 		window.setFillParent(true);
 		window.center().top().pad(40f).pack();
-		window.debug();
 		
 		Label prompt = new Label("Please create a character", skin, "prompt");
 		prompt.setAlignment(Align.center);
@@ -79,7 +84,7 @@ public class NewUI extends UI {
 		window.add(prompt).expandX().fillX().padBottom(20);
 		window.row();
 		
-		final FocusGroup focus = new FocusGroup();
+		focus = new FocusGroup();
 		//Difficulty
 		{
 			Integer[] values = {1, 2, 3, 4, 5};
@@ -168,11 +173,12 @@ public class NewUI extends UI {
 
 							@Override
 							public void run() {
-								accept.clearListeners();
 								number.clearListeners();
 								frame.clearListeners();
-								hidePointer();
+								accept.clearListeners();
+								focus.clearListeners();
 								manager.get(DataDirs.accept, Sound.class).play();
+								hidePointer();
 							}
 							
 						}),
@@ -183,7 +189,8 @@ public class NewUI extends UI {
 							public void run() {
 								frame.clear();
 								frame.remove();
-								next();
+								parent.prepareStory();
+								sm.changeState(UIState.Story);
 							}
 						})
 					)
@@ -191,30 +198,6 @@ public class NewUI extends UI {
 			}
 		});
 		frame.addActor(accept);
-		
-		frame.addAction(
-			Actions.sequence(
-				Actions.alpha(0f),
-				Actions.delay(1.5f),
-				Actions.alpha(1f, .3f),
-				Actions.run(new Runnable(){
-					@Override
-					public void run() {
-						frame.addActor(focus);
-						focus.addListener(new ChangeListener(){
-							@Override
-							public void changed(ChangeEvent event, Actor actor) {
-								Actor a = focus.getFocused();
-								setKeyboardFocus(a);
-								
-								showPointer(a, Align.left, Align.center);
-							}
-						});
-						focus.setFocus(number);
-					}
-				})
-			)
-		);
 		
 		frame.addListener(new InputListener(){
 			@Override
@@ -245,163 +228,16 @@ public class NewUI extends UI {
 		
 		addActor(frame);
 		
-		act();
-		
-		setKeyboardFocus(number);
-		
-		pointer = new Image(skin.getDrawable("pointer"));
-		hidePointer();
-		addActor(pointer);
-	}
-
-	public int getDifficulty() {
-		return number.getValue();
-	}
-	
-	private void next()
-	{
-		if (index == -1)
-		{
-			parent.prepareStory();
-		}
-		else if (story.hasNext())
-		{
-			advanceStory();
-		}
-		else
-		{
-			end();
-		}
-	}
-	
-
-	private void end()
-	{
-		textTable.addAction(Actions.alpha(0f, 1f));
-		goddess.clearActions();
-		goddess.addAction(Actions.sequence(
-			Actions.run(new Runnable(){
-
-				@Override
-				public void run() {
-					getRoot().clearListeners();
-				}
-				
-			}),
-			Actions.rotateBy(360f, 1f),
-			Actions.rotateBy(360f, .75f),
-			Actions.rotateBy(360f, .5f),
-			Actions.rotateBy(360f, .25f),
-			Actions.parallel(
-					Actions.repeat(10, Actions.rotateBy(360f, .25f)),
-					Actions.sequence(
-						Actions.delay(1f),
-						Actions.run(new Runnable(){
-
-							@Override
-							public void run() {
-								manager.get(DataDirs.shimmer, Sound.class).play();
-							}
-							
-						}),
-						Actions.moveTo(goddess.getX(), getHeight()+128f, .4f)
-					)
-				)
-			)
-		);
-		you.addAction(
-			Actions.sequence(
-				Actions.delay(5f),
-				Actions.moveTo(getWidth()/2f - you.getWidth()/2f, 48f, 2f),
-				Actions.delay(2f),
-				Actions.alpha(0f, 2f),
-				Actions.run(new Runnable(){
-
-					@Override
-					public void run() {
-						over = true;
-					}
-					
-				})
-		));
-	}
-
-	private void advanceStory()
-	{
-		textTable.addAction(Actions.alpha(1f));
-		text.addAction(
-			Actions.sequence(
-				Actions.alpha(0f, .1f),
-				Actions.run(new Runnable(){
-
-					@Override
-					public void run() {
-						String dialog = story.next();
-						text.setText(dialog);
-						textTable.pack();
-					}
-					
-				}),
-				Actions.alpha(1f, .1f)
-			)
-		);
-		index++;
-	}
-
-	public boolean isDone() {
-		return over;
-	}
-	
-	public void prepareStory() {
-		Array<String> data = new Array<String>();
-		setKeyboardFocus(null);
-		addListener(new InputListener(){
-			@Override
-			public boolean keyDown(InputEvent evt, int keycode)
-			{
-				if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
-				{
-					over = true;
-					return true;
-				}
-				return false;
-			}
-		});
-		Scanner s = new Scanner(Gdx.files.classpath("core/data/title_"+player.getGender()+".txt").read());
-		while (s.hasNextLine())
-		{
-			data.add(s.nextLine());
-		}
-		s.close();
-		story = data.iterator();
-		
-		you = new Image(skin.getRegion(player.getGender()));
-		you.setScaling(Scaling.stretch);
-		you.setSize(64f, 64f);
-		you.setPosition(getWidth()*.4f, 48f);
-		you.addAction(Actions.sequence(Actions.alpha(0f),Actions.alpha(1f, 1f)));
-		addActor(you);
-		
-		//goddess
-		goddess = new Image(skin.getRegion(player.getWorship()));
+		goddess = new Image();
 		goddess.setScaling(Scaling.stretch);
 		goddess.setSize(128f, 128f);
 		goddess.setPosition(getWidth() * .6f, 48f);
 		goddess.setOrigin(64f, 64f);
-		goddess.addAction(Actions.sequence(
-				Actions.alpha(0f),
-				Actions.delay(4f),
-				Actions.alpha(1f, 3f),
-				Actions.forever(
-					Actions.sequence(
-						Actions.moveTo(getWidth() * .6f, 58f, 5f),
-						Actions.moveTo(getWidth() * .6f, 48f, 5f)
-					)
-				)
-			)
-		);
 		
-		addActor(goddess);
+		you = new Image();
+		you.setScaling(Scaling.stretch);
+		you.setSize(64f, 64f);
+		you.setPosition(getWidth()*.4f, 48f);
 		
 		textTable = new Table();
 		textTable.center();
@@ -419,45 +255,25 @@ public class NewUI extends UI {
 		textTable.row();
 		textTable.add(down).right().padRight(80f);
 		textTable.pack();
-		textTable.addAction(
-			Actions.sequence(
-				Actions.alpha(0f),
-				Actions.delay(8f),
-				Actions.run(new Runnable(){
-	
-					@Override
-					public void run() {
-						addListener(new InputListener(){
-							@Override
-							public boolean keyDown(InputEvent evt, int keycode)
-							{
-								if (keycode == Keys.ENTER || keycode == Keys.SPACE)
-								{
-									next();
-									return true;
-								}						
-								return false;
-							}
-							
-							@Override
-							public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-							{
-								if (button == Buttons.LEFT)
-								{
-									next();
-									return true;
-								}
-								return false;
-							}
-						});
-						advanceStory();
-					}
-				})
-			)
-		);
-		addActor(textTable);
+		textTable.addAction(Actions.alpha(0f));
 		
 		act();
+		
+		setKeyboardFocus(number);
+		
+		pointer = new Image(skin.getDrawable("pointer"));
+		hidePointer();
+		addActor(pointer);
+		
+		sm.changeState(UIState.Create);
+	}
+
+	public int getDifficulty() {
+		return number.getValue();
+	}
+
+	public boolean isDone() {
+		return sm.isInState(UIState.Over);
 	}
 	
 	@Override
@@ -473,5 +289,240 @@ public class NewUI extends UI {
 	@Override
 	public void unhook() {
 		player = null;
+	}
+
+	@Override
+	public void update(float delta) { }
+
+	@Override
+	public boolean handleMessage(Telegram msg) {
+		return sm.handleMessage(msg);
+	}
+	
+	private static enum UIState implements State<NewUI>
+	{
+		Create(){
+
+			@Override
+			public void enter(final NewUI entity) {
+				entity.frame.addAction(
+					Actions.sequence(
+						Actions.alpha(0f),
+						Actions.delay(1.5f),
+						Actions.alpha(1f, .3f),
+						Actions.run(new Runnable(){
+							@Override
+							public void run() {
+								entity.frame.addActor(entity.focus);
+								entity.focus.addListener(new ChangeListener(){
+									@Override
+									public void changed(ChangeEvent event, Actor actor) {
+										Actor a = entity.focus.getFocused();
+										entity.setKeyboardFocus(a);
+										
+										entity.showPointer(a, Align.left, Align.center);
+									}
+								});
+								entity.focus.setFocus(entity.number);
+							}
+						})
+					)
+				);
+			}
+
+			@Override
+			public void update(NewUI entity) { /* Do Nothing */ }
+
+			@Override
+			public void exit(NewUI entity) {
+			}
+
+			@Override
+			public boolean onMessage(NewUI entity, Telegram telegram) { return false; }
+			
+		},
+		Story(){
+
+			Iterator<String> story;
+			
+			@Override
+			public void enter(final NewUI entity) {
+				entity.goddess.setDrawable(entity.skin, entity.player.getWorship());
+				entity.you.setDrawable(entity.skin, entity.player.getGender());
+				
+				Array<String> data = new Array<String>();
+				entity.setKeyboardFocus(null);
+				entity.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+						{
+							entity.sm.changeState(Over);
+							return true;
+						}
+						return false;
+					}
+				});
+				Scanner s = new Scanner(Gdx.files.classpath("core/data/title_"+entity.player.getGender()+".txt").read());
+				while (s.hasNextLine())
+				{
+					data.add(s.nextLine());
+				}
+				s.close();
+				story = data.iterator();
+
+				entity.you.addAction(Actions.sequence(Actions.alpha(0f),Actions.alpha(1f, 1f)));
+				entity.addActor(entity.you);
+				
+				//goddess
+				entity.goddess.addAction(Actions.sequence(
+						Actions.alpha(0f),
+						Actions.delay(4f),
+						Actions.alpha(1f, 3f),
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								update(entity);
+								entity.addListener(new InputListener(){
+									@Override
+									public boolean keyDown(InputEvent evt, int keycode)
+									{
+										if (keycode == Keys.ENTER || keycode == Keys.SPACE)
+										{
+											entity.sm.update();
+											return true;
+										}						
+										return false;
+									}
+									
+									@Override
+									public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+									{
+										if (button == Buttons.LEFT)
+										{
+											entity.sm.update();
+											return true;
+										}
+										return false;
+									}
+								});
+								entity.setKeyboardFocus(null);
+							}
+							
+						}),
+						Actions.forever(
+							Actions.sequence(
+								Actions.moveTo(entity.getWidth() * .6f, 58f, 5f),
+								Actions.moveTo(entity.getWidth() * .6f, 48f, 5f)
+							)
+						)
+					)
+				);
+				
+				entity.addActor(entity.goddess);
+				entity.addActor(entity.textTable);
+				
+				entity.act();
+			}
+
+			@Override
+			public void update(final NewUI entity) {
+				if (story.hasNext())
+				{
+					entity.textTable.addAction(Actions.alpha(1f));
+					entity.text.addAction(
+						Actions.sequence(
+							Actions.alpha(0f, .1f),
+							Actions.run(new Runnable(){
+	
+								@Override
+								public void run() {
+									String dialog = story.next();
+									entity.text.setText(dialog);
+									entity.textTable.pack();
+								}
+								
+							}),
+							Actions.alpha(1f, .1f)
+						)
+					);
+				}
+				else
+				{
+					entity.textTable.addAction(Actions.alpha(0f, 1f));
+					entity.goddess.clearActions();
+					entity.goddess.addAction(Actions.sequence(
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								entity.getRoot().clearListeners();
+							}
+							
+						}),
+						Actions.rotateBy(360f, 1f),
+						Actions.rotateBy(360f, .75f),
+						Actions.rotateBy(360f, .5f),
+						Actions.rotateBy(360f, .25f),
+						Actions.parallel(
+								Actions.repeat(10, Actions.rotateBy(360f, .25f)),
+								Actions.sequence(
+									Actions.delay(1f),
+									Actions.run(new Runnable(){
+
+										@Override
+										public void run() {
+											entity.manager.get(DataDirs.shimmer, Sound.class).play();
+										}
+										
+									}),
+									Actions.moveTo(entity.goddess.getX(), entity.getHeight()+128f, .4f)
+								)
+							)
+						)
+					);
+					entity.you.addAction(
+						Actions.sequence(
+							Actions.delay(5f),
+							Actions.moveTo(entity.getWidth()/2f - entity.you.getWidth()/2f, 48f, 2f),
+							Actions.delay(2f),
+							Actions.alpha(0f, 2f),
+							Actions.run(new Runnable(){
+
+								@Override
+								public void run() {
+									entity.sm.changeState(Over);
+								}
+								
+							})
+					));
+				}
+			}
+
+			@Override
+			public void exit(final NewUI entity) { }
+
+			@Override
+			public boolean onMessage(NewUI entity, Telegram telegram) {
+				return false;
+			}
+		},
+		Over(){
+
+			@Override
+			public void enter(NewUI entity) { }
+
+			@Override
+			public void update(NewUI entity) { }
+
+			@Override
+			public void exit(NewUI entity) { }
+
+			@Override
+			public boolean onMessage(NewUI entity, Telegram telegram) { return false; }
+			
+		};
 	}
 }
