@@ -1,13 +1,8 @@
 package scenes.title;
 
-import github.nhydock.ssm.SceneManager;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 import core.common.BossListener;
 
@@ -42,20 +37,7 @@ public class Scene extends scenes.Scene<TitleSequence> {
 	protected void init()
 	{
 		ui.init();
-		ui.addListener(new InputListener(){
-			@Override
-			public boolean keyDown(InputEvent evt, int keycode)
-			{
-				//skip the intro
-				if (keycode == Keys.ENTER || keycode == Keys.SPACE ||
-					keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE )
-				{
-					showDiffSelection();
-					return true;
-				}
-				return false;
-			}
-		});
+		
 		
 		//fetch assets
 		bgm = manager.get("data/audio/title.mp3", Music.class);
@@ -64,13 +46,6 @@ public class Scene extends scenes.Scene<TitleSequence> {
 		input.addProcessor(ui);
 		input.addProcessor(BossListener.getInstance());
 		Gdx.input.setInputProcessor(input);
-	}
-	
-	private void showDiffSelection()
-	{
-		musicStarted = false;
-		bgm.stop();
-		SceneManager.switchToScene("newgame");
 	}
 	
 	@Override
@@ -96,10 +71,6 @@ public class Scene extends scenes.Scene<TitleSequence> {
 
 	@Override
 	public void dispose() {
-		if (musicStarted)
-		{
-			bgm.stop();
-		}
 		super.dispose();
 	}
 

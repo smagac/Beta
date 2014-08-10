@@ -13,6 +13,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
@@ -34,6 +35,7 @@ import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.service.IPlayerContainer;
+import core.service.IPlayerContainer.SaveSummary;
 
 public class NewUI extends UI {
 
@@ -42,8 +44,11 @@ public class NewUI extends UI {
 	private Image goddess;
 	private Image you;
 	
-	private Group frame;
-	private FocusGroup focus;
+	private Group createFrame;
+	private FocusGroup createFocus;
+	
+	private Group slotFrame;
+	private FocusGroup slotFocus;
 	
 	Scene parent;
 	private ButtonGroup gender;
@@ -70,9 +75,88 @@ public class NewUI extends UI {
 	@Override
 	public void init() {
 		skin = manager.get("data/uiskin.json", Skin.class);
+		
+		final NewUI ui = this;
+		
+		{
+			Group window = slotFrame = super.makeWindow(skin, 600, 300, true);
+			Table table = new Table();
+			
+			FocusGroup focus = slotFocus = new FocusGroup();
+			table.pad(32f);
+			table.setFillParent(true);
+			
+			Table row = new Table();
+			row.pad(0f);
+			row.setBackground(skin.getDrawable("button_up"));
+			row.add(new Label("New Game", skin, "prompt")).expandX().center();
+			row.addListener(new InputListener(){
 
-		frame = UI.makeWindow(skin, 580, 300);
-		frame.setPosition(getWidth()/2-frame.getWidth()/2, getHeight()/2-frame.getHeight()/2);
+				@Override
+				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+				{
+					if (button == Buttons.LEFT)
+					{
+						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, slotFocus.getFocusedIndex());
+						manager.get(DataDirs.accept, Sound.class).play();
+						return true;
+					}
+					return false;
+				}
+			});
+			focus.add(row);
+			table.add(row).expandX().fillX().height(60);
+			table.row();
+			for (int i = 1; i <= player.slots(); i++)
+			{
+				row = new Table();
+				row.pad(0f);
+				row.setBackground(skin.getDrawable("button_up"));
+				SaveSummary s = player.summary(i);
+				if (s == null)
+				{
+					row.add(new Label("No Data", skin, "prompt")).expandX().center();
+				}
+				else
+				{
+					Image icon = new Image(skin, s.gender);
+					row.add(icon).expand().center().colspan(1).size(32f, 32f);
+					
+					row.add(new Label(s.date, skin, "prompt")).expand().colspan(1).center();
+					
+					Table info = new Table();
+					info.add(new Label("Crafting Completed: " + s.progress, skin, "smaller")).expand().colspan(1).right().row();
+					info.add(new Label("Time: " + s.time, skin, "smaller")).expand().colspan(1).right().row();
+					info.add(new Label(new String(new char[s.diff]).replace('\0', '*') + " difficulty", skin, "smaller")).expand().colspan(1).right();
+					
+					row.add(info).colspan(1).expand().right();
+				}
+				row.addListener(new InputListener(){
+
+					@Override
+					public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+					{
+						if (button == Buttons.LEFT)
+						{
+							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, slotFocus.getFocusedIndex());
+							manager.get(DataDirs.accept, Sound.class).play();
+							return true;
+						}
+						return false;
+					}
+				});
+				focus.add(row);
+				table.add(row).expandX().fillX().height(60);
+				table.row();
+			}
+			
+			window.addActor(table);
+			window.setPosition(getWidth()/2-window.getWidth()/2, getHeight()/2 - window.getHeight()/2);
+			addActor(window);
+		}
+		
+		createFrame = UI.makeWindow(skin, 580, 300);
+		createFrame.setPosition(getWidth()/2-createFrame.getWidth()/2, getHeight()/2-createFrame.getHeight()/2);
 		
 		final Table window = new Table(skin);
 		window.setFillParent(true);
@@ -84,7 +168,7 @@ public class NewUI extends UI {
 		window.add(prompt).expandX().fillX().padBottom(20);
 		window.row();
 		
-		focus = new FocusGroup();
+		createFocus = new FocusGroup();
 		//Difficulty
 		{
 			Integer[] values = {1, 2, 3, 4, 5};
@@ -109,7 +193,7 @@ public class NewUI extends UI {
 				
 			});
 			window.add(number).expandX().fillX().pad(0, 50f, 10f, 50f);
-			focus.add(number);
+			createFocus.add(number);
 		}
 		window.row();
 		
@@ -133,7 +217,7 @@ public class NewUI extends UI {
 			table.add(left).width(80f).right().padRight(10f);
 			table.add(right).width(80f).right();
 			window.add(table).expandX().fillX().pad(0, 50f, 10f, 50f);
-			focus.add(table);
+			createFocus.add(table);
 			
 			table.addListener(new InputListener(){
 				@Override
@@ -161,22 +245,22 @@ public class NewUI extends UI {
 		accept.align(Align.center);
 		accept.setSize(80, 32);
 		accept.pad(5);
-		accept.setPosition(frame.getWidth()/2-accept.getWidth()/2, 10f);
+		accept.setPosition(createFrame.getWidth()/2-accept.getWidth()/2, 10f);
 		accept.addListener(new ChangeListener(){
 
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				
-				frame.addAction(
+				createFrame.addAction(
 					Actions.sequence(
 						Actions.run(new Runnable(){
 
 							@Override
 							public void run() {
 								number.clearListeners();
-								frame.clearListeners();
+								createFrame.clearListeners();
 								accept.clearListeners();
-								focus.clearListeners();
+								createFocus.clearListeners();
 								manager.get(DataDirs.accept, Sound.class).play();
 								hidePointer();
 							}
@@ -187,8 +271,8 @@ public class NewUI extends UI {
 							
 							@Override
 							public void run() {
-								frame.clear();
-								frame.remove();
+								createFrame.clear();
+								createFrame.remove();
 								parent.prepareStory();
 								sm.changeState(UIState.Story);
 							}
@@ -197,9 +281,9 @@ public class NewUI extends UI {
 				);
 			}
 		});
-		frame.addActor(accept);
+		createFrame.addActor(accept);
 		
-		frame.addListener(new InputListener(){
+		createFrame.addListener(new InputListener(){
 			@Override
 			public boolean keyDown(InputEvent evt, int keycode)
 			{
@@ -213,20 +297,20 @@ public class NewUI extends UI {
 				if (keycode == Keys.DOWN || keycode == Keys.S)
 				{
 					hit = true;
-					focus.next();
+					createFocus.next();
 				}
 				if (keycode == Keys.UP || keycode == Keys.W)
 				{
 					hit = true;
-					focus.prev();
+					createFocus.prev();
 				}
 				return hit;
 			}
 		});
 		
-		frame.addActor(window);
-		
-		addActor(frame);
+		createFrame.addActor(window);
+		createFrame.setColor(1.0f, 1.0f, 1.0f, 0.0f);
+		addActor(createFrame);
 		
 		goddess = new Image();
 		goddess.setScaling(Scaling.stretch);
@@ -259,13 +343,11 @@ public class NewUI extends UI {
 		
 		act();
 		
-		setKeyboardFocus(number);
-		
 		pointer = new Image(skin.getDrawable("pointer"));
 		hidePointer();
 		addActor(pointer);
 		
-		sm.changeState(UIState.Create);
+		sm.changeState(UIState.Choose);
 	}
 
 	public int getDifficulty() {
@@ -301,11 +383,132 @@ public class NewUI extends UI {
 	
 	private static enum UIState implements State<NewUI>
 	{
+		Choose(){
+
+			@Override
+			public void enter(final NewUI entity) {
+				entity.slotFrame.addAction(
+						Actions.sequence(
+							Actions.alpha(0f),
+							Actions.delay(1.5f),
+							Actions.alpha(1f, .3f),
+							Actions.run(new Runnable(){
+								@Override
+								public void run() {
+									entity.slotFrame.addActor(entity.slotFocus);
+								
+									entity.slotFocus.addListener(new ChangeListener(){
+										@Override
+										public void changed(ChangeEvent event, Actor actor) {
+											Actor a = entity.slotFocus.getFocused();
+											entity.setKeyboardFocus(a);
+											entity.showPointer(a, Align.left, Align.center);
+										}
+									});
+									
+									Actor a = entity.slotFocus.getActors().get(0);
+									entity.slotFocus.setFocus(a);
+
+								}
+							})
+						)
+					);
+				entity.slotFrame.addListener(new InputListener(){
+					@Override
+					public boolean keyDown(InputEvent evt, int keycode)
+					{
+						if (keycode == Keys.DOWN || keycode == Keys.S)
+						{
+							entity.slotFocus.next(true);
+							entity.manager.get(DataDirs.tick, Sound.class).play();
+						}
+						if (keycode == Keys.UP || keycode == Keys.W)
+						{
+							entity.slotFocus.prev(true);
+							entity.manager.get(DataDirs.tick, Sound.class).play();
+						}
+						if (keycode == Keys.SPACE || keycode == Keys.ENTER)
+						{
+							entity.manager.get(DataDirs.accept, Sound.class).play();
+							MessageDispatcher.getInstance().dispatchMessage(0f, entity, entity, entity.slotFocus.getFocusedIndex());
+						}
+
+						return false;
+					}
+				});
+			}
+
+			@Override
+			public void update(NewUI entity) {}
+
+			@Override
+			public void exit(NewUI entity) {
+				
+			}
+
+			@Override
+			public boolean onMessage(final NewUI entity, Telegram telegram) {
+				final int index = telegram.message;
+				if (index == 0)
+				{
+					entity.slotFrame.addAction(Actions.sequence(
+						Actions.sequence(
+							Actions.run(new Runnable(){
+								@Override
+								public void run(){
+									entity.slotFocus.clearListeners();
+									entity.slotFrame.clearListeners();
+									entity.hidePointer();
+								}
+							}),
+							Actions.alpha(0f, .4f),
+							Actions.run(new Runnable(){
+
+								@Override
+								public void run() {
+									
+									entity.sm.changeState(Create);
+								}
+								
+							})
+						)
+					));
+					return true;
+				}
+				else
+				{
+					entity.slotFrame.addAction(Actions.sequence(
+						Actions.sequence(
+							Actions.run(new Runnable(){
+								@Override
+								public void run(){
+									entity.slotFocus.clearListeners();
+									entity.slotFrame.clearListeners();
+									entity.hidePointer();
+								}
+							}),
+							Actions.alpha(0f, .4f),
+							Actions.run(new Runnable(){
+
+								@Override
+								public void run() {
+									entity.player.load(index);
+									entity.sm.changeState(Over);
+								}
+								
+							})
+						)
+					));
+					return true;
+				}
+			}
+			
+		},
 		Create(){
 
 			@Override
 			public void enter(final NewUI entity) {
-				entity.frame.addAction(
+				entity.createFrame.addAction(
 					Actions.sequence(
 						Actions.alpha(0f),
 						Actions.delay(1.5f),
@@ -313,17 +516,17 @@ public class NewUI extends UI {
 						Actions.run(new Runnable(){
 							@Override
 							public void run() {
-								entity.frame.addActor(entity.focus);
-								entity.focus.addListener(new ChangeListener(){
+								entity.createFrame.addActor(entity.createFocus);
+								entity.createFocus.addListener(new ChangeListener(){
 									@Override
 									public void changed(ChangeEvent event, Actor actor) {
-										Actor a = entity.focus.getFocused();
+										Actor a = entity.createFocus.getFocused();
 										entity.setKeyboardFocus(a);
 										
 										entity.showPointer(a, Align.left, Align.center);
 									}
 								});
-								entity.focus.setFocus(entity.number);
+								entity.createFocus.setFocus(entity.number);
 							}
 						})
 					)

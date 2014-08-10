@@ -142,7 +142,7 @@ public class Item implements Comparable<Item>, Serializable
 	@Override
 	public void write(Json json) {
 		json.writeValue("name", name);
-		json.writeValue("adj", name);
+		json.writeValue("adj", adj);
 	}
 
 	@Override

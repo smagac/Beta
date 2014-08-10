@@ -50,6 +50,7 @@ import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.IPlayerContainer;
+import core.service.IPlayerContainer.SaveSummary;
 import core.util.FileSort;
 import core.util.PathSort;
 
@@ -103,6 +104,9 @@ public class TownUI extends GameUI {
 	private IPlayerContainer playerService;
 	
 	private StateMachine<TownUI> menu;
+	private Group saveWindow;
+	private FocusGroup saveGroup;
+	private Array<Table> saveSlots;
 
 	public TownUI(AssetManager manager, IPlayerContainer player) {
 		super(manager, player);
@@ -682,6 +686,96 @@ public class TownUI extends GameUI {
 			exploreGroup = new FocusGroup(buttonList, exploreMenu);
 			exploreGroup.addListener(focusListener);
 		}
+		
+		//save data
+		{
+			Group window = saveWindow = super.makeWindow(skin, 600, 300, true);
+			saveSlots = new Array<Table>();
+			Table table = new Table();
+			
+			FocusGroup focus = saveGroup = new FocusGroup(buttonList);
+			focus.addListener(focusListener);
+			table.pad(32f);
+			table.setFillParent(true);
+			
+			table.add(new Label("Choose a Slot", skin, "prompt")).expandX().center();
+			table.row();
+			
+			for (int i = 1; i <= playerService.slots(); i++)
+			{
+				Table row = new Table();
+				row.pad(0f);
+				row.setBackground(skin.getDrawable("button_up"));
+				SaveSummary s = playerService.summary(i);
+				if (s == null)
+				{
+					row.add(new Label("No Data", skin, "prompt")).expandX().center();
+				}
+				else
+				{
+					Image icon = new Image(skin, s.gender);
+					row.add(icon).expand().center().colspan(1).size(32f, 32f);
+					
+					row.add(new Label(s.date, skin, "prompt")).expand().colspan(1).center();
+					
+					Table info = new Table();
+					info.add(new Label("Crafting Completed: " + s.progress, skin, "smaller")).expand().colspan(1).right().row();
+					info.add(new Label("Time: " + s.time, skin, "smaller")).expand().colspan(1).right().row();
+					info.add(new Label(new String(new char[s.diff]).replace('\0', '*') + " difficulty", skin, "smaller")).expand().colspan(1).right();
+					
+					row.add(info).colspan(1).expand().right();
+				}
+				row.addListener(new InputListener(){
+
+					@Override
+					public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+					{
+						if (button == Buttons.LEFT)
+						{
+							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, saveGroup.getFocusedIndex());
+							manager.get(DataDirs.accept, Sound.class).play();
+							return true;
+						}
+						return false;
+					}
+				});
+				focus.add(row);
+				saveSlots.add(row);
+				table.add(row).expandX().fillX().height(60);
+				table.row();
+			}
+			
+			table.addListener(new InputListener(){
+				@Override
+				public boolean keyDown(InputEvent evt, int keycode)
+				{
+					if (keycode == Keys.DOWN || keycode == Keys.S)
+					{
+						saveGroup.next(true);
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						saveGroup.prev(true);
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
+					if (keycode == Keys.SPACE || keycode == Keys.ENTER)
+					{
+						if (saveGroup.getFocused() != buttonList)
+						{
+							manager.get(DataDirs.accept, Sound.class).play();
+							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, saveGroup.getFocusedIndex());
+						}
+					}
+
+					return false;
+				}
+			});
+			
+			window.addActor(table);
+			window.setPosition(display.getWidth()/2-window.getWidth()/2, display.getHeight());
+			display.addActor(window);
+		}
 
 		goddess = new Image(skin.getRegion(playerService.getWorship()));
 		goddess.setSize(128f, 128f);
@@ -783,6 +877,8 @@ public class TownUI extends GameUI {
 		exploreSubmenu.clearActions();
 		fileDetails.clearActions();
 		
+		saveWindow.clearActions();
+		
 		exploreImg.addAction(Actions.moveTo(display.getWidth()/2-exploreImg.getWidth()/2, 118f, 1.5f));
 		sleepImg.addAction(Actions.moveTo(0, 0, 1.5f));
 		craftImg.addAction(Actions.moveTo(display.getWidth()-craftImg.getWidth(), 0, 1.5f));
@@ -791,6 +887,7 @@ public class TownUI extends GameUI {
 		craftSubmenu.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 		exploreSubmenu.addAction(Actions.moveTo(-exploreSubmenu.getWidth(), 0, .3f));
 		fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+		saveWindow.addAction(Actions.moveTo(display.getWidth()/2-saveWindow.getWidth()/2, display.getHeight(), .4f));
 		setMessage("What're we doing next?");
 		
 		enableMenuInput();
@@ -813,6 +910,10 @@ public class TownUI extends GameUI {
 		else if (menu.isInState(TownState.Explore))
 		{
 			return exploreGroup;
+		}
+		else if (menu.isInState(TownState.Save))
+		{
+			return saveGroup;
 		}
 		return null;
 	}
@@ -852,7 +953,7 @@ public class TownUI extends GameUI {
 			
 			@Override
 			public String[] defineButtons(){
-				return new String[]{"sleep", "explore", "craft"};
+				return new String[]{"Sleep", "Explore", "Craft", "Save"};
 			}
 			
 			/**
@@ -864,14 +965,21 @@ public class TownUI extends GameUI {
 				if (t.message == MenuMessage.Sleep)
 				{
 					entity.menu.changeState(Sleep);
+					return true;
 				}
 				else if (t.message == MenuMessage.Explore)
 				{
 					entity.menu.changeState(Explore);
+					return true;
 				}
 				else if (t.message == MenuMessage.Craft)
 				{
 					entity.menu.changeState(Craft);
+					return true;
+				}
+				else if (t.message == MenuMessage.Save)
+				{
+					entity.menu.changeState(Save);
 				}
 				
 				return false;
@@ -1384,26 +1492,30 @@ public class TownUI extends GameUI {
 
 			@Override
 			public String[] defineButtons() {
-				// TODO Auto-generated method stub
-				return null;
+				return new String[]{"Cancel"};
 			}
 
 			@Override
 			public void enter(TownUI entity) {
-				// TODO Auto-generated method stub
-				
+				entity.saveWindow.addAction(
+					Actions.moveTo(entity.display.getWidth()/2-entity.saveWindow.getWidth()/2, entity.display.getHeight()/2 - entity.saveWindow.getHeight()/2, .4f)
+				);
+				entity.refreshButtons();
 			}
 
 			@Override
 			public boolean onMessage(TownUI entity, Telegram telegram) {
-				return false;
+				if (telegram.message == MenuMessage.Selected)
+				{
+					entity.playerService.save((Integer)telegram.extraInfo);
+					return true;
+				}
+				else
+				{
+					entity.menu.changeState(Main);
+					return true;
+				}
 			}
-			
-			private void saveFile(TownUI entity, int slot)
-			{
-				entity.playerService.save(slot);
-			}
-			
 		};
 		
 		/**
@@ -1416,6 +1528,7 @@ public class TownUI extends GameUI {
 			static final int Sleep = 0;
 			static final int Explore = 1;
 			static final int Craft = 2;
+			static final int Save = 3;
 			
 			static final int Make = 1;
 			static final int Refresh = 2;

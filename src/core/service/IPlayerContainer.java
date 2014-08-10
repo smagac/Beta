@@ -14,4 +14,16 @@ public interface IPlayerContainer extends Service {
 	public String getGender();
 	public String getWorship();
 	public void save(int slot);
+	public void load(int slot);
+	public SaveSummary summary(int slot);
+	public int slots();
+	
+	public static class SaveSummary
+	{
+		public String gender;
+		public String time;
+		public String progress;
+		public String date;
+		public int diff;
+	}
 }

@@ -3,9 +3,13 @@ package scenes.title;
 import github.nhydock.ssm.SceneManager;
 import scenes.UI;
 
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -29,6 +33,8 @@ public class TitleSequence extends UI {
 
 	@Override
 	public void init() {
+		final TitleSequence ui = this;
+		
 		//create title sequence
 		final Skin skin = manager.get("data/title.json", Skin.class);
 
@@ -308,12 +314,31 @@ public class TitleSequence extends UI {
 			addActor(cool);
 			
 
-			Label startLabel = new Label("Press Start", skin);
+			final Label startLabel = new Label("Press Start", skin);
 			startLabel.setPosition(getWidth()-360f, 120f);
 			startLabel.addAction(Actions.sequence(
 				Actions.alpha(0f),
 				Actions.delay(38f),
 				Actions.alpha(1f, .3f),
+				Actions.run(new Runnable(){
+
+					@Override
+					public void run() {
+						ui.addListener(new InputListener(){
+							@Override
+							public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+							{
+								if (button == Buttons.LEFT)
+								{
+									SceneManager.switchToScene("newgame");
+									return true;
+								}
+								return false;
+							}
+						});
+					}
+					
+				}),
 				Actions.delay(24f),
 				Actions.alpha(0f, 1f)
 			));
@@ -323,6 +348,32 @@ public class TitleSequence extends UI {
 
 		//make sure all initial steps are set
 		act();
+		
+		addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				//skip the intro
+				if (keycode == Keys.ENTER || keycode == Keys.SPACE ||
+					keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE )
+				{
+					SceneManager.switchToScene("newgame");
+					return true;
+				}
+				return false;
+			}
+			
+			@Override
+			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+			{
+				if (button == Buttons.RIGHT)
+				{
+					SceneManager.switchToScene("newgame");
+					return true;
+				}
+				return false;
+			}
+		});
 	}
 
 	@Override

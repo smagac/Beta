@@ -1,9 +1,15 @@
 package core.common;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.Json.Serializable;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
-public final class Tracker {
+public final class Tracker implements Serializable {
 
+	//not used for anything other than saving json
+	protected static Tracker _instance = new Tracker();
+	
 	/**
 	 * Reset all the tracker's values
 	 */
@@ -194,7 +200,7 @@ public final class Tracker {
 		}
 	}
 	
-	public enum StringValues {
+	public enum StringValues implements Serializable {
 		Favourite_File_Type;
 		
 		private final ObjectMap<String, Integer> counters = new ObjectMap<String, Integer>();
@@ -250,6 +256,55 @@ public final class Tracker {
 		private void reset()
 		{
 			counters.clear();
+		}
+
+		@Override
+		public void write(Json json) {
+			for (String key : counters.keys())
+			{
+				json.writeValue(key, counters.get(key), Integer.class);
+			}
+		}
+
+		@Override
+		public void read(Json json, JsonValue jsonData) {
+			counters.clear();
+			for (JsonValue val : jsonData)
+			{
+				counters.put(val.name, val.asInt());
+			}
+		}
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeObjectStart("nv");
+		for (NumberValues s : NumberValues.values())
+		{
+			json.writeValue(s.name(), s.count);
+		}
+		json.writeObjectEnd();
+		json.writeObjectStart("sv");
+		for (StringValues s : StringValues.values())
+		{
+			json.writeValue(s.name(), s);
+		}
+		json.writeObjectEnd();
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		
+		JsonValue nv = jsonData.get("nv");
+		for (NumberValues s : NumberValues.values())
+		{
+			s.count = nv.getInt(s.name());
+		}
+		
+		JsonValue sv = jsonData.get("sv");
+		for (StringValues s : StringValues.values())
+		{
+			s.read(json, sv.get(s.name()));
 		}
 	}
 }

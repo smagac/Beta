@@ -1,6 +1,8 @@
 package core.datatypes;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
 public class Craftable extends Item
@@ -9,15 +11,15 @@ public class Craftable extends Item
 	 * String - item type
 	 * Integer - quantity required
 	 */
-	private ObjectMap<String, Integer> requirements;
+	private ObjectMap<String, Integer> requirements = new ObjectMap<String, Integer>();
 	
 	protected boolean canMake = false;
+	
+	public Craftable(){};
 	
 	public Craftable(String name, String adj, String... parts) {
 		super(name, adj);
 		
-		requirements = new ObjectMap<String, Integer>();
-
 		for (int i = 0; i < parts.length; i++)
 		{
 			String part = parts[i];
@@ -75,5 +77,34 @@ public class Craftable extends Item
 			return name.equals(i.name);
 		}
 		return false;
+	}
+	
+	@Override
+	public void write(Json json) {
+		json.writeValue("name", name);
+		json.writeValue("adj", adj);
+		
+		json.writeObjectStart("requirements");
+		
+		for (String key : requirements.keys())
+		{
+			json.writeValue(key, requirements.get(key));
+		}
+		
+		json.writeObjectEnd();
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		name = jsonData.getString("name");
+		adj = jsonData.getString("adj");
+		
+		JsonValue jv = jsonData.get("requirements");
+		requirements.clear();
+		
+		for (JsonValue key : jv)
+		{
+			requirements.put(key.name, key.asInt());
+		}
 	}
 }

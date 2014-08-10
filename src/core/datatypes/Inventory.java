@@ -25,10 +25,18 @@ public class Inventory implements Serializable{
 	
 	private int progress = 0;
 	
+	public Inventory(){
+		cf = new CraftableFactory();
+		required = new Array<Craftable>();
+		todaysCrafts = new Array<Craftable>();
+		loot = new ObjectMap<Item, Integer>();
+		tmp = new ObjectMap<Item, Integer>();
+		all = new ObjectMap<Item, Integer>();
+	}
+	
 	public Inventory(int difficulty)
 	{
 		cf = new CraftableFactory();
-		
 		required = new Array<Craftable>();
 		do
 		{
@@ -47,18 +55,18 @@ public class Inventory implements Serializable{
 		all = new ObjectMap<Item, Integer>();
 		
 		//debug add loot to test crafting
-//		for (int i = 0; i < 30; i++)
-//		{
-//			all.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
-//		}
-//		
-//		//debug add loot to be able to craft at least one item
-//		Craftable c = required.random();
-//		for (String s : c.getRequirements().keys())
-//		{
-//			all.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
-//		}
-//		loot.putAll(all);
+		for (int i = 0; i < 30; i++)
+		{
+			all.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
+		}
+		
+		//debug add loot to be able to craft at least one item
+		Craftable c = required.random();
+		for (String s : c.getRequirements().keys())
+		{
+			all.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
+		}
+		loot.putAll(all);
 	}
 	
 	/**
@@ -185,6 +193,14 @@ public class Inventory implements Serializable{
 		Tracker.NumberValues.Items_Crafted.increment();
 			
 		//count progress after making
+		calcProgress();
+		loot.clear();
+		loot.putAll(all);
+		return true;
+	}
+
+	private void calcProgress()
+	{
 		progress = 0;
 		for (Craftable r : required)
 		{
@@ -204,11 +220,8 @@ public class Inventory implements Serializable{
 				progress++;
 			}
 		}
-		loot.clear();
-		loot.putAll(all);
-		return true;
 	}
-
+	
 	public ObjectMap<Item, Integer> getLoot() {
 		return all;
 	}
@@ -310,14 +323,32 @@ public class Inventory implements Serializable{
 
 	@Override
 	public void write(Json json) {
-		json.writeValue("loot", all, ObjectMap.class);
+		json.writeArrayStart("loot");
+		for (Item key : all.keys())
+		{
+			json.writeObjectStart();
+			json.writeValue("name", key.name);
+			json.writeValue("adj", key.adj);
+			json.writeValue("count", all.get(key));
+			json.writeObjectEnd();
+		}
+		json.writeObjectEnd();
 		json.writeValue("craft", required, Array.class);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void read(Json json, JsonValue jsonData) {
-		all = (ObjectMap<Item, Integer>)json.readValue(ObjectMap.class, jsonData.get("loot"));
+		
+		JsonValue loot = jsonData.get("loot");
+		all.clear();
+		for (JsonValue item : loot)
+		{
+			all.put(new Item(item.getString("name"), item.getString("adj")), item.getInt("count"));
+		}
+		this.loot.putAll(all);
 		required = (Array<Craftable>)json.readValue(Array.class, jsonData.get("craft"));
+		
+		calcProgress();
 	}
 }

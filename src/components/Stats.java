@@ -2,8 +2,11 @@ package components;
 
 import com.artemis.Component;
 import com.artemis.ComponentType;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.Json.Serializable;
+import com.badlogic.gdx.utils.JsonValue;
 
-public class Stats extends Component {
+public class Stats extends Component implements Serializable {
 	/**
 	 * Fast referencing type for this component
 	 */
@@ -18,6 +21,8 @@ public class Stats extends Component {
 	public int exp;
 	public int nextExp;
 	public boolean hidden;
+	
+	public Stats(){}
 	
 	public Stats(int... values)
 	{
@@ -80,5 +85,28 @@ public class Stats extends Component {
 		maxhp = stats[3]*2;
 		exp = 0;
 		nextExp = level * 10;
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeValue("str", strength);
+		json.writeValue("def", defense);
+		json.writeValue("spd", speed);
+		json.writeValue("mhp", maxhp);
+		json.writeValue("hp",  hp);
+		json.writeValue("exp", exp);
+		json.writeValue("lvl", level);
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		level = jsonData.getInt("lvl");
+		nextExp = level * 10;
+		strength = jsonData.getInt("str");
+		defense = jsonData.getInt("def");
+		speed = jsonData.getInt("spd");
+		maxhp = jsonData.getInt("mhp");
+		hp = jsonData.getInt("hp");
+		exp= jsonData.getInt("exp");
 	}
 }
