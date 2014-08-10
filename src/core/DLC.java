@@ -25,7 +25,11 @@ public class DLC {
 			Scanner s = new Scanner(io);
 			while (s.hasNextLine())
 			{
-				packs.add(Gdx.files.internal("dlc/"+s.nextLine()));
+				FileHandle path = Gdx.files.internal("dlc/"+s.nextLine());
+				if (path.exists())
+				{
+					packs.add(path);
+				}
 			}
 			packs.reverse();
 			s.close();
