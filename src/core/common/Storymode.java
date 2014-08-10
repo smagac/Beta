@@ -123,7 +123,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		SceneManager.switchToScene(dungeon);
 		*/
 		
-		FileHandle saves = getAppData();
 		for (int i = 1; i <= SaveSlots; i++)
 		{
 			
