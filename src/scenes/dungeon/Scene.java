@@ -13,10 +13,11 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 
 import components.Identifier;
 import components.Monster;
+import core.DLC;
 import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.Dungeon;
@@ -143,7 +144,19 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		
 		if (bgm == null)
 		{
-			bgm = Gdx.audio.newMusic(Gdx.files.internal(String.format("data/audio/dungeon_%03d.mp3", MathUtils.random(1,2))));
+			Array<FileHandle> bgms = new Array<FileHandle>();
+			bgms.add(Gdx.files.internal("data/audio/dungeon/001.mp3"));
+			bgms.add(Gdx.files.internal("data/audio/dungeon/002.mp3"));
+			for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal("data/audio/dungeon/")))
+			{
+				if (!f.path().startsWith("data"))
+				{
+					Gdx.app.log("DLC", "found more in " + f.path());
+					bgms.addAll(f.list("mp3"));
+					bgms.addAll(f.list("ogg"));
+				}
+			}
+			bgm = Gdx.audio.newMusic(bgms.random());
 		}
 		
 		bgm.setLooping(true);

@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import components.Stats;
+import core.DLC;
 import core.Palette;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
@@ -77,6 +78,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		}
 		
 		//setup all factory resources
+		DLC.init();
 		Item.init();
 		MonsterFactory.init();
 		AdjectiveFactory.init();
@@ -387,4 +389,5 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	public void save(int slot) {
 		
 	}
+
 }

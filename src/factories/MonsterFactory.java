@@ -5,6 +5,7 @@ import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
@@ -12,13 +13,14 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
+
 import components.Combat;
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
-
+import core.DLC;
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.datatypes.Item;
@@ -53,13 +55,21 @@ public class MonsterFactory {
 		}
 		
 		JsonReader json = new JsonReader();
-		JsonValue monsterList = json.parse(Gdx.files.classpath("core/data/monsters.json"));
+		JsonValue monsterList;
 		
-		for (JsonValue jv : monsterList)
+		Array<FileHandle> dlcMonsters = DLC.getAll("data/monsters.json", Gdx.files.classpath("core/data/monsters.json"));
+		for (FileHandle dlc : dlcMonsters)
 		{
-			MonsterTemplate temp = new MonsterTemplate(jv);
-			monsters.get(FileType.getType(temp.location)).add(temp);
-			allMonsters.put(temp.name, temp);
+			System.out.println("more monsters!");
+			System.out.println(dlc.path());
+			monsterList = json.parse(dlc);
+			
+			for (JsonValue jv : monsterList)
+			{
+				MonsterTemplate temp = new MonsterTemplate(jv);
+				monsters.get(FileType.getType(temp.location)).add(temp);
+				allMonsters.put(temp.name, temp);
+			}
 		}
 		
 		loaded = true;
