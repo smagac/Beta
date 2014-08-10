@@ -257,7 +257,7 @@ public class TownUI extends GameUI {
 						requirementList.clear();
 						
 						//build requirements list
-						refreshRequirements(list.getSelected());
+						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
 						manager.get(DataDirs.tick, Sound.class).play();
 					}
 				});
@@ -301,7 +301,7 @@ public class TownUI extends GameUI {
 					public void changed(ChangeEvent event, Actor actor) {
 						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
 						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-						refreshRequirements(list.getSelected());
+						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
 						manager.get(DataDirs.tick, Sound.class).play();
 					}
 				});
@@ -343,11 +343,11 @@ public class TownUI extends GameUI {
 					
 					if (craftMenu.getOpenTabIndex() == 0)
 					{
-						refreshRequirements(craftList.getSelected());
+						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, craftList.getSelected());
 					}
 					else
 					{
-						refreshRequirements(todayList.getSelected());
+						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, todayList.getSelected());
 					}
 				}
 				
@@ -773,29 +773,6 @@ public class TownUI extends GameUI {
 	 * 
 	 * @param c
 	 */
-	private void refreshRequirements(Craftable c)
-	{
-		if (c == null)
-		{
-			throw new NullPointerException("Craftable object can not be null");
-		}
-		
-		//build requirements list
-		requirementList.clear();
-		
-		ObjectMap<String, Integer> items = c.getRequirements();
-		for (String name : items.keys())
-		{
-			Label l = new Label(name, skin, "smallest");
-			l.setAlignment(Align.left);
-			requirementList.add(l).expandX().fillX();
-			Label i = new Label(""+items.get(name), skin, "smallest");
-			i.setAlignment(Align.right);
-			requirementList.add(i).width(30f);
-			requirementList.row();
-		}	
-		requirementList.pack();
-	}
 	
 	/**
 	 * restores the original positions of all the images
@@ -941,6 +918,30 @@ public class TownUI extends GameUI {
 				ui.lootList.pack();
 			}
 			
+			private void refreshRequirements(Craftable c, TownUI entity)
+			{
+				if (c == null)
+				{
+					throw new NullPointerException("Craftable object can not be null");
+				}
+				
+				//build requirements list
+				entity.requirementList.clear();
+				
+				ObjectMap<String, Integer> items = c.getRequirements();
+				for (String name : items.keys())
+				{
+					Label l = new Label(name, entity.skin, "smallest");
+					l.setAlignment(Align.left);
+					entity.requirementList.add(l).expandX().fillX();
+					Label i = new Label(entity.playerService.getInventory().genericCount(name)+"/"+items.get(name), entity.skin, "smallest");
+					i.setAlignment(Align.right);
+					entity.requirementList.add(i).width(30f);
+					entity.requirementList.row();
+				}	
+				entity.requirementList.pack();
+			}
+			
 			@Override
 			public void enter(TownUI ui) {
 				//populate the submenu's data
@@ -984,20 +985,26 @@ public class TownUI extends GameUI {
 				if (t.message == MenuMessage.Make)
 				{				
 					Craftable c;
-					if (ui.craftMenu.getOpenTabIndex() == 1)
+					if (ui.craftMenu.getOpenTabIndex() == 0)
 					{
+						Gdx.app.log("Crafting", "making required");
 						c = ui.craftList.getSelected();
 					}
 					else
 					{
 						c = ui.todayList.getSelected();
 					}
-					int count = ui.playerService.getInventory().getProgress();
 					if (c != null)
 					{
+						int count = ui.playerService.getInventory().getProgress();
 						boolean made = ui.playerService.getInventory().makeItem(c);
 						ui.setMessage((made)?"Crafted an item!":"Not enough materials");
 						populateLoot(ui);
+						
+						if (made)
+						{
+							refreshRequirements(c, ui);
+						}
 						
 						if (ui.playerService.getInventory().getProgressPercentage() >= 1.0f)
 						{
@@ -1069,6 +1076,11 @@ public class TownUI extends GameUI {
 						}
 						return true;
 					}
+				}
+				else if (t.message == MenuMessage.Refresh)
+				{
+					Craftable c = (Craftable)t.extraInfo;
+					refreshRequirements(c, ui);
 				}
 				else
 				{
@@ -1373,6 +1385,30 @@ public class TownUI extends GameUI {
 			public boolean onMessage(TownUI entity, Telegram telegram) {
 				return false;
 			}
+		},
+		Save(){
+
+			@Override
+			public String[] defineButtons() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void enter(TownUI entity) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public boolean onMessage(TownUI entity, Telegram telegram) {
+				return false;
+			}
+			
+			private void saveFile(TownUI entity, int slot)
+			{
+				entity.playerService.save(slot);
+			}
 			
 		};
 		
@@ -1388,6 +1424,7 @@ public class TownUI extends GameUI {
 			static final int Craft = 2;
 			
 			static final int Make = 1;
+			static final int Refresh = 2;
 			
 			static final int Random = 2;
 			

@@ -2,11 +2,13 @@ package core.datatypes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
-public class Item implements Comparable<Item>
+public class Item implements Comparable<Item>, Serializable
 {
 	public static Array<String> items;
 	public static Array<String> loot;
@@ -58,6 +60,11 @@ public class Item implements Comparable<Item>
 	
 	String adj;
 	String name;
+	
+	/**
+	 * Used for JsonSerializable
+	 */
+	public Item(){}
 	
 	public Item(String name, String adj)
 	{
@@ -130,5 +137,17 @@ public class Item implements Comparable<Item>
 			return fullname().equals(i.fullname());
 		}
 		return false;
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeValue("name", name);
+		json.writeValue("adj", name);
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		name = jsonData.getString("name");
+		adj = jsonData.getString("adj");
 	}
 }

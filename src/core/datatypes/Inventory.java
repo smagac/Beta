@@ -1,13 +1,20 @@
 package core.datatypes;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Keys;
 
 import core.common.Tracker;
+import factories.AdjectiveFactory;
 import factories.CraftableFactory;
 
-public class Inventory {
+import com.badlogic.gdx.utils.Json.Serializable;
+
+public class Inventory implements Serializable{
 
 	CraftableFactory cf;
 	Array<Craftable> required;
@@ -39,18 +46,19 @@ public class Inventory {
 		tmp = new ObjectMap<Item, Integer>();
 		all = new ObjectMap<Item, Integer>();
 		
-//		//debug add loot to test crafting
-//		for (int i = 0; i < 30; i++)
-//		{
-//			loot.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
-//		}
-//		
-//		//debug add loot to be able to craft at least one item
-//		Craftable c = required.random();
-//		for (String s : c.getRequirements().keys())
-//		{
-//			loot.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
-//		}
+		//debug add loot to test crafting
+		for (int i = 0; i < 30; i++)
+		{
+			all.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
+		}
+		
+		//debug add loot to be able to craft at least one item
+		Craftable c = required.random();
+		for (String s : c.getRequirements().keys())
+		{
+			all.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
+		}
+		loot.putAll(all);
 	}
 	
 	/**
@@ -100,11 +108,11 @@ public class Inventory {
 			int need = requirements.get(required);
 			int have = 0;
 			
-			for (Item lootName : loot.keys())
+			for (Item lootName : all.keys())
 			{
 				if (lootName.equals(required))
 				{
-					Integer amount = loot.get(lootName);
+					Integer amount = all.get(lootName);
 					
 					have = have + amount;
 			
@@ -134,6 +142,7 @@ public class Inventory {
 		
 		if (!c.canMake)
 		{
+			Gdx.app.log("Craft", "craftable not marked as having enough resources");
 			return false;
 		}
 		
@@ -142,11 +151,11 @@ public class Inventory {
 			int need = requirements.get(required);
 			int have = 0;
 			
-			for (Item i : loot.keys())
+			for (Item i : all.keys())
 			{
 				if (i.equals(required))
 				{
-					Integer amount = loot.get(i);
+					Integer amount = all.get(i);
 					
 					have = have + amount;
 					
@@ -154,11 +163,11 @@ public class Inventory {
 					{
 						amount = have-need;
 					}
-					loot.put(i,  loot.get(i) - amount);
+					all.put(i,  amount);
 					
-					if (loot.get(i) <= 0)
+					if (all.get(i) <= 0)
 					{
-						loot.remove(i);
+						all.remove(i);
 					}
 					
 					if (have >= need)
@@ -171,7 +180,7 @@ public class Inventory {
 		
 		//add the item to your loot
 		Item crafted = new Item(c.name, c.adj);
-		loot.put(crafted, loot.get(crafted, 0)+1);
+		all.put(crafted, all.get(crafted, 0)+1);
 		
 		Tracker.NumberValues.Items_Crafted.increment();
 			
@@ -181,7 +190,7 @@ public class Inventory {
 		{
 			Item i = null;
 			
-			Keys<Item> keys = loot.keys();
+			Keys<Item> keys = all.keys();
 			for (; keys.hasNext && i == null;)
 			{
 				Item i2 = keys.next();
@@ -190,11 +199,13 @@ public class Inventory {
 				}
 			}
 			
-			if (i != null && loot.get(i, 0) > 0)
+			if (i != null && all.get(i, 0) > 0)
 			{
 				progress++;
 			}
 		}
+		loot.clear();
+		loot.putAll(all);
 		return true;
 	}
 
@@ -277,5 +288,36 @@ public class Inventory {
 		tmp.clear();
 		all.clear();
 		all.putAll(loot);
+	}
+	
+	/**
+	 * Get's a generic count of all items with the same base name as the specified item
+	 * @param i
+	 */
+	public int genericCount(String i)
+	{
+		int sum = 0;
+		for (Item item : all.keys())
+		{
+			if (item.equals(i))
+			{
+				int c = all.get(item);
+				sum += c;
+			}
+		}
+		return sum; 
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeValue("loot", all, ObjectMap.class);
+		json.writeValue("craft", required, Array.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		all = (ObjectMap<Item, Integer>)json.readValue(ObjectMap.class, jsonData.get("loot"));
+		required = (Array<Craftable>)json.readValue(Array.class, jsonData.get("craft"));
 	}
 }

@@ -13,4 +13,5 @@ public interface IPlayerContainer extends Service {
 	public String getFullTime();
 	public String getGender();
 	public String getWorship();
+	public void save(int slot);
 }

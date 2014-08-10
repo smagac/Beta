@@ -383,4 +383,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		}
 	}
 
+	@Override
+	public void save(int slot) {
+		
+	}
 }
