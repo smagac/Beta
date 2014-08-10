@@ -60,8 +60,6 @@ public class MonsterFactory {
 		Array<FileHandle> dlcMonsters = DLC.getAll("data/monsters.json", Gdx.files.classpath("core/data/monsters.json"));
 		for (FileHandle dlc : dlcMonsters)
 		{
-			System.out.println("more monsters!");
-			System.out.println(dlc.path());
 			monsterList = json.parse(dlc);
 			
 			for (JsonValue jv : monsterList)

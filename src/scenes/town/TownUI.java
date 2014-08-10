@@ -768,12 +768,7 @@ public class TownUI extends GameUI {
 		MessageDispatcher.getInstance().dispatchMessage(0, this, this, index);
 		menu.update();
 	}
-	
-	/**
-	 * 
-	 * @param c
-	 */
-	
+
 	/**
 	 * restores the original positions of all the images
 	 */
@@ -987,7 +982,6 @@ public class TownUI extends GameUI {
 					Craftable c;
 					if (ui.craftMenu.getOpenTabIndex() == 0)
 					{
-						Gdx.app.log("Crafting", "making required");
 						c = ui.craftList.getSelected();
 					}
 					else
@@ -1429,7 +1423,7 @@ public class TownUI extends GameUI {
 			static final int Random = 2;
 			
 			//used when an item in a list is selected
-			static final int Selected = -1;
+			static final int Selected = 10;
 		}
 
 		@Override

@@ -215,12 +215,6 @@ public abstract class GameUI extends UI {
 						hidePointer();
 						return true;
 					}
-					if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
-					{
-						triggerAction(-1);
-						hidePointer();
-						return true;
-					}
 					return false;
 				}
 			});
@@ -243,6 +237,27 @@ public abstract class GameUI extends UI {
 				if (keycode == Keys.TAB || keycode == Keys.CONTROL_RIGHT)
 				{
 					focusList().next(true);
+					return true;
+				}
+
+				if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE)
+				{
+					setFocus(buttonList);
+					triggerAction(-1);
+					hidePointer();
+					return true;
+				}
+				return false;
+			}
+			
+			@Override
+			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+			{
+				if (button == Buttons.RIGHT)
+				{
+					setFocus(buttonList);
+					triggerAction(-1);
+					hidePointer();
 					return true;
 				}
 				return false;

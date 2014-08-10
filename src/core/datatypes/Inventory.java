@@ -47,18 +47,18 @@ public class Inventory implements Serializable{
 		all = new ObjectMap<Item, Integer>();
 		
 		//debug add loot to test crafting
-		for (int i = 0; i < 30; i++)
-		{
-			all.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
-		}
-		
-		//debug add loot to be able to craft at least one item
-		Craftable c = required.random();
-		for (String s : c.getRequirements().keys())
-		{
-			all.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
-		}
-		loot.putAll(all);
+//		for (int i = 0; i < 30; i++)
+//		{
+//			all.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
+//		}
+//		
+//		//debug add loot to be able to craft at least one item
+//		Craftable c = required.random();
+//		for (String s : c.getRequirements().keys())
+//		{
+//			all.put(new Item(s, AdjectiveFactory.getAdjective()), c.getRequirements().get(s) + MathUtils.random(1, 5));
+//		}
+//		loot.putAll(all);
 	}
 	
 	/**
