@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -78,6 +79,7 @@ public class NewUI extends UI {
 		
 		final NewUI ui = this;
 		
+		//create load data dialog
 		{
 			Group window = slotFrame = super.makeWindow(skin, 600, 300, true);
 			Table table = new Table();
@@ -98,21 +100,23 @@ public class NewUI extends UI {
 					if (button == Buttons.LEFT)
 					{
 						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, slotFocus.getFocusedIndex());
-						manager.get(DataDirs.accept, Sound.class).play();
 						return true;
 					}
 					return false;
 				}
 			});
+			row.setTouchable(Touchable.enabled);
 			focus.add(row);
 			table.add(row).expandX().fillX().height(60);
 			table.row();
 			for (int i = 1; i <= player.slots(); i++)
 			{
+				final int index = i;
+				final SaveSummary s = player.summary(i);
+				
 				row = new Table();
 				row.pad(0f);
 				row.setBackground(skin.getDrawable("button_up"));
-				SaveSummary s = player.summary(i);
 				if (s == null)
 				{
 					row.add(new Label("No Data", skin, "prompt")).expandX().center();
@@ -131,6 +135,7 @@ public class NewUI extends UI {
 					
 					row.add(info).colspan(1).expand().right();
 				}
+				
 				row.addListener(new InputListener(){
 
 					@Override
@@ -138,13 +143,14 @@ public class NewUI extends UI {
 					{
 						if (button == Buttons.LEFT)
 						{
-							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, slotFocus.getFocusedIndex());
-							manager.get(DataDirs.accept, Sound.class).play();
+							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, index, s);
 							return true;
 						}
 						return false;
 					}
 				});
+				row.setTouchable(Touchable.enabled);
+				
 				focus.add(row);
 				table.add(row).expandX().fillX().height(60);
 				table.row();
@@ -396,7 +402,26 @@ public class NewUI extends UI {
 								@Override
 								public void run() {
 									entity.slotFrame.addActor(entity.slotFocus);
-								
+									entity.slotFrame.addListener(new InputListener(){
+										@Override
+										public boolean keyDown(InputEvent evt, int keycode)
+										{
+											if (keycode == Keys.DOWN || keycode == Keys.S)
+											{
+												entity.slotFocus.next(true);
+											}
+											if (keycode == Keys.UP || keycode == Keys.W)
+											{
+												entity.slotFocus.prev(true);
+											}
+											if (keycode == Keys.SPACE || keycode == Keys.ENTER)
+											{
+												MessageDispatcher.getInstance().dispatchMessage(0f, entity, entity, entity.slotFocus.getFocusedIndex(), entity.slotFocus.getFocused().getUserObject());
+											}
+
+											return false;
+										}
+									});
 									entity.slotFocus.addListener(new ChangeListener(){
 										@Override
 										public void changed(ChangeEvent event, Actor actor) {
@@ -406,36 +431,14 @@ public class NewUI extends UI {
 										}
 									});
 									
-									Actor a = entity.slotFocus.getActors().get(0);
+									Actor a = entity.slotFocus.getActors().first();
 									entity.slotFocus.setFocus(a);
 
 								}
 							})
 						)
 					);
-				entity.slotFrame.addListener(new InputListener(){
-					@Override
-					public boolean keyDown(InputEvent evt, int keycode)
-					{
-						if (keycode == Keys.DOWN || keycode == Keys.S)
-						{
-							entity.slotFocus.next(true);
-							entity.manager.get(DataDirs.tick, Sound.class).play();
-						}
-						if (keycode == Keys.UP || keycode == Keys.W)
-						{
-							entity.slotFocus.prev(true);
-							entity.manager.get(DataDirs.tick, Sound.class).play();
-						}
-						if (keycode == Keys.SPACE || keycode == Keys.ENTER)
-						{
-							entity.manager.get(DataDirs.accept, Sound.class).play();
-							MessageDispatcher.getInstance().dispatchMessage(0f, entity, entity, entity.slotFocus.getFocusedIndex());
-						}
-
-						return false;
-					}
-				});
+				
 			}
 
 			@Override
@@ -451,6 +454,7 @@ public class NewUI extends UI {
 				final int index = telegram.message;
 				if (index == 0)
 				{
+					entity.manager.get(DataDirs.accept, Sound.class).play();
 					entity.slotFrame.addAction(Actions.sequence(
 						Actions.sequence(
 							Actions.run(new Runnable(){
@@ -477,6 +481,13 @@ public class NewUI extends UI {
 				}
 				else
 				{
+					if (telegram.extraInfo == null)
+					{
+						entity.manager.get(DataDirs.tick, Sound.class).play();
+						return false;
+					}
+					
+					entity.manager.get(DataDirs.accept, Sound.class).play();
 					entity.slotFrame.addAction(Actions.sequence(
 						Actions.sequence(
 							Actions.run(new Runnable(){

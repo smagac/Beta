@@ -105,8 +105,8 @@ public class TownUI extends GameUI {
 	
 	private StateMachine<TownUI> menu;
 	private Group saveWindow;
-	private FocusGroup saveGroup;
 	private Array<Table> saveSlots;
+	private FocusGroup formFocus;
 
 	public TownUI(AssetManager manager, IPlayerContainer player) {
 		super(manager, player);
@@ -121,9 +121,8 @@ public class TownUI extends GameUI {
 		this.playerService = null;
 	}
 	
-	@Override
-	public void extend()
-	{	
+	private void makeMain()
+	{
 		final TownUI ui = this;
 		
 		//explore icon
@@ -227,403 +226,324 @@ public class TownUI extends GameUI {
 			character.setPosition(display.getWidth()/2-character.getWidth()/2, 18f);
 			display.addActor(character);
 		}
-		
-		//create craft submenu layout
-		{
-			craftSubmenu = new Table();
-			craftSubmenu.setWidth(250f);
-			craftSubmenu.setHeight(display.getHeight());
-			
-			
-			craftTabs = new ButtonGroup();
-			final TextButton myButton = new TextButton("My List", skin);
-			myButton.setName("required");
-			craftTabs.add(myButton);
-			
-			final TextButton todayButton = new TextButton("Today's Special", skin);
-			todayButton.setName("extra");
-			craftTabs.add(todayButton);
-			
-			//list of required crafts
-			{
-				final List<Craftable> list = craftList = new List<Craftable>(skin);
-				list.setItems(playerService.getInventory().getRequiredCrafts());
+	}
 	
-				final ScrollPane p = new ScrollPane(list, skin);
-				p.addListener(new ScrollFocuser(p));
-				p.setFadeScrollBars(false);
-				list.addListener(new ChangeListener(){
-					
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
-						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-						requirementList.clear();
-						
-						//build requirements list
-						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
-						manager.get(DataDirs.tick, Sound.class).play();
-					}
-				});
-				p.addListener(new InputListener(){
-					@Override
-					public boolean keyDown(InputEvent evt, int keycode)
-					{
-						if (keycode == Keys.DOWN || keycode == Keys.S)
-						{
-							list.setSelectedIndex(Math.min(list.getItems().size-1, list.getSelectedIndex()+1));
-							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
-							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-							return true;
-						}
-						if (keycode == Keys.UP || keycode == Keys.W)
-						{
-							list.setSelectedIndex(Math.max(0, list.getSelectedIndex()-1));
-							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
-							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-							return true;
-						}
-						
-						return false;
-					}
-				});
-				myButton.setUserObject(p);
-			}
-			
-			//list of today's crafts
-			{
-				final List<Craftable> list = todayList = new List<Craftable>(skin);
-				list.setItems(playerService.getInventory().getTodaysCrafts());
-				
-				final ScrollPane p = new ScrollPane(list, skin);
-				p.addListener(new ScrollFocuser(p));
-				p.setFadeScrollBars(false);
-				
-				list.addListener(new ChangeListener(){
-					
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
-						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
-						manager.get(DataDirs.tick, Sound.class).play();
-					}
-				});
-				
-				p.addListener(new InputListener(){
-					@Override
-					public boolean keyDown(InputEvent evt, int keycode)
-					{
-						if (keycode == Keys.DOWN || keycode == Keys.S)
-						{
-							list.setSelectedIndex(Math.min(list.getItems().size-1, list.getSelectedIndex()+1));
-							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
-							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-							return true;
-						}
-						if (keycode == Keys.UP || keycode == Keys.W)
-						{
-							list.setSelectedIndex(Math.max(0, list.getSelectedIndex()-1));
-							float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
-							p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-							return true;
-						}
-						
-						return false;
-					}
-				});
-				todayButton.setUserObject(p);
-			}
-			
-			
-			craftMenu = new TabbedPane(craftTabs, false);
-			
-			craftMenu.setTabAction(new Runnable(){
+	/**
+	 * create craft submenu layout
+	 */
+	private void makeCraft(){
+		final TownUI ui = this;
+		
+		craftSubmenu = new Table();
+		craftSubmenu.setWidth(250f);
+		craftSubmenu.setHeight(display.getHeight());
+		
+		
+		craftTabs = new ButtonGroup();
+		final TextButton myButton = new TextButton("My List", skin);
+		myButton.setName("required");
+		craftTabs.add(myButton);
+		
+		final TextButton todayButton = new TextButton("Today's Special", skin);
+		todayButton.setName("extra");
+		craftTabs.add(todayButton);
+		
+		//list of required crafts
+		{
+			final List<Craftable> list = craftList = new List<Craftable>(skin);
+			list.setItems(playerService.getInventory().getRequiredCrafts());
 
-				@Override
-				public void run() {
-					craftList.setSelectedIndex(0);
-					todayList.setSelectedIndex(0);
-					
-					if (craftMenu.getOpenTabIndex() == 0)
-					{
-						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, craftList.getSelected());
-					}
-					else
-					{
-						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, todayList.getSelected());
-					}
-				}
+			final ScrollPane p = new ScrollPane(list, skin);
+			p.addListener(new ScrollFocuser(p));
+			p.setFadeScrollBars(false);
+			list.addListener(new ChangeListener(){
 				
-			});
-			
-			craftMenu.addListener(new InputListener(){
 				@Override
-				public boolean keyDown(InputEvent evt, int keycode)
-				{
-					List<?> l;
-					if (craftMenu.getOpenTabIndex() == 0)
-					{
-						l = craftList;
-					}
-					else
-					{
-						l = todayList;
-					}
+				public void changed(ChangeEvent event, Actor actor) {
+					float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+					p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+					requirementList.clear();
 					
-					if (keycode == Keys.DOWN || keycode == Keys.S)
-					{
-						l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
-					}
-					if (keycode == Keys.UP || keycode == Keys.W)
-					{
-						l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
-					}
-
-					return false;
+					//build requirements list
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
+					manager.get(DataDirs.tick, Sound.class).play();
 				}
 			});
-			
-			craftSubmenu.top().add(craftMenu).expand().fill().height(display.getHeight()/2-10).pad(2f).padTop(0f);
-			
-			craftSubmenu.row();
-			
-			//current highlighted craft item requirements
-			requirementList = new Table();
-			requirementList.row();
-			requirementList.pad(10);
-			requirementList.top().left();
-			
-			final ScrollPane pane2 = new ScrollPane(requirementList, skin);
-			pane2.setFadeScrollBars(false);
-			pane2.addListener(new ScrollFocuser(pane2));
-
-			craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-10).pad(2f);
-			craftSubmenu.pad(10f);
-			craftSubmenu.setPosition(display.getWidth(), 0);
-			display.addActor(craftSubmenu);
-			
-			lootSubmenu = new Table();
-			lootSubmenu.setWidth(250f);
-			lootSubmenu.setHeight(display.getHeight());
-			lootSubmenu.setPosition(-lootSubmenu.getWidth(), 0);
-			
-			Label lootLabel = new Label("My Loot", skin, "header");
-			lootLabel.setAlignment(Align.center);
-			lootSubmenu.top().add(lootLabel).expandX().fillX().pad(10f).padBottom(0f);
-			lootSubmenu.row();
-			
-			lootList = new Table();
-			lootPane = new ScrollPane(lootList, skin);
-			lootPane.setHeight(display.getHeight()/2);
-			lootPane.setScrollingDisabled(true, false);
-			lootPane.setScrollBarPositions(true, false);
-			lootPane.setFadeScrollBars(false);
-			lootPane.setScrollbarsOnTop(true);
-			lootPane.addListener(new ScrollFocuser(lootPane));
-
-			lootSubmenu.add(lootPane).expand().fill().pad(10f).padTop(0f);
-			
-			lootPane.addListener(new InputListener(){
+			p.addListener(new InputListener(){
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
 					if (keycode == Keys.DOWN || keycode == Keys.S)
 					{
-						lootPane.fling(.4f, 0, -64f/.4f);
+						list.setSelectedIndex(Math.min(list.getItems().size-1, list.getSelectedIndex()+1));
+						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+						return true;
 					}
 					if (keycode == Keys.UP || keycode == Keys.W)
 					{
-						lootPane.fling(.4f, 0, 64f/.4f);
+						list.setSelectedIndex(Math.max(0, list.getSelectedIndex()-1));
+						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+						return true;
 					}
+					
 					return false;
 				}
 			});
-			
-			display.addActor(lootSubmenu);
-			
-			craftGroup = new FocusGroup(buttonList, lootPane, craftMenu);
-			craftGroup.addListener(focusListener);
+			myButton.setUserObject(p);
 		}
 		
-
-		//create explore submenu layout
+		//list of today's crafts
 		{
-			exploreSubmenu = new Table();
-			exploreSubmenu.setWidth(250f);
-			exploreSubmenu.setHeight(display.getHeight());
-			exploreSubmenu.setPosition(-exploreSubmenu.getWidth(), 0);
+			final List<Craftable> list = todayList = new List<Craftable>(skin);
+			list.setItems(playerService.getInventory().getTodaysCrafts());
 			
-			//pane for showing details about the selected file
-			fileDetails = new Table();
-			fileDetails.setSize(250f, display.getHeight());
-			fileDetails.setPosition(display.getWidth(), 0);
+			final ScrollPane p = new ScrollPane(list, skin);
+			p.addListener(new ScrollFocuser(p));
+			p.setFadeScrollBars(false);
 			
-			fileDetailsContent = new Table();
-			fileDetailsPane = new ScrollPane(fileDetailsContent, skin);
-			fileDetailsPane.setScrollingDisabled(true, true);
-			fileDetails.add(fileDetailsPane).expand().fill();
-			
-			display.addActor(fileDetails);
-			
-			//list of required crafts
-			fileList = new List<String>(skin);
-			recentFileList = new List<String>(skin);
-			recentFileList.setItems(historyPaths);
-			
-			//prep file browsing
-			if (directory == null)
-			{
-				loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()).parent());	
-			}
-			else
-			{
-				loadDir(directory);
-			}
-			changeDir = false;
-			
-			exploreTabs = new ButtonGroup();
-			
-			{
-				final TextButton browseButton = new TextButton("Browse", skin);
-				browseButton.setName("browse");
-				exploreTabs.add(browseButton);
+			list.addListener(new ChangeListener(){
 				
-				final ScrollPane pane = new ScrollPane(fileList, skin);
-				pane.setWidth(250f);
-				pane.setHeight(display.getHeight());
-				pane.setScrollingDisabled(true, false);
-				pane.setFadeScrollBars(false);
-				pane.setScrollBarPositions(true, false);
-				pane.setScrollbarsOnTop(false);
-				pane.addListener(new ScrollFocuser(pane));
-				
-				browseButton.setUserObject(pane);
-				
-				fileList.addListener(new ScrollFollower(pane, fileList));
-				fileList.addListener(new ChangeListener(){
-	
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						if (changeDir)
-						{
-							changeDir = false;
-							event.cancel();
-							return;
-						}
-						
-						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-						
-						int listIndex;
-						final FileHandle selected;
-						try
-						{
-							listIndex = fileList.getSelectedIndex();
-							selected = directoryList.get(listIndex);
-						}
-						catch (java.lang.IndexOutOfBoundsException e)
-						{
-							listIndex = 0;
-							System.out.println("file loader derp");
-							return;
-						}
-						
-						if (selected == null && lastIndex == listIndex)
-						{
-							//go to parent directory
-							queueDir = directory.parent();
-							manager.get(DataDirs.tick, Sound.class).play();
-							return;
-						}
-						else if (selected != null)
-						{
-							if (selected.isDirectory())
-							{
-								fileDetails.clearActions();
-								fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-								
-								if (lastIndex == listIndex)
-								{
-									changeDir = true;
-									fileList.setItems();
-									fileList.addAction(Actions.sequence(
-										Actions.moveTo(-fileList.getWidth(), 0, .3f),
-										Actions.run(new Runnable(){
-	
-											@Override
-											public void run() {
-												queueDir = selected;
-											}
-											
-										}),
-										Actions.moveTo(0, 0, .3f)
-									));
-									return;
-								}
-							}
-							else
-							{
-								MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
-							}
-						}
-						
-						if (lastIndex != -1)
-						{
-							manager.get(DataDirs.tick, Sound.class).play();
-						}
-						lastIndex = listIndex;
-					}
-				});
-			}
-		
-			{
-				final TextButton recentButton = new TextButton("Recent Files", skin);
-				recentButton.setName("history");
-				exploreTabs.add(recentButton);
-				
-				recentFileList.addListener(new ChangeListener(){
-
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-						FileHandle selected = history.get(fileList.getSelectedIndex());
-						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
-					}
-				
-				});
-				
-				final ScrollPane pane = new ScrollPane(recentFileList, skin);
-				pane.setWidth(250f);
-				pane.setHeight(display.getHeight());
-				pane.setScrollingDisabled(true, false);
-				pane.setFadeScrollBars(false);
-				pane.setScrollBarPositions(true, false);
-				pane.setScrollbarsOnTop(false);
-				pane.addListener(new ScrollFocuser(pane));
-				
-				recentButton.setUserObject(pane);
-				recentFileList.addListener(new ScrollFollower(pane, recentFileList));
-			}
-
-			final TabbedPane exploreMenu = new TabbedPane(exploreTabs, false);
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+					p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
+					manager.get(DataDirs.tick, Sound.class).play();
+				}
+			});
 			
-			exploreSubmenu.add(exploreMenu).fill().expand();
-			
-			exploreMenu.addListener(new InputListener(){
+			p.addListener(new InputListener(){
 				@Override
 				public boolean keyDown(InputEvent evt, int keycode)
 				{
-				
-					if ((keycode == Keys.ENTER || keycode == Keys.SPACE) && exploreMenu.getOpenTabIndex() == 0)
+					if (keycode == Keys.DOWN || keycode == Keys.S)
 					{
-						int listIndex = fileList.getSelectedIndex();
-						final FileHandle selected = directoryList.get(listIndex);
-						if (selected == null)
-						{
-							//go to parent directory
-							queueDir = directory.parent();
-							manager.get(DataDirs.tick, Sound.class).play();
-							return true;
-						}
+						list.setSelectedIndex(Math.min(list.getItems().size-1, list.getSelectedIndex()+1));
+						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+						return true;
+					}
+					if (keycode == Keys.UP || keycode == Keys.W)
+					{
+						list.setSelectedIndex(Math.max(0, list.getSelectedIndex()-1));
+						float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
+						p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
+						return true;
+					}
+					
+					return false;
+				}
+			});
+			todayButton.setUserObject(p);
+		}
+		
+		
+		craftMenu = new TabbedPane(craftTabs, false);
+		
+		craftMenu.setTabAction(new Runnable(){
+
+			@Override
+			public void run() {
+				craftList.setSelectedIndex(0);
+				todayList.setSelectedIndex(0);
+				
+				if (craftMenu.getOpenTabIndex() == 0)
+				{
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, craftList.getSelected());
+				}
+				else
+				{
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, todayList.getSelected());
+				}
+			}
+			
+		});
+		
+		craftMenu.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				List<?> l;
+				if (craftMenu.getOpenTabIndex() == 0)
+				{
+					l = craftList;
+				}
+				else
+				{
+					l = todayList;
+				}
+				
+				if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
+				}
+
+				return false;
+			}
+		});
+		
+		craftSubmenu.top().add(craftMenu).expand().fill().height(display.getHeight()/2-10).pad(2f).padTop(0f);
+		
+		craftSubmenu.row();
+		
+		//current highlighted craft item requirements
+		requirementList = new Table();
+		requirementList.row();
+		requirementList.pad(10);
+		requirementList.top().left();
+		
+		final ScrollPane pane2 = new ScrollPane(requirementList, skin);
+		pane2.setFadeScrollBars(false);
+		pane2.addListener(new ScrollFocuser(pane2));
+
+		craftSubmenu.bottom().add(pane2).expand().fill().height(display.getHeight()/2-10).pad(2f);
+		craftSubmenu.pad(10f);
+		craftSubmenu.setPosition(display.getWidth(), 0);
+		display.addActor(craftSubmenu);
+		
+		lootSubmenu = new Table();
+		lootSubmenu.setWidth(250f);
+		lootSubmenu.setHeight(display.getHeight());
+		lootSubmenu.setPosition(-lootSubmenu.getWidth(), 0);
+		
+		Label lootLabel = new Label("My Loot", skin, "header");
+		lootLabel.setAlignment(Align.center);
+		lootSubmenu.top().add(lootLabel).expandX().fillX().pad(10f).padBottom(0f);
+		lootSubmenu.row();
+		
+		lootList = new Table();
+		lootPane = new ScrollPane(lootList, skin);
+		lootPane.setHeight(display.getHeight()/2);
+		lootPane.setScrollingDisabled(true, false);
+		lootPane.setScrollBarPositions(true, false);
+		lootPane.setFadeScrollBars(false);
+		lootPane.setScrollbarsOnTop(true);
+		lootPane.addListener(new ScrollFocuser(lootPane));
+
+		lootSubmenu.add(lootPane).expand().fill().pad(10f).padTop(0f);
+		
+		lootPane.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					lootPane.fling(.4f, 0, -64f/.4f);
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					lootPane.fling(.4f, 0, 64f/.4f);
+				}
+				return false;
+			}
+		});
+		
+		display.addActor(lootSubmenu);
+		
+		craftGroup = new FocusGroup(buttonList, lootPane, craftMenu);
+		craftGroup.addListener(focusListener);
+	}
+	
+	/**
+	 * create explore submenu layout
+	 */
+	private void makeExplore(){
+		final TownUI ui = this;
+		
+		exploreSubmenu = new Table();
+		exploreSubmenu.setWidth(250f);
+		exploreSubmenu.setHeight(display.getHeight());
+		exploreSubmenu.setPosition(-exploreSubmenu.getWidth(), 0);
+		
+		//pane for showing details about the selected file
+		fileDetails = new Table();
+		fileDetails.setSize(250f, display.getHeight());
+		fileDetails.setPosition(display.getWidth(), 0);
+		
+		fileDetailsContent = new Table();
+		fileDetailsPane = new ScrollPane(fileDetailsContent, skin);
+		fileDetailsPane.setScrollingDisabled(true, true);
+		fileDetails.add(fileDetailsPane).expand().fill();
+		
+		display.addActor(fileDetails);
+		
+		//list of required crafts
+		fileList = new List<String>(skin);
+		recentFileList = new List<String>(skin);
+		recentFileList.setItems(historyPaths);
+		
+		//prep file browsing
+		if (directory == null)
+		{
+			loadDir(Gdx.files.absolute(Gdx.files.external(".").file().getAbsolutePath()).parent());	
+		}
+		else
+		{
+			loadDir(directory);
+		}
+		changeDir = false;
+		
+		exploreTabs = new ButtonGroup();
+		
+		{
+			final TextButton browseButton = new TextButton("Browse", skin);
+			browseButton.setName("browse");
+			exploreTabs.add(browseButton);
+			
+			final ScrollPane pane = new ScrollPane(fileList, skin);
+			pane.setWidth(250f);
+			pane.setHeight(display.getHeight());
+			pane.setScrollingDisabled(true, false);
+			pane.setFadeScrollBars(false);
+			pane.setScrollBarPositions(true, false);
+			pane.setScrollbarsOnTop(false);
+			pane.addListener(new ScrollFocuser(pane));
+			
+			browseButton.setUserObject(pane);
+			
+			fileList.addListener(new ScrollFollower(pane, fileList));
+			fileList.addListener(new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (changeDir)
+					{
+						changeDir = false;
+						event.cancel();
+						return;
+					}
+					
+					fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+					
+					int listIndex;
+					final FileHandle selected;
+					try
+					{
+						listIndex = fileList.getSelectedIndex();
+						selected = directoryList.get(listIndex);
+					}
+					catch (java.lang.IndexOutOfBoundsException e)
+					{
+						listIndex = 0;
+						System.out.println("file loader derp");
+						return;
+					}
+					
+					if (selected == null && lastIndex == listIndex)
+					{
+						//go to parent directory
+						queueDir = directory.parent();
+						manager.get(DataDirs.tick, Sound.class).play();
+						return;
+					}
+					else if (selected != null)
+					{
 						if (selected.isDirectory())
 						{
 							fileDetails.clearActions();
@@ -645,137 +565,243 @@ public class TownUI extends GameUI {
 									}),
 									Actions.moveTo(0, 0, .3f)
 								));
-								return true;
+								return;
 							}
+						}
+						else
+						{
+							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
 						}
 					}
 					
-					return false;
+					if (lastIndex != -1)
+					{
+						manager.get(DataDirs.tick, Sound.class).play();
+					}
+					lastIndex = listIndex;
 				}
 			});
-
-			exploreMenu.addListener(new InputListener(){
-				@Override
-				public boolean keyDown(InputEvent evt, int keycode)
-				{
-					List<?> l;
-					if (exploreMenu.getOpenTabIndex() == 0)
-					{
-						l = fileList;
-					}
-					else
-					{
-						l = recentFileList;
-					}
-					
-					if (keycode == Keys.DOWN || keycode == Keys.S)
-					{
-						l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
-					}
-					if (keycode == Keys.UP || keycode == Keys.W)
-					{
-						l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
-					}
-
-					return false;
-				}
-			});
-			
-			display.addActor(exploreSubmenu);
-			
-			exploreGroup = new FocusGroup(buttonList, exploreMenu);
-			exploreGroup.addListener(focusListener);
 		}
-		
-		//save data
+	
 		{
-			Group window = saveWindow = super.makeWindow(skin, 600, 300, true);
-			saveSlots = new Array<Table>();
-			Table table = new Table();
+			final TextButton recentButton = new TextButton("Recent Files", skin);
+			recentButton.setName("history");
+			exploreTabs.add(recentButton);
 			
-			FocusGroup focus = saveGroup = new FocusGroup(buttonList);
-			focus.addListener(focusListener);
-			table.pad(32f);
-			table.setFillParent(true);
+			recentFileList.addListener(new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					FileHandle selected = history.get(fileList.getSelectedIndex());
+					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
+				}
 			
-			table.add(new Label("Choose a Slot", skin, "prompt")).expandX().center();
-			table.row();
+			});
 			
-			for (int i = 1; i <= playerService.slots(); i++)
+			final ScrollPane pane = new ScrollPane(recentFileList, skin);
+			pane.setWidth(250f);
+			pane.setHeight(display.getHeight());
+			pane.setScrollingDisabled(true, false);
+			pane.setFadeScrollBars(false);
+			pane.setScrollBarPositions(true, false);
+			pane.setScrollbarsOnTop(false);
+			pane.addListener(new ScrollFocuser(pane));
+			
+			recentButton.setUserObject(pane);
+			recentFileList.addListener(new ScrollFollower(pane, recentFileList));
+		}
+
+		final TabbedPane exploreMenu = new TabbedPane(exploreTabs, false);
+		
+		exploreSubmenu.add(exploreMenu).fill().expand();
+		
+		exploreMenu.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
 			{
-				Table row = new Table();
-				row.pad(0f);
-				row.setBackground(skin.getDrawable("button_up"));
-				SaveSummary s = playerService.summary(i);
-				if (s == null)
+			
+				if ((keycode == Keys.ENTER || keycode == Keys.SPACE) && exploreMenu.getOpenTabIndex() == 0)
 				{
-					row.add(new Label("No Data", skin, "prompt")).expandX().center();
+					int listIndex = fileList.getSelectedIndex();
+					final FileHandle selected = directoryList.get(listIndex);
+					if (selected == null)
+					{
+						//go to parent directory
+						queueDir = directory.parent();
+						manager.get(DataDirs.tick, Sound.class).play();
+						return true;
+					}
+					if (selected.isDirectory())
+					{
+						fileDetails.clearActions();
+						fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+						
+						if (lastIndex == listIndex)
+						{
+							changeDir = true;
+							fileList.setItems();
+							fileList.addAction(Actions.sequence(
+								Actions.moveTo(-fileList.getWidth(), 0, .3f),
+								Actions.run(new Runnable(){
+
+									@Override
+									public void run() {
+										queueDir = selected;
+									}
+									
+								}),
+								Actions.moveTo(0, 0, .3f)
+							));
+							return true;
+						}
+					}
+				}
+				
+				return false;
+			}
+		});
+
+		exploreMenu.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				List<?> l;
+				if (exploreMenu.getOpenTabIndex() == 0)
+				{
+					l = fileList;
 				}
 				else
 				{
-					Image icon = new Image(skin, s.gender);
-					row.add(icon).expand().center().colspan(1).size(32f, 32f);
-					
-					row.add(new Label(s.date, skin, "prompt")).expand().colspan(1).center();
-					
-					Table info = new Table();
-					info.add(new Label("Crafting Completed: " + s.progress, skin, "smaller")).expand().colspan(1).right().row();
-					info.add(new Label("Time: " + s.time, skin, "smaller")).expand().colspan(1).right().row();
-					info.add(new Label(new String(new char[s.diff]).replace('\0', '*') + " difficulty", skin, "smaller")).expand().colspan(1).right();
-					
-					row.add(info).colspan(1).expand().right();
+					l = recentFileList;
 				}
-				row.addListener(new InputListener(){
+				
+				if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
+				}
 
-					@Override
-					public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-					{
-						if (button == Buttons.LEFT)
-						{
-							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, saveGroup.getFocusedIndex());
-							manager.get(DataDirs.accept, Sound.class).play();
-							return true;
-						}
-						return false;
-					}
-				});
-				focus.add(row);
-				saveSlots.add(row);
-				table.add(row).expandX().fillX().height(60);
-				table.row();
+				return false;
+			}
+		});
+		
+		display.addActor(exploreSubmenu);
+		
+		exploreGroup = new FocusGroup(buttonList, exploreMenu);
+		exploreGroup.addListener(focusListener);
+	}
+	
+	/**
+	 * create data management submenu layout
+	 */
+	private void makeSave(){
+		final TownUI ui = this;
+		
+		Group window = saveWindow = super.makeWindow(skin, 600, 300, true);
+		saveSlots = new Array<Table>();
+		Table table = new Table();
+		
+		formFocus = new FocusGroup();
+		
+		formFocus.addListener(new ChangeListener(){
+
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if (ui.menu.isInState(TownState.Save))
+				{
+					ui.showPointer(formFocus.getFocused(), Align.left, Align.center);
+				}
 			}
 			
-			table.addListener(new InputListener(){
-				@Override
-				public boolean keyDown(InputEvent evt, int keycode)
-				{
-					if (keycode == Keys.DOWN || keycode == Keys.S)
-					{
-						saveGroup.next(true);
-						manager.get(DataDirs.tick, Sound.class).play();
-					}
-					if (keycode == Keys.UP || keycode == Keys.W)
-					{
-						saveGroup.prev(true);
-						manager.get(DataDirs.tick, Sound.class).play();
-					}
-					if (keycode == Keys.SPACE || keycode == Keys.ENTER)
-					{
-						if (saveGroup.getFocused() != buttonList)
-						{
-							manager.get(DataDirs.accept, Sound.class).play();
-							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, saveGroup.getFocusedIndex());
-						}
-					}
+		});
+		
+		table.pad(32f);
+		table.setFillParent(true);
+		
+		table.add(new Label("Choose a Slot", skin, "prompt")).expandX().center();
+		table.row();
+		
+		for (int i = 1; i <= playerService.slots(); i++)
+		{
+			Table row = new Table();
+			row.setTouchable(Touchable.enabled);
+			row.pad(0f);
+			row.setBackground(skin.getDrawable("button_up"));
+			SaveSummary s = playerService.summary(i);
+			if (s == null)
+			{
+				row.add(new Label("No Data", skin, "prompt")).expandX().center();
+			}
+			else
+			{
+				Image icon = new Image(skin, s.gender);
+				row.add(icon).expand().center().colspan(1).size(32f, 32f);
+				
+				row.add(new Label(s.date, skin, "prompt")).expand().colspan(1).center();
+				
+				Table info = new Table();
+				info.add(new Label("Crafting Completed: " + s.progress, skin, "smaller")).expand().colspan(1).right().row();
+				info.add(new Label("Time: " + s.time, skin, "smaller")).expand().colspan(1).right().row();
+				info.add(new Label(new String(new char[s.diff]).replace('\0', '*') + " difficulty", skin, "smaller")).expand().colspan(1).right();
+				
+				row.add(info).colspan(1).expand().right();
+			}
+			row.addListener(new InputListener(){
 
+				@Override
+				public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
+				{
+					if (button == Buttons.LEFT)
+					{
+						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, formFocus.getFocusedIndex());
+						manager.get(DataDirs.accept, Sound.class).play();
+						return true;
+					}
 					return false;
 				}
 			});
-			
-			window.addActor(table);
-			window.setPosition(display.getWidth()/2-window.getWidth()/2, display.getHeight());
-			display.addActor(window);
+			formFocus.add(row);
+			saveSlots.add(row);
+			table.add(row).expandX().fillX().height(60);
+			table.row();
 		}
+		
+		window.addActor(table);
+		window.setPosition(display.getWidth()/2-window.getWidth()/2, display.getHeight());
+		window.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					formFocus.next(true);
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					formFocus.prev(true);
+				}
+				if (keycode == Keys.SPACE || keycode == Keys.ENTER)
+				{
+					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, formFocus.getFocusedIndex());
+				}
+
+				return false;
+			}
+		});;
+		
+		display.addActor(window);
+	}
+	
+	@Override
+	public void extend()
+	{	
+		makeMain();
+		makeCraft();
+		makeExplore();
+		makeSave();
 
 		goddess = new Image(skin.getRegion(playerService.getWorship()));
 		goddess.setSize(128f, 128f);
@@ -848,7 +874,6 @@ public class TownUI extends GameUI {
 
 	@Override
 	protected void extendAct (float delta) {
-		
 		if (queueDir != null)
 		{
 			loadDir(queueDir);
@@ -861,6 +886,7 @@ public class TownUI extends GameUI {
 	{
 		MessageDispatcher.getInstance().dispatchMessage(0, this, this, index);
 		menu.update();
+		refreshButtons();
 	}
 
 	/**
@@ -913,7 +939,7 @@ public class TownUI extends GameUI {
 		}
 		else if (menu.isInState(TownState.Save))
 		{
-			return saveGroup;
+			return formFocus;
 		}
 		return null;
 	}
@@ -1496,25 +1522,72 @@ public class TownUI extends GameUI {
 			}
 
 			@Override
-			public void enter(TownUI entity) {
+			public void enter(final TownUI entity) {
+				
+				for (int i = 1; i <= entity.playerService.slots(); i++)
+				{
+					Table row = entity.saveSlots.get(i-1);
+				
+					row.clearChildren();
+					SaveSummary s = entity.playerService.summary(i);
+					if (s == null)
+					{
+						row.add(new Label("No Data", entity.skin, "prompt")).expandX().center();
+					}
+					else
+					{
+						Image icon = new Image(entity.skin, s.gender);
+						row.add(icon).expand().center().colspan(1).size(32f, 32f);
+						
+						row.add(new Label(s.date, entity.skin, "prompt")).expand().colspan(1).center();
+						
+						Table info = new Table();
+						info.add(new Label("Crafting Completed: " + s.progress, entity.skin, "smaller")).expand().colspan(1).right().row();
+						info.add(new Label("Time: " + s.time, entity.skin, "smaller")).expand().colspan(1).right().row();
+						info.add(new Label(new String(new char[s.diff]).replace('\0', '*') + " difficulty", entity.skin, "smaller")).expand().colspan(1).right();
+						
+						row.add(info).colspan(1).expand().right();
+					}	
+				}
+				
 				entity.saveWindow.addAction(
-					Actions.moveTo(entity.display.getWidth()/2-entity.saveWindow.getWidth()/2, entity.display.getHeight()/2 - entity.saveWindow.getHeight()/2, .4f)
+					Actions.sequence(
+						Actions.moveTo(entity.display.getWidth()/2-entity.saveWindow.getWidth()/2, entity.display.getHeight()/2 - entity.saveWindow.getHeight()/2, .4f),
+						Actions.run(new Runnable(){
+
+							@Override
+							public void run() {
+								entity.setFocus(entity.saveWindow);
+								entity.formFocus.setFocus(entity.formFocus.getActors().first());
+								entity.showPointer(entity.saveSlots.first(), Align.left, Align.center);
+							}
+							
+						})
+					)
 				);
 				entity.refreshButtons();
 			}
 
 			@Override
+			public void exit(TownUI entity)
+			{
+				entity.setFocus(entity.buttonList);
+				entity.hidePointer();
+			}
+			
+			@Override
 			public boolean onMessage(TownUI entity, Telegram telegram) {
 				if (telegram.message == MenuMessage.Selected)
 				{
-					entity.playerService.save((Integer)telegram.extraInfo);
-					return true;
+					entity.playerService.save((Integer)telegram.extraInfo + 1);
+					entity.menu.changeState(Main);
 				}
 				else
 				{
+					entity.manager.get(DataDirs.tick, Sound.class).play();
 					entity.menu.changeState(Main);
-					return true;
 				}
+				return true;
 			}
 		};
 		

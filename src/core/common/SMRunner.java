@@ -28,7 +28,7 @@ public class SMRunner {
 
 		
 		final LwjglApplication app = new LwjglApplication(new Storymode(), config);
-		Report.hook(app);
+		//Report.hook(app);
 	}
 	
 	
