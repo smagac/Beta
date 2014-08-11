@@ -13,6 +13,11 @@ To execute the game, run one of the following scripts according to your platform
     run.bat - Windows
     run.sh - Mac OS X/Linux
 
+You can also ignore the updater with the use of the command line argument -offline like so
+
+    run.bat -offline
+    run.sh -offline
+
 System Requirements
 =========================
 The following specifications are required in order to play properly

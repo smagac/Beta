@@ -3,7 +3,10 @@ Changes since Desura Launch on August 8, 2014
 - Crafting is fixed and now lists how much of each kind of item you have in materials
 - DLC/User content creation framework is in place, allowing file override and extension of select content.
 -- Dungeon background music and new monster definitions are among the first to be supported for DLC
- 
+- You can now save and load your game
+- Fixed scaling of interface controls on the new game screen
+- Fix resizing your window
+
 Changes since Beta 2 Announcement on July 13, 2014
 ============================
 - You can now revisit dungeons by selecting the same file again!

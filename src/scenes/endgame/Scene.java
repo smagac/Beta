@@ -28,11 +28,6 @@ public class Scene extends scenes.Scene<EndUI> {
 	}
 
 	@Override
-	public void resize(int width, int height) {
-		ui.getViewport().update(width, height);
-	}
-	
-	@Override
 	public void show() {
 		ui = new EndUI(this, manager, player);
 		

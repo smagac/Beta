@@ -12,11 +12,6 @@ import core.service.IPlayerContainer;
 public class Scene extends scenes.Scene<TownUI> {
 
 	@Inject public IPlayerContainer playerService;
-	
-	@Override
-	public void resize(int width, int height) {
-		ui.resize(width, height);
-	}
 
 	@Override
 	public void show() {

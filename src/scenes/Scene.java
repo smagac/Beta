@@ -41,7 +41,7 @@ public abstract class Scene<View extends UI> implements Screen {
 	}
 	
 	@Override
-	public void resize(int width, int height)
+	public final void resize(int width, int height)
 	{
 		ui.resize(width, height);
 	}

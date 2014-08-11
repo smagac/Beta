@@ -130,7 +130,7 @@ public abstract class UI extends Stage implements Agent {
 	}
 	
 	public void resize(int width, int height){
-		getViewport().update(width, height);
+		getViewport().update(width, height, true);
 	}
 	
 	/**

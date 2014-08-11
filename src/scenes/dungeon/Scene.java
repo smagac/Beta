@@ -134,11 +134,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	}
 	
 	@Override
-	public void resize(int width, int height) {
-		ui.resize(width, height);
-	}
-
-	@Override
 	public void show() {
 		ui = new WanderUI(manager, playerService, this);
 		

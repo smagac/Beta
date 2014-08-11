@@ -81,6 +81,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		hueify.begin();
 		hueify.setUniformf("u_resolution", width, height);
 		hueify.end();
+		super.resize(width, height);
 	}
 	
 	@Override

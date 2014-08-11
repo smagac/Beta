@@ -20,19 +20,14 @@ public class Scene extends scenes.Scene<NewUI> {
 	public void extend(float delta) {
 		if (ui.isDone())
 		{
-			
 			SceneManager.switchToScene("town");
 			return;
 		}
 		
 		ui.draw();
-		//Table.drawDebug(ui);
 	}
 
-	@Override
-	public void resize(int width, int height) {
-		ui.getViewport().update(width, height);
-	}
+
 	
 	@Override
 	public void show() {
