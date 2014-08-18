@@ -46,6 +46,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
+import core.common.Tracker;
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
@@ -1045,6 +1046,29 @@ public class TownUI extends GameUI {
 					ui.lootList.add(l).expandX().fillX();
 				}
 				ui.lootList.pack();
+				
+				int index = 0;
+				if (ui.craftMenu.getOpenTabIndex() == 0)
+				{
+					index = ui.craftList.getSelectedIndex();
+				}
+				else
+				{
+					index = ui.todayList.getSelectedIndex();
+				}
+				
+				ui.todayList.setItems(ui.playerService.getInventory().getTodaysCrafts());
+				ui.craftList.setItems(ui.playerService.getInventory().getRequiredCrafts());
+				
+				if (ui.craftMenu.getOpenTabIndex() == 0)
+				{
+					ui.craftList.setSelectedIndex(index);
+				}
+				else
+				{
+					ui.todayList.setSelectedIndex(index);
+				}
+				
 			}
 			
 			private void refreshRequirements(Craftable c, TownUI entity)
@@ -1122,16 +1146,29 @@ public class TownUI extends GameUI {
 					{
 						c = ui.todayList.getSelected();
 					}
+					
 					if (c != null)
 					{
-						int count = ui.playerService.getInventory().getProgress();
+						int count = Tracker.NumberValues.Items_Crafted.value();
 						boolean made = ui.playerService.getInventory().makeItem(c);
 						ui.setMessage((made)?"Crafted an item!":"Not enough materials");
 						populateLoot(ui);
 						
 						if (made)
 						{
+							ui.playerService.getInventory().refreshRequirements();
 							refreshRequirements(c, ui);
+							
+						
+							if (ui.craftMenu.getOpenTabIndex() == 0)
+							{
+								c = ui.craftList.getSelected();
+							}
+							else
+							{
+								c = ui.todayList.getSelected();
+							}
+							
 						}
 						
 						if (ui.playerService.getInventory().getProgressPercentage() >= 1.0f)

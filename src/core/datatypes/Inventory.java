@@ -54,10 +54,11 @@ public class Inventory implements Serializable{
 		tmp = new ObjectMap<Item, Integer>();
 		all = new ObjectMap<Item, Integer>();
 		
-		//debug add loot to test crafting
-//		for (int i = 0; i < 30; i++)
+//		//debug add loot to test crafting
+//		for (int i = 0; i < 100; i++)
 //		{
-//			all.put(new Item(Item.items.random(), AdjectiveFactory.getAdjective()), MathUtils.random(1, 20));
+//			Item item = new Item(Item.items.random(), AdjectiveFactory.getAdjective());
+//			all.put(item, all.get(item, 0) + MathUtils.random(1, 20));
 //		}
 //		
 //		//debug add loot to be able to craft at least one item
@@ -86,7 +87,16 @@ public class Inventory implements Serializable{
 		while (todaysCrafts.size < 5);
 	}
 	
+	public void refreshRequirements() {
+		getTodaysCrafts();
+		getRequiredCrafts();
+	}
+	
 	public Array<Craftable> getTodaysCrafts() {
+		for (Craftable c : todaysCrafts)
+		{
+			c.canMake = canMake(c);
+		}
 		return todaysCrafts;
 	}
 	
@@ -167,15 +177,20 @@ public class Inventory implements Serializable{
 					
 					have = have + amount;
 					
+					amount = 0;
 					if (have > need)
 					{
 						amount = have-need;
 					}
-					all.put(i,  amount);
 					
-					if (all.get(i) <= 0)
+					if (amount == 0)
 					{
+						Gdx.app.log("Crafting", "removing " + i);
 						all.remove(i);
+					}
+					else
+					{
+						all.put(i,  amount);	
 					}
 					
 					if (have >= need)

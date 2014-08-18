@@ -16,7 +16,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -553,27 +552,6 @@ public class WanderUI extends GameUI {
 			accept.pad(5);
 			accept.setPosition(levelUpDialog.getWidth()/2-accept.getWidth()/2, 10f);
 			
-			final Action close = 
-				Actions.sequence(
-					Actions.run(new Runnable(){
-
-						@Override
-						public void run() {
-							menu.changeState(WanderState.Wander);
-							hidePointer();
-						}
-						
-					}),
-					Actions.moveTo(levelUpDialog.getX(), getHeight(), .3f),
-					Actions.run(new Runnable(){
-
-						@Override
-						public void run() {
-							levelUpDialog.setVisible(false);
-						}
-						
-					})
-				);
 			accept.addListener(new InputListener(){
 				@Override
 				public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor)
@@ -594,7 +572,7 @@ public class WanderUI extends GameUI {
 						return false;
 					}
 					
-					levelUpDialog.addAction(close);
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, WanderState.MenuMessage.Close);
 					return true;
 				}
 			});
@@ -615,13 +593,7 @@ public class WanderUI extends GameUI {
 					}
 					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 					{
-						if (points > 0)
-						{
-							manager.get(DataDirs.tick, Sound.class).play();
-							return false;
-						}
-						
-						levelUpDialog.addAction(close);
+						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, WanderState.MenuMessage.Close);
 						return true;
 					}
 					return false;
@@ -1335,8 +1307,29 @@ public class WanderUI extends GameUI {
 			}
 			
 			@Override
-			public void exit(WanderUI entity)
+			public void exit(final WanderUI entity)
 			{
+				entity.levelUpDialog.addAction(Actions.sequence(
+					Actions.run(new Runnable(){
+	
+						@Override
+						public void run() {
+							entity.menu.changeState(WanderState.Wander);
+							entity.hidePointer();
+							entity.setFocus(null);
+						}
+						
+					}),
+					Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight(), .3f),
+					Actions.run(new Runnable(){
+	
+						@Override
+						public void run() {
+							entity.levelUpDialog.setVisible(false);
+						}
+						
+					})
+				));
 				entity.levelUpDialog.setTouchable(Touchable.disabled);
 				entity.playerService.getPlayer().levelUp(new int[]{
 						entity.strTicker.getValue(),
@@ -1359,6 +1352,19 @@ public class WanderUI extends GameUI {
 
 			@Override
 			public boolean onMessage(WanderUI entity, Telegram telegram) {
+				if (telegram.message == MenuMessage.Close)
+				{
+					if (entity.points > 0)
+					{
+						entity.manager.get(DataDirs.tick, Sound.class).play();
+						return false;
+					}
+					else
+					{
+						entity.menu.changeState(Wander);
+						return true;
+					}	
+				}
 				return false;
 			}
 			
@@ -1378,6 +1384,8 @@ public class WanderUI extends GameUI {
 			private static final int Leave = 2;
 			
 			private static final int Sacrifice = 1;
+			
+			private static final int Close = 0;
 		}
 
 		@Override
