@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 
-import components.Stats;
+import core.components.Stats;
 import core.datatypes.Inventory;
 import core.service.interfaces.IPlayerContainer;
 

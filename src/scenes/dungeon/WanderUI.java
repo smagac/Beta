@@ -37,9 +37,9 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
 
-import components.Stats;
 import core.DataDirs;
 import core.common.Tracker;
+import core.components.Stats;
 import core.datatypes.Item;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;

@@ -8,6 +8,13 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+/**
+ * Simple loading mechanism that allows for file override and extension
+ * by prioritizing user defined files over the files packaged with the game
+ * by default.
+ * 
+ * @author nhydock
+ */
 public class DLC {
 
 	private static Array<FileHandle> packs = new Array<FileHandle>();
@@ -88,7 +95,6 @@ public class DLC {
 		return get(base, Gdx.files.internal(fallback));
 	}
 	
-
 	/**
 	 * Gets the path to a dlc file, fallback to data folder if it doesn't exist.
 	 * Only works with internal based files

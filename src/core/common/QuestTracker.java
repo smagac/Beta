@@ -4,6 +4,7 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.quests.Quest;
+import core.datatypes.quests.Quest.Actions;
 import core.service.interfaces.IQuestContainer;
 
 public class QuestTracker implements IQuestContainer {
@@ -15,17 +16,22 @@ public class QuestTracker implements IQuestContainer {
 	 * Our tracker is entirely turn based, so we don't need to use this
 	 */
 	@Override
-	public void update(float delta) {	/* do nothing */ }
+	public final void update(float delta) {	/* do nothing */ }
 
 	@Override
 	public boolean handleMessage(Telegram msg) {
-		if (msg.message == Actions.Accept)
-		{
-			accept((Quest)msg.extraInfo);
-		}
 		if (msg.message == Actions.Advance)
 		{
 			refresh();
+			return true;
+		}
+		if (msg.message == Actions.Gather || msg.message == Actions.Hunt)
+		{
+			for (Quest q : activeQuests)
+			{
+				q.handleMessage(msg);
+			}
+			return true;
 		}
 		return false;
 	}
@@ -63,9 +69,25 @@ public class QuestTracker implements IQuestContainer {
 	 * Accepts a quest
 	 * @param q
 	 */
-	private void accept(Quest q)
+	@Override
+	public void accept(Quest q)
 	{
-		
+		activeQuests.add(q);
 	}
 
+	/**
+	 * Completes a quest if it is done and hasn't expired and rewards the user
+	 * @param q
+	 * @return
+	 */
+	@Override
+	public boolean complete(Quest q)
+	{
+		if (!q.hasExpired() && q.isDone())
+		{
+			activeQuests.removeValue(q, true);
+			return true;
+		}
+		return false;
+	}
 }

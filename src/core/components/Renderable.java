@@ -1,4 +1,4 @@
-package components;
+package core.components;
 
 import com.artemis.Component;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;

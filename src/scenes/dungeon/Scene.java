@@ -15,11 +15,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.utils.Array;
 
-import components.Identifier;
-import components.Monster;
 import core.DLC;
 import core.DataDirs;
 import core.common.Tracker;
+import core.components.Identifier;
+import core.components.Monster;
 import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;

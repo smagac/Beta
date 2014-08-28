@@ -21,13 +21,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
-import components.Combat;
-import components.Identifier;
-import components.Monster;
-import components.Position;
-import components.Renderable;
-import components.Stats;
 import core.common.Tracker;
+import core.components.Combat;
+import core.components.Identifier;
+import core.components.Monster;
+import core.components.Position;
+import core.components.Renderable;
+import core.components.Stats;
 import core.datatypes.Dungeon;
 
 /**

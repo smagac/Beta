@@ -26,8 +26,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 
-import components.Stats;
 import core.DataDirs;
+import core.components.Stats;
 import core.datatypes.Inventory;
 import core.service.interfaces.IPlayerContainer;
 
