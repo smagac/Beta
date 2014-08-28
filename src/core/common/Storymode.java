@@ -26,6 +26,7 @@ import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IQuestContainer;
 import factories.AllFactories;
 import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
 
 public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, ILoader {
 	
@@ -81,14 +82,14 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		
 		SceneManager.setGame(this);
 		
-		SceneManager.register(ILoader.class, this);
-		SceneManager.register(IGame.class, this);
-		SceneManager.register(IColorMode.class, this);
+		ServiceManager.register(ILoader.class, this);
+		ServiceManager.register(IGame.class, this);
+		ServiceManager.register(IColorMode.class, this);
 		
 		playerManager = new PlayerManager();
 		questTracker = new QuestTracker();
-		SceneManager.register(IPlayerContainer.class, playerManager);
-		SceneManager.register(IQuestContainer.class, questTracker);
+		ServiceManager.register(IPlayerContainer.class, playerManager);
+		ServiceManager.register(IQuestContainer.class, questTracker);
 		
 		SceneManager.register("town", scenes.town.Scene.class);
 		SceneManager.register("dungeon", scenes.dungeon.Scene.class);
@@ -123,8 +124,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	{
 		playerManager = new PlayerManager();
 		questTracker = new QuestTracker();
-		SceneManager.register(IPlayerContainer.class, playerManager);
-		SceneManager.register(IQuestContainer.class, questTracker);
+		ServiceManager.register(IPlayerContainer.class, playerManager);
+		ServiceManager.register(IQuestContainer.class, questTracker);
 		
 		SceneManager.switchToScene("title");
 	}
@@ -137,8 +138,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	{
 		playerManager = new PlayerManager();
 		questTracker = new QuestTracker();
-		SceneManager.register(IPlayerContainer.class, playerManager);
-		SceneManager.register(IQuestContainer.class, questTracker);
+		ServiceManager.register(IPlayerContainer.class, playerManager);
+		ServiceManager.register(IQuestContainer.class, questTracker);
 		
 		startGame(3, true);
 		SceneManager.switchToScene("town");
@@ -156,7 +157,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 			queued = null;
 			if (old != null)
 			{
-				SceneManager.unhook(old);
+				ServiceManager.unhook(old);
 				System.gc();
 			}
 		}
