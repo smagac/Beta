@@ -1,4 +1,4 @@
-package core.service;
+package core.service.interfaces;
 
 import github.nhydock.ssm.Service;
 

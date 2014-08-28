@@ -50,8 +50,8 @@ import core.common.Tracker;
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
-import core.service.IPlayerContainer;
-import core.service.IPlayerContainer.SaveSummary;
+import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.IPlayerContainer.SaveSummary;
 import core.util.FileSort;
 import core.util.PathSort;
 

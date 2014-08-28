@@ -20,13 +20,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+
 import components.Combat;
 import components.Identifier;
 import components.Monster;
 import components.Position;
 import components.Renderable;
 import components.Stats;
-
 import core.common.Tracker;
 import core.datatypes.Dungeon;
 

@@ -1,63 +1,11 @@
 package core.datatypes;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
-import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectMap;
 
 public class Item implements Comparable<Item>, Serializable
-{
-	public static Array<String> items;
-	public static Array<String> loot;
-	public static Array<String> craftables;
-	public static ObjectMap<FileType, Array<String>> lootLocations;
-	
-	private static boolean loaded;
-	/**
-	 * Preload all item data
-	 */
-	public static void init()
-	{
-		//only allow loading once
-		if (loaded)
-			return;
-		
-		JsonReader json = new JsonReader();
-		
-		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath("core/data/items.json"));
-		
-		lootLocations = new ObjectMap<FileType, Array<String>>();
-		items = new Array<String>();
-		loot = new Array<String>();
-		craftables = new Array<String>();
-		
-		for (FileType type : FileType.values())
-		{
-			Array<String> tLoot = new Array<String>();
-			for (JsonValue data : jv.get(type.toString()))
-			{
-				String name = data.asString();
-				items.add(name);
-				tLoot.add(name);
-				loot.add(name);
-			}
-			lootLocations.put(type, tLoot);
-		}
-		{
-			for (JsonValue data : jv.get("craftable"))
-			{
-				String name = data.asString();
-				items.add(name);
-				craftables.add(name);
-			}
-		}
-		loaded = true;
-	}
-	
+{	
 	String adj;
 	String name;
 	

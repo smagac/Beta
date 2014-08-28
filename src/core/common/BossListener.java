@@ -5,8 +5,8 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 
 import core.Palette;
-import core.service.IColorMode;
-import core.service.IGame;
+import core.service.interfaces.IColorMode;
+import core.service.interfaces.IGame;
 
 public class BossListener implements InputProcessor {
 

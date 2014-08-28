@@ -57,7 +57,7 @@ public class MonsterFactory {
 		JsonReader json = new JsonReader();
 		JsonValue monsterList;
 		
-		Array<FileHandle> dlcMonsters = DLC.getAll("data/monsters.json", Gdx.files.classpath("core/data/monsters.json"));
+		Array<FileHandle> dlcMonsters = DLC.getAll("data/monsters.json", Gdx.files.classpath("data/monsters.json"));
 		for (FileHandle dlc : dlcMonsters)
 		{
 			monsterList = json.parse(dlc);
@@ -136,6 +136,14 @@ public class MonsterFactory {
 		public int getSpd(float floor) { return (int)MathUtils.lerp(spd, maxspd, floor/100f); }
 		public int getExp(float floor) { return (int)MathUtils.lerp(exp, maxexp, floor/100f); }
 		
+	}
+	
+	/**
+	 * @return a randomly generated enemy name and nothing more
+	 */
+	public static String randomName()
+	{
+		return AdjectiveFactory.getAdjective() + allMonsters.keys().toArray().random();
 	}
 	
 	private final TextureAtlas icons;

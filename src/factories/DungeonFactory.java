@@ -43,7 +43,7 @@ import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.Dungeon.FloorData;
 import core.datatypes.FileType;
-import core.service.IDungeonContainer;
+import core.service.interfaces.IDungeonContainer;
 import core.util.dungeon.PathMaker;
 
 /**

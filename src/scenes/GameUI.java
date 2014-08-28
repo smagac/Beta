@@ -29,7 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import components.Stats;
 import core.DataDirs;
 import core.datatypes.Inventory;
-import core.service.IPlayerContainer;
+import core.service.interfaces.IPlayerContainer;
 
 /**
  * Base UI for adventuring in the town

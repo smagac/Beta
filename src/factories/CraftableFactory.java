@@ -1,27 +1,52 @@
 package factories;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 
 import core.datatypes.Craftable;
-import core.datatypes.Item;
 
 public class CraftableFactory {
+	public static Array<String> craftables;
+	private static boolean loaded;
 	
-	public CraftableFactory()
+	/**
+	 * Preload all item data
+	 */
+	public static void init()
 	{
-		//make sure item data is loaded
-		Item.init();
+		//only allow loading once
+		if (loaded)
+			return;
+		
+		JsonReader json = new JsonReader();
+		
+		//load items
+		JsonValue jv = json.parse(Gdx.files.classpath("data/items.json"));
+		
+		craftables = new Array<String>();
+		
+		for (JsonValue data : jv.get("craftable"))
+		{
+			String name = data.asString();
+			craftables.add(name);
+		}
+		loaded = true;
 	}
+	
+	public CraftableFactory(){}
 	
 	public Craftable createRandomCraftable()
 	{
-		String name = Item.craftables.random();
+		String name = craftables.random();
 		String adj = AdjectiveFactory.getAdjective();
 		String[] parts = new String[MathUtils.random(1, 5)];
 		
 		for (int i = 0; i < parts.length; i++)
 		{
-			parts[i] = Item.items.random();
+			parts[i] = ItemFactory.items.random();
 		}
 		return new Craftable(name, adj, parts);
 	}

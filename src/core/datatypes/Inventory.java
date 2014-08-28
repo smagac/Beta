@@ -1,7 +1,6 @@
 package core.datatypes;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -9,7 +8,6 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Keys;
 
 import core.common.Tracker;
-import factories.AdjectiveFactory;
 import factories.CraftableFactory;
 
 import com.badlogic.gdx.utils.Json.Serializable;

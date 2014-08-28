@@ -41,8 +41,8 @@ import components.Stats;
 import core.DataDirs;
 import core.common.Tracker;
 import core.datatypes.Item;
-import core.service.IDungeonContainer;
-import core.service.IPlayerContainer;
+import core.service.interfaces.IDungeonContainer;
+import core.service.interfaces.IPlayerContainer;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;

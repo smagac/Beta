@@ -7,7 +7,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 
 import core.common.BossListener;
-import core.service.IPlayerContainer;
+import core.service.interfaces.IPlayerContainer;
 
 public class Scene extends scenes.Scene<TownUI> {
 

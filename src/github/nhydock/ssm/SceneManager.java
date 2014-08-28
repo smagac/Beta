@@ -5,9 +5,8 @@ import java.lang.reflect.Field;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ObjectMap;
-
-import core.common.Storymode;
 
 /**
  * Very simple manager for storing all saved scene names.  Much like a route
@@ -17,12 +16,14 @@ import core.common.Storymode;
  */
 public class SceneManager {
 
-	private static Game service;
+	private static Game game;
+	private static ObjectMap<Class<? extends Service>, Service> services;
 	private static ObjectMap<String, Class<? extends Screen>> map;
 	
 	static
 	{
 		map = new ObjectMap<String, Class<? extends Screen>>();
+		services = new ObjectMap<Class<? extends Service>, Service>();
 	}
 	
 	/**
@@ -33,6 +34,23 @@ public class SceneManager {
 	public static void register(String name, Class<? extends Screen> cls)
 	{
 		map.put(name, cls);
+	}
+	
+	/**
+	 * Signs a service into the manager that can be injected into scenes
+	 * @param cls
+	 * @param service
+	 */
+	public static void register(Class<? extends Service> cls, Service service)
+	{
+		if (cls.isAssignableFrom(service.getClass()))
+		{
+			services.put(cls, service);
+		}
+		else
+		{
+			throw (new GdxRuntimeException("Service registered is not of type specified: " + cls.getCanonicalName()));
+		}
 	}
 	
 	/**
@@ -87,13 +105,14 @@ public class SceneManager {
 				@SuppressWarnings("unchecked")
 				Class<? extends Service> type = (Class<? extends Service>) f.getType();
 				try {
+					Service service = services.get(type);
 					f.set(scene, type.cast(service));
 				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
+					throw new GdxRuntimeException("Service " + type.getCanonicalName() + " has not been registered into this system");
 				}
 			}
 		}
-		service.setScreen(scene);
+		game.setScreen(scene);
 	}
 	
 	/**
@@ -118,8 +137,8 @@ public class SceneManager {
 		}
 	}
 	
-	public static void setGame(Storymode game)
+	public static void setGame(Game g)
 	{
-		service = game;
+		game = g;
 	}
 }

@@ -32,7 +32,7 @@ import core.DataDirs;
 import core.common.Tracker;
 import core.common.Tracker.NumberValues;
 import core.common.Tracker.StringValues;
-import core.service.IPlayerContainer;
+import core.service.interfaces.IPlayerContainer;
 
 public class EndUI extends UI {
 

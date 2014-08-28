@@ -1,16 +1,10 @@
 package core.common;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Calendar;
 
 import scenes.town.TownUI;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,41 +13,26 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonWriter;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
-import components.Stats;
 import core.DLC;
 import core.Palette;
-import core.datatypes.Inventory;
-import core.datatypes.Item;
-import core.service.IColorMode;
-import core.service.IGame;
-import core.service.ILoader;
-import core.service.IPlayerContainer;
-import factories.AdjectiveFactory;
-import factories.MonsterFactory;
+import core.service.interfaces.IColorMode;
+import core.service.interfaces.IGame;
+import core.service.interfaces.ILoader;
+import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.IQuestContainer;
+import factories.AllFactories;
 import github.nhydock.ssm.SceneManager;
 
-public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, IPlayerContainer, ILoader {
-
-	private static final String SaveFormat = "slot%03d.sv";
-	public static final int SaveSlots = 3;
-	private static boolean noSave = false;
+public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, ILoader {
 	
-	private Stats player;
-	private float time;
-	private Inventory inventory;
-	private int difficulty;
-	private static final String timeFormat = "%03d:%02d:%02d";
 	public static final int[] InternalRes = {960, 540};
 	
 	private boolean resumed;
-	
-	private boolean fullscreen;
-	
+
 	//COOL RENDERING
 	private Palette currentHue = Palette.Original;
 	private float contrast = .5f;
@@ -69,10 +48,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	private BitmapFont loadingFont;
 	private String loadingMessage;
 	private boolean loading;
+	private Viewport standardViewport;
 	
-	private String goddess;
-	private String character;
 	private Texture fill;
+	
+	private IPlayerContainer playerManager;
+	private IQuestContainer questTracker;
 	
 	protected Storymode(){}
 	
@@ -81,6 +62,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		hueify.begin();
 		hueify.setUniformf("u_resolution", width, height);
 		hueify.end();
+		standardViewport.update(width, height, true);
 		super.resize(width, height);
 	}
 	
@@ -95,70 +77,41 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		
 		//setup all factory resources
 		DLC.init();
-		Item.init();
-		MonsterFactory.init();
-		AdjectiveFactory.init();
+		AllFactories.prepare();
 		
 		SceneManager.setGame(this);
+		
+		SceneManager.register(ILoader.class, this);
+		SceneManager.register(IGame.class, this);
+		SceneManager.register(IColorMode.class, this);
+		
+		playerManager = new PlayerManager();
+		questTracker = new QuestTracker();
+		SceneManager.register(IPlayerContainer.class, playerManager);
+		SceneManager.register(IQuestContainer.class, questTracker);
+		
 		SceneManager.register("town", scenes.town.Scene.class);
 		SceneManager.register("dungeon", scenes.dungeon.Scene.class);
 		SceneManager.register("title", scenes.title.Scene.class);
 		SceneManager.register("newgame", scenes.newgame.Scene.class);
 		SceneManager.register("endgame", scenes.endgame.Scene.class);
 		
+		
 		SceneManager.switchToScene("title");
 		
 		loadingBatch = new SpriteBatch();
+		standardViewport = new ScalingViewport(Scaling.fit, InternalRes[0], InternalRes[1]);
+		
 		loadingFont = new BitmapFont(Gdx.files.internal("data/loading.fnt"));
 		fill = new Texture(Gdx.files.internal("data/fill.png"));
 		setLoadingMessage(null);
-
-		//startGame(3);
-		//SceneManager.switchToScene("endgame");
-		
-		//test dungeon
-		/*
-		startGame(3);
-		scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
-		dungeon.setDungeon(FileType.Other, 5);
-		SceneManager.switchToScene(dungeon);
-		*/
-		
-		for (int i = 1; i <= SaveSlots; i++)
-		{
-			
-			FileHandle save = getSaveFile(i);
-			if (!save.exists())
-			{
-				try {
-					save.parent().mkdirs();
-					save.file().createNewFile();
-				} catch (IOException e) {
-					noSave = true;
-				}
-			}
-		}
 	}
 
 	@Override
 	public void startGame(int difficulty, boolean gender) {
-		
-		this.difficulty = difficulty;
-		
-		//make a player
-		player = new Stats(10, 5, 5, 10, 0);
-
-		//make crafting requirements
-		inventory = new Inventory(difficulty);
-		
-		//reset game clock
-		time = 0f;
-		
-		character = (gender)?"male":"female";
-		goddess = (gender)?"goddess":"god";
+		playerManager.init(difficulty, gender);
 		
 		Tracker.reset();
-		
 		TownUI.clearHistory();
 	}
 	
@@ -168,9 +121,10 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	@Override
 	public void softReset()
 	{
-		player = null;
-		inventory = null;
-		time = 0f;
+		playerManager = new PlayerManager();
+		questTracker = new QuestTracker();
+		SceneManager.register(IPlayerContainer.class, playerManager);
+		SceneManager.register(IQuestContainer.class, questTracker);
 		
 		SceneManager.switchToScene("title");
 	}
@@ -181,35 +135,13 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	@Override
 	public void fastStart()
 	{
+		playerManager = new PlayerManager();
+		questTracker = new QuestTracker();
+		SceneManager.register(IPlayerContainer.class, playerManager);
+		SceneManager.register(IQuestContainer.class, questTracker);
+		
 		startGame(3, true);
 		SceneManager.switchToScene("town");
-	}
-	
-	@Override
-	public void toggleFullscreen()
-	{
-		if (fullscreen)
-		{
-			Gdx.graphics.setDisplayMode(InternalRes[0], InternalRes[1], false);
-			fullscreen = false;
-		}
-		else
-		{
-			DisplayMode dm = Gdx.graphics.getDesktopDisplayMode();
-			Gdx.graphics.setDisplayMode(dm.width, dm.height, true);
-			fullscreen = true;
-		}
-	}
-	
-	@Override
-	public String getTimeElapsed()
-	{
-		return formatTime(this.time);
-	}
-	
-	public static String formatTime(float time)
-	{
-		return String.format(timeFormat, (int)(time/3600f), (int)(time/60f)%60, (int)(time % 60));
 	}
 	
 	@Override
@@ -270,8 +202,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 			delta = 0;
 			resumed = false;
 		}
-		time += delta;
 		
+		playerManager.updateTime(delta);
 		this.getScreen().render(delta);
 		
 		if (loading)
@@ -281,6 +213,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 			
 			//draw load screen
 			loadingBatch.setShader(hueify);
+			loadingBatch.setProjectionMatrix(standardViewport.getCamera().combined);
 			loadingBatch.begin();
 			loadingBatch.setColor(clear);
 			loadingBatch.draw(fill, 0, 0, InternalRes[0], InternalRes[1]);
@@ -301,28 +234,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	{
 		super.resume();
 		resumed = true;
-	}
-	
-	/**
-	 * Fully heal the player
-	 */
-	@Override
-	public void rest()
-	{
-		player.hp = player.maxhp;
-		Tracker.NumberValues.Times_Slept.increment();
-	}
-
-	@Override
-	public Inventory getInventory()
-	{
-		return inventory;
-	}
-	
-	@Override
-	public Stats getPlayer()
-	{
-		return player;
 	}
 	
 	@Override
@@ -399,127 +310,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	}
 
 	@Override
-	public String getFullTime() {
-		return String.format("%d hours %d minutes and %d seconds", (int)(time/3600f), (int)(time/60f)%60, (int)(time % 60));
-	}
-
-	@Override
-	public String getGender() {
-		return character;
-	}
-
-	@Override
-	public String getWorship() {
-		return goddess;
-	}
-
-	@Override
 	public void endGame() {
-		if (player != null)
+		if (playerManager.isPrepared())
 		{
 			SceneManager.switchToScene("endgame");
 			System.out.println("cheater");
 		}
 	}
 
-	@Override
-	public void save(int slot) {
-		if (noSave)
-			return;
-		
-		try {
-			JsonWriter js = new JsonWriter(new FileWriter(getSaveFile(slot).file()));
-		
-			Json json = new Json();
-			json.setWriter(js);
-			
-			json.writeObjectStart();
-			json.writeValue("gender", getGender());
-			json.writeValue("made", inventory.getProgress());
-			json.writeValue("required", inventory.getRequiredCrafts().size);
-			json.writeValue("time", time);
-			json.writeValue("difficulty", difficulty);
-			
-			DateFormat df = DateFormat.getDateInstance();
-			json.writeValue("date", df.format(Calendar.getInstance().getTime()));
-			json.writeValue("inventory", inventory, Inventory.class);
-			json.writeValue("stats", player, Stats.class);
-			json.writeValue("tracker", Tracker._instance, Tracker.class);
-			
-			json.writeObjectEnd();
-			js.close();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
-	@Override
-	public void load(int slot) {
-		
-		JsonReader reader = new JsonReader();
-		JsonValue root = reader.parse(getSaveFile(slot));
-		Json json = new Json();
-		
-		this.character = root.getString("gender");
-		this.goddess = (character.equals("male")?"goddess":"god");
-		this.inventory = new Inventory();
-		this.inventory.read(json, root.get("inventory"));
-		this.time = root.getFloat("time");
-		this.difficulty = root.getInt("difficulty");
-		this.player = new Stats();
-		this.player.read(json, root.get("stats"));
-		Tracker._instance.read(json, root.get("tracker"));
-	}
-	
-	@Override
-	public SaveSummary summary(int slot) {
-		
-		JsonReader json = new JsonReader();
-		try
-		{
-			JsonValue jv = json.parse(getAppData().child(String.format(SaveFormat, slot)));
-			
-			SaveSummary s = new SaveSummary();
-			s.gender = jv.getString("gender");
-			s.progress = jv.getInt("made") + "/" + jv.getInt("required");
-			s.time = formatTime(jv.getFloat("time"));
-			s.date = jv.getString("date");
-			s.diff = jv.getInt("difficulty");
-			return s;
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
-	}
-	
-	@Override
-	public int slots() {
-		return 3;
-	}
-	
-	private FileHandle getAppData()
-	{
-	    String OS = System.getProperty("os.name").toUpperCase();
-	    FileHandle h;
-	    if (OS.contains("WIN"))
-	        h = Gdx.files.absolute(System.getenv("APPDATA")+"/StoryMode");
-	    else if (OS.contains("MAC"))
-	        h = Gdx.files.absolute(System.getProperty("user.home") + "/Library/Application Support/StoryMode");
-	    else
-	        h = Gdx.files.absolute(System.getProperty("user.home") + "/.config/StoryMode");
-	    
-	    if (!h.exists())
-	    {
-	    	h.mkdirs();
-	    }
-	    return h;
-	}
-
-	private FileHandle getSaveFile(int slot)
-	{
-		return getAppData().child(String.format(SaveFormat, slot));
-	}
 }

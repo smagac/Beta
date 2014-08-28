@@ -1,4 +1,4 @@
-package core.service;
+package core.service.interfaces;
 
 import github.nhydock.ssm.Service;
 import components.Stats;
@@ -13,10 +13,10 @@ public interface IPlayerContainer extends Service {
 	public String getFullTime();
 	public String getGender();
 	public String getWorship();
-	public void save(int slot);
-	public void load(int slot);
 	public SaveSummary summary(int slot);
 	public int slots();
+	public void save(int slot);
+	public void load(int slot);
 	
 	public static class SaveSummary
 	{
@@ -26,4 +26,8 @@ public interface IPlayerContainer extends Service {
 		public String date;
 		public int diff;
 	}
+
+	public void init(int difficulty, boolean gender);
+	public boolean isPrepared();
+	public void updateTime(float delta);
 }

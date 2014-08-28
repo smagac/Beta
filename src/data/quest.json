@@ -1,0 +1,17 @@
+{
+    "locations" : [
+        "Valley of the %s Dead", "Forest of the %s", "%s Cave", "Town by the %s Sea", "%s Mountain",
+        "%s Kingdom", "%s Desert", "%s Tundra", "Desert of the %s", "%s Dungeon", "Forgotten City of the %s"
+        ],
+    
+    "prompts" : {
+    
+        "gather" : [
+            "{item} in a bucket, some dang {enemy} went and destroyed all my {item} crops and now I have nothing to sell to pay the bills.
+             Oh man, my wife is gonna kill me when she finds out that we're gonna have to live on rice and beans for another month.  Think
+             you could help a guy like me out?  I need you to gather some stuff for me that'll help get me out of this debt.",
+             
+             
+        ]
+    }
+}

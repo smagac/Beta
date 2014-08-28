@@ -35,8 +35,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
-import core.service.IPlayerContainer;
-import core.service.IPlayerContainer.SaveSummary;
+import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.IPlayerContainer.SaveSummary;
 
 public class NewUI extends UI {
 

@@ -8,8 +8,8 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 
 import core.common.BossListener;
-import core.service.IColorMode;
-import core.service.ILoader;
+import core.service.interfaces.IColorMode;
+import core.service.interfaces.ILoader;
 
 /**
  * Generic scene class with injectable service support and provided assumed ui

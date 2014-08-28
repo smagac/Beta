@@ -22,7 +22,7 @@ public class AdjectiveFactory {
 		JsonReader json = new JsonReader();
 		
 		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath("core/data/words.json"));
+		JsonValue jv = json.parse(Gdx.files.classpath("data/words.json"));
 		adjectives.addAll(jv.get(0).asStringArray());
 		loaded = true;
 	}
