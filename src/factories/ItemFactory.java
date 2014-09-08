@@ -58,7 +58,12 @@ public final class ItemFactory {
 	
 	public static String randomName()
 	{
-		return AdjectiveFactory.getAdjective() + items.random();
+		return AdjectiveFactory.getAdjective() + " " + items.random();
+	}
+	
+	public static String randomType()
+	{
+		return items.random();
 	}
 	
 	private final Array<String> areaLoot;

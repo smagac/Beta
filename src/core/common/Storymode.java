@@ -112,6 +112,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	public void startGame(int difficulty, boolean gender) {
 		playerManager.init(difficulty, gender);
 		
+		questTracker.prepare();
 		Tracker.reset();
 		TownUI.clearHistory();
 	}

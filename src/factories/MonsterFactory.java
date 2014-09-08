@@ -143,7 +143,15 @@ public class MonsterFactory {
 	 */
 	public static String randomName()
 	{
-		return AdjectiveFactory.getAdjective() + allMonsters.keys().toArray().random();
+		return AdjectiveFactory.getAdjective() + " " + allMonsters.keys().toArray().random();
+	}
+	
+	/**
+	 * @return a random enemy species
+	 */
+	public static String randomSpecies()
+	{
+		return allMonsters.keys().toArray().random();
 	}
 	
 	private final TextureAtlas icons;

@@ -22,6 +22,11 @@ public class Identifier extends Component {
 		return this.adjective + " " + this.type;
 	}
 	
+	public String getType()
+	{
+		return this.type;
+	}
+	
 	public boolean hidden()
 	{
 		return hidden;

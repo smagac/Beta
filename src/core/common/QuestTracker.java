@@ -1,16 +1,40 @@
 package core.common;
 
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.Quest.Actions;
+import core.datatypes.quests.Quest.QuestFactory;
 import core.service.interfaces.IQuestContainer;
 
 public class QuestTracker implements IQuestContainer {
 
 	Array<Quest> quests;
 	Array<Quest> activeQuests;
+	QuestFactory factory;
+	
+	public QuestTracker()
+	{
+		factory = new QuestFactory();
+	}
+	
+	/**
+	 * Prepares a new set of quests.  Do this when starting a new game
+	 */
+	public void prepare()
+	{
+		quests = new Array<Quest>();
+		activeQuests = new Array<Quest>();
+		
+		int questCount = MathUtils.random(3,10);
+		for (int i = 0; i < questCount; i++)
+		{
+			quests.add(factory.createQuest());
+			System.out.println("made quest " + (i+1) + " of " + questCount);
+		}
+	}
 	
 	/**
 	 * Our tracker is entirely turn based, so we don't need to use this

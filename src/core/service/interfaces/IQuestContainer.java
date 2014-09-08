@@ -11,4 +11,5 @@ public interface IQuestContainer extends Service, Agent {
 	public Array<Quest> getAcceptedQuests();
 	public void accept(Quest q);
 	public boolean complete(Quest q);
+	public void prepare();
 }

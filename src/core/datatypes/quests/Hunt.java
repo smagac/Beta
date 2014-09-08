@@ -1,9 +1,13 @@
 package core.datatypes.quests;
 
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.math.MathUtils;
+
+import factories.MonsterFactory;
 
 /**
- * Basic kill x of monster y quest
+ * Basic kill x of monster y quest.  Generic hunts only require
+ * killing of a specific species, regardless of adjective.
  * 
  * @author nhydock
  */
@@ -14,12 +18,12 @@ public class Hunt extends Quest {
 	private int hunted;
 	
 	/**
-	 * Creates a new randomly generated hunt
+	 * Creates a new randomly generated hunt quest.
 	 */
-	public Hunt(String monster, int count)
+	public Hunt()
 	{
-		this.need = count;
-		this.monster = monster;
+		this.need = MathUtils.random(3, 15);
+		this.monster = MonsterFactory.randomName();
 	}
 
 	@Override
@@ -48,5 +52,20 @@ public class Hunt extends Quest {
 	@Override
 	public void accept() {
 		//do nothing special
+	}
+
+	@Override
+	protected String getType() {
+		return "hunt";
+	}
+
+	@Override
+	public String getObjective() {
+		return monster;
+	}
+
+	@Override
+	public String getObjectivePrompt() {
+		return String.format("Hunt %s: %d", monster, need);
 	}
 }
