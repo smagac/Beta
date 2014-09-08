@@ -375,11 +375,6 @@ public class NewUI extends UI {
 	}
 	
 	@Override
-	public void unhook() {
-		player = null;
-	}
-
-	@Override
 	public void update(float delta) { }
 
 	@Override
@@ -578,7 +573,7 @@ public class NewUI extends UI {
 						return false;
 					}
 				});
-				Scanner s = new Scanner(Gdx.files.classpath("core/data/title_"+entity.player.getGender()+".txt").read());
+				Scanner s = new Scanner(Gdx.files.classpath("data/title_"+entity.player.getGender()+".txt").read());
 				while (s.hasNextLine())
 				{
 					data.add(s.nextLine());

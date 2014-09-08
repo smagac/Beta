@@ -1,5 +1,6 @@
 package scenes.dungeon;
 
+import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.SceneManager;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
@@ -92,17 +93,14 @@ public class WanderUI extends GameUI {
 	private FocusGroup levelUpGroup;
 	
 	//services
-	private IPlayerContainer playerService;
-	private IDungeonContainer dungeonService;
+	@Inject public IPlayerContainer playerService;
+	@Inject public  IDungeonContainer dungeonService;
 
 	StateMachine<WanderUI> menu;
 
-	public WanderUI(AssetManager manager, IPlayerContainer playerService, IDungeonContainer dungeonService) {
-		super(manager, playerService);
-		
-		this.playerService = playerService;
-		this.dungeonService = dungeonService;
-		
+	public WanderUI(AssetManager manager) {
+		super(manager);
+
 		loot = new ObjectMap<Item, Integer>();
 		sacrifices = new ObjectMap<Item, Integer>();
 		healCost = 1;
@@ -932,12 +930,6 @@ public class WanderUI extends GameUI {
 		logPane.act(0f);
 		
 		logPane.setScrollPercentY(1.0f);
-	}
-
-	@Override
-	protected void unhook() {
-		playerService = null;
-		dungeonService = null;
 	}
 	
 	@Override

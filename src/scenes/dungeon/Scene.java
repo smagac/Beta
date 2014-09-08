@@ -32,6 +32,7 @@ import factories.DungeonFactory.DungeonLoader.DungeonParam;
 import factories.DungeonFactory.FloorLoader;
 import factories.DungeonFactory.FloorLoader.FloorParam;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
@@ -65,6 +66,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		dungeonManager.setLoader(Dungeon.class, dungeonLoader);
 		dungeonManager.setLoader(World.class, floorLoader);
 		progress = new Progress();
+		
+		ServiceManager.register(IDungeonContainer.class, this);
 	}
 	
 	public void setDungeon(FileType type, int difficulty)
@@ -135,7 +138,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	@Override
 	public void show() {
-		ui = new WanderUI(manager, playerService, this);
+		ui = new WanderUI(manager);
 		
 		if (bgm == null)
 		{
@@ -187,7 +190,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			bgm.stop();	
 		}
 		dungeonManager.dispose();
-		super.dispose();	
+		ServiceManager.register(IDungeonContainer.class, null);
+		super.dispose();
 	}
 	
 	public void ascend()

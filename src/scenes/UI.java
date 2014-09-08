@@ -1,5 +1,7 @@
 package scenes;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.assets.AssetManager;
@@ -185,12 +187,6 @@ public abstract class UI extends Stage implements Agent {
 	public void dispose()
 	{
 		super.dispose();
-		unhook();
+		ServiceManager.unhook(this);
 	}
-	
-	/**
-	 * Unhook any injected services from the parent that you decided to attach,
-	 * you freakin' lazy dingus.
-	 */
-	protected void unhook() {}
 }

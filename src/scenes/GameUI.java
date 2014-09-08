@@ -1,5 +1,7 @@
 package scenes;
 
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.FocusGroup;
 
 import com.badlogic.gdx.Input.Buttons;
@@ -65,13 +67,13 @@ public abstract class GameUI extends UI {
 	private Label hpStats;
 	private Label expStats;
 
-	private IPlayerContainer playerService;
+	@Inject private IPlayerContainer playerService;
 
-	public GameUI(AssetManager manager, IPlayerContainer playerService)
+	public GameUI(AssetManager manager)
 	{
 		super(manager);
 		
-		this.playerService = playerService;
+		ServiceManager.inject(this);
 		
 		buttonList = new HorizontalGroup();
 		buttons = new ButtonGroup();
