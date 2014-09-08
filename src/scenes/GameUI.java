@@ -67,13 +67,11 @@ public abstract class GameUI extends UI {
 	private Label hpStats;
 	private Label expStats;
 
-	@Inject private IPlayerContainer playerService;
+	@Inject public IPlayerContainer playerService;
 
 	public GameUI(AssetManager manager)
 	{
 		super(manager);
-		
-		ServiceManager.inject(this);
 		
 		buttonList = new HorizontalGroup();
 		buttons = new ButtonGroup();

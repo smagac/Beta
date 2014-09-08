@@ -1,5 +1,7 @@
 package scenes.dungeon;
 
+import github.nhydock.ssm.Inject;
+
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -37,6 +39,7 @@ import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Dungeon;
+import core.service.interfaces.IColorMode;
 
 public class RenderSystem extends EntityProcessingSystem {
 
@@ -71,6 +74,8 @@ public class RenderSystem extends EntityProcessingSystem {
 
 	//selective map layer to draw
 	private int[] layers;
+	
+	@Inject IColorMode color;
 	
 	@SuppressWarnings("unchecked")
 	public RenderSystem(int depth, Dungeon dungeon)
@@ -163,6 +168,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
 		
 		this.batch = (SpriteBatch) this.stage.getBatch();
+		this.batch.setShader(color.getShader());
 		this.camera = (OrthographicCamera) this.stage.getCamera();
 		
 		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);

@@ -5,6 +5,7 @@ import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.AbsoluteFileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
@@ -22,10 +23,12 @@ import core.components.Identifier;
 import core.components.Monster;
 import core.datatypes.Dungeon;
 import core.datatypes.Dungeon.Floor;
+import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.IQuestContainer;
 import factories.DungeonFactory;
 import factories.DungeonFactory.DungeonLoader;
 import factories.DungeonFactory.DungeonLoader.DungeonParam;
@@ -40,6 +43,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	private FileType fileType;
 	
 	@Inject public IPlayerContainer playerService;
+	@Inject public IQuestContainer questService;
 	
 	AssetManager dungeonManager;
 	DungeonLoader dungeonLoader;
@@ -305,6 +309,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	protected void getItem(Item item)
 	{
 		playerService.getInventory().pickup(item);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, questService, Quest.Actions.Gather, item.type());
 		ui.setMessage("Obtained " + item.fullname());
 	}
 	
@@ -389,6 +394,15 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			}
 			currentFloor.getSystem(RenderSystem.class).dispose();
 			ms.dispose();
+			
+			for (int i = 0; i < world.getSystems().size(); i++)
+			{
+				ServiceManager.unhook(world.getSystems().get(i));
+			}
+		}
+		for (int i = 0; i < world.getSystems().size(); i++)
+		{
+			ServiceManager.inject(world.getSystems().get(i));
 		}
 		currentFloor = world;
 		
@@ -419,9 +433,10 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		
 		//make sure enemy list is populated at least once
 		currentFloor.getSystem(MovementSystem.class).begin();
+		
+		//ensure the render system is properly tied into the rendering of everything else
 		currentFloor.getSystem(RenderSystem.class).setView(ui, ui.getSkin());
 		currentFloor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
-		currentFloor.getSystem(RenderSystem.class).getStage().getBatch().setShader(color.getShader());;
 		
 		//hide processing but set up everything
 		currentFloor.getSystem(RenderSystem.class).process(true);

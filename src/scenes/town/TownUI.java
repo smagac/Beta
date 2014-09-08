@@ -1,5 +1,6 @@
 package scenes.town;
 
+import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.SceneManager;
 
 import java.io.File;
@@ -50,8 +51,10 @@ import core.common.Tracker;
 import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
+import core.service.interfaces.IQuestContainer;
 import core.util.FileSort;
 import core.util.PathSort;
 
@@ -72,6 +75,7 @@ public class TownUI extends GameUI {
 	private Image craftImg;
 	private Image character;
 
+	//explore display
 	private FocusGroup exploreGroup;
 	private ButtonGroup exploreTabs;
 	private Table exploreSubmenu;
@@ -83,6 +87,7 @@ public class TownUI extends GameUI {
 	private ScrollPane fileDetailsPane;
 	private Table fileDetailsContent;
 	
+	//craft display
 	private FocusGroup craftGroup;
 	private Table craftSubmenu;
 	private Table lootSubmenu;
@@ -93,6 +98,14 @@ public class TownUI extends GameUI {
 	private Table lootList;
 	private Table requirementList;
 	
+	//quest display
+	private FocusGroup questGroup;
+	private ButtonGroup questTabs;
+	private Table questSubmenu;
+	private Table questDetails;
+	private ScrollPane questDetailsPane;
+	private Table questDetailsContent;
+	
 	private Image goddess;
 	private Group goddessDialog;
 	private Label gMsg;
@@ -102,24 +115,18 @@ public class TownUI extends GameUI {
 	private ButtonGroup craftTabs;
 	private FileHandle queueDir;
 	
-	private IPlayerContainer playerService;
+	@Inject public IPlayerContainer playerService;
+	@Inject public IQuestContainer questService;
 	
 	private StateMachine<TownUI> menu;
 	private Group saveWindow;
 	private Array<Table> saveSlots;
 	private FocusGroup formFocus;
 
-	public TownUI(AssetManager manager, IPlayerContainer player) {
-		super(manager, player);
-		this.playerService = player;
+	public TownUI(AssetManager manager) {
+		super(manager);
 		
 		menu = new DefaultStateMachine<TownUI>(this, TownState.Main);
-	}
-	
-	@Override
-	protected void unhook()
-	{
-		this.playerService = null;
 	}
 	
 	private void makeMain()
@@ -696,6 +703,130 @@ public class TownUI extends GameUI {
 	}
 	
 	/**
+	 * create explore submenu layout
+	 */
+	private void makeQuest(){
+		final TownUI ui = this;
+		
+		questSubmenu = new Table();
+		questSubmenu.setWidth(250f);
+		questSubmenu.setHeight(display.getHeight());
+		questSubmenu.setPosition(-questSubmenu.getWidth(), 0);
+		
+		//pane for showing details about the selected file
+		questDetails = new Table();
+		questDetails.setSize(250f, display.getHeight());
+		questDetails.setPosition(display.getWidth(), 0);
+		
+		questDetailsContent = new Table();
+		questDetailsPane = new ScrollPane(questDetailsContent, skin);
+		questDetailsPane.setScrollingDisabled(true, false);
+		questDetailsPane.setFadeScrollBars(false);
+		questDetails.add(questDetailsPane).expand().fill();
+		
+		display.addActor(questDetails);
+		
+		final List<Quest> questList = new List<Quest>(skin);
+		final List<Quest> acceptedQuestsList = new List<Quest>(skin);
+		
+		questList.setItems(questService.getQuests());
+		acceptedQuestsList.setItems(questService.getAcceptedQuests());
+		
+		questTabs = new ButtonGroup();
+		{
+			final TextButton availableButton = new TextButton("Available", skin);
+			availableButton.setName("available");
+			questTabs.add(availableButton);
+			
+			final ScrollPane pane = new ScrollPane(questList, skin);
+			pane.setWidth(250f);
+			pane.setHeight(display.getHeight());
+			pane.setScrollingDisabled(true, false);
+			pane.setFadeScrollBars(false);
+			pane.setScrollBarPositions(true, false);
+			pane.setScrollbarsOnTop(false);
+			pane.addListener(new ScrollFocuser(pane));
+			
+			availableButton.setUserObject(pane);
+			
+			questList.addListener(new ScrollFollower(pane, questList));
+			questList.addListener(new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					Quest q = questList.getSelected();
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Selected, q);
+				}
+			});
+		}
+	
+		{
+			final TextButton acceptedButton = new TextButton("Accepted", skin);
+			acceptedButton.setName("history");
+			questTabs.add(acceptedButton);
+			
+			recentFileList.addListener(new ChangeListener(){
+
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					FileHandle selected = history.get(fileList.getSelectedIndex());
+					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
+				}
+			
+			});
+			
+			final ScrollPane pane = new ScrollPane(recentFileList, skin);
+			pane.setWidth(250f);
+			pane.setHeight(display.getHeight());
+			pane.setScrollingDisabled(true, false);
+			pane.setFadeScrollBars(false);
+			pane.setScrollBarPositions(true, false);
+			pane.setScrollbarsOnTop(false);
+			pane.addListener(new ScrollFocuser(pane));
+			
+			acceptedButton.setUserObject(pane);
+			acceptedQuestsList.addListener(new ScrollFollower(pane, acceptedQuestsList));
+		}
+
+		final TabbedPane questMenu = new TabbedPane(questTabs, false);
+		
+		questSubmenu.add(questMenu).fill().expand();
+		
+		questMenu.addListener(new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent evt, int keycode)
+			{
+				List<?> l;
+				if (questMenu.getOpenTabIndex() == 0)
+				{
+					l = fileList;
+				}
+				else
+				{
+					l = recentFileList;
+				}
+				
+				if (keycode == Keys.DOWN || keycode == Keys.S)
+				{
+					l.setSelectedIndex(Math.min(l.getItems().size-1, l.getSelectedIndex()+1));
+				}
+				if (keycode == Keys.UP || keycode == Keys.W)
+				{
+					l.setSelectedIndex(Math.max(0, l.getSelectedIndex()-1));
+				}
+
+				return false;
+			}
+		});
+		
+		display.addActor(questSubmenu);
+		
+		questGroup = new FocusGroup(buttonList, questMenu);
+		questGroup.addListener(focusListener);
+	}
+	
+	
+	/**
 	 * create data management submenu layout
 	 */
 	private void makeSave(){
@@ -802,6 +933,7 @@ public class TownUI extends GameUI {
 		makeMain();
 		makeCraft();
 		makeExplore();
+		makeQuest();
 		makeSave();
 
 		goddess = new Image(skin.getRegion(playerService.getWorship()));
@@ -903,6 +1035,8 @@ public class TownUI extends GameUI {
 		craftSubmenu.clearActions();
 		exploreSubmenu.clearActions();
 		fileDetails.clearActions();
+		questDetails.clearActions();
+		questSubmenu.clearActions();
 		
 		saveWindow.clearActions();
 		
@@ -914,6 +1048,8 @@ public class TownUI extends GameUI {
 		craftSubmenu.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 		exploreSubmenu.addAction(Actions.moveTo(-exploreSubmenu.getWidth(), 0, .3f));
 		fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+		questSubmenu.addAction(Actions.moveTo(-questSubmenu.getWidth(), 0, .3f));
+		questDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 		saveWindow.addAction(Actions.moveTo(display.getWidth()/2-saveWindow.getWidth()/2, display.getHeight(), .4f));
 		setMessage("What're we doing next?");
 		
@@ -980,7 +1116,7 @@ public class TownUI extends GameUI {
 			
 			@Override
 			public String[] defineButtons(){
-				return new String[]{"Sleep", "Explore", "Craft", "Save"};
+				return new String[]{"Sleep", "Explore", "Craft", "Quest", "Save"};
 			}
 			
 			/**
@@ -1002,6 +1138,11 @@ public class TownUI extends GameUI {
 				else if (t.message == MenuMessage.Craft)
 				{
 					entity.menu.changeState(Craft);
+					return true;
+				}
+				else if (t.message == MenuMessage.Quest)
+				{
+					entity.menu.changeState(Quest);
 					return true;
 				}
 				else if (t.message == MenuMessage.Save)
@@ -1114,13 +1255,13 @@ public class TownUI extends GameUI {
 				ui.craftSubmenu.addAction(Actions.sequence(
 					Actions.moveTo(ui.display.getWidth(), 0),
 					Actions.delay(1.5f),
-					Actions.moveTo(ui.display.getWidth()-ui.craftSubmenu.getWidth(), 0, .3f)
+					Actions.moveTo(ui.display.getWidth()-ui.craftSubmenu.getWidth(), 0, .3f, Interpolation.circleOut)
 				));
 				
 				ui.lootSubmenu.addAction(Actions.sequence(
 					Actions.moveTo(-ui.lootSubmenu.getWidth(), 0),
 					Actions.delay(1.5f),
-					Actions.moveTo(0, 0, .3f)
+					Actions.moveTo(0, 0, .3f, Interpolation.circleOut)
 				));
 				
 				ui.setMessage("Tink Tink");
@@ -1264,7 +1405,7 @@ public class TownUI extends GameUI {
 				entity.exploreSubmenu.addAction(Actions.sequence(
 					Actions.moveTo(-entity.exploreSubmenu.getWidth(), 0),
 					Actions.delay(1.5f),
-					Actions.moveTo(0, 0, .3f)
+					Actions.moveTo(0, 0, .3f, Interpolation.circleOut)
 				));
 				
 				entity.setMessage("Where to?");
@@ -1375,6 +1516,7 @@ public class TownUI extends GameUI {
 							Actions.moveTo(entity.display.getWidth()-entity.fileDetails.getWidth(), 0, .3f)
 						)
 					);
+					return true;
 				}
 				else
 				{
@@ -1626,6 +1768,88 @@ public class TownUI extends GameUI {
 				}
 				return true;
 			}
+		}, 
+		Quest(){
+
+			@Override
+			public String[] defineButtons() {
+				return new String[]{"Return", "Accept Quest"};
+			}
+
+			@Override
+			public void enter(TownUI entity) {
+				entity.sleepImg.addAction(Actions.moveTo(-entity.sleepImg.getWidth(), 0, 1.5f));
+				entity.craftImg.addAction(Actions.moveTo(entity.display.getWidth(), 0, 1.5f));
+			
+				entity.questSubmenu.addAction(Actions.sequence(
+					Actions.moveTo(-entity.questSubmenu.getWidth(), 0),
+					Actions.delay(1.5f),
+					Actions.moveTo(0, 0, .3f, Interpolation.circleOut)
+				));
+				
+				entity.setMessage("Let's help people!");
+				entity.refreshButtons();
+			}
+
+			@Override
+			public boolean onMessage(final TownUI entity, Telegram telegram) {
+				if (telegram.message == MenuMessage.Selected)
+				{
+					final Quest selected = (Quest)telegram.extraInfo;
+					
+					entity.questDetails.addAction(
+						Actions.sequence(
+							Actions.moveTo(entity.display.getWidth(),  0, .3f),
+							Actions.run(new Runnable(){
+								
+								@Override
+								public void run() {
+									//generate a details panel
+									Table contents = entity.questDetailsContent;
+									contents.clear();
+									
+									//Image icon = new Image(entity.skin.getRegion(ext.toString()));
+									Label loc = new Label("Location: " + selected.getLocation(), entity.skin, "smaller");
+									Label prompt = new Label(selected.getPrompt(), entity.skin, "smaller");
+									prompt.setWrap(true);
+									Label objective = new Label(selected.getObjectivePrompt(), entity.skin, "smaller");
+									objective.setWrap(true);
+									
+									int d = selected.getExpirationDate();
+									String dayLabel = ((d == 1) ? "1 day" : d + " days") + " left to complete";
+									
+									Label days = new Label(dayLabel, entity.skin, "smaller");
+									days.setWrap(true);
+									contents.pad(10f);
+									
+//									icon.setAlign(Align.center);
+//									icon.setSize(96f, 96f);
+//									icon.setScaling(Scaling.fit);
+//									contents.add(icon).size(96f, 96f).expandX();
+									contents.top();
+									contents.row();
+									contents.add(loc).expandX().fillX().padBottom(10f);
+									contents.row();
+									contents.add(prompt).expandX().fillX();
+									contents.row();
+									contents.add(objective).expandX().fillX().padTop(20f);
+									contents.row();
+									contents.add(days).expandX().fillX().padTop(10f);
+									
+									contents.pack();
+									entity.questDetailsPane.pack();
+								}
+							}),
+							Actions.moveTo(entity.display.getWidth()-entity.questDetails.getWidth(), 0, .3f)
+						)
+					);
+					return true;
+				} else {
+					entity.menu.changeState(Main);
+					return true;
+				}
+			}
+			
 		};
 		
 		/**
@@ -1638,9 +1862,11 @@ public class TownUI extends GameUI {
 			static final int Sleep = 0;
 			static final int Explore = 1;
 			static final int Craft = 2;
-			static final int Save = 3;
+			static final int Quest = 3;
+			static final int Save = 4;
 			
 			static final int Make = 1;
+			static final int Accept = 1;
 			static final int Refresh = 2;
 			
 			static final int Random = 2;

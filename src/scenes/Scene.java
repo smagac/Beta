@@ -1,6 +1,7 @@
 package scenes;
 
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
@@ -38,6 +39,8 @@ public abstract class Scene<View extends UI> implements Screen {
 		manager = new AssetManager();
 		input = new InputMultiplexer();
 		input.addProcessor(BossListener.getInstance());
+		
+		ServiceManager.inject(this);
 	}
 	
 	@Override

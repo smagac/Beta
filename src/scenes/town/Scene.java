@@ -8,14 +8,16 @@ import com.badlogic.gdx.audio.Music;
 
 import core.common.BossListener;
 import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.IQuestContainer;
 
 public class Scene extends scenes.Scene<TownUI> {
 
 	@Inject public IPlayerContainer playerService;
-
+	@Inject public IQuestContainer questService;
+	
 	@Override
 	public void show() {
-		ui = new TownUI(manager, playerService);
+		ui = new TownUI(manager);
 		manager.load("data/audio/town.mp3", Music.class);
 		
 		InputMultiplexer input = new InputMultiplexer();

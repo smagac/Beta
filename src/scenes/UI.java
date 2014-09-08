@@ -40,6 +40,7 @@ public abstract class UI extends Stage implements Agent {
 		this.addActor(fill);
 		
 		load();
+		ServiceManager.inject(this);
 	}
 
 	/**
