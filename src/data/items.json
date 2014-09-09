@@ -1,6 +1,6 @@
 {
     "other" : [
-        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD", "sadness"
+        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD", "sadness", "booty"
     ],
     
     "image" : [
@@ -8,11 +8,11 @@
     ],
 
     "audio" : [
-        "shades", "pancakes", "synthesizer", "radio", "speakers", "record", "codec", "8-track", "sax"
+        "shades", "pancakes", "synthesizer", "radio", "speakers", "record", "codec", "8-track", "sax", "tuba"
     ],
     
     "video" : [
-        "chips", "popcorn", "glasses", "recliner", "car", "hero", "heroine", "shampoo", "commercial", "questionables"
+        "chips", "popcorn", "glasses", "recliner", "car", "hero", "heroine", "shampoo", "commercial", "questionables",  "myth", "legend"
     ],
     
     "compressed" : [
