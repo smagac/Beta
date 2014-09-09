@@ -1,5 +1,7 @@
 package scenes.newgame;
 
+import github.nhydock.ssm.Inject;
+
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -37,6 +39,7 @@ import com.badlogic.gdx.utils.Scaling;
 import core.DataDirs;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
+import core.service.interfaces.IQuestContainer;
 
 public class NewUI extends UI {
 
@@ -58,6 +61,7 @@ public class NewUI extends UI {
 	private IPlayerContainer player;
 	
 	private StateMachine<NewUI> sm;
+	@Inject public IQuestContainer questTracker;
 
 	
 	public NewUI(Scene scene, AssetManager manager, IPlayerContainer p) {
@@ -499,6 +503,7 @@ public class NewUI extends UI {
 								@Override
 								public void run() {
 									entity.player.load(index);
+									entity.questTracker.prepare();
 									entity.sm.changeState(Over);
 								}
 								

@@ -9,11 +9,11 @@
     "prompts" : {
     
         "gather" : [
-            "~item in a bucket, some dang ~enemy went and destroyed all my ~item crops and now I have nothing to sell to pay the bills. Oh man, my wife is gonna kill me when she finds out that we're gonna have to live on rice and beans for another month.  Think you could help a guy like me out?  I need you to gather some {objective} for me so I can sell it and get out of this debt.",
+            "Crap in a bucket, some dang ~enemy went and destroyed all my ~item crops and now I have nothing to sell to pay the bills. Oh man, my wife is gonna kill me when she finds out that we're gonna have to live on rice and beans for another month.  Think you could help a guy like me out?  I need you to gather some ~objective for me so I can sell it and get out of this debt.",
         ],
         "hunt" : [
-        	"They to him.  They took my son.  I want you to kill all of them.  Every last one.",
-        	"Here in ~location things are looking out to be a bit rough this season.  There's just too many {objective} scampering around destroying our village for us to really get anything done.  We'd love it if you could do something about these crazy beasts."
+        	"They took him.  They took my son.  I want you to kill all of them.  Every last one.",
+        	"Here in ~location things are looking out to be a bit rough this season.  There's just too many ~objective scampering around destroying our village for us to really get anything done.  We'd love it if you could do something about these crazy beasts."
         ]
     }
 }

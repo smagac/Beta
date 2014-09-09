@@ -128,11 +128,9 @@ public abstract class Quest implements Agent {
 			Quest quest = null;
 			try {
 				quest = questTypes.random().newInstance();
-				
-				String type = quest.getType();
 				quest.title = randomTitle(data);
 				quest.location = randomLocation(data);
-				quest.prompt = randomPrompt(data, type);
+				quest.prompt = randomPrompt(data, quest);
 				quest.expires = MathUtils.random(1, 8);
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
@@ -156,9 +154,9 @@ public abstract class Quest implements Agent {
 		 * @param p
 		 * @return
 		 */
-		private static String randomPrompt(JsonValue json, String type)
+		private static String randomPrompt(JsonValue json, Quest quest)
 		{
-			JsonValue prompts = json.get("prompts").get(type);
+			JsonValue prompts = json.get("prompts").get(quest.getType());
 			String p = prompts.getString(MathUtils.random(prompts.size-1));
 			
 			String formatted = p;
@@ -174,7 +172,12 @@ public abstract class Quest implements Agent {
 			
 			while (formatted.contains("~location"))
 			{
-				formatted = formatted.replaceFirst("~location", randomLocation(json));
+				formatted = formatted.replaceFirst("~location", quest.getLocation());
+			}
+			
+			while (formatted.contains("~objective"))
+			{
+				formatted = formatted.replaceFirst("~objective", quest.getObjective());
 			}
 			
 			return formatted;
