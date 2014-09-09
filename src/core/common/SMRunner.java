@@ -2,7 +2,6 @@ package core.common;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.badlogic.gdx.backends.lwjgl.Report;
 
 public class SMRunner {
 
@@ -27,8 +26,7 @@ public class SMRunner {
 		}
 
 		
-		final LwjglApplication app = new LwjglApplication(new Storymode(), config);
-		//Report.hook(app);
+		new LwjglApplication(new Storymode(), config);
 	}
 	
 	
