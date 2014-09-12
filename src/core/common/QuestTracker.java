@@ -23,6 +23,7 @@ public class QuestTracker implements IQuestContainer {
 	/**
 	 * Prepares a new set of quests.  Do this when starting a new game
 	 */
+	@Override
 	public void prepare()
 	{
 		quests = new Array<Quest>();
@@ -96,6 +97,10 @@ public class QuestTracker implements IQuestContainer {
 	@Override
 	public void accept(Quest q)
 	{
+		if (q == null)
+		{
+			throw (new NullPointerException("Can not insert null quests into the tracker"));
+		}
 		activeQuests.add(q);
 	}
 

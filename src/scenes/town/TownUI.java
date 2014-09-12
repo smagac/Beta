@@ -99,12 +99,14 @@ public class TownUI extends GameUI {
 	private Table requirementList;
 	
 	//quest display
+	private TabbedPane questMenu;
 	private FocusGroup questGroup;
-	private ButtonGroup questTabs;
 	private Table questSubmenu;
 	private Table questDetails;
 	private ScrollPane questDetailsPane;
 	private Table questDetailsContent;
+	private List<Quest> availableQuests;
+	private List<Quest> acceptedQuests;
 	
 	private Image goddess;
 	private Group goddessDialog;
@@ -726,19 +728,19 @@ public class TownUI extends GameUI {
 		
 		display.addActor(questDetails);
 		
-		final List<Quest> questList = new List<Quest>(skin);
-		final List<Quest> acceptedQuestsList = new List<Quest>(skin);
+		availableQuests = new List<Quest>(skin);
+		acceptedQuests = new List<Quest>(skin);
 		
-		questList.setItems(questService.getQuests());
-		acceptedQuestsList.setItems(questService.getAcceptedQuests());
+		availableQuests.setItems(questService.getQuests());
+		acceptedQuests.setItems(questService.getAcceptedQuests());
 		
-		questTabs = new ButtonGroup();
+		ButtonGroup questTabs = new ButtonGroup();
 		{
 			final TextButton availableButton = new TextButton("Available", skin);
 			availableButton.setName("available");
 			questTabs.add(availableButton);
 			
-			final ScrollPane pane = new ScrollPane(questList, skin);
+			final ScrollPane pane = new ScrollPane(availableQuests, skin);
 			pane.setWidth(250f);
 			pane.setHeight(display.getHeight());
 			pane.setScrollingDisabled(true, false);
@@ -749,12 +751,12 @@ public class TownUI extends GameUI {
 			
 			availableButton.setUserObject(pane);
 			
-			questList.addListener(new ScrollFollower(pane, questList));
-			questList.addListener(new ChangeListener(){
+			availableQuests.addListener(new ScrollFollower(pane, availableQuests));
+			availableQuests.addListener(new ChangeListener(){
 
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
-					Quest q = questList.getSelected();
+					Quest q = availableQuests.getSelected();
 					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Selected, q);
 				}
 			});
@@ -765,17 +767,17 @@ public class TownUI extends GameUI {
 			acceptedButton.setName("history");
 			questTabs.add(acceptedButton);
 			
-			recentFileList.addListener(new ChangeListener(){
+			acceptedQuests.addListener(new ChangeListener(){
 
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
-					FileHandle selected = history.get(fileList.getSelectedIndex());
-					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
+					Quest q = acceptedQuests.getSelected();
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Selected, q);
 				}
 			
 			});
 			
-			final ScrollPane pane = new ScrollPane(recentFileList, skin);
+			final ScrollPane pane = new ScrollPane(acceptedQuests, skin);
 			pane.setWidth(250f);
 			pane.setHeight(display.getHeight());
 			pane.setScrollingDisabled(true, false);
@@ -785,10 +787,10 @@ public class TownUI extends GameUI {
 			pane.addListener(new ScrollFocuser(pane));
 			
 			acceptedButton.setUserObject(pane);
-			acceptedQuestsList.addListener(new ScrollFollower(pane, acceptedQuestsList));
+			acceptedQuests.addListener(new ScrollFollower(pane, acceptedQuests));
 		}
 
-		final TabbedPane questMenu = new TabbedPane(questTabs, false);
+		questMenu = new TabbedPane(questTabs, false);
 		
 		questSubmenu.add(questMenu).fill().expand();
 		
@@ -799,11 +801,11 @@ public class TownUI extends GameUI {
 				List<?> l;
 				if (questMenu.getOpenTabIndex() == 0)
 				{
-					l = fileList;
+					l = availableQuests;
 				}
 				else
 				{
-					l = recentFileList;
+					l = acceptedQuests;
 				}
 				
 				if (keycode == Keys.DOWN || keycode == Keys.S)
@@ -1077,6 +1079,10 @@ public class TownUI extends GameUI {
 		else if (menu.isInState(TownState.Save))
 		{
 			return formFocus;
+		}
+		else if (menu.isInState(TownState.Quest))
+		{
+			return questGroup;
 		}
 		return null;
 	}
@@ -1793,6 +1799,8 @@ public class TownUI extends GameUI {
 
 			@Override
 			public boolean onMessage(final TownUI entity, Telegram telegram) {
+				//change which quest is selected
+				// update the quest details pane on the side
 				if (telegram.message == MenuMessage.Selected)
 				{
 					final Quest selected = (Quest)telegram.extraInfo;
@@ -1843,6 +1851,25 @@ public class TownUI extends GameUI {
 							Actions.moveTo(entity.display.getWidth()-entity.questDetails.getWidth(), 0, .3f)
 						)
 					);
+					return true;
+				
+				}
+				//accept a new quest
+				else if (telegram.message == MenuMessage.Accept) {
+					Quest selected;
+					if (entity.questMenu.getOpenTabIndex() == 0)
+					{
+						selected = entity.availableQuests.getSelected();
+					}
+					//don't try to accept quests that have already been accepted
+					else
+					{
+						return false;
+					}
+					
+					entity.questService.accept(selected);
+					entity.acceptedQuests.setItems(entity.questService.getAcceptedQuests());
+					
 					return true;
 				} else {
 					entity.menu.changeState(Main);
