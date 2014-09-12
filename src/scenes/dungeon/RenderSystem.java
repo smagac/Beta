@@ -75,7 +75,7 @@ public class RenderSystem extends EntityProcessingSystem {
 	//selective map layer to draw
 	private int[] layers;
 	
-	@Inject IColorMode color;
+	@Inject public IColorMode color;
 	
 	@SuppressWarnings("unchecked")
 	public RenderSystem(int depth, Dungeon dungeon)
@@ -168,6 +168,7 @@ public class RenderSystem extends EntityProcessingSystem {
 		this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
 		
 		this.batch = (SpriteBatch) this.stage.getBatch();
+		
 		this.batch.setShader(color.getShader());
 		this.camera = (OrthographicCamera) this.stage.getCamera();
 		

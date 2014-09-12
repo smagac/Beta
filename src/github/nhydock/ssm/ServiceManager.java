@@ -27,6 +27,12 @@ public class ServiceManager {
 	 */
 	public static void register(Class<? extends Service> cls, Service service)
 	{
+		//allow passing null to deregister a service entirely
+		if (service == null)
+		{
+			services.remove(cls);
+			return;
+		}
 		if (cls.isAssignableFrom(service.getClass()))
 		{
 			services.put(cls, service);

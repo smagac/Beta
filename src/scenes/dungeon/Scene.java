@@ -395,17 +395,17 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			currentFloor.getSystem(RenderSystem.class).dispose();
 			ms.dispose();
 			
-			for (int i = 0; i < world.getSystems().size(); i++)
+			for (int i = 0; i < currentFloor.getSystems().size(); i++)
 			{
-				ServiceManager.unhook(world.getSystems().get(i));
+				ServiceManager.unhook(currentFloor.getSystems().get(i));
 			}
 		}
-		for (int i = 0; i < world.getSystems().size(); i++)
-		{
-			ServiceManager.inject(world.getSystems().get(i));
-		}
 		currentFloor = world;
-		
+		for (int i = 0; i < currentFloor.getSystems().size(); i++)
+		{
+			ServiceManager.inject(currentFloor.getSystems().get(i));
+		}
+	
 		//setup progress
 		{
 			progress.depth = depth;
