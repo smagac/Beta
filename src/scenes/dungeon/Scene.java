@@ -136,7 +136,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			}
 		}
 		
-		ui.act(delta);
 		ui.draw();
 	}
 	

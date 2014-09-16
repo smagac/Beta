@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -42,6 +43,7 @@ import core.DataDirs;
 import core.common.Tracker;
 import core.components.Stats;
 import core.datatypes.Item;
+import core.datatypes.quests.Quest;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 
@@ -97,6 +99,8 @@ public class WanderUI extends GameUI {
 	@Inject public  IDungeonContainer dungeonService;
 
 	StateMachine<WanderUI> menu;
+
+	private Table notificationPane;
 
 	public WanderUI(AssetManager manager) {
 		super(manager);
@@ -612,6 +616,14 @@ public class WanderUI extends GameUI {
 			
 			addActor(levelUpDialog);
 			addActor(levelUpGroup);
+			
+			//quest notification bubble pane
+			notificationPane = new Table(skin);
+			notificationPane.bottom();
+			notificationPane.setWidth(200f);
+			display.addActor(notificationPane);
+			
+			MessageDispatcher.getInstance().addListener(Quest.Actions.Notify, this);
 		}
 		
 		final InputListener displayControl = new InputListener(){
@@ -656,6 +668,8 @@ public class WanderUI extends GameUI {
 		});
 	}
 	
+	int counter = 0;
+	
 	@Override
 	protected void externalRender()
 	{
@@ -663,6 +677,7 @@ public class WanderUI extends GameUI {
 		{
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
 		}
+		counter = 0;
 	}
 	
 	@Override
@@ -672,6 +687,13 @@ public class WanderUI extends GameUI {
 		{
 			dungeonService.getCurrentFloor().setDelta(delta);
 			menu.update();
+		}
+		
+		if (Gdx.input.isKeyJustPressed(Keys.SLASH))
+		{
+			MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Notify, "Bloody Hell");
+			counter++;
+			System.out.println(counter);
 		}
 	}
 
@@ -1035,6 +1057,33 @@ public class WanderUI extends GameUI {
 				{
 					entity.menu.changeState(Assist);
 					return true;
+				}
+				else if (telegram.message == Quest.Actions.Notify)
+				{
+					String notification = telegram.extraInfo.toString();
+					//make notification label popup
+					final Label popup = new Label(notification, entity.skin, "smaller");
+					popup.setWrap(true);
+					
+					final Table label = new Table();
+					label.add(popup).pad(10f).align(Align.left).expandX().row();
+					label.setBackground(entity.skin.getDrawable("button_up"));
+					entity.notificationPane.add(label).expandX().fillX().row();
+					
+					label.addAction(
+						Actions.sequence(
+							Actions.alpha(0),
+							Actions.fadeIn(.3f),
+							Actions.delay(5f),
+							Actions.fadeOut(.3f),
+							Actions.run(new Runnable(){
+								@Override
+								public void run(){
+									label.remove();
+								}
+							})
+						)
+					);
 				}
 				return false;
 			}

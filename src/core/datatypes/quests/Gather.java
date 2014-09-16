@@ -1,6 +1,5 @@
 package core.datatypes.quests;
 
-import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 
 import factories.ItemFactory;
@@ -28,14 +27,14 @@ public class Gather extends Quest {
 	}
 
 	@Override
-	public boolean handleMessage(Telegram msg) {
+	public boolean handleQuestNotification(int msg, Object info) {
 		/**
 		 * Increment hunted count of the name of the item gathered
 		 * is the kind we are looking for
 		 */
-		if (msg.message == Actions.Gather)
+		if (msg == Actions.Gather)
 		{
-			String name = (String)msg.extraInfo;
+			String name = (String)info;
 			if (name.equals(item))
 			{
 				gathered++;
@@ -69,4 +68,10 @@ public class Gather extends Quest {
 	public String getObjectivePrompt() {
 		return String.format("Find %s: %d", item, need);
 	}
+
+	@Override
+	public String getObjectiveProgress() {
+		return String.format("Find %s: %d/%d", item, gathered, need);
+	}
+
 }

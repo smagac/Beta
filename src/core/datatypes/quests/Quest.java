@@ -2,6 +2,8 @@ package core.datatypes.quests;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.Agent;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -22,6 +24,10 @@ public abstract class Quest implements Agent {
 		public static final int Advance = 1;
 		public static final int Gather = 2;
 		public static final int Hunt = 3;
+		
+		//send notifications to generic listeners of quests (AKA UI)
+		// allows those systems to display progress information of the quest
+		public static final int Notify = 99;
 	}
 	
 	//amount of time the quest is available for
@@ -100,6 +106,21 @@ public abstract class Quest implements Agent {
 	public abstract String getObjective();
 	
 	public abstract String getObjectivePrompt();
+	
+	public abstract String getObjectiveProgress();
+	
+	protected abstract boolean handleQuestNotification(int msg, Object info);
+	
+	@Override
+	public final boolean handleMessage(Telegram msg)
+	{
+		if (handleQuestNotification(msg.message, msg.extraInfo))
+		{
+			MessageDispatcher.getInstance().dispatchMessage(0, this, null, Quest.Actions.Notify, getObjectiveProgress());
+			return true;
+		}
+		return false;
+	}
 	
 	/**
 	 * Loader and generator of quest types for a QuestContainer service

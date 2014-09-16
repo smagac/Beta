@@ -1,7 +1,6 @@
 package scenes;
 
 import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.FocusGroup;
 
 import com.badlogic.gdx.Input.Buttons;

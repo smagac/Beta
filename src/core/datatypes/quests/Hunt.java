@@ -1,6 +1,5 @@
 package core.datatypes.quests;
 
-import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 
 import factories.MonsterFactory;
@@ -27,14 +26,14 @@ public class Hunt extends Quest {
 	}
 
 	@Override
-	public boolean handleMessage(Telegram msg) {
+	public boolean handleQuestNotification(int msg, Object info) {
 		/**
 		 * Increment hunted count of the name of the monster slain
 		 * is the kind we are looking for
 		 */
-		if (msg.message == Actions.Hunt)
+		if (msg == Actions.Hunt)
 		{
-			String name = (String)msg.extraInfo;
+			String name = (String)info;
 			if (name.equals(monster))
 			{
 				hunted++;
@@ -67,5 +66,10 @@ public class Hunt extends Quest {
 	@Override
 	public String getObjectivePrompt() {
 		return String.format("Hunt %s: %d", monster, need);
+	}
+
+	@Override
+	public String getObjectiveProgress() {
+		return String.format("Hunt %s: %d/%d", monster, hunted, need);
 	}
 }
