@@ -25,7 +25,6 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -49,9 +48,9 @@ import core.service.interfaces.IPlayerContainer;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
-import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 
+@SuppressWarnings("unchecked")
 public class WanderUI extends GameUI {
 
 	private Image fader;
@@ -98,10 +97,6 @@ public class WanderUI extends GameUI {
 	@Inject public IPlayerContainer playerService;
 	@Inject public  IDungeonContainer dungeonService;
 
-	StateMachine<WanderUI> menu;
-
-	private Table notificationPane;
-
 	public WanderUI(AssetManager manager) {
 		super(manager);
 
@@ -122,7 +117,6 @@ public class WanderUI extends GameUI {
 		manager.load(DataDirs.dead, Sound.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void extend() {
 		
@@ -574,7 +568,7 @@ public class WanderUI extends GameUI {
 						return false;
 					}
 					
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, WanderState.MenuMessage.Close);
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Close);
 					return true;
 				}
 			});
@@ -595,7 +589,7 @@ public class WanderUI extends GameUI {
 					}
 					if (keycode == Keys.ENTER || keycode == Keys.SPACE)
 					{
-						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, WanderState.MenuMessage.Close);
+						MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Close);
 						return true;
 					}
 					return false;
@@ -617,12 +611,6 @@ public class WanderUI extends GameUI {
 			addActor(levelUpDialog);
 			addActor(levelUpGroup);
 			
-			//quest notification bubble pane
-			notificationPane = new Table(skin);
-			notificationPane.bottom();
-			notificationPane.setWidth(200f);
-			display.addActor(notificationPane);
-			
 			MessageDispatcher.getInstance().addListener(Quest.Actions.Notify, this);
 		}
 		
@@ -635,7 +623,7 @@ public class WanderUI extends GameUI {
 					Direction d = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
 					if (d != null)
 					{
-						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, WanderState.MenuMessage.Movement, d);
+						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement, d);
 						return true;
 					}
 				}
@@ -645,7 +633,7 @@ public class WanderUI extends GameUI {
 			@Override
 			public void touchUp(InputEvent evt, float x, float y, int pointer, int button)
 			{
-				MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, WanderState.MenuMessage.Movement);
+				MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement);
 			}
 		};
 		display.addListener(displayControl);
@@ -659,7 +647,7 @@ public class WanderUI extends GameUI {
 					Direction to = Direction.valueOf(keycode);
 					if (to != null)
 					{
-						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, WanderState.MenuMessage.Movement, to);
+						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement, to);
 						return true;
 					}
 				}
@@ -972,11 +960,6 @@ public class WanderUI extends GameUI {
 	public void update(float delta) {
 		//do nothing, this is already handled by extend act
 	}
-
-	@Override
-	public boolean handleMessage(Telegram msg) {
-		return menu.handleMessage(msg);
-	}
 	
 	/**
 	 * Wrapped state for wander ui, forcing define buttons
@@ -1061,29 +1044,15 @@ public class WanderUI extends GameUI {
 				else if (telegram.message == Quest.Actions.Notify)
 				{
 					String notification = telegram.extraInfo.toString();
-					//make notification label popup
-					final Label popup = new Label(notification, entity.skin, "smaller");
-					popup.setWrap(true);
-					
-					final Table label = new Table();
-					label.add(popup).pad(10f).align(Align.left).expandX().row();
-					label.setBackground(entity.skin.getDrawable("button_up"));
-					entity.notificationPane.add(label).expandX().fillX().row();
-					
-					label.addAction(
-						Actions.sequence(
-							Actions.alpha(0),
-							Actions.fadeIn(.3f),
-							Actions.delay(5f),
-							Actions.fadeOut(.3f),
-							Actions.run(new Runnable(){
-								@Override
-								public void run(){
-									label.remove();
-								}
-							})
-						)
-					);
+					MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameUI.Messages.Notify, notification);
+				}
+				else if (telegram.message == WanderUI.MenuMessage.Dead)
+				{
+					entity.menu.changeState(WanderUI.WanderState.Dead);
+				}
+				else if (telegram.message == WanderUI.MenuMessage.Exit)
+				{
+					entity.menu.changeState(WanderUI.WanderState.Exit);
 				}
 				return false;
 			}
@@ -1192,7 +1161,7 @@ public class WanderUI extends GameUI {
 						{
 							Tracker.NumberValues.Loot_Sacrificed.increment();
 						}
-						entity.menu.changeState(Leave);
+						entity.menu.changeState(Exit);
 						return true;
 					}
 					else
@@ -1262,7 +1231,7 @@ public class WanderUI extends GameUI {
 		/**
 		 * Player strategically left. Don't drop loot but still make fun of him
 		 */
-		Leave(){
+		Exit(){
 			@Override
 			public void enter(WanderUI entity)
 			{
@@ -1393,7 +1362,7 @@ public class WanderUI extends GameUI {
 
 			@Override
 			public boolean onMessage(WanderUI entity, Telegram telegram) {
-				if (telegram.message == MenuMessage.Close)
+				if (telegram.message == GameUI.Messages.Close)
 				{
 					if (entity.points > 0)
 					{
@@ -1411,23 +1380,7 @@ public class WanderUI extends GameUI {
 			
 		};
 		
-		/**
-		 * Message types for the main state
-		 * @author nhydock
-		 *
-		 */
-		private static class MenuMessage
-		{
-			private static final int Movement = -1;
-			private static final int Assist = 0;
-			
-			private static final int Heal = 1;
-			private static final int Leave = 2;
-			
-			private static final int Sacrifice = 1;
-			
-			private static final int Close = 0;
-		}
+		
 
 		@Override
 		public void enter(WanderUI entity) {}
@@ -1440,5 +1393,24 @@ public class WanderUI extends GameUI {
 		
 		@Override
 		public boolean onMessage(WanderUI entity, Telegram telegram) { return false; }
+	}
+	
+	/**
+	 * Message types for the main state
+	 * @author nhydock
+	 *
+	 */
+	protected static class MenuMessage
+	{
+		static final int Movement = -1;
+		static final int Assist = 0;
+		static final int Heal = 1;
+		static final int Leave = 2;
+		
+		static final int Sacrifice = 1;
+		
+		static final int Dead = 0x3000;
+		static final int Exit = 0x3001;
+		static final int LevelUp = 0x3002;
 	}
 }

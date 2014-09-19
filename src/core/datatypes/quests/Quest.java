@@ -21,13 +21,14 @@ public abstract class Quest implements Agent {
 	 */
 	public static class Actions
 	{
-		public static final int Advance = 1;
-		public static final int Gather = 2;
-		public static final int Hunt = 3;
+		public static final int Advance = 0x9001;
+		public static final int Gather = 0x9002;
+		public static final int Hunt = 0x9003;
 		
 		//send notifications to generic listeners of quests (AKA UI)
 		// allows those systems to display progress information of the quest
-		public static final int Notify = 99;
+		public static final int Notify = 0x9004;
+		public static final int Expired = 0x9005;
 	}
 	
 	//amount of time the quest is available for

@@ -4,16 +4,21 @@
         "%s Kingdom", "%s Desert", "%s Tundra", "Desert of the %s", "%s Dungeon", "Forgotten City of the %s"
     ],
     "titles" : [
-    	"Help needed!", "Oh sweet, Joaan, my life is wrecked"
+    	"Help needed!", "Oh sweet, Joaan, my life is wrecked", "I have a job for you!", "Now Hiring!",
+    	"Immmediate-Act!on-Requ!r3d", "Your payment is waaiting!", "Have you seen my Cat"
     ],
     "prompts" : {
     
         "gather" : [
-            "Crap in a bucket, some dang ~enemy went and destroyed all my ~item crops and now I have nothing to sell to pay the bills. Oh man, my wife is gonna kill me when she finds out that we're gonna have to live on rice and beans for another month.  Think you could help a guy like me out?  I need you to gather some ~objective for me so I can sell it and get out of this debt.",
+            "Crap in a bucket, some dang ~enemy went and destroyed all my ~item crops and now I have nothing to sell to pay the bills. Oh man, my wife is gonna kill me when she finds out that we're gonna have to live on ~item and ~item for another month.  Think you could help a guy like me out?  I need you to gather some ~objective for me so I can sell it and get out of this debt.",
+        	"My pet ~enemy ate my homework and now I have nothing to show my ~adjective class at show-in-tell tomorrow.  If you can get me a ~objective everyone will be super ~adjective!",
+        	"It's my son's birthday and I need you to get ~objective for him.  He's really been asking for one for the past few months and I want to make him ~adjective.  Thanks",
+        	"Hello, my name is Johanavich Licten Al-bajubar the 3rd, your second cousin fifth removed and and the ~adjective prince of ~location.  I am searching for nice young people to help me out.  If you and get what I want, I will deposit a portion of my fortune into your account.  All I need is your bank account number and some ~objective."
         ],
         "hunt" : [
         	"They took him.  They took my son.  I want you to kill all of them.  Every last one.",
         	"Here in ~location things are looking out to be a bit rough this season.  There's just too many ~objective scampering around destroying our village for us to really get anything done.  We'd love it if you could do something about these crazy beasts."
+        	"Help, I lost my pet ~objective.  He's been gone for a few days, so he's probably rabid, or leaked my info to the NSA.  I need you to kill him.",
         ]
     }
 }

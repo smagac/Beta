@@ -1,5 +1,6 @@
 package core.common;
 
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -11,6 +12,8 @@ import core.service.interfaces.IQuestContainer;
 
 public class QuestTracker implements IQuestContainer {
 
+	private static final int MAX_QUESTS = 10;
+	
 	Array<Quest> quests;
 	Array<Quest> activeQuests;
 	QuestFactory factory;
@@ -29,12 +32,7 @@ public class QuestTracker implements IQuestContainer {
 		quests = new Array<Quest>();
 		activeQuests = new Array<Quest>();
 		
-		int questCount = MathUtils.random(3,10);
-		for (int i = 0; i < questCount; i++)
-		{
-			quests.add(factory.createQuest());
-			System.out.println("made quest " + (i+1) + " of " + questCount);
-		}
+		refresh();
 	}
 	
 	/**
@@ -84,9 +82,35 @@ public class QuestTracker implements IQuestContainer {
 	 */
 	private void refresh()
 	{
-		for (Quest q : quests)
+		for (int i = 0; i < quests.size;)
 		{
+			Quest q = quests.get(i);
 			q.addDay();
+			
+			if (q.hasExpired())
+			{
+				quests.removeIndex(i);
+				//inform any quest listeners that a quest has expired
+				//only care about notifying of quests that have been accepted by the player
+				if (activeQuests.contains(q, true))
+				{
+					activeQuests.removeValue(q, true);
+					MessageDispatcher.getInstance().dispatchMessage(0, this, null, Actions.Expired, q);
+				}
+			}
+			else
+			{
+				i++;
+			}
+		}
+		
+		for (int i = MAX_QUESTS - quests.size; i > 0; i--)
+		{
+			boolean makeQuest = MathUtils.randomBoolean(.3f);
+			if (makeQuest)
+			{
+				quests.add(factory.createQuest());
+			}
 		}
 	}
 	

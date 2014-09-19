@@ -284,7 +284,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	protected void dead()
 	{
-		ui.menu.changeState(WanderUI.WanderState.Dead);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, WanderUI.MenuMessage.Dead);
 		
 		//lose all found items
 		playerService.getInventory().abandon();
@@ -295,7 +295,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	protected void leave()
 	{
-		ui.menu.changeState(WanderUI.WanderState.Leave);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, WanderUI.MenuMessage.Exit);
 		
 		//merge loot into inventory
 		playerService.getInventory().merge();
@@ -475,6 +475,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	}
 
 	public void levelUp() {
-		ui.menu.changeState(WanderUI.WanderState.LevelUp);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, WanderUI.MenuMessage.LevelUp);
 	}
 }

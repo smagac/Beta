@@ -19,7 +19,6 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
-import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
@@ -58,6 +57,7 @@ import core.service.interfaces.IQuestContainer;
 import core.util.FileSort;
 import core.util.PathSort;
 
+@SuppressWarnings("unchecked")
 public class TownUI extends GameUI {
 
 	public static void clearHistory()
@@ -119,8 +119,6 @@ public class TownUI extends GameUI {
 	
 	@Inject public IPlayerContainer playerService;
 	@Inject public IQuestContainer questService;
-	
-	private StateMachine<TownUI> menu;
 	private Group saveWindow;
 	private Array<Table> saveSlots;
 	private FocusGroup formFocus;
@@ -580,7 +578,7 @@ public class TownUI extends GameUI {
 						}
 						else
 						{
-							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
+							MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, selected);
 						}
 					}
 					
@@ -603,7 +601,7 @@ public class TownUI extends GameUI {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					FileHandle selected = history.get(fileList.getSelectedIndex());
-					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, selected);
+					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, selected);
 				}
 			
 			});
@@ -757,7 +755,7 @@ public class TownUI extends GameUI {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					Quest q = availableQuests.getSelected();
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Selected, q);
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Selected, q);
 				}
 			});
 		}
@@ -772,7 +770,7 @@ public class TownUI extends GameUI {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					Quest q = acceptedQuests.getSelected();
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Selected, q);
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Selected, q);
 				}
 			
 			});
@@ -890,7 +888,7 @@ public class TownUI extends GameUI {
 				{
 					if (button == Buttons.LEFT)
 					{
-						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, formFocus.getFocusedIndex());
+						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, formFocus.getFocusedIndex());
 						manager.get(DataDirs.accept, Sound.class).play();
 						return true;
 					}
@@ -919,7 +917,7 @@ public class TownUI extends GameUI {
 				}
 				if (keycode == Keys.SPACE || keycode == Keys.ENTER)
 				{
-					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, TownState.MenuMessage.Selected, formFocus.getFocusedIndex());
+					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, formFocus.getFocusedIndex());
 				}
 
 				return false;
@@ -959,6 +957,8 @@ public class TownUI extends GameUI {
 		goddessDialog.setVisible(false);
 		
 		setMessage("What're we doing next?");
+		
+		MessageDispatcher.getInstance().addListener(Quest.Actions.Expired, this);
 	}
 	
 	private void loadDir(FileHandle external) {
@@ -1024,6 +1024,19 @@ public class TownUI extends GameUI {
 		refreshButtons();
 	}
 
+	@Override
+	public boolean handleMessage(Telegram msg)
+	{
+		//handle expiration of quests notification
+		if (msg.message == Quest.Actions.Expired)
+		{
+			this.pushNotification("A quest has expired");
+			return true;
+		}
+		return super.handleMessage(msg);
+	}
+			
+	
 	/**
 	 * restores the original positions of all the images
 	 */
@@ -1080,7 +1093,7 @@ public class TownUI extends GameUI {
 		{
 			return formFocus;
 		}
-		else if (menu.isInState(TownState.Quest))
+		else if (menu.isInState(TownState.QuestMenu))
 		{
 			return questGroup;
 		}
@@ -1090,11 +1103,6 @@ public class TownUI extends GameUI {
 	@Override
 	public void update(float delta) {
 		// Do nothing
-	}
-
-	@Override
-	public boolean handleMessage(Telegram msg) {
-		return menu.handleMessage(msg);
 	}
 	
 	/**
@@ -1118,6 +1126,8 @@ public class TownUI extends GameUI {
 			public void enter(TownUI entity) {
 				entity.restore();
 				entity.refreshButtons();
+				entity.acceptedQuests.setItems(entity.questService.getAcceptedQuests());
+				entity.availableQuests.setItems(entity.questService.getQuests());
 			}
 			
 			@Override
@@ -1148,7 +1158,7 @@ public class TownUI extends GameUI {
 				}
 				else if (t.message == MenuMessage.Quest)
 				{
-					entity.menu.changeState(Quest);
+					entity.menu.changeState(QuestMenu);
 					return true;
 				}
 				else if (t.message == MenuMessage.Save)
@@ -1381,10 +1391,10 @@ public class TownUI extends GameUI {
 							//modify telegram to include text
 							Object info = t.extraInfo;
 							t.extraInfo = text;
-							Goddess.onMessage(ui, t);
+							GoddessDialog.onMessage(ui, t);
 							t.extraInfo = info;
 							
-							ui.menu.changeState(Goddess);
+							ui.menu.changeState(GoddessDialog);
 						}
 						return true;
 					}
@@ -1481,7 +1491,7 @@ public class TownUI extends GameUI {
 				/**
 				 * Updates the information in the right side file panel to reflect the metadata of the specified file
 				 */
-				else if (t.message == MenuMessage.Selected)
+				else if (t.message == GameUI.Messages.Selected)
 				{
 					final FileHandle selected = (FileHandle)t.extraInfo;
 					
@@ -1585,8 +1595,15 @@ public class TownUI extends GameUI {
 			@Override
 			public boolean onMessage(TownUI entity, Telegram telegram) { return false; }
 			
+			@Override
+			public void exit(TownUI entity)
+			{
+				
+				MessageDispatcher.getInstance().dispatchMessage(0, null, entity.questService, Quest.Actions.Advance);
+			
+			}
 		},
-		Goddess(){
+		GoddessDialog(){
 
 			public Iterator<String> dialog;
 			
@@ -1762,7 +1779,7 @@ public class TownUI extends GameUI {
 			
 			@Override
 			public boolean onMessage(TownUI entity, Telegram telegram) {
-				if (telegram.message == MenuMessage.Selected)
+				if (telegram.message == GameUI.Messages.Selected)
 				{
 					entity.playerService.save((Integer)telegram.extraInfo + 1);
 					entity.menu.changeState(Main);
@@ -1775,7 +1792,7 @@ public class TownUI extends GameUI {
 				return true;
 			}
 		}, 
-		Quest(){
+		QuestMenu(){
 
 			@Override
 			public String[] defineButtons() {
@@ -1801,7 +1818,7 @@ public class TownUI extends GameUI {
 			public boolean onMessage(final TownUI entity, Telegram telegram) {
 				//change which quest is selected
 				// update the quest details pane on the side
-				if (telegram.message == MenuMessage.Selected)
+				if (telegram.message == GameUI.Messages.Selected)
 				{
 					final Quest selected = (Quest)telegram.extraInfo;
 					
@@ -1898,8 +1915,6 @@ public class TownUI extends GameUI {
 			
 			static final int Random = 2;
 			
-			//used when an item in a list is selected
-			static final int Selected = 10;
 		}
 
 		@Override

@@ -5,6 +5,9 @@ import scene2d.ui.extras.FocusGroup;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -65,9 +68,15 @@ public abstract class GameUI extends UI {
 	
 	private Label hpStats;
 	private Label expStats;
+	
+	private Table notificationStack;
 
 	@Inject public IPlayerContainer playerService;
 
+	@SuppressWarnings("rawtypes")
+	protected StateMachine menu;
+	
+	
 	public GameUI(AssetManager manager)
 	{
 		super(manager);
@@ -185,6 +194,17 @@ public abstract class GameUI extends UI {
 			
 		}
 		
+		//notification area
+		{
+
+			//quest notification bubble pane
+			notificationStack = new Table(skin);
+			notificationStack.bottom();
+			notificationStack.setWidth(200f);
+			display.addActor(notificationStack);
+			
+		}
+		
 		String[] butt = defineButtons();
 		if (butt != null)
 		{
@@ -278,6 +298,8 @@ public abstract class GameUI extends UI {
 		hidePointer();
 		
 		act(0);
+		
+		MessageDispatcher.getInstance().addListener(Messages.Notify, this);
 	}
 	
 	/**
@@ -413,6 +435,37 @@ public abstract class GameUI extends UI {
 		messageWindow.addActor(message);
 	}
 	
+	/**
+	 * Adds a new notification bubble into the bottom left corner of the display
+	 * @param s
+	 */
+	public void pushNotification(String notification){
+		//make notification label popup
+		final Label popup = new Label(notification, skin, "smaller");
+		popup.setWrap(true);
+		
+		final Table label = new Table();
+		label.add(popup).pad(10f).align(Align.left).expandX().row();
+		label.setBackground(skin.getDrawable("button_up"));
+		notificationStack.add(label).expandX().fillX().row();
+		
+		label.addAction(
+			Actions.sequence(
+				Actions.alpha(0),
+				Actions.fadeIn(.3f),
+				Actions.delay(5f),
+				Actions.fadeOut(.3f),
+				Actions.run(new Runnable(){
+					@Override
+					public void run(){
+						label.remove();
+					}
+				})
+			)
+		);
+		
+	}
+	
 	protected void extendAct(float delta){}
 	
 	@Override
@@ -474,5 +527,35 @@ public abstract class GameUI extends UI {
 	{
 		setKeyboardFocus(a);
 		setScrollFocus(a);
+	}
+	
+	@Override
+	public final void dispose(){
+		super.dispose();
+		//make sure this ui stops listening to notifications to unhook it from the system
+		MessageDispatcher.getInstance().removeListener(Messages.Notify, this);
+	}
+	
+
+	@Override
+	public boolean handleMessage(Telegram msg) {
+		if (msg.message == Messages.Notify)
+		{
+			pushNotification((String)msg.extraInfo);
+		}
+		return menu.handleMessage(msg);
+	}
+	
+	
+	public static class Messages
+	{
+		//used to close the menu
+		public static final int Close = 0x0000;
+		
+		//used to popup a notification
+		public static final int Notify = 0x1000;
+
+		//used when an item in a list is selected
+		public static final int Selected = 0x1001;
 	}
 }

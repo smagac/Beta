@@ -4,9 +4,11 @@ import github.nhydock.ssm.Inject;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.audio.Music;
 
 import core.common.BossListener;
+import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IQuestContainer;
 
@@ -27,6 +29,7 @@ public class Scene extends scenes.Scene<TownUI> {
 		
 		//new crafts appear when you return to town
 		playerService.getInventory().refreshCrafts();
+		
 	}
 
 	@Override
