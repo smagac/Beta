@@ -23,7 +23,7 @@ public class Gather extends Quest {
 	public Gather()
 	{
 		this.need = MathUtils.random(3, 10);
-		this.item = ItemFactory.randomType();
+		this.item = ItemFactory.randomNonCraftableType();
 	}
 
 	@Override

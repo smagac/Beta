@@ -11,6 +11,7 @@ import core.datatypes.Item;
 
 public final class ItemFactory {
 	protected static Array<String> items;
+	protected static Array<String> craftables;
 	protected static Array<String> loot;
 	protected static ObjectMap<FileType, Array<String>> lootLocations;
 	
@@ -33,6 +34,7 @@ public final class ItemFactory {
 		lootLocations = new ObjectMap<FileType, Array<String>>();
 		items = new Array<String>();
 		loot = new Array<String>();
+		craftables = new Array<String>();
 		
 		for (FileType type : FileType.values())
 		{
@@ -51,6 +53,7 @@ public final class ItemFactory {
 			{
 				String name = data.asString();
 				items.add(name);
+				craftables.add(name);
 			}
 		}
 		loaded = true;
@@ -61,9 +64,19 @@ public final class ItemFactory {
 		return AdjectiveFactory.getAdjective() + " " + items.random();
 	}
 	
+	public static String randomNonCraftable()
+	{
+		return AdjectiveFactory.getAdjective() + " " + loot.random();
+	}
+	
 	public static String randomType()
 	{
 		return items.random();
+	}
+	
+	public static String randomNonCraftableType()
+	{
+		return loot.random();
 	}
 	
 	private final Array<String> areaLoot;
