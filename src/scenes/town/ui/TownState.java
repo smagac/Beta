@@ -711,9 +711,15 @@ enum TownState implements UIState {
 	}, 
 	QuestMenu(){
 
+		boolean completeView = false;
+		
 		@Override
 		public String[] defineButtons() {
-			return new String[]{"Return", "Accept Quest"};
+			if (completeView) {
+				return new String[]{"Return", "Complete Quest"};
+			} else {
+				return new String[]{"Return", "Accept Quest"};
+			}
 		}
 
 		@Override
@@ -805,7 +811,14 @@ enum TownState implements UIState {
 				ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
 				
 				return true;
-			} else {
+			}
+			else if (telegram.message == GameUI.Messages.ChangeTabs)
+			{
+				completeView = ui.questMenu.getOpenTabIndex() == 1;
+				ui.refreshButtons();
+				return true;
+			} 
+			else {
 				ui.changeState(Main);
 				return true;
 			}

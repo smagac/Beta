@@ -952,10 +952,6 @@ public class WanderUI extends GameUI {
 		}
 	}
 
-	public Skin getSkin() {
-		return skin;
-	}
-
 	@Override
 	public void update(float delta) {
 		//do nothing, this is already handled by extend act

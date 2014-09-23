@@ -1,6 +1,9 @@
 package scene2d.ui.extras;
 
+import scenes.GameUI;
+
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -31,6 +34,7 @@ public class TabbedPane extends Table {
 	
 	public TabbedPane(final ButtonGroup buttons, final boolean vertical)
 	{
+		final TabbedPane me = this;
 		this.vertical = vertical;
 		this.buttons = buttons;
 		buttons.setMaxCheckCount(1);
@@ -47,6 +51,7 @@ public class TabbedPane extends Table {
 				{
 					changedTab.run();
 				}
+				MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameUI.Messages.ChangeTabs, me);
 			}
 		};
 		
