@@ -289,11 +289,14 @@ public abstract class GameUI extends UI {
 		addAction(Actions.alpha(1f, .2f));
 		calculateScissors(displayBounds, tmpBound);
 		
-		fader = new Image(skin.getDrawable("fader"));
-		fader.setFillParent(true);
-		fader.addAction(Actions.alpha(0f));
-		fader.setTouchable(Touchable.disabled);
-		addActor(fader);
+		if (fader == null)
+		{
+			fader = new Image(skin.getDrawable("fader"));
+			fader.setFillParent(true);
+			fader.addAction(Actions.alpha(0f));
+			fader.setTouchable(Touchable.disabled);
+			addActor(fader);
+		}
 		
 		pointer = new Image(skin.getDrawable("pointer"));
 		addActor(pointer);

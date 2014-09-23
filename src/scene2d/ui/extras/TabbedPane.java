@@ -105,7 +105,7 @@ public class TabbedPane extends Table {
 					(vertical && (keycode == Keys.DOWN || keycode == Keys.S)))
 				{
 					buttons.getButtons().get(
-						Math.min(buttons.getButtons().size, 
+						Math.min(buttons.getButtons().size-1, 
 								 buttons.getButtons().indexOf(buttons.getChecked(), true) + 1)
 						).setChecked(true);
 					return true;

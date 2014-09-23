@@ -267,18 +267,22 @@ enum WanderState implements UIState
 		@Override
 		public boolean onMessage(WanderUI entity, Telegram telegram)
 		{
-			entity.dialog.addAction(Actions.alpha(0f, 1f));
-			entity.getFader().addAction(
-				Actions.sequence(
-					Actions.alpha(1f, 2f),
-					Actions.run(new Runnable(){
-						@Override
-						public void run(){
-							SceneManager.switchToScene("town");
-						}
-					})
-				)
-			);
+			if (telegram.message == GameUI.Messages.Close)
+			{
+				entity.dialog.addAction(Actions.alpha(0f, 1f));
+				entity.getFader().addAction(
+					Actions.sequence(
+						Actions.alpha(1f, 2f),
+						Actions.run(new Runnable(){
+							@Override
+							public void run(){
+								SceneManager.switchToScene("town");
+							}
+						})
+					)
+				);
+				return true;
+			}
 			return false;
 		}
 	},
@@ -318,18 +322,22 @@ enum WanderState implements UIState
 
 		@Override
 		public boolean onMessage(WanderUI entity, Telegram telegram) {
-			entity.dialog.addAction(Actions.alpha(0f, 1f));
-			entity.getFader().addAction(
-				Actions.sequence(
-					Actions.alpha(1f, 2f),
-					Actions.run(new Runnable(){
-						@Override
-						public void run(){
-							SceneManager.switchToScene("town");
-						}
-					})
-				)
-			);
+			if (telegram.message == GameUI.Messages.Close)
+			{
+				entity.dialog.addAction(Actions.alpha(0f, 1f));
+				entity.getFader().addAction(
+					Actions.sequence(
+						Actions.alpha(1f, 2f),
+						Actions.run(new Runnable(){
+							@Override
+							public void run(){
+								SceneManager.switchToScene("town");
+							}
+						})
+					)
+				);
+				return true;
+			}
 			return false;
 		}
 		

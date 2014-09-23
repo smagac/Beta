@@ -302,8 +302,10 @@ public class MovementSystem extends EntityProcessingSystem {
 				else
 				{
 					Combat combat = combatMap.get(opponent);
-					parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));
+					parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));					
 					parentScene.getItem(combat.getDrop());
+					MessageDispatcher.getInstance().dispatchMessage(0, null, questTracker, Quest.Actions.Gather, combat.getDrop().fullname());
+
 					aStats.exp += bStats.exp;
 					if (aStats.canLevelUp())
 					{

@@ -50,8 +50,6 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 @SuppressWarnings("unchecked")
 public class WanderUI extends GameUI {
 
-	private Image fader;
-	
 	//logger
 	private ScrollPane logPane;
 	private Table log;
