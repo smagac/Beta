@@ -1,5 +1,6 @@
 package scenes.dungeon;
 
+import scenes.dungeon.ui.WanderUI;
 import github.nhydock.ssm.Inject;
 
 import com.artemis.Aspect;

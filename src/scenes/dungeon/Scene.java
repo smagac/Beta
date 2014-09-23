@@ -1,5 +1,8 @@
 package scenes.dungeon;
 
+import scenes.dungeon.ui.MenuMessage;
+import scenes.dungeon.ui.WanderUI;
+
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
@@ -284,7 +287,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	protected void dead()
 	{
-		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, WanderUI.MenuMessage.Dead);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Dead);
 		
 		//lose all found items
 		playerService.getInventory().abandon();
@@ -295,7 +298,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	
 	protected void leave()
 	{
-		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, WanderUI.MenuMessage.Exit);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Exit);
 		
 		//merge loot into inventory
 		playerService.getInventory().merge();
@@ -326,7 +329,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	 */
 	protected void refresh()
 	{
-		ui.refresh(progress);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Refresh, progress);
 	}
 
 	@Override
@@ -475,6 +478,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	}
 
 	public void levelUp() {
-		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, WanderUI.MenuMessage.LevelUp);
+		MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.LevelUp);
 	}
 }
