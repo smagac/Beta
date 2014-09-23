@@ -55,7 +55,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	promptsm: { font: promptsm, fontColor: white },
 	hover: { font: small, fontColor: black, background: button_down },
 	header: { font: smaller, fontColor: white, background: button_up },
-        dmg: { font: dmg, fontColor: white }
+	dmg: { font: dmg, fontColor: white }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }

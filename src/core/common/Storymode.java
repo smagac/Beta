@@ -1,7 +1,7 @@
 package core.common;
 
 
-import scenes.town.TownUI;
+import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -168,10 +168,10 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		float contrast = getContrast();
 		
 		//Copy AMD formula on wikipedia for smooth step in GLSL so our background can be the same as the shader
-	    // Scale, bias and saturate x to 0..1 range
-	    contrast = MathUtils.clamp((contrast - .5f)/(1f - .5f), 0.0f, 1.0f); 
-	    // Evaluate polynomial
-	    contrast = contrast*contrast*(3 - 2*contrast);
+	    	// Scale, bias and saturate x to 0..1 range
+	    	contrast = MathUtils.clamp((contrast - .5f)/(1f - .5f), 0.0f, 1.0f); 
+	    	// Evaluate polynomial
+	    	contrast = contrast*contrast*(3 - 2*contrast);
 		
 		clear.lerp(isInverted()?p.low:p.high, contrast);
 		
