@@ -197,6 +197,11 @@ public abstract class Quest implements Agent {
 				formatted = formatted.replaceFirst("~location", quest.getLocation());
 			}
 			
+			while (formatted.contains("~adjective"))
+			{
+				formatted = formatted.replaceFirst("~adjective", AdjectiveFactory.getAdjective());
+			}
+			
 			while (formatted.contains("~objective"))
 			{
 				formatted = formatted.replaceFirst("~objective", quest.getObjective());

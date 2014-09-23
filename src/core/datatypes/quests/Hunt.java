@@ -22,7 +22,7 @@ public class Hunt extends Quest {
 	public Hunt()
 	{
 		this.need = MathUtils.random(3, 15);
-		this.monster = MonsterFactory.randomName();
+		this.monster = MonsterFactory.randomSpecies();
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class Hunt extends Quest {
 		if (msg == Actions.Hunt)
 		{
 			String name = (String)info;
-			if (name.equals(monster))
+			if (name.contains(monster))
 			{
 				hunted++;
 				return true;
@@ -65,11 +65,11 @@ public class Hunt extends Quest {
 
 	@Override
 	public String getObjectivePrompt() {
-		return String.format("Hunt %s: %d", monster, need);
+		return String.format("Hunt %d %s", need, monster);
 	}
 
 	@Override
 	public String getObjectiveProgress() {
-		return String.format("Hunt %s: %d/%d", monster, hunted, need);
+		return String.format("Hunted %d/%d %s", hunted, need, monster);
 	}
 }

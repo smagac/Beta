@@ -66,12 +66,12 @@ public class Gather extends Quest {
 
 	@Override
 	public String getObjectivePrompt() {
-		return String.format("Find %s: %d", item, need);
+		return String.format("Find %d %s", need, item);
 	}
 
 	@Override
 	public String getObjectiveProgress() {
-		return String.format("Find %s: %d/%d", item, gathered, need);
+		return String.format("Found %d/%d %s", gathered, need, item);
 	}
 
 }
