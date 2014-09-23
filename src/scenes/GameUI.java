@@ -2,6 +2,7 @@ package scenes;
 
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.TabbedPane;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -301,7 +302,7 @@ public abstract class GameUI extends UI {
 		act(0);
 		
 		MessageDispatcher.getInstance().addListener(Messages.Notify, this);
-		MessageDispatcher.getInstance().addListener(Messages.ChangeTabs, this);
+		MessageDispatcher.getInstance().addListener(TabbedPane.Messages.ChangeTabs, this);
 		
 	}
 	
@@ -542,7 +543,7 @@ public abstract class GameUI extends UI {
 		super.dispose();
 		//make sure this ui stops listening to notifications to unhook it from the system
 		MessageDispatcher.getInstance().removeListener(Messages.Notify, this);
-		MessageDispatcher.getInstance().removeListener(Messages.ChangeTabs, this);
+		MessageDispatcher.getInstance().removeListener(TabbedPane.Messages.ChangeTabs, this);
 	}
 	
 
@@ -594,7 +595,5 @@ public abstract class GameUI extends UI {
 		//used when an item in a list is selected
 		public static final int Selected = 0x1001;
 		
-		//used when switching tabs in a ui
-		public static final int ChangeTabs = 0x1002;
 	}
 }

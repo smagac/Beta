@@ -24,6 +24,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
  */
 public class TabbedPane extends Table {
 
+	public static class Messages {
+		//used when switching tabs in a ui
+		public static final int ChangeTabs = 0x2000;
+	}
+	
 	ButtonGroup buttons;
 	Table tabs;
 	Table panes;
@@ -51,7 +56,7 @@ public class TabbedPane extends Table {
 				{
 					changedTab.run();
 				}
-				MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameUI.Messages.ChangeTabs, me);
+				MessageDispatcher.getInstance().dispatchMessage(0, null, null, Messages.ChangeTabs, me);
 			}
 		};
 		

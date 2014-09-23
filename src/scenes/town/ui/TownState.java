@@ -3,6 +3,7 @@ package scenes.town.ui;
 import java.util.Iterator;
 
 import github.nhydock.ssm.SceneManager;
+import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
@@ -812,7 +813,7 @@ enum TownState implements UIState {
 				
 				return true;
 			}
-			else if (telegram.message == GameUI.Messages.ChangeTabs)
+			else if (telegram.message == TabbedPane.Messages.ChangeTabs)
 			{
 				completeView = ui.questMenu.getOpenTabIndex() == 1;
 				ui.refreshButtons();
