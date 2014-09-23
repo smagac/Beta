@@ -1,5 +1,6 @@
 package scenes.town;
 
+import scenes.town.ui.TownUI;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.gdx.Gdx;
@@ -73,8 +74,6 @@ public class Scene extends scenes.Scene<TownUI> {
 
 	@Override
 	protected void extend(float delta) {
-		ui.act(delta);
-		
 		ui.draw();
 	}
 

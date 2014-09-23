@@ -5,6 +5,7 @@ import scene2d.ui.extras.FocusGroup;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
@@ -44,6 +45,7 @@ import core.service.interfaces.IPlayerContainer;
  * @author nhydock
  *
  */
+@SuppressWarnings("rawtypes")
 public abstract class GameUI extends UI {
 
 	private static final String statFormat = "Crafting Completed %d/%d";
@@ -73,7 +75,6 @@ public abstract class GameUI extends UI {
 
 	@Inject public IPlayerContainer playerService;
 
-	@SuppressWarnings("rawtypes")
 	protected StateMachine menu;
 	
 	
@@ -322,7 +323,7 @@ public abstract class GameUI extends UI {
 	
 	public abstract String[] defineButtons();
 	
-	protected final void refreshButtons()
+	public final void refreshButtons()
 	{
 		setButtons(defineButtons());
 	}
@@ -523,10 +524,15 @@ public abstract class GameUI extends UI {
 		calculateScissors(displayBounds, tmpBound);
 	}
 	
-	protected final void setFocus(Actor a)
+	public final void setFocus(Actor a)
 	{
 		setKeyboardFocus(a);
 		setScrollFocus(a);
+	}
+	
+	public final Actor getButtonList()
+	{
+		return buttonList;
 	}
 	
 	@Override
@@ -546,6 +552,33 @@ public abstract class GameUI extends UI {
 		return menu.handleMessage(msg);
 	}
 	
+	/**
+	 * Allow changing the state of the UI
+	 * @param state
+	 */
+	@SuppressWarnings("unchecked")
+	public final void changeState(State state)
+	{
+		menu.changeState(state);
+	}
+	
+	/**
+	 * @return the actor containing the display
+	 */
+	public final Actor getDisplay()
+	{
+		return display;
+	}
+	
+	public final float getDisplayWidth()
+	{
+		return display.getWidth();
+	}
+	
+	public final float getDisplayHeight()
+	{
+		return display.getHeight();
+	}
 	
 	public static class Messages
 	{

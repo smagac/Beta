@@ -58,6 +58,11 @@ public abstract class UI extends Stage implements Agent {
 		return makeWindow(skin, width, height, false);
 	}
 	
+	public final Image getFader()
+	{
+		return fader;
+	}
+	
 	/**
 	 * Custom required method to create complex actors that are recognized
 	 * as a single window in order to provide tiling of the ninepatch 
@@ -189,5 +194,21 @@ public abstract class UI extends Stage implements Agent {
 	{
 		super.dispose();
 		ServiceManager.unhook(this);
+	}
+	
+	/**
+	 * @return the skin object in use by this UI
+	 */
+	public final Skin getSkin()
+	{
+		return skin;
+	}
+	
+	/**
+	 * @return the main asset manager used to load resources
+	 */
+	public final AssetManager getManager()
+	{
+		return manager;
 	}
 }
