@@ -1,6 +1,6 @@
 {
     "other" : [
-        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD", "sadness", "booty"
+        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD", "sadness", "booty", "dollas"
     ],
     
     "image" : [
@@ -8,7 +8,7 @@
     ],
 
     "audio" : [
-        "shades", "pancakes", "synthesizer", "radio", "speakers", "record", "codec", "8-track", "sax", "tuba"
+        "shades", "pancakes", "synthesizer", "radio", "speakers", "record", "codec", "8-track", "sax", "tuba", "boogie"
     ],
     
     "video" : [
@@ -20,11 +20,11 @@
     ],
     
     "executable" : [
-        "cat", "rice", "operating system", "gears", "axe", "spaghetti", "interpreter"
+        "cat", "rice", "operating system", "gears", "axe", "spaghetti", "interpreter", "order", "agenda"
     ],
     
     "craftable" : [
         "sword", "pants", "drugs", "hats", "cake", "politics", "cocktail", "armor", "stew", "statue", "apocalypse",
-        "plan", "soda", "computer", "boat", "robot", "ensemble", "sport", "virus", "genome", "picnic"
+        "plan", "soda", "computer", "boat", "robot", "ensemble", "sport", "virus", "genome", "picnic", "trainwreck"
     ]
 }

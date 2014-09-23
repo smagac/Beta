@@ -1,0 +1,79 @@
+{
+    "aggressive" : {
+    	hp: 1.2, str: 1.2,
+    	adjectives : [
+    		"silver-tongued", "hetero-normative", "ratchet", "burly", "grumpy", "tacky", "fake", "sporty",
+        	"atrocious", "monster", "religious", "miniature"
+    	]
+    },
+    "gentle" : {
+    	adjectives : [
+    		"rainbow", "reduced sodium", "miniature", "woven", "butter", "soft-spoken"
+    	]
+    },
+    "poop-faced" : {
+    	adjectives : [
+    		"french", "crap", "stupid", "baby", "cheap", "retro", "junior", "refurbished",
+    	]
+    },
+    "soft-core" : {
+    	adjectives : [
+    		"hipster", "home-grown", "fleece", "helpless", "extremely sad", "tear-free", 
+    	]
+    },
+    "annoying" : {
+    	adjectives : [
+    		"obnoxious", "bubblegum", "obtuse", "esoteric", "banal", "loud", "snobby", "pay-to-play",
+    		"DLC", "freemium", "lack of", "brown-nosing", 
+        
+    	]
+    },
+    "dangerous" : {
+    	adjectives : [
+    		"epic", "spectacular", "heroic", "jurassic", "nuclear", "concentrated", "illegal", "demonic", 
+    	]
+    },
+    "free-form" : {
+    	adjectives : [
+    		"jazz", "sassy", "baroque", "groovy", "studly", "polymorphic", "automagical", "symphonic"
+    	]
+    },
+    "japan" : {
+    	adjectives : [
+    		"anime", "meguca", "slimy", "sony", "weeaboo", "intergalatic", "sexy", "japanese", "new world",
+    		"trading-card", 
+    	]
+    },
+    "hard-core" : {
+    	adjectives : [
+    		"bro", "american", "presidental", "magnanimous", "loyal", "baggy","abominable"
+    	]
+    },
+    "awesome" : {
+    	adjectives : [
+    		"open-source", "booty", "cosmic", "legendary", "mythical", "spectacular",
+    	]
+    },
+    "material" : {
+    	adjectives : [
+    		"hard", "wood", "metal", "glass", "tin","woven","plaid",  "metallic", "8-bit", "retro", "viscous",
+    		"electronic"
+    	]
+    },
+    "girly" : {
+    	adjectives : [
+    		"feminine", "moist", "IRL", "#hashtag", "bubbly", "plastic", "matching", 
+    	]
+    },
+    "food" : {
+    	adjectives : [
+    		"potato", "tomato", "salty", "buttery", "taste-less", "I Can't Believe It's Not", "cinnamon", "vomit-inducing",
+    		"frozen"
+    	]
+    },
+    "normal" : {
+    	adjectives : [
+    		"broken", "tantalizing","tenacious","second-place","expensive","ikea","banal","some","windy"
+    	]
+    }
+}
