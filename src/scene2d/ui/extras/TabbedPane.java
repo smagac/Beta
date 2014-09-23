@@ -1,7 +1,5 @@
 package scene2d.ui.extras;
 
-import scenes.GameUI;
-
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.scenes.scene2d.Actor;
