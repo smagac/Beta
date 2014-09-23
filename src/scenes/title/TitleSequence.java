@@ -44,7 +44,7 @@ public class TitleSequence extends UI {
 			textGrid.setFillParent(true);
 			textGrid.pad(40f);
 			
-			Label text = new Label("Less than a week before TooManyGames, think I can crap out a roguelike in that time?", skin);
+			Label text = new Label("Sometimes you start a project, thinking it'd take you no time at all to finish it.  Then before you know it, it's drained your life away from you.\n\nWhat was once a one week venture has spanned months.", skin);
 			text.setWrap(true);
 			text.setAlignment(Align.center);
 			text.addAction(
@@ -66,7 +66,7 @@ public class TitleSequence extends UI {
 			);
 			textGrid.row();
 			textGrid.add(text).expandX().fillX().padRight(60f);
-			text = new Label("June 20, 2014", skin, "small");
+			text = new Label("September 23, 2014", skin, "small");
 			text.setWrap(true);
 			text.setAlignment(Align.right);
 			text.addAction(
