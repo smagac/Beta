@@ -10,7 +10,7 @@ import factories.MonsterFactory;
  * 
  * @author nhydock
  */
-public class Hunt extends Quest {
+class Hunt extends Quest {
 	
 	private String monster;
 	private int need;
@@ -71,5 +71,10 @@ public class Hunt extends Quest {
 	@Override
 	public String getObjectiveProgress() {
 		return String.format("Hunted %d/%d %s", hunted, need, monster);
+	}
+	
+	@Override
+	public float getProgress() {
+		return hunted / (float)need;
 	}
 }

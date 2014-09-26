@@ -11,7 +11,7 @@ import factories.ItemFactory;
  * 
  * @author nhydock
  */
-public class Gather extends Quest {
+class Gather extends Quest {
 	
 	private String item;
 	private int need;
@@ -74,4 +74,8 @@ public class Gather extends Quest {
 		return String.format("Found %d/%d %s", gathered, need, item);
 	}
 
+	@Override
+	public float getProgress() {
+		return gathered / (float) need;
+	}
 }

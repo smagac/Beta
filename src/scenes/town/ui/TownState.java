@@ -25,8 +25,10 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
+import core.common.QuestTracker.Reward;
 import core.common.Tracker;
 import core.datatypes.Craftable;
+import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
@@ -761,7 +763,16 @@ enum TownState implements UIState {
 								Label loc = new Label("Location: " + selected.getLocation(), ui.getSkin(), "smaller");
 								Label prompt = new Label(selected.getPrompt(), ui.getSkin(), "smaller");
 								prompt.setWrap(true);
-								Label objective = new Label(selected.getObjectivePrompt(), ui.getSkin(), "smaller");
+								
+								Label objective;
+								if (ui.questService.getAcceptedQuests().contains(selected, true))
+								{
+									objective = new Label(selected.getObjectiveProgress(), ui.getSkin(), "smaller");										
+								}
+								else
+								{
+									objective = new Label(selected.getObjectivePrompt(), ui.getSkin(), "smaller");	
+								}
 								objective.setWrap(true);
 								
 								int d = selected.getExpirationDate();
@@ -798,18 +809,36 @@ enum TownState implements UIState {
 			//accept a new quest
 			else if (telegram.message == MenuMessage.Accept) {
 				Quest selected;
-				if (ui.questMenu.getOpenTabIndex() == 0)
+				if (!completeView)
 				{
 					selected = ui.availableQuests.getSelected();
+					ui.questService.accept(selected);
+					ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
 				}
 				//don't try to accept quests that have already been accepted
 				else
 				{
+					selected = ui.acceptedQuests.getSelected();
+					boolean completed = ui.questService.complete(selected);
+					if (!completed)
+					{
+						ui.setMessage("You can't complete that quest yet");
+					}
+					else
+					{
+						//reward the player for completing the quest
+						Inventory inv = ui.playerService.getInventory();
+						Craftable craftable = inv.getRequiredCrafts().random();
+						
+						Reward reward = ui.questService.getReward(craftable);
+						
+						inv.pickup(reward.item, reward.count);
+						
+						ui.changeState(GoddessDialog);
+					}
+					ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
 					return false;
 				}
-				
-				ui.questService.accept(selected);
-				ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
 				
 				return true;
 			}
@@ -826,27 +855,6 @@ enum TownState implements UIState {
 		}
 		
 	};
-	
-	/**
-	 * Message types for the main state
-	 * @author nhydock
-	 *
-	 */
-	static class MenuMessage
-	{
-		static final int Sleep = 0;
-		static final int Explore = 1;
-		static final int Craft = 2;
-		static final int Quest = 3;
-		static final int Save = 4;
-		
-		static final int Make = 1;
-		static final int Accept = 1;
-		static final int Refresh = 2;
-		
-		static final int Random = 2;
-		
-	}
 
 	@Override
 	public void exit(TownUI ui) {}

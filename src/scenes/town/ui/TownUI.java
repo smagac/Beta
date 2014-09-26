@@ -156,7 +156,7 @@ public class TownUI extends GameUI {
 						{
 							MessageDispatcher
 								.getInstance()
-								.dispatchMessage(0f, ui, ui, TownState.MenuMessage.Explore);
+								.dispatchMessage(0f, ui, ui, MenuMessage.Explore);
 							manager.get(DataDirs.accept, Sound.class).play();
 						}
 						return true;
@@ -182,7 +182,7 @@ public class TownUI extends GameUI {
 							
 							if (menu.isInState(TownState.Main))
 							{
-								triggerAction(TownState.MenuMessage.Sleep);
+								triggerAction(MenuMessage.Sleep);
 								manager.get(DataDirs.accept, Sound.class).play();
 							}
 							return true;
@@ -264,7 +264,7 @@ public class TownUI extends GameUI {
 					requirementList.clear();
 					
 					//build requirements list
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh, list.getSelected());
 					manager.get(DataDirs.tick, Sound.class).play();
 				}
 			});
@@ -308,7 +308,7 @@ public class TownUI extends GameUI {
 				public void changed(ChangeEvent event, Actor actor) {
 					float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight()/2);
 					p.scrollTo(0, list.getHeight()-y, p.getWidth(), p.getHeight());
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, list.getSelected());
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh, list.getSelected());
 					manager.get(DataDirs.tick, Sound.class).play();
 				}
 			});
@@ -350,11 +350,11 @@ public class TownUI extends GameUI {
 				
 				if (craftMenu.getOpenTabIndex() == 0)
 				{
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, craftList.getSelected());
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh, craftList.getSelected());
 				}
 				else
 				{
-					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, TownState.MenuMessage.Refresh, todayList.getSelected());
+					MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh, todayList.getSelected());
 				}
 			}
 			

@@ -377,14 +377,10 @@ public class TitleSequence extends UI {
 	}
 
 	@Override
-	public void update(float delta) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void update(float delta) { /* do nothing */ }
 
 	@Override
 	public boolean handleMessage(Telegram msg) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

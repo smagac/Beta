@@ -5,10 +5,13 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
+import core.datatypes.Craftable;
+import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.Quest.Actions;
 import core.datatypes.quests.Quest.QuestFactory;
 import core.service.interfaces.IQuestContainer;
+import factories.AdjectiveFactory;
 
 public class QuestTracker implements IQuestContainer {
 
@@ -125,9 +128,29 @@ public class QuestTracker implements IQuestContainer {
 		{
 			throw (new NullPointerException("Can not insert null quests into the tracker"));
 		}
-		activeQuests.add(q);
+		if (!activeQuests.contains(q, true))
+		{
+			activeQuests.add(q);
+		}
 	}
 
+	/**
+	 * @param craft - craft to pick random requirement from
+	 * @return a random amount of an item that is required for crafting
+	 */
+	@Override
+	public Reward getReward(Craftable craft)
+	{
+		String name = craft.getRequirementTypes().random();
+		int rand = MathUtils.random(1, craft.getRequirements().get(name));
+
+		Item item = new Item(name, AdjectiveFactory.getAdjective());
+		
+		Reward reward = new Reward(item, rand);
+		
+		return reward;
+	}
+	
 	/**
 	 * Completes a quest if it is done and hasn't expired and rewards the user
 	 * @param q
@@ -142,5 +165,21 @@ public class QuestTracker implements IQuestContainer {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Reward object container gifted by quests upon completion
+	 * @author nhydock
+	 */
+	public static class Reward
+	{
+		public final Item item;
+		public final int count;
+		
+		public Reward(Item item, int amount)
+		{
+			this.item = item;
+			this.count = amount;
+		}
 	}
 }

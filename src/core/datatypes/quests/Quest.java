@@ -110,7 +110,10 @@ public abstract class Quest implements Agent {
 	
 	public abstract String getObjectiveProgress();
 	
+	public abstract float getProgress();
+	
 	protected abstract boolean handleQuestNotification(int msg, Object info);
+	
 	
 	@Override
 	public final boolean handleMessage(Telegram msg)

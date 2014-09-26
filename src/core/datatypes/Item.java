@@ -35,9 +35,14 @@ public class Item implements Comparable<Item>, Serializable
 		return String.format("%s %s", adj, name);
 	}
 	
-	public String type()
+	public String descriptor()
 	{
 		return adj;
+	}
+	
+	public String type()
+	{
+		return name;
 	}
 	
 	@Override

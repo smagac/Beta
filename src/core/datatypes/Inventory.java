@@ -296,12 +296,31 @@ public class Inventory implements Serializable{
 		return canSacrifice;
 	}
 	
-	public void pickup(Item i)
+	/**
+	 * Adds a single item into the user's inventory
+	 * @param item
+	 */
+	public void pickup(Item item)
 	{
-		tmp.put(i, tmp.get(i, 0)+1);
-		all.put(i, all.get(i, 0)+1);
+		tmp.put(item, tmp.get(item, 0)+1);
+		all.put(item, all.get(item, 0)+1);
 	}
 	
+	/**
+	 * Adds a single item into the user's inventory
+	 * @param i
+	 */
+	public void pickup(Item item, int i)
+	{
+		tmp.put(item, tmp.get(item, 0)+i);
+		all.put(item, all.get(item, 0)+i);
+	}
+	
+	
+	/**
+	 * Combines temporary loot with player's actual loot
+	 * USED WHEN PLAYER LEAVES THE DUNGEON W/O DYING
+	 */
 	public void merge()
 	{
 		tmp.clear();
@@ -309,6 +328,10 @@ public class Inventory implements Serializable{
 		loot.putAll(all);
 	}
 	
+	/**
+	 * Abandons all picked up items that haven't been used yet
+	 * USED WHEN PLAYER DIES IN A DUNGEON
+	 */
 	public void abandon()
 	{
 		tmp.clear();
@@ -364,4 +387,5 @@ public class Inventory implements Serializable{
 		
 		calcProgress();
 	}
+
 }

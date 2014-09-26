@@ -1,6 +1,7 @@
 package core.datatypes;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -31,6 +32,11 @@ public class Craftable extends Item
 	public ObjectMap<String, Integer> getRequirements()
 	{
 		return requirements;
+	}
+	
+	public Array<String> getRequirementTypes()
+	{
+		return requirements.keys().toArray();
 	}
 
 	@Override
