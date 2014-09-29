@@ -31,7 +31,6 @@ import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
-import core.service.interfaces.IQuestContainer;
 import factories.DungeonFactory;
 import factories.DungeonFactory.DungeonLoader;
 import factories.DungeonFactory.DungeonLoader.DungeonParam;
@@ -46,7 +45,6 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	private FileType fileType;
 	
 	@Inject public IPlayerContainer playerService;
-	@Inject public IQuestContainer questService;
 	
 	AssetManager dungeonManager;
 	DungeonLoader dungeonLoader;
@@ -284,7 +282,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	protected void getItem(Item item)
 	{
 		playerService.getInventory().pickup(item);
-		MessageDispatcher.getInstance().dispatchMessage(0, null, questService, Quest.Actions.Gather, item.type());
+		MessageDispatcher.getInstance().dispatchMessage(0, null, playerService.getQuestTracker(), Quest.Actions.Gather, item.type());
 		ui.setMessage("Obtained " + item.fullname());
 	}
 	

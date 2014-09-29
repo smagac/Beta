@@ -3,10 +3,12 @@ package core.service.interfaces;
 import github.nhydock.ssm.Service;
 import core.components.Stats;
 import core.datatypes.Inventory;
+import core.datatypes.QuestTracker;
 
 public interface IPlayerContainer extends Service {
 
 	public Inventory getInventory();
+	public QuestTracker getQuestTracker();
 	public Stats getPlayer();
 	public void rest();
 	public void recover();

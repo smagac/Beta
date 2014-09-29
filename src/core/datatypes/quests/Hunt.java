@@ -1,6 +1,8 @@
 package core.datatypes.quests;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 import factories.MonsterFactory;
 
@@ -76,5 +78,25 @@ class Hunt extends Quest {
 	@Override
 	public float getProgress() {
 		return hunted / (float)need;
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeValue("prompt", prompt);
+		json.writeValue("need", need);
+		json.writeValue("have", hunted);
+		json.writeValue("objective", monster);
+		json.writeValue("title", title);
+		json.writeValue("expires", expires);
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		prompt = jsonData.getString("prompt");
+		need = jsonData.getInt("need");
+		hunted = jsonData.getInt("have");
+		monster = jsonData.getString("objective");
+		title = jsonData.getString("title");
+		expires = jsonData.getInt("expires");
 	}
 }

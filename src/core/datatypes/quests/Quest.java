@@ -6,14 +6,16 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
+import core.DataDirs;
 import factories.AdjectiveFactory;
 import factories.ItemFactory;
 import factories.MonsterFactory;
 
-public abstract class Quest implements Agent {
+public abstract class Quest implements Agent, Serializable {
 	
 	/**
 	 * Response messages for the message dispatcher
@@ -113,7 +115,6 @@ public abstract class Quest implements Agent {
 	public abstract float getProgress();
 	
 	protected abstract boolean handleQuestNotification(int msg, Object info);
-	
 	
 	@Override
 	public final boolean handleMessage(Telegram msg)

@@ -4,7 +4,6 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
-import github.nhydock.ssm.Inject;
 
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
@@ -32,7 +31,6 @@ import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Dungeon;
 import core.datatypes.quests.Quest;
-import core.service.interfaces.IQuestContainer;
 
 /**
  * Handles all movement for dungeoning, as well as bump combat
@@ -53,8 +51,6 @@ public class MovementSystem extends EntityProcessingSystem {
 	
 	private Entity player;
 	protected ImmutableBag<Entity> monsters;
-	
-	@Inject public IQuestContainer questTracker;
 	
 	private Sound hit;
 	
@@ -304,7 +300,7 @@ public class MovementSystem extends EntityProcessingSystem {
 					Combat combat = combatMap.get(opponent);
 					parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));					
 					parentScene.getItem(combat.getDrop());
-					MessageDispatcher.getInstance().dispatchMessage(0, null, questTracker, Quest.Actions.Gather, combat.getDrop().fullname());
+					MessageDispatcher.getInstance().dispatchMessage(0, null, parentScene.playerService.getQuestTracker(), Quest.Actions.Gather, combat.getDrop().fullname());
 
 					aStats.exp += bStats.exp;
 					if (aStats.canLevelUp())
@@ -324,7 +320,7 @@ public class MovementSystem extends EntityProcessingSystem {
 					else
 					{
 						parentScene.progress.monstersKilled++;
-						MessageDispatcher.getInstance().dispatchMessage(0, null, questTracker, Quest.Actions.Hunt, id.getType());
+						MessageDispatcher.getInstance().dispatchMessage(0, null, parentScene.playerService.getQuestTracker(), Quest.Actions.Hunt, id.getType());
 					}
 				}
 			}

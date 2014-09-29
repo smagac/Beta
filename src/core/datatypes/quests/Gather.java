@@ -1,6 +1,8 @@
 package core.datatypes.quests;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 import factories.ItemFactory;
 
@@ -77,5 +79,25 @@ class Gather extends Quest {
 	@Override
 	public float getProgress() {
 		return gathered / (float) need;
+	}
+	
+	@Override
+	public void write(Json json) {
+		json.writeValue("prompt", prompt);
+		json.writeValue("need", need);
+		json.writeValue("have", gathered);
+		json.writeValue("objective", item);
+		json.writeValue("title", title);
+		json.writeValue("expires", expires);
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		prompt = jsonData.getString("prompt");
+		need = jsonData.getInt("need");
+		gathered = jsonData.getInt("have");
+		item = jsonData.getString("objective");
+		title = jsonData.getString("title");
+		expires = jsonData.getInt("expires");
 	}
 }

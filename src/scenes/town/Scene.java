@@ -10,12 +10,10 @@ import com.badlogic.gdx.audio.Music;
 import core.DataDirs;
 import core.common.BossListener;
 import core.service.interfaces.IPlayerContainer;
-import core.service.interfaces.IQuestContainer;
 
 public class Scene extends scenes.Scene<TownUI> {
 
 	@Inject public IPlayerContainer playerService;
-	@Inject public IQuestContainer questService;
 	
 	@Override
 	public void show() {

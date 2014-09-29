@@ -44,7 +44,6 @@ import core.datatypes.Craftable;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
-import core.service.interfaces.IQuestContainer;
 import core.util.FileSort;
 import core.util.PathSort;
 
@@ -109,7 +108,7 @@ public class TownUI extends GameUI {
 	private FileHandle queueDir;
 	
 	@Inject public IPlayerContainer playerService;
-	@Inject public IQuestContainer questService;
+	
 	Group saveWindow;
 	Array<Table> saveSlots;
 	FocusGroup formFocus;
@@ -720,8 +719,9 @@ public class TownUI extends GameUI {
 		availableQuests = new List<Quest>(skin);
 		acceptedQuests = new List<Quest>(skin);
 		
-		availableQuests.setItems(questService.getQuests());
-		acceptedQuests.setItems(questService.getAcceptedQuests());
+		System.out.println(playerService.getQuestTracker());
+		availableQuests.setItems(playerService.getQuestTracker().getQuests());
+		acceptedQuests.setItems(playerService.getQuestTracker().getAcceptedQuests());
 		
 		ButtonGroup questTabs = new ButtonGroup();
 		{

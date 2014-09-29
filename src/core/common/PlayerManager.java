@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 
 import core.components.Stats;
 import core.datatypes.Inventory;
+import core.datatypes.QuestTracker;
 import core.service.interfaces.IPlayerContainer;
 
 public class PlayerManager implements IPlayerContainer {
@@ -28,6 +29,7 @@ public class PlayerManager implements IPlayerContainer {
 	
 	private Stats player;
 	private Inventory inventory;
+	private QuestTracker quests;
 	private String goddess;
 	private String character;
 	
@@ -55,6 +57,12 @@ public class PlayerManager implements IPlayerContainer {
 	public Inventory getInventory()
 	{
 		return inventory;
+	}
+	
+	@Override
+	public QuestTracker getQuestTracker()
+	{
+		return quests;
 	}
 	
 	@Override
@@ -158,7 +166,7 @@ public class PlayerManager implements IPlayerContainer {
 			json.writeValue("inventory", inventory, Inventory.class);
 			json.writeValue("stats", player, Stats.class);
 			json.writeValue("tracker", Tracker._instance, Tracker.class);
-			
+			json.writeValue("quests", quests, QuestTracker.class);
 			json.writeObjectEnd();
 			js.close();
 			
@@ -182,6 +190,7 @@ public class PlayerManager implements IPlayerContainer {
 		this.difficulty = root.getInt("difficulty");
 		this.player = new Stats();
 		this.player.read(json, root.get("stats"));
+		this.quests = json.readValue(QuestTracker.class, root.get("quests"));
 		Tracker._instance.read(json, root.get("tracker"));
 	}
 
@@ -226,6 +235,9 @@ public class PlayerManager implements IPlayerContainer {
 
 		//make crafting requirements
 		inventory = new Inventory(difficulty);
+		
+		//make quest tracker
+		quests = new QuestTracker();
 		
 		//reset game clock
 		time = 0f;

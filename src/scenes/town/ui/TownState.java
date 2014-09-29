@@ -25,11 +25,11 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
-import core.common.QuestTracker.Reward;
 import core.common.Tracker;
 import core.datatypes.Craftable;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
+import core.datatypes.QuestTracker.Reward;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
@@ -46,8 +46,8 @@ enum TownState implements UIState {
 		public void enter(TownUI ui) {
 			ui.restore();
 			ui.refreshButtons();
-			ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
-			ui.availableQuests.setItems(ui.questService.getQuests());
+			ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
+			ui.availableQuests.setItems(ui.playerService.getQuestTracker().getQuests());
 		}
 		
 		@Override
@@ -486,7 +486,7 @@ enum TownState implements UIState {
 						ui.playerService.rest();
 						ui.todayList.setItems(ui.playerService.getInventory().getTodaysCrafts());
 						
-						MessageDispatcher.getInstance().dispatchMessage(0, null, ui.questService, Quest.Actions.Advance);
+						MessageDispatcher.getInstance().dispatchMessage(0, null, ui.playerService.getQuestTracker(), Quest.Actions.Advance);
 					}
 					
 				}),
@@ -760,7 +760,7 @@ enum TownState implements UIState {
 								prompt.setWrap(true);
 								
 								Label objective;
-								if (ui.questService.getAcceptedQuests().contains(selected, true))
+								if (ui.playerService.getQuestTracker().getAcceptedQuests().contains(selected, true))
 								{
 									objective = new Label(selected.getObjectiveProgress(), ui.getSkin(), "smaller");										
 								}
@@ -807,14 +807,14 @@ enum TownState implements UIState {
 				if (!completeView)
 				{
 					selected = ui.availableQuests.getSelected();
-					ui.questService.accept(selected);
-					ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
+					ui.playerService.getQuestTracker().accept(selected);
+					ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
 				}
 				//don't try to accept quests that have already been accepted
 				else
 				{
 					selected = ui.acceptedQuests.getSelected();
-					boolean completed = ui.questService.complete(selected);
+					boolean completed = ui.playerService.getQuestTracker().complete(selected);
 					if (!completed)
 					{
 						ui.setMessage("You can't complete that quest yet");
@@ -825,13 +825,13 @@ enum TownState implements UIState {
 						Inventory inv = ui.playerService.getInventory();
 						Craftable craftable = inv.getRequiredCrafts().random();
 						
-						Reward reward = ui.questService.getReward(craftable);
+						Reward reward = ui.playerService.getQuestTracker().getReward(craftable);
 						
 						inv.pickup(reward.item, reward.count);
 						
 						ui.changeState(GoddessDialog);
 					}
-					ui.acceptedQuests.setItems(ui.questService.getAcceptedQuests());
+					ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
 					return false;
 				}
 				
