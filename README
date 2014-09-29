@@ -1,25 +1,11 @@
 StoryMode is a simple roguelike game.
 There's more to it than that, though, as you'll probably find out just by playing the game.
 
-If you'd like to know more about it, or wish to donate towards development through purchasing 
-the game by naming your price, you can do so at
+If you'd like to know more about it, or wish to donate towards development through purchasing the game by naming your price, you can do so at
 	
     nhydock.github.io/Storymode
 
-HOW TO RUN THE GAME
-=========================
-To execute the game, run one of the following scripts according to your platform
-
-    run.bat - Windows
-    run.sh - Mac OS X/Linux
-
-You can also ignore the updater with the use of the command line argument -offline like so
-
-    run.bat -offline
-    run.sh -offline
-
-System Requirements
-=========================
+#System Requirements
 The following specifications are required in order to play properly
 
     At least Java 1.7 is installed
@@ -28,8 +14,7 @@ The following specifications are required in order to play properly
 	
     *An internet connection is recommended in order to update the game.
 
-Playing the Game
-=========================
+#Playing the Game
 Input is rather simple and is designed to have an emphasis on being able to play with one hand.
 
 For Keyboard, things will be following this naming scheme to identify input
@@ -47,11 +32,17 @@ For Keyboard, things will be following this naming scheme to identify input
 
 ## Dungeoning
 Like any classic roguelike, all you gotta do is bump into enemies to attack them.
-Movement is turn based, meaning enemies will only move when you do.  Unless you know what you're
-doing and your reflexes are god-like, rushing will usually just get you killed really fast.
+Movement is turn based, meaning enemies will only move when you do.  Unless you know what you're doing and your reflexes are god-like, rushing will usually just get you killed really fast.
 
 You can press a Direction key or click around the character to move them in that direction.
 - Holding down the key allows for a relaxing pace of actions with turns occuring at a steady rate.
 - If you want to speed things up, you can tap rapidly to send off a stream of turns
 
 Hovering your mouse over any enemy sprite will show you their name and current amount of HP.
+
+## Sleeping
+Sleeping has two main functions.  It advances the game time by a day, and it fully heals you.  You are technically capable of going through multiple dungeons in a single "day" if you balance your way of going through them.
+
+Days are of great importance, especially with the introduction of questing.  Quests have a set number of days in which they can be completed.  If the quest is not completed in that time period, it is assumed someone else has completed that quest or the cause of that quest is no longer of significance to the quest giver.  Every time you sleep, quests tick down a day.
+
+In addition to questing, there's also a list of daily craftables that you can use to clean up your inventory and increase your end game score and favour with the Crafting Goddess/God.  Whenever a day passes, there'll be new craftables for you to make.
