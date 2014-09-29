@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 
+import core.DataDirs;
 import core.common.BossListener;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IQuestContainer;
@@ -19,7 +20,7 @@ public class Scene extends scenes.Scene<TownUI> {
 	@Override
 	public void show() {
 		ui = new TownUI(manager);
-		manager.load("data/audio/town.mp3", Music.class);
+		manager.load(DataDirs.Audio + "town.mp3", Music.class);
 		
 		InputMultiplexer input = new InputMultiplexer();
 		input.addProcessor(ui);
@@ -32,42 +33,9 @@ public class Scene extends scenes.Scene<TownUI> {
 	}
 
 	@Override
-	public void hide() {
-		dispose();
-	}
-
-	@Override
-	public void pause() {
-		if (bgm != null)
-		{
-			bgm.pause();
-		}
-	}
-
-	@Override
-	public void resume() {
-		if (bgm != null)
-		{
-			bgm.play();
-		}
-	}
-
-	@Override
-	public void dispose() {
-		if (bgm != null)
-		{
-			bgm.stop();
-		}
-		bgm = null;
-		super.dispose();
-	}
-
-	@Override
 	protected void init() {
 		ui.init();
-		bgm = manager.get("data/audio/town.mp3");
-		bgm.play();
-		bgm.setLooping(true);
+		audio.playBgm(manager.get(DataDirs.Audio + "town.mp3", Music.class));
 	}
 
 	@Override

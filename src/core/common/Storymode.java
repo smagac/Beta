@@ -5,6 +5,8 @@ import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,6 +21,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.DLC;
 import core.Palette;
+import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IGame;
 import core.service.interfaces.ILoader;
@@ -28,7 +31,7 @@ import factories.AllFactories;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
-public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, ILoader {
+public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, ILoader, IAudioManager {
 	
 	public static final int[] InternalRes = {960, 540};
 	
@@ -56,7 +59,15 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	private IPlayerContainer playerManager;
 	private IQuestContainer questTracker;
 	
-	protected Storymode(){}
+	//currently playing bgm
+	private Music bgm;
+	private float BgmVolume;
+	private float SfxVolume;
+	
+	protected Storymode(){
+		BgmVolume = 1.0f;
+		SfxVolume = 1.0f;
+	}
 	
 	@Override
 	public void resize(int width, int height) {
@@ -85,6 +96,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		ServiceManager.register(ILoader.class, this);
 		ServiceManager.register(IGame.class, this);
 		ServiceManager.register(IColorMode.class, this);
+		ServiceManager.register(IAudioManager.class, this);
 		
 		playerManager = new PlayerManager();
 		questTracker = new QuestTracker();
@@ -96,7 +108,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		SceneManager.register("title", scenes.title.Scene.class);
 		SceneManager.register("newgame", scenes.newgame.Scene.class);
 		SceneManager.register("endgame", scenes.endgame.Scene.class);
-		
 		
 		SceneManager.switchToScene("title");
 		
@@ -236,7 +247,19 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	{
 		super.resume();
 		resumed = true;
+		if (bgm != null)
+		{
+			bgm.play();
+		}
 	}
+	
+	@Override
+	public void pause()
+	{
+		super.pause();
+		pauseBgm();
+	}
+	
 	
 	@Override
 	public Palette getPalette()
@@ -318,6 +341,94 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 			SceneManager.switchToScene("endgame");
 			System.out.println("cheater");
 		}
+	}
+	
+	@Override
+	public void playBgm() {
+		if (hasBgm())
+		{
+			this.bgm.play();
+		}
+	}
+	
+	@Override
+	public void setBgm(Music bgm) {
+		setBgm(bgm, true);
+	}
+	
+	@Override
+	public void playBgm(Music bgm) {
+		playBgm(bgm, true);
+	}
+	
+	@Override
+	public void stopBgm() {
+		if (hasBgm()) {
+			this.bgm.stop();
+		}
+	}
+
+	@Override
+	public void setBgmVol(float vol) {
+		this.BgmVolume = vol;
+	}
+
+	@Override
+	public void setSfxVol(float vol) {
+		this.SfxVolume = vol;
+	}
+
+	@Override
+	public void playSfx(Sound clip) {
+		clip.play(this.SfxVolume);
+	}
+
+	@Override
+	public boolean isPlayingBgm() {
+		if (hasBgm())
+		{
+			return bgm.isPlaying();
+		}
+		return false;
+	}
+
+	@Override
+	public void pauseBgm() {
+		if (hasBgm())
+		{
+			bgm.pause();
+		}
+	}
+
+	@Override
+	public boolean hasBgm() {
+		return this.bgm != null;
+	}
+
+	@Override
+	public void setBgm(Music bgm, boolean loop) {
+		if (hasBgm())
+		{
+			this.bgm.stop();
+			this.bgm.dispose();
+		}
+		this.bgm = bgm;
+		this.bgm.setVolume(this.BgmVolume);
+		this.bgm.setLooping(loop);
+	}
+
+	@Override
+	public void playBgm(Music bgm, boolean loop) {
+
+		setBgm(bgm, loop);
+		this.bgm.play();
+	}
+	
+	@Override
+	public void clearBgm()
+	{
+		this.bgm.stop();
+		this.bgm = null;
 	}
 
 }

@@ -87,7 +87,7 @@ public class TitleSequence extends UI {
 
 						@Override
 						public void run() {
-							parent.startMusic();
+							parent.audio.playBgm();
 						}
 						
 					})

@@ -92,7 +92,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		{
 			if (file.extension().matches("(mp3|ogg|wav)"))
 			{
-				bgm = Gdx.audio.newMusic(file);
+				audio.setBgm(Gdx.audio.newMusic(file));
 			}
 		}
 		this.difficulty = difficulty;
@@ -146,12 +146,12 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	public void show() {
 		ui = new WanderUI(manager);
 		
-		if (bgm == null)
+		if (!audio.hasBgm())
 		{
 			Array<FileHandle> bgms = new Array<FileHandle>();
-			bgms.add(Gdx.files.internal("data/audio/dungeon/001.mp3"));
-			bgms.add(Gdx.files.internal("data/audio/dungeon/002.mp3"));
-			for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal("data/audio/dungeon/")))
+			bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/001.mp3"));
+			bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/002.mp3"));
+			for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal(DataDirs.Audio + "audio/dungeon/")))
 			{
 				if (!f.path().startsWith("data"))
 				{
@@ -160,41 +160,14 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 					bgms.addAll(f.list("ogg"));
 				}
 			}
-			bgm = Gdx.audio.newMusic(bgms.random());
+			audio.setBgm(Gdx.audio.newMusic(bgms.random()));
 		}
 		
-		bgm.setLooping(true);
-		bgm.play();
-		
-	}
-
-	@Override
-	public void hide() {
-		dispose();
-	}
-
-	@Override
-	public void pause() { 
-		if (bgm != null)
-		{
-			bgm.pause();
-		}
-	}
-
-	@Override
-	public void resume() { 
-		if (bgm != null)
-		{
-			bgm.play();
-		}
+		audio.playBgm();
 	}
 
 	@Override
 	public void dispose() {
-		if (bgm != null)
-		{
-			bgm.stop();	
-		}
 		dungeonManager.dispose();
 		ServiceManager.register(IDungeonContainer.class, null);
 		super.dispose();

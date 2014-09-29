@@ -6,9 +6,9 @@ import github.nhydock.ssm.ServiceManager;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Music;
 
 import core.common.BossListener;
+import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.ILoader;
 
@@ -27,12 +27,12 @@ public abstract class Scene<View extends UI> implements Screen {
 	
 	@Inject public IColorMode color;
 	@Inject public ILoader loader;
+	@Inject public IAudioManager audio;
 	
 	protected View ui;
 	
 	protected boolean loaded;
 	protected InputMultiplexer input;
-	protected Music bgm;
 	
 	public Scene()
 	{
@@ -89,10 +89,21 @@ public abstract class Scene<View extends UI> implements Screen {
 		if (ui != null) {
 			ui.dispose();
 		}
-		if (bgm != null) {
-			bgm.stop();
-		}
+		audio.clearBgm();
 		input.clear();
 		manager.dispose();
 	}
+	
+	@Override
+	public void pause(){}
+	
+	@Override
+	public void resume(){}
+	
+	
+	@Override
+	public void hide() {
+		dispose();
+	}
+
 }

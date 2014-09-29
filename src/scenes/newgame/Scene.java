@@ -26,14 +26,12 @@ public class Scene extends scenes.Scene<NewUI> {
 		
 		ui.draw();
 	}
-
-
 	
 	@Override
 	public void show() {
 		ui = new NewUI(this, manager, playerService);
 		
-		manager.load("data/audio/story.mp3", Music.class);
+		manager.load(DataDirs.Audio + "story.mp3", Music.class);
 		
 		manager.load(DataDirs.tick, Sound.class);
 		manager.load(DataDirs.shimmer, Sound.class);
@@ -54,39 +52,7 @@ public class Scene extends scenes.Scene<NewUI> {
 	protected void prepareStory()
 	{
 		gameService.startGame(ui.getDifficulty(), ui.getGender());
-		bgm = manager.get("data/audio/story.mp3", Music.class);
-		bgm.setLooping(true);
-		bgm.play();
-	}
-	
-	@Override
-	public void hide() {
-		dispose();
-	}
-
-	@Override
-	public void pause() {
-		if (bgm != null)
-		{
-			bgm.pause();
-		}
-	}
-
-	@Override
-	public void resume() {
-		if (bgm != null)
-		{
-			bgm.play();
-		}
-	}
-
-	@Override
-	public void dispose() {
-		if (bgm != null)
-		{
-			bgm.stop();
-		}
-		super.dispose();
+		audio.playBgm(manager.get(DataDirs.Audio + "story.mp3", Music.class));
 	}
 
 }
