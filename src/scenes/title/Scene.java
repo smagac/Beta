@@ -24,14 +24,6 @@ public class Scene extends scenes.Scene<TitleSequence> {
 		manager.load(DataDirs.Audio + "title.mp3", Music.class);
 	}
 	
-	public void startMusic()
-	{
-		if (!audio.isPlayingBgm())
-		{
-			audio.playBgm();
-		}
-	}
-	
 	/**
 	 * Initialize the ui and load all assets
 	 */

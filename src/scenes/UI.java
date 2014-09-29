@@ -4,6 +4,7 @@ import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.Agent;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -211,4 +212,13 @@ public abstract class UI extends Stage implements Agent {
 	{
 		return manager;
 	}
+	
+	@Override
+	public void update(float delta) { /* do nothing */ }
+	
+	@Override
+	public boolean handleMessage(Telegram msg) {
+		return false;
+	}
+
 }

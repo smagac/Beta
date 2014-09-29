@@ -946,10 +946,5 @@ public class WanderUI extends GameUI {
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport().update(width, height, true);
 		}
 	}
-
-	@Override
-	public void update(float delta) {
-		//do nothing, this is already handled by extend act
-	}
-		
+	
 }

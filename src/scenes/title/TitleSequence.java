@@ -376,12 +376,4 @@ public class TitleSequence extends UI {
 		});
 	}
 
-	@Override
-	public void update(float delta) { /* do nothing */ }
-
-	@Override
-	public boolean handleMessage(Telegram msg) {
-		return false;
-	}
-
 }
