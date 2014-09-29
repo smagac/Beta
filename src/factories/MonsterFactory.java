@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DLC;
+import core.DataDirs;
 import core.components.Combat;
 import core.components.Identifier;
 import core.components.Monster;
@@ -59,7 +60,7 @@ public class MonsterFactory {
 		JsonReader json = new JsonReader();
 		JsonValue monsterList;
 		
-		Array<FileHandle> dlcMonsters = DLC.getAll("data/monsters.json", Gdx.files.classpath("data/monsters.json"));
+		Array<FileHandle> dlcMonsters = DLC.getAll(DataDirs.GameData+"monsters.json", Gdx.files.classpath(DataDirs.GameData+"monsters.json"));
 		for (FileHandle dlc : dlcMonsters)
 		{
 			monsterList = json.parse(dlc);
@@ -73,7 +74,7 @@ public class MonsterFactory {
 		}
 		
 		modifiers = new ObjectMap<String, StatModifier>();
-		JsonValue mods = json.parse(Gdx.files.classpath("data/modifiers.json"));
+		JsonValue mods = json.parse(Gdx.files.classpath(DataDirs.GameData+"modifiers.json"));
 		for (JsonValue mod : mods)
 		{
 			String modName = mod.name();

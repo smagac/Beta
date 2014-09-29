@@ -6,6 +6,8 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import core.DataDirs;
+
 public class AdjectiveFactory {
 
 	private static Array<String> allAdjectives;
@@ -27,7 +29,7 @@ public class AdjectiveFactory {
 		JsonReader json = new JsonReader();
 		
 		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath("data/modifiers.json"));
+		JsonValue jv = json.parse(Gdx.files.classpath(DataDirs.GameData+"modifiers.json"));
 		for (JsonValue modifier : jv)
 		{
 			JsonValue adjectives = modifier.get("adjectives");

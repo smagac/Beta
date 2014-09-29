@@ -148,7 +148,7 @@ public abstract class Quest implements Agent {
 		{
 			//load quests on demand
 			JsonReader json = new JsonReader();
-			JsonValue data = json.parse(Gdx.files.classpath("data/quest.json"));
+			JsonValue data = json.parse(Gdx.files.classpath(DataDirs.GameData+"quest.json"));
 			
 			Quest quest = null;
 			try {

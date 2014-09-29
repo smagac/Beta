@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
+import core.DataDirs;
 import core.datatypes.Craftable;
 
 public class CraftableFactory {
@@ -24,7 +25,7 @@ public class CraftableFactory {
 		JsonReader json = new JsonReader();
 		
 		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath("data/items.json"));
+		JsonValue jv = json.parse(Gdx.files.classpath(DataDirs.GameData+"items.json"));
 		
 		craftables = new Array<String>();
 		

@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import core.DataDirs;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 
@@ -29,7 +30,7 @@ public final class ItemFactory {
 		JsonReader json = new JsonReader();
 		
 		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath("data/items.json"));
+		JsonValue jv = json.parse(Gdx.files.classpath(DataDirs.GameData+"items.json"));
 		
 		lootLocations = new ObjectMap<FileType, Array<String>>();
 		items = new Array<String>();
