@@ -572,7 +572,7 @@ public class NewUI extends UI {
 						return false;
 					}
 				});
-				Scanner s = new Scanner(Gdx.files.classpath("data/title_"+entity.player.getGender()+".txt").read());
+				Scanner s = new Scanner(Gdx.files.classpath(DataDirs.GameData + "title_"+entity.player.getGender()+".txt").read());
 				while (s.hasNextLine())
 				{
 					data.add(s.nextLine());
