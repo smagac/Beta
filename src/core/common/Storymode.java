@@ -59,6 +59,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	
 	//currently playing bgm
 	private Music bgm;
+	private boolean hasBgmStarted;
 	private float BgmVolume;
 	private float SfxVolume;
 	
@@ -238,7 +239,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 	{
 		super.resume();
 		resumed = true;
-		if (bgm != null)
+		
+		//only resume a bgm if it's already started playing and exists
+		if (isPlayingBgm() && this.hasBgmStarted)
 		{
 			bgm.play();
 		}
@@ -339,6 +342,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		if (hasBgm())
 		{
 			this.bgm.play();
+			this.hasBgmStarted = true;
 		}
 	}
 	
@@ -406,6 +410,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		this.bgm = bgm;
 		this.bgm.setVolume(this.BgmVolume);
 		this.bgm.setLooping(loop);
+		this.hasBgmStarted = false;
 	}
 
 	@Override
@@ -413,6 +418,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 
 		setBgm(bgm, loop);
 		this.bgm.play();
+		this.hasBgmStarted = true;
 	}
 	
 	@Override
@@ -422,6 +428,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		{
 			this.bgm.stop();
 			this.bgm = null;
+			this.hasBgmStarted = false;
 		}
 	}
 
