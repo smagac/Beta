@@ -39,3 +39,38 @@ You can press a Direction key or click around the character to move them in that
 - If you want to speed things up, you can tap rapidly to send off a stream of turns
 
 Hovering your mouse over any enemy sprite will show you their name and current amount of HP.
+
+## Sleeping
+Sleeping has two main functions.  It advances the game time by a day, and it fully heals you.  You are technically capable of going through multiple dungeons in a single "day" if you balance your way of going through them.
+
+Days are of great importance, especially with the introduction of questing.  Quests have a set number of days in which they can be completed.  If the quest is not completed in that time period, it is assumed someone else has completed that quest or the cause of that quest is no longer of significance to the quest giver.  Every time you sleep, quests tick down a day.
+
+In addition to questing, there's also a list of daily craftables that you can use to clean up your inventory and increase your end game score and favour with the Crafting Goddess/God.  Whenever a day passes, there'll be new craftables for you to make.
+
+# Credits / Attribution
+
+Graphics, Programming, Project Lead
+    Nicholas Hydock
+
+Ideas, Suggestions, Emotional Support, and Bros4Lyfe
+    Patrick Flanagan
+    Matthew Hydock
+    Andrew Hoffman
+
+Title Theme
+    Anamanaguchi - Helix Nebula
+
+Town Music
+    Monroeville Music Center - B002
+
+Story Music
+    Eric Skiff - All of Us
+
+Dungeoning
+    Decktonic - Fair Game
+    Sycamore Drive - Kicks
+    Revolution Void - Telluric Undercurrent
+    Benjamin Briggs - Benji Needs A Lawyer (http://benbriggs.net/track/benji-needs-a-lawyer)
+    
+
+All Music Available on FreeMusicArchive.org unless otherwises stated

@@ -6,6 +6,8 @@ Changes since Desura Launch on August 8, 2014
 - You can now save and load your game
 - Fixed scaling of interface controls on the new game screen
 - Fix resizing your window
+- Questing System now implemented to ease grinding
+- new git-based launcher/updater Boogie is packaged with the game
 
 Changes since Beta 2 Announcement on July 13, 2014
 ============================
