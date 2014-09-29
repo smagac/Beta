@@ -147,6 +147,20 @@ public class NewUI extends UI {
 						}
 						return false;
 					}
+					
+					@Override
+					public boolean keyDown(InputEvent evt, int key)
+					{
+						if (slotFocus.getFocusedIndex() == index)
+						{
+							if (key == Keys.ENTER || key == Keys.SPACE)
+							{
+								MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, slotFocus.getFocusedIndex(), s);
+								return true;
+							}
+						}
+						return false;
+					}
 				});
 				row.setTouchable(Touchable.enabled);
 				
