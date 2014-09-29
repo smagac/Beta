@@ -69,8 +69,17 @@ public class PlayerManager implements IPlayerContainer {
 	@Override
 	public void rest()
 	{
-		player.hp = player.maxhp;
+		recover();
 		Tracker.NumberValues.Times_Slept.increment();
+		
+		//new quests each day
+		getInventory().refreshCrafts();
+	}
+	
+	@Override
+	public void recover()
+	{
+		player.hp = player.maxhp;
 	}
 
 	@Override

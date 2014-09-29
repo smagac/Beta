@@ -324,7 +324,7 @@ enum TownState implements UIState {
 				Craftable c = (Craftable)t.extraInfo;
 				refreshRequirements(c, ui);
 			}
-			else
+			else if (t.message == GameUI.Messages.Close)
 			{
 				ui.changeState(Main);
 			}
@@ -484,11 +484,9 @@ enum TownState implements UIState {
 					@Override
 					public void run() {
 						ui.playerService.rest();
-						
-						//new crafts appear each day!
-						ui.playerService.getInventory().refreshCrafts();
-						
 						ui.todayList.setItems(ui.playerService.getInventory().getTodaysCrafts());
+						
+						MessageDispatcher.getInstance().dispatchMessage(0, null, ui.questService, Quest.Actions.Advance);
 					}
 					
 				}),
@@ -517,10 +515,7 @@ enum TownState implements UIState {
 		
 		@Override
 		public void exit(TownUI ui)
-		{
-			
-			MessageDispatcher.getInstance().dispatchMessage(0, null, ui.questService, Quest.Actions.Advance);
-		
+		{	
 		}
 	},
 	GoddessDialog(){

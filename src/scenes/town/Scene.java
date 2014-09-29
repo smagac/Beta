@@ -26,10 +26,6 @@ public class Scene extends scenes.Scene<TownUI> {
 		input.addProcessor(ui);
 		input.addProcessor(BossListener.getInstance());
 		Gdx.input.setInputProcessor(input);
-		
-		//new crafts appear when you return to town
-		playerService.getInventory().refreshCrafts();
-		
 	}
 
 	@Override

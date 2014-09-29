@@ -9,6 +9,7 @@ public interface IPlayerContainer extends Service {
 	public Inventory getInventory();
 	public Stats getPlayer();
 	public void rest();
+	public void recover();
 	public String getTimeElapsed();
 	public String getFullTime();
 	public String getGender();

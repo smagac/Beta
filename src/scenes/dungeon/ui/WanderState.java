@@ -171,8 +171,7 @@ enum WanderState implements UIState
 					{
 						Tracker.NumberValues.Loot_Sacrificed.increment();
 					}
-					Stats s = entity.playerService.getPlayer();
-					s.hp = s.maxhp;
+					entity.playerService.recover();
 					entity.healCost++;
 					entity.changeState(Wander);
 					return true;
