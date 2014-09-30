@@ -89,6 +89,7 @@ class Gather extends Quest {
 		json.writeValue("objective", item);
 		json.writeValue("title", title);
 		json.writeValue("expires", expires);
+		json.writeValue("loc", location);
 	}
 
 	@Override
@@ -99,5 +100,6 @@ class Gather extends Quest {
 		item = jsonData.getString("objective");
 		title = jsonData.getString("title");
 		expires = jsonData.getInt("expires");
+		location = jsonData.getString("loc");
 	}
 }

@@ -149,7 +149,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 			Array<FileHandle> bgms = new Array<FileHandle>();
 			bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/001.mp3"));
 			bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/002.mp3"));
-			for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal(DataDirs.Audio + "audio/dungeon/")))
+			bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/003.mp3"));
+			bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/004.mp3"));
+			for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal(DataDirs.Audio + "dungeon/")))
 			{
 				if (!f.path().startsWith("data"))
 				{

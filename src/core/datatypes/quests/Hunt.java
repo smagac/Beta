@@ -88,6 +88,7 @@ class Hunt extends Quest {
 		json.writeValue("objective", monster);
 		json.writeValue("title", title);
 		json.writeValue("expires", expires);
+		json.writeValue("loc", location);
 	}
 
 	@Override
@@ -98,5 +99,6 @@ class Hunt extends Quest {
 		monster = jsonData.getString("objective");
 		title = jsonData.getString("title");
 		expires = jsonData.getInt("expires");
+		location = jsonData.getString("loc");
 	}
 }
