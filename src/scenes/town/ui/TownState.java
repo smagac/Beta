@@ -454,7 +454,7 @@ enum TownState implements UIState {
 				);
 				return true;
 			}
-			else
+			else if (t.message == GameUI.Messages.Close)
 			{
 				ui.changeState(Main);
 				return true;
