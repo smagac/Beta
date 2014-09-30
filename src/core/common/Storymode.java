@@ -241,7 +241,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		resumed = true;
 		
 		//only resume a bgm if it's already started playing and exists
-		if (isPlayingBgm() && this.hasBgmStarted)
+		if (this.hasBgmStarted)
 		{
 			bgm.play();
 		}
