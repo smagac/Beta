@@ -731,10 +731,72 @@ enum TownState implements UIState {
 				Actions.moveTo(0, 0, .3f, Interpolation.circleOut)
 			));
 			
+			fillDetails(ui, (ui.questMenu.getOpenTabIndex() == 0) ? ui.availableQuests.getSelected() : ui.acceptedQuests.getSelected());
+			
+			ui.questDetails.addAction(
+				Actions.sequence(
+					Actions.moveTo(ui.getDisplayWidth(),  0),
+					Actions.delay(.8f),
+					Actions.moveTo(ui.getDisplayWidth()-ui.questDetails.getWidth(), 0, .3f, Interpolation.circleOut)
+				)
+			);
 			ui.setMessage("Let's help people!");
 			ui.refreshButtons();
 		}
 
+		private void fillDetails(final TownUI ui, Quest selected) {
+			
+			//generate a details panel
+			Table contents = ui.questDetailsContent;
+			contents.clear();
+			
+			//don't populate if null
+			if (selected == null)
+			{
+				return;
+			}
+			
+			//Image icon = new Image(ui.getSkin().getRegion(ext.toString()));
+			Label loc = new Label("Location: " + selected.getLocation(), ui.getSkin(), "smaller");
+			Label prompt = new Label(selected.getPrompt(), ui.getSkin(), "smaller");
+			prompt.setWrap(true);
+			
+			Label objective;
+			if (ui.playerService.getQuestTracker().getAcceptedQuests().contains(selected, true))
+			{
+				objective = new Label(selected.getObjectiveProgress(), ui.getSkin(), "smaller");										
+			}
+			else
+			{
+				objective = new Label(selected.getObjectivePrompt(), ui.getSkin(), "smaller");	
+			}
+			objective.setWrap(true);
+			
+			int d = selected.getExpirationDate();
+			String dayLabel = ((d == 1) ? "1 day" : d + " days") + " left to complete";
+			
+			Label days = new Label(dayLabel, ui.getSkin(), "smaller");
+			days.setWrap(true);
+			contents.pad(10f);
+			
+//				icon.setAlign(Align.center);
+//				icon.setSize(96f, 96f);
+//				icon.setScaling(Scaling.fit);
+//				contents.add(icon).size(96f, 96f).expandX();
+			contents.top();
+			contents.row();
+			contents.add(loc).expandX().fillX().padBottom(10f);
+			contents.row();
+			contents.add(prompt).expandX().fillX();
+			contents.row();
+			contents.add(objective).expandX().fillX().padTop(20f);
+			contents.row();
+			contents.add(days).expandX().fillX().padTop(10f);
+			
+			contents.pack();
+			ui.questDetailsPane.pack();
+		}
+		
 		@Override
 		public boolean onMessage(final TownUI ui, Telegram telegram) {
 			//change which quest is selected
@@ -745,57 +807,15 @@ enum TownState implements UIState {
 				
 				ui.questDetails.addAction(
 					Actions.sequence(
-						Actions.moveTo(ui.getDisplayWidth(),  0, .3f),
+						Actions.moveTo(ui.getDisplayWidth(),  0, .3f, Interpolation.circleIn),
 						Actions.run(new Runnable(){
 							
 							@Override
 							public void run() {
-								//generate a details panel
-								Table contents = ui.questDetailsContent;
-								contents.clear();
-								
-								//Image icon = new Image(ui.getSkin().getRegion(ext.toString()));
-								Label loc = new Label("Location: " + selected.getLocation(), ui.getSkin(), "smaller");
-								Label prompt = new Label(selected.getPrompt(), ui.getSkin(), "smaller");
-								prompt.setWrap(true);
-								
-								Label objective;
-								if (ui.playerService.getQuestTracker().getAcceptedQuests().contains(selected, true))
-								{
-									objective = new Label(selected.getObjectiveProgress(), ui.getSkin(), "smaller");										
-								}
-								else
-								{
-									objective = new Label(selected.getObjectivePrompt(), ui.getSkin(), "smaller");	
-								}
-								objective.setWrap(true);
-								
-								int d = selected.getExpirationDate();
-								String dayLabel = ((d == 1) ? "1 day" : d + " days") + " left to complete";
-								
-								Label days = new Label(dayLabel, ui.getSkin(), "smaller");
-								days.setWrap(true);
-								contents.pad(10f);
-								
-//									icon.setAlign(Align.center);
-//									icon.setSize(96f, 96f);
-//									icon.setScaling(Scaling.fit);
-//									contents.add(icon).size(96f, 96f).expandX();
-								contents.top();
-								contents.row();
-								contents.add(loc).expandX().fillX().padBottom(10f);
-								contents.row();
-								contents.add(prompt).expandX().fillX();
-								contents.row();
-								contents.add(objective).expandX().fillX().padTop(20f);
-								contents.row();
-								contents.add(days).expandX().fillX().padTop(10f);
-								
-								contents.pack();
-								ui.questDetailsPane.pack();
+								fillDetails(ui, selected);
 							}
 						}),
-						Actions.moveTo(ui.getDisplayWidth()-ui.questDetails.getWidth(), 0, .3f)
+						Actions.moveTo(ui.getDisplayWidth()-ui.questDetails.getWidth(), 0, .3f, Interpolation.circleOut)
 					)
 				);
 				return true;
@@ -840,6 +860,19 @@ enum TownState implements UIState {
 			else if (telegram.message == TabbedPane.Messages.ChangeTabs)
 			{
 				completeView = ui.questMenu.getOpenTabIndex() == 1;
+				ui.questDetails.addAction(
+					Actions.sequence(
+						Actions.moveTo(ui.getDisplayWidth(),  0, .3f, Interpolation.circleIn),
+						Actions.run(new Runnable(){
+							
+							@Override
+							public void run() {
+								fillDetails(ui, (ui.questMenu.getOpenTabIndex() == 0) ? ui.availableQuests.getSelected() : ui.acceptedQuests.getSelected());
+							}
+						}),
+						Actions.moveTo(ui.getDisplayWidth()-ui.questDetails.getWidth(), 0, .3f, Interpolation.circleOut)
+					)
+				);
 				ui.refreshButtons();
 				return true;
 			} 
