@@ -192,6 +192,7 @@ public class PlayerManager implements IPlayerContainer {
 		this.player.read(json, root.get("stats"));
 		this.quests = json.readValue(QuestTracker.class, root.get("quests"));
 		Tracker._instance.read(json, root.get("tracker"));
+		made = true;
 	}
 
 	private FileHandle getSaveFile(int slot)

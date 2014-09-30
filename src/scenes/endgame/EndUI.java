@@ -69,7 +69,7 @@ public class EndUI extends UI {
 		skin = manager.get("data/end.json", Skin.class);
 		
 		Array<String> data = new Array<String>();
-		Scanner s = new Scanner(Gdx.files.classpath("core/data/end.txt").read());
+		Scanner s = new Scanner(Gdx.files.classpath(DataDirs.GameData+"end.txt").read());
 		while (s.hasNextLine())
 		{
 			data.add(s.nextLine());
