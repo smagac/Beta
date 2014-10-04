@@ -529,7 +529,6 @@ public class TownUI extends GameUI {
 					catch (java.lang.IndexOutOfBoundsException e)
 					{
 						listIndex = 0;
-						System.out.println("file loader derp");
 						return;
 					}
 					
@@ -719,7 +718,6 @@ public class TownUI extends GameUI {
 		availableQuests = new List<Quest>(skin);
 		acceptedQuests = new List<Quest>(skin);
 		
-		System.out.println(playerService.getQuestTracker());
 		availableQuests.setItems(playerService.getQuestTracker().getQuests());
 		acceptedQuests.setItems(playerService.getQuestTracker().getAcceptedQuests());
 		

@@ -106,7 +106,6 @@ public class DungeonFactory {
 				String name = new String(bytesToHex(hash));
 				String tmpDir = System.getProperty("java.io.tmpdir");
 				hashFile = Gdx.files.absolute(tmpDir+"/storymode/"+name+".tmp");
-				//System.err.println(hashFile.path());
 				if (!hashFile.exists())
 				{
 					hashFile.parent().mkdirs();

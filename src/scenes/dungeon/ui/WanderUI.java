@@ -11,7 +11,6 @@ import scenes.dungeon.MovementSystem;
 import scenes.dungeon.Progress;
 import scenes.dungeon.RenderSystem;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
@@ -651,8 +650,6 @@ public class WanderUI extends GameUI {
 		});
 	}
 	
-	int counter = 0;
-	
 	@Override
 	protected void externalRender()
 	{
@@ -660,7 +657,6 @@ public class WanderUI extends GameUI {
 		{
 			dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
 		}
-		counter = 0;
 	}
 	
 	@Override
@@ -670,13 +666,6 @@ public class WanderUI extends GameUI {
 		{
 			dungeonService.getCurrentFloor().setDelta(delta);
 			menu.update();
-		}
-		
-		if (Gdx.input.isKeyJustPressed(Keys.SLASH))
-		{
-			MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Notify, "Bloody Hell");
-			counter++;
-			System.out.println(counter);
 		}
 	}
 

@@ -39,7 +39,6 @@ public class SMRunner {
 			{
 				String val = args[++i];
 				float vol = Float.parseFloat(val);
-				System.out.println(vol);
 				app.setBgmVol(vol);
 			}
 			else if (arg.equals("-sfxvol"))

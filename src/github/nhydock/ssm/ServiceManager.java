@@ -61,7 +61,6 @@ public class ServiceManager {
 				try {
 					Service service = services.get(type);
 					f.set(o, type.cast(service));
-					//System.out.println("Setting " + f.getName() + " to yeaha");
 				} catch (IllegalArgumentException e){
 					throw new NullPointerException("Service " + type.getCanonicalName() + " has not been registered into this system");
 				} catch (IllegalAccessException e) {
@@ -86,7 +85,6 @@ public class ServiceManager {
 				f.setAccessible(true);
 				try {
 					f.set(o, null);
-					//System.out.println("Setting " + f.getName() + " to null");
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					e.printStackTrace();
 				}

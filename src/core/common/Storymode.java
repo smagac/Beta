@@ -333,7 +333,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 		if (playerManager.isPrepared())
 		{
 			SceneManager.switchToScene("endgame");
-			System.out.println("cheater");
+			Gdx.app.log("Game", "cheater");
 		}
 	}
 	

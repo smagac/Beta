@@ -1,5 +1,6 @@
 package scene2d.ui.extras;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -210,7 +211,7 @@ public class FocusGroup extends Actor{
 	{
 		if (!actors.contains(a, true))
 		{
-			System.out.println("not a valid actor");
+			Gdx.app.log("FocusGroup", "not a valid actor");
 			return;
 		}
 		focus = a;
