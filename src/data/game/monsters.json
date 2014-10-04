@@ -171,8 +171,8 @@
         "hideName" : "true"
     },
     "treasure chest" : {
-        "hp" : "1", "str" : "0", "def": "-10", "exp" : "0", "spd" : "0",
-        "maxhp" : "1", "maxstr" : "0", "maxdef" : "-10", "maxexp" : "0", "maxpsd" : "0",
+        "hp" : "1", "str" : "0", "def": "0", "exp" : "0", "spd" : "0",
+        "maxhp" : "1", "maxstr" : "0", "maxdef" : "0", "maxexp" : "0", "maxpsd" : "0",
         "type" : "loot",
         "norm" : "0",
         "agro" : "0",

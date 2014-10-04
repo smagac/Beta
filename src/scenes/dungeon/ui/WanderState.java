@@ -108,6 +108,10 @@ enum WanderState implements UIState
 			{
 				entity.refresh((Progress)telegram.extraInfo);
 			}
+			else if (telegram.message == MenuMessage.LevelUp)
+			{
+				entity.changeState(WanderState.LevelUp);
+			}
 			return false;
 		}
 
