@@ -263,7 +263,7 @@ public class MonsterFactory {
 		String modType = AdjectiveFactory.getModifierType(adjective);
 		StatModifier modifier = modifiers.get(modType);
 		Stats s = new Stats(
-				(int)(t.getHp(depth) * modifier.hp),
+				(int)(Math.max(1, t.getHp(depth) * modifier.hp)),
 				(int)(t.getStr(depth) * modifier.str),
 				(int)(t.getDef(depth) * modifier.def),
 				(int)(t.getSpd(depth) * modifier.spd),

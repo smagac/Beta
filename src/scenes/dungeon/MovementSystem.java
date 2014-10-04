@@ -19,7 +19,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.common.Tracker;
@@ -42,7 +41,7 @@ public class MovementSystem extends EntityProcessingSystem {
 	private scenes.dungeon.Scene parentScene;
 	
 	private boolean[][] collision;
-	private Vector2 start, end;
+	private int[] start, end;
 	
 	@Mapper private ComponentMapper<Position> positionMap;
 	@Mapper private ComponentMapper<Stats> statMap;
@@ -82,11 +81,11 @@ public class MovementSystem extends EntityProcessingSystem {
 					//set as start or end if they're step tiles
 					if (t.getId() == 4)
 					{
-						start = new Vector2(x, y);
+						start = new int[]{x, y};
 					}
 					else if (t.getId() == 3)
 					{
-						end = new Vector2(x, y);
+						end = new int[]{x, y};
 					}
 				}
 			}
@@ -110,32 +109,35 @@ public class MovementSystem extends EntityProcessingSystem {
 			return true;
 		return !collision[x][y];
 	}
-	
+
 	/**
 	 * Checks to see if an entity can move to a tile
 	 * @param x
 	 * @param y
 	 * @param e - the entity to move
-	 * @return true if there is no other entity or wall blocking its way
+	 * @return true if there is an enemy blocking the way
 	 */
-	private boolean checkTile(int x, int y, Entity e)
+	private Entity checkFoe(int x, int y, Entity e)
 	{
-		boolean passable = !isWall(x, y);
 		if (monsters != null)
 		{
-			for (int i = 0; i < monsters.size() && passable; i++)
+			for (int i = 0; i < monsters.size(); i++)
 			{
 				Entity monster = monsters.get(i);
 				Position p = positionMap.get(monster);
-				passable = !(p.getX() == x && p.getY() == y);
+				if ((p.getX() == x && p.getY() == y))
+				{
+					return monster;
+				}
 			}
 		}
-		if (passable)
+		
+		Position p = positionMap.get(player);
+		if (p.getX() == x && p.getY() == y)
 		{
-			Position p = positionMap.get(player);
-			passable = !(p.getX() == x && p.getY() == y);
+			return player;
 		}
-		return passable;
+		return null;
 	}
 	
 	/**
@@ -144,57 +146,55 @@ public class MovementSystem extends EntityProcessingSystem {
 	 * @param y
 	 * @param e
 	 */
-	private void moveTo(int x, int y, Entity e)
+	private boolean moveEntity(int x, int y, Entity e)
 	{
 		Position p = positionMap.get(e);
-		if (checkTile(x, y, e))
+		boolean moved = false;
+		if (!isWall(x, y))
 		{
-			p.move(x, y);
-			
-			//try to figure out which room you're in now
-			if (e == player)
+			Entity foe = checkFoe(x, y, e);
+			//Handle combat
+			if (foe != null)
 			{
-				//descend
-				if (p.getX() == (int)end.x && p.getY() == (int)end.y)
+				if (e == player)
 				{
-					parentScene.descend();
+					fight(e, foe);
+					moved = true;
 				}
-				//ascend
-				else if (p.getX() == (int)start.x && p.getY() == (int)start.y)
-				{
-					parentScene.ascend();
-				}
-			}
-		}
-		//Handle combat
-		else
-		{
-			if (e == player)
-			{
-				for (int i = 0; i < monsters.size(); i++)
-				{
-					Entity monster = monsters.get(i);
-					Position monsterPos = positionMap.get(monster);
-					if (monsterPos.getX() == x && monsterPos.getY() == y)
-					{
-						fight(e, monster);
-					}
-				}
-			}
-			else 
-			{
-				Position playerPos = positionMap.get(player);
-				if (playerPos.getX() == x && playerPos.getY() == y)
+				else
 				{
 					Combat c = combatMap.get(e);
-					if (!c.isPassive())
-					{
-						fight(e, player);
+					if (foe == player && !c.isPassive())
+					{	
+						fight(e, foe);
+						moved = true;
 					}
 				}
 			}
+			//just move to square
+			else
+			{
+				p.move(x, y);
+				
+				//try to figure out which room you're in now
+				if (e == player)
+				{
+					//descend
+					if (x == (int)end[0] && y == (int)end[1])
+					{
+						parentScene.descend();
+					}
+					//ascend
+					else if (x == (int)start[0] && y == (int)start[1])
+					{
+						parentScene.ascend();
+					}
+				}
+				
+				moved = true;
+			}
 		}
-		
+		return moved;
 	}
 
 	/**
@@ -353,7 +353,7 @@ public class MovementSystem extends EntityProcessingSystem {
 	{
 		Position p = positionMap.get(player);
 		
-		p.move((int)start.x, (int)start.y);
+		p.move((int)start[0], (int)start[1]);
 	}
 	
 	/**
@@ -364,7 +364,7 @@ public class MovementSystem extends EntityProcessingSystem {
 	{
 		Position p = positionMap.get(player);
 		
-		p.move((int)end.x, (int)end.y);	
+		p.move((int)end[0], (int)end[1]);	
 	}
 	
 	/**
@@ -404,8 +404,7 @@ public class MovementSystem extends EntityProcessingSystem {
 			x--;
 		}
 		
-		if (!isWall(x, y)) {
-			moveTo(x, y, player);
+		if (moveEntity(x, y, player)) {
 			//execute a turn
 			process();
 			return true;
@@ -466,7 +465,7 @@ public class MovementSystem extends EntityProcessingSystem {
 				}
 				
 				//follow player chance
-				moveTo(m.getX() + dX, m.getY() + dY, e);
+				moveEntity(m.getX() + dX, m.getY() + dY, e);
 				
 				if (p.distance(m) > 5)
 				{
@@ -491,7 +490,7 @@ public class MovementSystem extends EntityProcessingSystem {
 				}
 				
 				//follow player chance
-				moveTo(m.getX() + dX, m.getY() + dY, e);
+				moveEntity(m.getX() + dX, m.getY() + dY, e);
 				
 				if (p.distance(m) < 3 && !prop.isPassive())
 				{

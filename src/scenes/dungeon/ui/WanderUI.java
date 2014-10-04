@@ -608,30 +608,6 @@ public class WanderUI extends GameUI {
 			MessageDispatcher.getInstance().addListener(Quest.Actions.Notify, this);
 		}
 		
-		final InputListener displayControl = new InputListener(){
-			@Override
-			public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button)
-			{
-				if (menu.isInState(WanderState.Wander))
-				{
-					Direction d = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
-					if (d != null)
-					{
-						MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement, d);
-						return true;
-					}
-				}
-				return false;
-			}
-			
-			@Override
-			public void touchUp(InputEvent evt, float x, float y, int pointer, int button)
-			{
-				MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement);
-			}
-		};
-		display.addListener(displayControl);
-		
 		//key listener for moving the character by pressing the arrow keys or WASD
 		addListener(new InputListener(){
 			@Override
@@ -646,6 +622,15 @@ public class WanderUI extends GameUI {
 					}
 				}
 				return false;
+			}
+			
+			@Override
+			public void touchUp(InputEvent evt, float x, float y, int pointer, int button)
+			{
+				if (menu.isInState(WanderState.Wander))
+				{
+					MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement);
+				}
 			}
 		});
 	}
