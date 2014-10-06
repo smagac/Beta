@@ -442,7 +442,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
 	@Override
 	public boolean hasNextFloor() {
-		return nextFloor() < dungeon.size();
+		return nextFloor() <= dungeon.size();
 	}
 
 	@Override

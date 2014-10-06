@@ -46,8 +46,7 @@ enum TownState implements UIState {
 		public void enter(TownUI ui) {
 			ui.restore();
 			ui.refreshButtons();
-			ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
-			ui.availableQuests.setItems(ui.playerService.getQuestTracker().getQuests());
+			ui.setFocus(ui.getButtonList());
 		}
 		
 		@Override
@@ -202,6 +201,7 @@ enum TownState implements UIState {
 			
 			ui.setMessage("Tink Tink");
 			ui.refreshButtons();
+			ui.setFocus(ui.getButtonList());
 		}
 		
 		@Override
@@ -346,6 +346,7 @@ enum TownState implements UIState {
 			
 			ui.setMessage("Where to?");
 			ui.refreshButtons();
+			ui.setFocus(ui.getButtonList());
 		}
 	
 		@Override
@@ -503,6 +504,7 @@ enum TownState implements UIState {
 				})
 			));
 			ui.refreshButtons();
+			ui.setFocus(ui.getButtonList());
 		}
 
 		@Override
@@ -533,6 +535,7 @@ enum TownState implements UIState {
 			ui.restore();
 			
 			ui.refreshButtons();
+			ui.setFocus(ui.getButtonList());
 		}
 		
 		@Override
@@ -683,6 +686,7 @@ enum TownState implements UIState {
 				)
 			);
 			ui.refreshButtons();
+			ui.setFocus(ui.getButtonList());
 		}
 
 		@Override
@@ -722,6 +726,9 @@ enum TownState implements UIState {
 
 		@Override
 		public void enter(TownUI ui) {
+			ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
+			ui.availableQuests.setItems(ui.playerService.getQuestTracker().getQuests());
+			
 			ui.sleepImg.addAction(Actions.moveTo(-ui.sleepImg.getWidth(), 0, .8f));
 			ui.craftImg.addAction(Actions.moveTo(ui.getDisplayWidth(), 0, .8f));
 		
@@ -742,6 +749,7 @@ enum TownState implements UIState {
 			);
 			ui.setMessage("Let's help people!");
 			ui.refreshButtons();
+			ui.setFocus(ui.getButtonList());
 		}
 
 		private void fillDetails(final TownUI ui, Quest selected) {

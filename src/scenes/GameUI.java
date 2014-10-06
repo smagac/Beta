@@ -376,8 +376,6 @@ public abstract class GameUI extends UI {
 		}
 		
 		buttonList.setPosition(window.getWidth() / 2 - buttonList.getPrefWidth() / 2, 32f);
-		
-		setFocus(buttonList);
 	}
 
 	protected final void forceButtonFocus()

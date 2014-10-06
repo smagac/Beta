@@ -126,6 +126,8 @@ enum WanderState implements UIState
 		@Override
 		public void enter(WanderUI entity) {
 			entity.showGoddess("Hello there, what is it that you need?");
+			entity.refreshButtons();
+			entity.setFocus(entity.getButtonList());
 		}
 
 		@Override
@@ -258,8 +260,8 @@ enum WanderState implements UIState
 				)
 			);
 			
-			entity.setFocus(entity.dialog);
 			entity.refreshButtons();
+			entity.setFocus(entity.getButtonList());
 		}
 		
 		@Override
@@ -314,8 +316,8 @@ enum WanderState implements UIState
 				)
 			);
 			
-			entity.setFocus(entity.dialog);
 			entity.refreshButtons();
+			entity.setFocus(entity.getButtonList());
 		}
 		
 		@Override
