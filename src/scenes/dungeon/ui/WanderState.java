@@ -349,20 +349,22 @@ enum WanderState implements UIState
 	},
 	LevelUp(){
 		
+		private static final int POINTS_REWARDED = 5;
+		
 		@Override
 		public void enter(WanderUI entity)
 		{
 			entity.hideGoddess();
 			entity.levelUpGroup.setFocus(entity.levelUpGroup.getActors().first());
 			
-			entity.points = 5;
+			entity.setPoints(POINTS_REWARDED);
 			
 			Stats s = entity.playerService.getPlayer();
-			Integer[] str = new Integer[6];
-			Integer[] def = new Integer[6];
-			Integer[] spd = new Integer[6];
-			Integer[] vit = new Integer[6];
-			for (int i = 0; i < entity.points+1; i++)
+			Integer[] str = new Integer[POINTS_REWARDED+1];
+			Integer[] def = new Integer[POINTS_REWARDED+1];
+			Integer[] spd = new Integer[POINTS_REWARDED+1];
+			Integer[] vit = new Integer[POINTS_REWARDED+1];
+			for (int i = 0; i < POINTS_REWARDED+1; i++)
 			{
 				str[i] = s.getStrength()+i;
 				def[i] = s.getDefense()+i;

@@ -81,6 +81,7 @@ public class WanderUI extends GameUI {
 	//level up dialog
 	Group levelUpDialog;
 	int points;
+	private Label pointLabel;
 	LabeledTicker<Integer> strTicker;
 	LabeledTicker<Integer> defTicker;
 	LabeledTicker<Integer> spdTicker;
@@ -486,7 +487,7 @@ public class WanderUI extends GameUI {
 			window.add(prompt).expandX().fillX().padBottom(20).colspan(3);
 			window.row();
 			
-			final Label pointLabel = new Label("Points 0", skin, "prompt");
+			pointLabel = new Label("Points 0", skin, "prompt");
 			pointLabel.setAlignment(Align.center);
 			
 			@SuppressWarnings("rawtypes")
@@ -505,8 +506,7 @@ public class WanderUI extends GameUI {
 						if (ticker.getValueIndex() > 0)
 						{
 							ticker.defaultLeftClick.run();
-							points++;
-							pointLabel.setText(String.format("Points %d", points));
+							setPoints(points+1);
 						}
 					}
 					
@@ -519,8 +519,7 @@ public class WanderUI extends GameUI {
 						if (ticker.getValueIndex() < ticker.length() && points > 0)
 						{
 							ticker.defaultRightClick.run();
-							points--;
-							pointLabel.setText(String.format("Points %d", points));
+							setPoints(points-1);
 						}
 					}
 					
@@ -921,4 +920,9 @@ public class WanderUI extends GameUI {
 		}
 	}
 	
+	protected void setPoints(int points)
+	{
+		this.points = points;
+		this.pointLabel.setText(String.format("Points %d", points));
+	}
 }
