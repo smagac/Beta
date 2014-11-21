@@ -9,8 +9,10 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
+import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
+import core.DataDirs;
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
 
@@ -70,31 +72,40 @@ public class Dungeon implements Serializable{
 		
 		public Floor(TiledMapTileLayer layer, FloorData data){
 			this.layer = layer;
-			roomCount = data.rooms.size;
-			depth = data.floor;
-			rooms = data.rooms;
+			roomCount = data.getRoomCount();
+			depth = data.getDepth();
+			rooms = data.getRooms();
 			monsters = -1;
 			loot = -1;
 		}
 	}
 	
-	public static class FloorData implements Serializable {
+	public static interface FloorData {
+		public int getRoomCount();
+		public int getDepth();
+		public Array<Room> getRooms();
+		public int[][] getTiles();
+		TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height);
+		void dispose();
+	}
+	
+	public static class RandomFloorData implements Serializable, FloorData {
 		int monsters;
-		public int[][] tiles;
-		public Array<Room> rooms;
+		int[][] tiles;
+		Array<Room> rooms;
 		
 		int floor;
 		int width, height;
 		int size;
 		
-		public FloorData(){}
+		public RandomFloorData(){}
 		
 		/**
 		 * Make a new dungeon instance using a path maker
 		 * @param floor
 		 * @param maker
 		 */
-		public FloorData(int difficulty, int floor, int width, int height)
+		public RandomFloorData(int difficulty, int floor, int width, int height)
 		{
 			
 			this.width = width;
@@ -113,6 +124,7 @@ public class Dungeon implements Serializable{
 		 * @param tH - pixel height of a tile
 		 * @return a newly made TiledMapTileLayer
 		 */
+		@Override
 		public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int tW, int tH)
 		{
 			//add padding so it doesn't look like the rooms flood into nothingness
@@ -230,10 +242,130 @@ public class Dungeon implements Serializable{
 			this.rooms = rooms;
 		}
 	
-		private void dispose()
+		@Override
+		public void dispose()
 		{
 			rooms = null;
 			tiles = null;
+		}
+
+		@Override
+		public int getRoomCount() {
+			return rooms.size;
+		}
+
+		@Override
+		public int getDepth() {
+			return floor;
+		}
+
+		@Override
+		public Array<Room> getRooms() {
+			return rooms;
+		}
+
+		@Override
+		public int[][] getTiles() {
+			return tiles;
+		}
+	}
+	
+	public static class BossFloor implements FloorData {
+
+		JsonValue map;
+		int depth;
+		int[][] tiles;
+		
+		public BossFloor(int difficulty, int depth) {
+			super();
+			this.depth = depth;
+			
+			JsonReader reader = new JsonReader();
+			JsonValue map = reader.parse(Gdx.files.classpath(DataDirs.GameData + "boss.json"));
+			
+			//read the shit from the json in the data folder
+			JsonValue data = map.get("layers").get(0);
+			int width = data.getInt("width");
+			int height = data.getInt("height");
+			tiles = new int[height][width];
+			int[] t = data.get("data").asIntArray();
+			for (int i = 0, x = 0, y = 0; i < t.length; y++)
+			{
+				for (x = 0; x < width; x++, i++)
+				{
+					tiles[y][x] = t[i];
+				}
+			}
+		}
+
+		@Override
+		public int getRoomCount() {
+			return 1;
+		}
+
+		@Override
+		public int getDepth() {
+			return depth;
+		}
+
+		/**
+		 * We don't need room calculation for the dungeon
+		 */
+		@Override
+		public Array<Room> getRooms() {
+			return null;
+		}
+
+		/**
+		 * Maps json file to our programmed tileset
+		 */
+		@Override
+		public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width,
+				int height) {
+			TiledMapTileLayer layer = new TiledMapTileLayer(tiles[0].length, tiles.length, width, height);
+			
+			for (int col = 0; col < tiles.length; col++)
+			{
+				for (int row = 0; row < tiles[0].length; row++)
+				{
+					Cell cell = new Cell();
+					int tile = tiles[col][row];
+					if (tile == 0)
+					{
+						cell.setTile(tileset.getTile(0));
+					}
+					else if (tile == 1)
+					{
+						cell.setTile(tileset.getTile(2));
+					}
+					else if (tile == 3)
+					{
+						cell.setTile(tileset.getTile(3));
+					}
+					else if (tile == 4)
+					{
+						cell.setTile(tileset.getTile(4));
+					}
+					else
+					{
+						cell.setTile(tileset.getTile(1));
+					}
+					
+					layer.setCell(col, row, cell);
+				}
+			}
+			return layer;
+		}
+
+		@Override
+		public void dispose() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public int[][] getTiles() {
+			return tiles;
 		}
 	}
 

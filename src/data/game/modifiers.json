@@ -87,5 +87,11 @@
     	adjectives : [
     		"broken", "tantalizing","tenacious","second-place","expensive","ikea","banal","some","windy"
     	]
+    },
+    "boss" : {
+    	hp: 3.0, str: 2.0, def: 1.5, spd: .8, exp: 5.0
+    	adjectives : [
+    		"angelic", "demonic", "boss", "war chief"
+    	]
     }
 }

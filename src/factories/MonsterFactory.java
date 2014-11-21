@@ -25,6 +25,7 @@ import core.components.Stats;
 import core.datatypes.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.datatypes.StatModifier;
 import core.util.dungeon.Room;
 
 /**
@@ -36,7 +37,6 @@ public class MonsterFactory {
 
 	private static ObjectMap<String, MonsterTemplate> allMonsters;
 	private static ObjectMap<FileType, Array<MonsterTemplate>> monsters;
-	private static ObjectMap<String, StatModifier> modifiers;
 	
 	public static final String Group = "Monster";
 	
@@ -72,22 +72,7 @@ public class MonsterFactory {
 				allMonsters.put(temp.name, temp);
 			}
 		}
-		
-		modifiers = new ObjectMap<String, StatModifier>();
-		JsonValue mods = json.parse(Gdx.files.classpath(DataDirs.GameData+"modifiers.json"));
-		for (JsonValue mod : mods)
-		{
-			String modName = mod.name();
-			StatModifier modifier = new StatModifier(
-					mod.getFloat("hp", 1.0f),
-					mod.getFloat("str", 1.0f),
-					mod.getFloat("def", 1.0f),
-					mod.getFloat("spd", 1.0f)
-				);
-
-			modifiers.put(modName, modifier);
-		}
-		
+				
 		loaded = true;
 	}
 	
@@ -154,22 +139,6 @@ public class MonsterFactory {
 		public int getSpd(float floor) { return (int)MathUtils.lerp(spd, maxspd, floor/100f); }
 		public int getExp(float floor) { return (int)MathUtils.lerp(exp, maxexp, floor/100f); }
 		
-	}
-	
-	private static class StatModifier
-	{
-		private final float hp;
-		private final float str;
-		private final float def;
-		private final float spd;
-		
-		private StatModifier(float hp, float str, float def, float spd)
-		{
-			this.hp = hp;
-			this.str = str;
-			this.def = def;
-			this.spd = spd;
-		}
 	}
 	
 	/**
@@ -261,7 +230,7 @@ public class MonsterFactory {
 		Entity e = world.createEntity();
 		String adjective = AdjectiveFactory.getAdjective();
 		String modType = AdjectiveFactory.getModifierType(adjective);
-		StatModifier modifier = modifiers.get(modType);
+		StatModifier modifier = AdjectiveFactory.getModifier(modType);
 		Stats s = new Stats(
 				(int)(Math.max(1, t.getHp(depth) * modifier.hp)),
 				(int)(t.getStr(depth) * modifier.str),

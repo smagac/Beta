@@ -40,8 +40,7 @@ import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Dungeon;
-import core.datatypes.Dungeon.Floor;
-import core.datatypes.Dungeon.FloorData;
+import core.datatypes.Dungeon.*;
 import core.datatypes.FileType;
 import core.service.interfaces.IDungeonContainer;
 import core.util.dungeon.PathMaker;
@@ -62,7 +61,7 @@ public class DungeonFactory {
 	{
 		TiledMapTileSet tileset = new TiledMapTileSet();
 		
-		tileset.putTile(0, new SimpleTile(atlas.findRegion("null"), 0, false));		//empty
+		tileset.putTile(0, new SimpleTile(atlas.findRegion("null"), 0, false));	//empty
 		tileset.putTile(1, new SimpleTile(atlas.findRegion("floor"), 1, true));		//room walls
 		tileset.putTile(2, new SimpleTile(atlas.findRegion("floor"), 2, true));		//floor
 		tileset.putTile(3, new SimpleTile(atlas.findRegion("down"), 3, true)); 		//stairs down
@@ -169,9 +168,17 @@ public class DungeonFactory {
 		floors.addAll(new FloorData[depth]);
 		final Thread[] makerThreads = new Thread[Math.min(Math.max(1, depth/8), 4)];
 		int[] unavailable = {0};
+
+		//pick out which floors are floors where a boss appears
+		final Array<Integer> bossRooms = new Array<Integer>();
+		for (int i = 0, set = 1; i < 1+(depth / 10); i++, set += 10)
+		{
+			bossRooms.add(MathUtils.random(1, 10) + set);
+		}
+		
 		for (int i = 0; i < makerThreads.length; i++)
 		{
-			Runnable run = new FloorMaker(difficulty, unavailable, loader, floors);
+			Runnable run = new FloorMaker(difficulty, unavailable, loader, floors, bossRooms);
 			makerThreads[i] = new Thread(run);
 		}
 		
@@ -378,15 +385,17 @@ public class DungeonFactory {
 		private int height;
 		final DungeonLoader loader;
 		final Array<FloorData> dungeon;
+		final Array<Integer> bossRooms;
 		volatile int[] unavailable;
 		
-		private FloorMaker(int difficulty, int[] unavailable, DungeonLoader loader, Array<FloorData> dungeon)
+		private FloorMaker(int difficulty, int[] unavailable, DungeonLoader loader, Array<FloorData> dungeon, Array<Integer> bossRooms)
 		{
 			this.difficulty = difficulty;
 			this.loader = loader;
 			this.dungeon = dungeon;
 			this.unavailable = unavailable;
 			this.depth = unavailable[0];
+			this.bossRooms = bossRooms;
 		}
 		
 		@Override
@@ -402,13 +411,22 @@ public class DungeonFactory {
 						break;
 					}	
 				}
-				width = 50 + (5*(depth/5));
-				height = 50 + (5*(depth/5));
-				FloorData floor = new FloorData(difficulty, depth+1, width, height);
-				
-				int roomCount = MathUtils.random(Math.max(5, ((3*depth)/10)+depth), Math.max(5, ((5*depth)/10)+depth));
-				PathMaker.run(floor, roomCount);
+		
+				FloorData floor;
+				if (!bossRooms.contains(depth, false))
+				{
+					width = 50 + (5*(depth/5));
+					height = 50 + (5*(depth/5));
+					floor = new RandomFloorData(difficulty, depth+1, width, height);
 					
+					int roomCount = MathUtils.random(Math.max(5, ((3*depth)/10)+depth), Math.max(5, ((5*depth)/10)+depth));
+					PathMaker.run(floor, roomCount);
+				}
+				else
+				{
+					//TODO make boss floor
+					floor = new BossFloor(difficulty, depth+1);
+				}
 				dungeon.set(depth, floor);
 				loader.progress += (int)(1/(float)dungeon.size * 100);
 			}
