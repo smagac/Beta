@@ -89,7 +89,7 @@
     	]
     },
     "boss" : {
-    	hp: 3.0, str: 2.0, def: 1.5, spd: .8, exp: 5.0
+    	hp: 3.0, str: 2.0, def: 1.5, spd: .8, exp: 5.0,
     	adjectives : [
     		"angelic", "demonic", "boss", "war chief"
     	]
