@@ -1,4 +1,4 @@
-package factories;
+package core.factories;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;

@@ -1,5 +1,7 @@
 package core.common;
 
+import github.nhydock.ssm.SceneManager;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;

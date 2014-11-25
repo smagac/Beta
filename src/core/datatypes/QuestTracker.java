@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.Quest.Actions;
 import core.datatypes.quests.Quest.QuestFactory;
-import factories.AdjectiveFactory;
+import core.factories.AdjectiveFactory;
 
 public class QuestTracker implements Agent, Serializable {
 

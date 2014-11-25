@@ -11,9 +11,9 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
 import core.DataDirs;
-import factories.AdjectiveFactory;
-import factories.ItemFactory;
-import factories.MonsterFactory;
+import core.factories.AdjectiveFactory;
+import core.factories.ItemFactory;
+import core.factories.MonsterFactory;
 
 public abstract class Quest implements Agent, Serializable {
 	

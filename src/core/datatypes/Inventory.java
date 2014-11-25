@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Keys;
 
 import core.common.Tracker;
-import factories.CraftableFactory;
+import core.factories.CraftableFactory;
 
 import com.badlogic.gdx.utils.Json.Serializable;
 

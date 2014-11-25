@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
-import factories.MonsterFactory;
+import core.factories.MonsterFactory;
 
 /**
  * Basic kill x of monster y quest.  Generic hunts only require

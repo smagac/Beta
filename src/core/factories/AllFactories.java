@@ -1,4 +1,4 @@
-package factories;
+package core.factories;
 
 /**
  * Loader class for factory data

@@ -1,4 +1,4 @@
-package factories;
+package core.factories;
 
 import com.artemis.Entity;
 import com.artemis.World;
@@ -22,7 +22,7 @@ import core.components.Monster;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
-import core.datatypes.Dungeon.Floor;
+import core.datatypes.dungeon.Dungeon.Floor;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;
@@ -229,8 +229,7 @@ public class MonsterFactory {
 	{
 		Entity e = world.createEntity();
 		String adjective = AdjectiveFactory.getAdjective();
-		String modType = AdjectiveFactory.getModifierType(adjective);
-		StatModifier modifier = AdjectiveFactory.getModifier(modType);
+		StatModifier modifier = AdjectiveFactory.getModifier(adjective);
 		Stats s = new Stats(
 				(int)(Math.max(1, t.getHp(depth) * modifier.hp)),
 				(int)(t.getStr(depth) * modifier.str),

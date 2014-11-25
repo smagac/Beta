@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
-import factories.ItemFactory;
+import core.factories.ItemFactory;
 
 /**
  * Basic gather x of item y quest.  Just like Hunts, generic gather

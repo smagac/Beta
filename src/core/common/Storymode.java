@@ -21,12 +21,12 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.DLC;
 import core.Palette;
+import core.factories.AllFactories;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IGame;
 import core.service.interfaces.ILoader;
 import core.service.interfaces.IPlayerContainer;
-import factories.AllFactories;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
