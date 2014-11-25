@@ -7,15 +7,15 @@ import com.badlogic.gdx.utils.Array;
 import core.util.dungeon.Room;
 
 public interface FloorData {
-	public int getRoomCount();
+    public int getRoomCount();
 
-	public int getDepth();
+    public int getDepth();
 
-	public Array<Room> getRooms();
+    public Array<Room> getRooms();
 
-	public int[][] getTiles();
+    public int[][] getTiles();
 
-	TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height);
+    TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height);
 
-	void dispose();
+    void dispose();
 }

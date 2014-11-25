@@ -8,28 +8,26 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Renderable extends Component {
 
-	private final TextureRegion sprite;
-	private Actor actor;
-	
-	public Renderable(TextureRegion region)
-	{
-		sprite = region;
-	}
+    private final TextureRegion sprite;
+    private Actor actor;
 
-	public TextureRegion getSprite() {
-		return sprite;
-	}
+    public Renderable(TextureRegion region) {
+        sprite = region;
+    }
 
-	public void setActor(Image sprite2) {
-		actor = sprite2;
-	}
-	
-	public void move(float f, float g)
-	{
-		actor.addAction(Actions.moveTo(f, g));
-	}
+    public TextureRegion getSprite() {
+        return sprite;
+    }
 
-	public Actor getActor() {
-		return actor;
-	}
+    public void setActor(Image sprite2) {
+        actor = sprite2;
+    }
+
+    public void move(float f, float g) {
+        actor.addAction(Actions.moveTo(f, g));
+    }
+
+    public Actor getActor() {
+        return actor;
+    }
 }

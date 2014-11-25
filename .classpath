@@ -8,6 +8,7 @@
 	<classpathentry kind="lib" path="libs/gdx-natives.jar"/>
 	<classpathentry kind="lib" path="libs/gdx.jar" sourcepath="libs/sources/gdx-sources.jar"/>
 	<classpathentry kind="lib" path="libs/gdx-ai.jar" sourcepath="libs/sources/gdx-ai-sources.jar"/>
+	<classpathentry kind="lib" path="libs/lz4-1.3-SNAPSHOT.jar" sourcepath="libs/sources/lz4-1.3-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

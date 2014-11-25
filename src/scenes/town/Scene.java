@@ -13,28 +13,29 @@ import core.service.interfaces.IPlayerContainer;
 
 public class Scene extends scenes.Scene<TownUI> {
 
-	@Inject public IPlayerContainer playerService;
-	
-	@Override
-	public void show() {
-		ui = new TownUI(manager);
-		manager.load(DataDirs.Audio + "town.mp3", Music.class);
-		
-		InputMultiplexer input = new InputMultiplexer();
-		input.addProcessor(ui);
-		input.addProcessor(BossListener.getInstance());
-		Gdx.input.setInputProcessor(input);
-	}
+    @Inject
+    public IPlayerContainer playerService;
 
-	@Override
-	protected void init() {
-		ui.init();
-		audio.playBgm(manager.get(DataDirs.Audio + "town.mp3", Music.class));
-	}
+    @Override
+    public void show() {
+        ui = new TownUI(manager);
+        manager.load(DataDirs.Audio + "town.mp3", Music.class);
 
-	@Override
-	protected void extend(float delta) {
-		ui.draw();
-	}
+        InputMultiplexer input = new InputMultiplexer();
+        input.addProcessor(ui);
+        input.addProcessor(BossListener.getInstance());
+        Gdx.input.setInputProcessor(input);
+    }
+
+    @Override
+    protected void init() {
+        ui.init();
+        audio.playBgm(manager.get(DataDirs.Audio + "town.mp3", Music.class));
+    }
+
+    @Override
+    protected void extend(float delta) {
+        ui.draw();
+    }
 
 }

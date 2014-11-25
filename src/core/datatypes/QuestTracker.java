@@ -16,169 +16,155 @@ import core.factories.AdjectiveFactory;
 
 public class QuestTracker implements Agent, Serializable {
 
-	private static final int MAX_QUESTS = 10;
-	
-	Array<Quest> quests;
-	Array<Quest> activeQuests;
-	QuestFactory factory;
-	
-	public QuestTracker()
-	{
-		factory = new QuestFactory();
-		quests = new Array<Quest>();
-		activeQuests = new Array<Quest>();
-		refresh();
-	}
+    private static final int MAX_QUESTS = 10;
 
-	/**
-	 * Our tracker is entirely turn based, so we don't need to use this
-	 */
-	@Override
-	public final void update(float delta) {	/* do nothing */ }
+    Array<Quest> quests;
+    Array<Quest> activeQuests;
+    QuestFactory factory;
 
-	@Override
-	public boolean handleMessage(Telegram msg) {
-		if (msg.message == Actions.Advance)
-		{
-			refresh();
-			return true;
-		}
-		if (msg.message == Actions.Gather || msg.message == Actions.Hunt)
-		{
-			for (Quest q : activeQuests)
-			{
-				q.handleMessage(msg);
-			}
-			return true;
-		}
-		return false;
-	}
+    public QuestTracker() {
+        factory = new QuestFactory();
+        quests = new Array<Quest>();
+        activeQuests = new Array<Quest>();
+        refresh();
+    }
 
-	/**
-	 * @return list of all currently available quests
-	 */
-	public Array<Quest> getQuests() {
-		return quests;
-	}
+    /**
+     * Our tracker is entirely turn based, so we don't need to use this
+     */
+    @Override
+    public final void update(float delta) { /* do nothing */
+    }
 
-	/**
-	 * @return list of all quests that the player has accepted
-	 */
-	public Array<Quest> getAcceptedQuests() {
-		return activeQuests;
-	}
+    @Override
+    public boolean handleMessage(Telegram msg) {
+        if (msg.message == Actions.Advance) {
+            refresh();
+            return true;
+        }
+        if (msg.message == Actions.Gather || msg.message == Actions.Hunt) {
+            for (Quest q : activeQuests) {
+                q.handleMessage(msg);
+            }
+            return true;
+        }
+        return false;
+    }
 
-	
-	/**
-	 * Updates the current quest listing and all accepted quests by advancing the time
-	 * by one day.
-	 */
-	private void refresh()
-	{
-		for (int i = 0; i < quests.size;)
-		{
-			Quest q = quests.get(i);
-			q.addDay();
-			
-			if (q.hasExpired())
-			{
-				quests.removeIndex(i);
-				//inform any quest listeners that a quest has expired
-				//only care about notifying of quests that have been accepted by the player
-				if (activeQuests.contains(q, true))
-				{
-					activeQuests.removeValue(q, true);
-					MessageDispatcher.getInstance().dispatchMessage(0, this, null, Actions.Expired, q);
-				}
-			}
-			else
-			{
-				i++;
-			}
-		}
-		
-		for (int i = MAX_QUESTS - quests.size; i > 0; i--)
-		{
-			boolean makeQuest = MathUtils.randomBoolean(.3f);
-			if (makeQuest)
-			{
-				quests.add(factory.createQuest());
-			}
-		}
-	}
-	
-	/**
-	 * Accepts a quest
-	 * @param q
-	 */
-	public void accept(Quest q)
-	{
-		if (q == null)
-		{
-			throw (new NullPointerException("Can not insert null quests into the tracker"));
-		}
-		if (!activeQuests.contains(q, true))
-		{
-			activeQuests.add(q);
-		}
-	}
+    /**
+     * @return list of all currently available quests
+     */
+    public Array<Quest> getQuests() {
+        return quests;
+    }
 
-	/**
-	 * @param craft - craft to pick random requirement from
-	 * @return a random amount of an item that is required for crafting
-	 */
-	public Reward getReward(Craftable craft)
-	{
-		String name = craft.getRequirementTypes().random();
-		int rand = MathUtils.random(1, craft.getRequirements().get(name));
+    /**
+     * @return list of all quests that the player has accepted
+     */
+    public Array<Quest> getAcceptedQuests() {
+        return activeQuests;
+    }
 
-		Item item = new Item(name, AdjectiveFactory.getAdjective());
-		
-		Reward reward = new Reward(item, rand);
-		
-		return reward;
-	}
-	
-	/**
-	 * Completes a quest if it is done and hasn't expired and rewards the user
-	 * @param q
-	 * @return
-	 */
-	public boolean complete(Quest q)
-	{
-		if (!q.hasExpired() && q.isDone())
-		{
-			activeQuests.removeValue(q, true);
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Reward object container gifted by quests upon completion
-	 * @author nhydock
-	 */
-	public static class Reward
-	{
-		public final Item item;
-		public final int count;
-		
-		public Reward(Item item, int amount)
-		{
-			this.item = item;
-			this.count = amount;
-		}
-	}
+    /**
+     * Updates the current quest listing and all accepted quests by advancing
+     * the time by one day.
+     */
+    private void refresh() {
+        for (int i = 0; i < quests.size;) {
+            Quest q = quests.get(i);
+            q.addDay();
 
-	@Override
-	public void write(Json json) {
-		json.writeValue("active", activeQuests, Array.class);
-	}
+            if (q.hasExpired()) {
+                quests.removeIndex(i);
+                // inform any quest listeners that a quest has expired
+                // only care about notifying of quests that have been accepted
+                // by the player
+                if (activeQuests.contains(q, true)) {
+                    activeQuests.removeValue(q, true);
+                    MessageDispatcher.getInstance().dispatchMessage(0, this, null, Actions.Expired, q);
+                }
+            }
+            else {
+                i++;
+            }
+        }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void read(Json json, JsonValue jsonData) {
-		activeQuests = (Array<Quest>)json.readValue(Array.class, jsonData.get("active"));
-		quests.addAll(activeQuests);
-	}
+        for (int i = MAX_QUESTS - quests.size; i > 0; i--) {
+            boolean makeQuest = MathUtils.randomBoolean(.3f);
+            if (makeQuest) {
+                quests.add(factory.createQuest());
+            }
+        }
+    }
+
+    /**
+     * Accepts a quest
+     * 
+     * @param q
+     */
+    public void accept(Quest q) {
+        if (q == null) {
+            throw (new NullPointerException("Can not insert null quests into the tracker"));
+        }
+        if (!activeQuests.contains(q, true)) {
+            activeQuests.add(q);
+        }
+    }
+
+    /**
+     * @param craft
+     *            - craft to pick random requirement from
+     * @return a random amount of an item that is required for crafting
+     */
+    public Reward getReward(Craftable craft) {
+        String name = craft.getRequirementTypes().random();
+        int rand = MathUtils.random(1, craft.getRequirements().get(name));
+
+        Item item = new Item(name, AdjectiveFactory.getAdjective());
+
+        Reward reward = new Reward(item, rand);
+
+        return reward;
+    }
+
+    /**
+     * Completes a quest if it is done and hasn't expired and rewards the user
+     * 
+     * @param q
+     * @return
+     */
+    public boolean complete(Quest q) {
+        if (!q.hasExpired() && q.isDone()) {
+            activeQuests.removeValue(q, true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Reward object container gifted by quests upon completion
+     * 
+     * @author nhydock
+     */
+    public static class Reward {
+        public final Item item;
+        public final int count;
+
+        public Reward(Item item, int amount) {
+            this.item = item;
+            this.count = amount;
+        }
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeValue("active", activeQuests, Array.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        activeQuests = (Array<Quest>) json.readValue(Array.class, jsonData.get("active"));
+        quests.addAll(activeQuests);
+    }
 }

@@ -11,91 +11,84 @@ import core.datatypes.FileType;
 import core.datatypes.Item;
 
 public final class ItemFactory {
-	protected static Array<String> items;
-	protected static Array<String> craftables;
-	protected static Array<String> loot;
-	protected static ObjectMap<FileType, Array<String>> lootLocations;
-	
-	private static boolean loaded;
-	
-	/**
-	 * Preload all item data
-	 */
-	public static void init()
-	{
-		//only allow loading once
-		if (loaded)
-			return;
-		
-		JsonReader json = new JsonReader();
-		
-		//load items
-		JsonValue jv = json.parse(Gdx.files.classpath(DataDirs.GameData+"items.json"));
-		
-		lootLocations = new ObjectMap<FileType, Array<String>>();
-		items = new Array<String>();
-		loot = new Array<String>();
-		craftables = new Array<String>();
-		
-		for (FileType type : FileType.values())
-		{
-			Array<String> tLoot = new Array<String>();
-			for (JsonValue data : jv.get(type.toString()))
-			{
-				String name = data.asString();
-				items.add(name);
-				tLoot.add(name);
-				loot.add(name);
-			}
-			lootLocations.put(type, tLoot);
-		}
-		{
-			for (JsonValue data : jv.get("craftable"))
-			{
-				String name = data.asString();
-				items.add(name);
-				craftables.add(name);
-			}
-		}
-		loaded = true;
-	}
-	
-	public static String randomName()
-	{
-		return AdjectiveFactory.getAdjective() + " " + items.random();
-	}
-	
-	public static String randomNonCraftable()
-	{
-		return AdjectiveFactory.getAdjective() + " " + loot.random();
-	}
-	
-	public static String randomType()
-	{
-		return items.random();
-	}
-	
-	public static String randomNonCraftableType()
-	{
-		return loot.random();
-	}
-	
-	private final Array<String> areaLoot;
-	
-	/**
-	 * Generates an item factory useful for a specific type of dungeon
-	 * @param area - filetype of the dungeon that the item factory should be associated with
-	 */
-	public ItemFactory(FileType area)
-	{
-		//make sure item data is loaded
-		areaLoot = new Array<String>();
-		areaLoot.addAll(lootLocations.get(area));
-		areaLoot.addAll(lootLocations.get(FileType.Other));
-	}
-	
-	public Item createItem()
-	{
-		return new Item(areaLoot.random(), AdjectiveFactory.getAdjective());
-	}
+    protected static Array<String> items;
+    protected static Array<String> craftables;
+    protected static Array<String> loot;
+    protected static ObjectMap<FileType, Array<String>> lootLocations;
+
+    private static boolean loaded;
+
+    /**
+     * Preload all item data
+     */
+    public static void init() {
+        // only allow loading once
+        if (loaded)
+            return;
+
+        JsonReader json = new JsonReader();
+
+        // load items
+        JsonValue jv = json.parse(Gdx.files.classpath(DataDirs.GameData + "items.json"));
+
+        lootLocations = new ObjectMap<FileType, Array<String>>();
+        items = new Array<String>();
+        loot = new Array<String>();
+        craftables = new Array<String>();
+
+        for (FileType type : FileType.values()) {
+            Array<String> tLoot = new Array<String>();
+            for (JsonValue data : jv.get(type.toString())) {
+                String name = data.asString();
+                items.add(name);
+                tLoot.add(name);
+                loot.add(name);
+            }
+            lootLocations.put(type, tLoot);
+        }
+        {
+            for (JsonValue data : jv.get("craftable")) {
+                String name = data.asString();
+                items.add(name);
+                craftables.add(name);
+            }
+        }
+        loaded = true;
+    }
+
+    public static String randomName() {
+        return AdjectiveFactory.getAdjective() + " " + items.random();
+    }
+
+    public static String randomNonCraftable() {
+        return AdjectiveFactory.getAdjective() + " " + loot.random();
+    }
+
+    public static String randomType() {
+        return items.random();
+    }
+
+    public static String randomNonCraftableType() {
+        return loot.random();
+    }
+
+    private final Array<String> areaLoot;
+
+    /**
+     * Generates an item factory useful for a specific type of dungeon
+     * 
+     * @param area
+     *            - filetype of the dungeon that the item factory should be
+     *            associated with
+     */
+    public ItemFactory(FileType area) {
+        // make sure item data is loaded
+        areaLoot = new Array<String>();
+        areaLoot.addAll(lootLocations.get(area));
+        areaLoot.addAll(lootLocations.get(FileType.Other));
+    }
+
+    public Item createItem() {
+        return new Item(areaLoot.random(), AdjectiveFactory.getAdjective());
+    }
 }
