@@ -24,25 +24,23 @@ import core.DataDirs;
 import core.common.Tracker;
 import core.components.Identifier;
 import core.components.Monster;
-import core.datatypes.Dungeon;
-import core.datatypes.Dungeon.Floor;
+import core.datatypes.dungeon.Dungeon;
+import core.datatypes.dungeon.Dungeon.Floor;
+import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.factories.DungeonFactory;
+import core.factories.DungeonFactory.DungeonLoader;
+import core.factories.DungeonFactory.FloorLoader;
+import core.factories.DungeonFactory.DungeonLoader.DungeonParam;
+import core.factories.DungeonFactory.FloorLoader.FloorParam;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
-import factories.DungeonFactory;
-import factories.DungeonFactory.DungeonLoader;
-import factories.DungeonFactory.DungeonLoader.DungeonParam;
-import factories.DungeonFactory.FloorLoader;
-import factories.DungeonFactory.FloorLoader.FloorParam;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
 public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
-
-	private int difficulty;
-	private FileType fileType;
 	
 	@Inject public IPlayerContainer playerService;
 	
@@ -58,9 +56,10 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 	private Dungeon dungeon;
 	private int currentFloorNumber;
 	private World currentFloor;
-	private String fileName;
 	
 	protected Progress progress;
+	
+	private DungeonParams params;
 	
 	public Scene()
 	{
@@ -75,28 +74,20 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		ServiceManager.register(IDungeonContainer.class, this);
 	}
 	
-	public void setDungeon(FileType type, int difficulty)
+	public void setDungeon(DungeonParams params, FileHandle file)
 	{
-		fileType = type;
-		this.difficulty = difficulty;
-		this.fileName = null;
-	}
-	
-	public void setDungeon(FileHandle file, int difficulty)
-	{
-		this.fileName = file.path();
-		fileType = FileType.getType(file.extension());
-		if (fileType == FileType.Audio)
+		this.params = params;
+		
+		if (params.getType() == FileType.Audio && file != null)
 		{
 			if (file.extension().matches("(mp3|ogg|wav)"))
 			{
 				audio.setBgm(Gdx.audio.newMusic(file));
 			}
 		}
-		this.difficulty = difficulty;
 		
 		Tracker.NumberValues.Files_Explored.increment();
-		Tracker.StringValues.Favourite_File_Type.increment(fileType.name());
+		Tracker.StringValues.Favourite_File_Type.increment(params.getType().name());
 		Tracker.NumberValues.Largest_File.set((int)Math.max(Tracker.NumberValues.Largest_File.value(), file.length() / 1000f));
 	}
 	
@@ -310,14 +301,12 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 		ui.init();
 		//ui.levelUp();
 		
-		TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+		TextureAtlas atlas = manager.get(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
 		TiledMapTileSet ts = DungeonFactory.buildTileSet(atlas);
 		DungeonParam param =  new DungeonParam();
 		param.tileset = ts;
-		param.fileName = fileName;
-		param.difficulty = difficulty;
+		param.params = this.params;
 		param.dungeonContainer = this;
-		param.type = fileType;
 		
 		hitSound = manager.get(DataDirs.hit, Sound.class);
 		dungeonManager.load("dungeon", Dungeon.class, param);

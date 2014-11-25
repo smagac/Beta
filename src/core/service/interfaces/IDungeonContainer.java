@@ -4,8 +4,8 @@ import github.nhydock.ssm.Service;
 
 import com.artemis.World;
 
-import core.datatypes.Dungeon;
-import core.datatypes.Dungeon.Floor;
+import core.datatypes.dungeon.Dungeon;
+import core.datatypes.dungeon.Dungeon.Floor;
 
 public interface IDungeonContainer extends Service {
 

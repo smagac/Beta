@@ -1,4 +1,4 @@
-package factories;
+package core.factories;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -7,8 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -19,7 +18,6 @@ import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
@@ -39,9 +37,10 @@ import com.badlogic.gdx.utils.Json;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
-import core.datatypes.Dungeon;
-import core.datatypes.Dungeon.*;
-import core.datatypes.FileType;
+import core.datatypes.dungeon.Dungeon;
+import core.datatypes.dungeon.DungeonParams;
+import core.datatypes.dungeon.FloorData;
+import core.datatypes.dungeon.Dungeon.*;
 import core.service.interfaces.IDungeonContainer;
 import core.util.dungeon.PathMaker;
 
@@ -70,15 +69,68 @@ public class DungeonFactory {
 		return tileset;
 	}
 	
-	private static String bytesToHex(byte[] b) {
-		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                  '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-		StringBuffer buf = new StringBuffer();
-		for (int j=0; j<b.length; j++) {
-		  buf.append(hexDigit[(b[j] >> 4) & 0x0f]);
-		  buf.append(hexDigit[b[j] & 0x0f]);
+	/**
+	 * Load a file from its cachefile
+	 * @param params
+	 * @return
+	 */
+	private static Dungeon loadFromCache(DungeonParams params, TiledMapTileSet tileset){
+		if (params.isCached())
+		{
+			FileHandle hashFile = params.getCacheFile();
+			
+			String outStr = "";
+		    try {
+		    	FileInputStream in = new FileInputStream(hashFile.file());
+		    	GZIPInputStream unzipper = new GZIPInputStream(in);
+				InputStreamReader zipRead = new InputStreamReader(unzipper);
+				BufferedReader bf = new BufferedReader(zipRead);
+				
+			    String line;
+		        while ((line=bf.readLine())!=null) {
+		        	outStr += line;
+		        }
+		        
+		        bf.close();
+		        zipRead.close();
+		    } catch (IOException e) {
+		    	e.printStackTrace();
+				System.exit(-1);
+			}
+			
+			Json json = new Json();
+			Dungeon d = json.fromJson(Dungeon.class, outStr);
+			return d;
 		}
-		return buf.toString();
+		return null;
+	}
+	
+	/**
+	 * Writes a created dungeon to the cache file indicated by the params used
+	 * to create the dungeon.
+	 * @param params
+	 * @param dungeon
+	 * @return
+	 */
+	private static void writeCacheFile(DungeonParams params, Dungeon dungeon)
+	{
+		//ignore randomly created dungeons for caching because
+		// they don't have a cache file
+		//also don't overwrite files that have already been cached
+		if (params.getCacheFile() != null && !params.isCached())
+		{
+			try(FileOutputStream out = new FileOutputStream(params.getCacheFile().file());
+				GZIPOutputStream gzip = new GZIPOutputStream(out);
+				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));
+				) {
+				
+				Json json = new Json();
+				json.toJson(dungeon, Dungeon.class, writer);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		}
 	}
 	
 	/**
@@ -88,85 +140,39 @@ public class DungeonFactory {
 	 * @throws IOException 
 	 * @return an array of the serial ids of the floors on the file system
 	 */
-	protected static Dungeon create(String fileName, FileType type, int difficulty, final TiledMapTileSet tileset, DungeonLoader loader)
+	protected static Dungeon create(DungeonParams params, final TiledMapTileSet tileset, DungeonLoader loader)
 	{
 		//prepare a tile map to hold the floor layers
 		final TiledMap map = new TiledMap();
 		map.getTileSets().addTileSet(tileset);
-		
-		//first check if the file has already been registered
-		FileHandle hashFile = null;
-		if (fileName != null)
-		{
-			try {
-				MessageDigest md = MessageDigest.getInstance("SHA-1");
-			
-				byte[] hash = md.digest(fileName.getBytes());
-				String name = new String(bytesToHex(hash));
-				String tmpDir = System.getProperty("java.io.tmpdir");
-				hashFile = Gdx.files.absolute(tmpDir+"/storymode/"+name+".tmp");
-				if (!hashFile.exists())
-				{
-					hashFile.parent().mkdirs();
-					hashFile.file().createNewFile();
-					hashFile.file().deleteOnExit();
-				}
-				else
-				{
-					String outStr = "";
-				    try {
-				    	FileInputStream in = new FileInputStream(hashFile.file());
-				    	GZIPInputStream unzipper = new GZIPInputStream(in);
-						InputStreamReader zipRead = new InputStreamReader(unzipper);
-						BufferedReader bf = new BufferedReader(zipRead);
-						
-					    String line;
-				        while ((line=bf.readLine())!=null) {
-				        	outStr += line;
-				        }
-				        
-				        bf.close();
-				        zipRead.close();
-				    } catch (IOException e) {
-				    	e.printStackTrace();
-						System.exit(-1);
-					}
-					
-					Json json = new Json();
-					Dungeon d = json.fromJson(Dungeon.class, outStr);
-					d.setMap(map);
-					d.build(tileset);
-					return d;
-				}
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-				//shouldn't happen, just java being overly safe
-				Gdx.app.exit();
-				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-				//might happen on read/write failure
-			}
-		}
+	
 		//make sure dungeon dir exists
 		//Gdx.files.absolute(tmpDir).mkdirs();
-		
-		//catch crazy out of bounds
-		if (difficulty > 5 || difficulty < 1)
+		//make sure to create cache files one first create
+		if (params.getCacheFile() != null)
 		{
-			Gdx.app.log("[Invalid param]", "difficulty out of bounds, setting to 3");
-			difficulty = 3;
+			try {
+				FileHandle hashFile = params.getCacheFile();
+				hashFile.parent().mkdirs();
+				hashFile.file().createNewFile();
+				hashFile.file().deleteOnExit();
+			} catch (IOException e) {
+				System.err.println("could not create cache file for " + params.getFileName());
+				e.printStackTrace();
+			}
 		}
 		
+		MathUtils.random.setSeed(params.getSeed());
 		
 		//please don't ask about my numbers, they're so randomly picked out from my head
 		// I don't even know what the curve looks like on a TI calculator ;_;
-		int depth = MathUtils.random(5*difficulty, 10*difficulty+(difficulty-1)*10);
+		int depth = MathUtils.random(5*params.getDifficulty(), 
+									 10*params.getDifficulty()+(params.getDifficulty()-1)*10);
 		//to stress test, uncomment next line
 		//int depth = 99;
 		final Array<FloorData> floors = new Array<FloorData>();
 		floors.addAll(new FloorData[depth]);
-		final Thread[] makerThreads = new Thread[Math.min(Math.max(1, depth/8), 4)];
+		//final Thread[] makerThreads = new Thread[Math.min(Math.max(1, depth/8), 4)];
 		int[] unavailable = {0};
 
 		//pick out which floors are floors where a boss appears
@@ -176,74 +182,15 @@ public class DungeonFactory {
 			bossRooms.add(MathUtils.random(1, 10) + set);
 		}
 		
-		for (int i = 0; i < makerThreads.length; i++)
-		{
-			Runnable run = new FloorMaker(difficulty, unavailable, loader, floors, bossRooms);
-			makerThreads[i] = new Thread(run);
+		for (int i = depth; i > 0; i--) {
+			Runnable run = new FloorMaker(params.getDifficulty(), unavailable, loader, floors, bossRooms);
+			run.run(); 
 		}
+
+		Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, map);
 		
-		Thread makeWatch = new Thread(
-			new Runnable(){
-				@Override
-				public void run(){
-					for (Thread t : makerThreads)
-					{
-						t.start();
-					}
-					
-					boolean alive = true;
-					while (alive)
-					{
-						alive = false;
-						for (int i = 0; i < makerThreads.length && !alive; i++)
-						{
-							Thread maker = makerThreads[i];
-							if (maker.isAlive())
-							{
-								alive = true;
-								break;
-							}
-						}
-					}
-				}
-			}
-		);
-		makeWatch.start();
-		
-		//wait until threads are done
-		while (makeWatch.isAlive()) ;
-		
-		Dungeon d = new Dungeon(type, difficulty, floors, map);
-		
-		//ignore random dungeons for caching
-		if (fileName != null)
-		{
-			//only try writing to file if we didn't get an i/o error
-			if (hashFile != null && hashFile.exists())
-			{
-				BufferedWriter writer = null;
-				try {
-					FileOutputStream out = new FileOutputStream(hashFile.file());
-					GZIPOutputStream gzip = new GZIPOutputStream(out);
-					writer = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));
-					
-					Json json = new Json();
-					json.toJson(d, Dungeon.class, writer);
-				
-					out.close();
-					
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.exit(-1);
-				} finally {
-					if (writer != null)
-					{
-						try { writer.close(); } catch (IOException e) {	e.printStackTrace(); }
-					}
-				}
-			}
-		}
-		d.build(tileset);
+		//try saving the dungeon to cache
+		writeCacheFile(params, d);
 		
 		return d;
 	}
@@ -254,6 +201,8 @@ public class DungeonFactory {
 	 */
 	private static World create(Dungeon dungeon, int depth, Stats player, TextureAtlas atlas, TextureRegion character, FloorLoader loader)
 	{
+		//give a new random for the floor so it has different values every time it's played
+		MathUtils.random = new Random();
 		ItemFactory itemFactory = new ItemFactory(dungeon.type());
 		MonsterFactory monsterFactory = new MonsterFactory(atlas, dungeon.type());
 		
@@ -372,6 +321,7 @@ public class DungeonFactory {
 		}	
 	}
 	
+	
 	/**
 	 * Simple runnable for making a floor of a dungeon and updating a loader's progress
 	 * @author nhydock
@@ -450,7 +400,19 @@ public class DungeonFactory {
 		
 		@Override
 		public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-			generatedDungeon = create(param.fileName, param.type, param.difficulty, param.tileset, this);
+			//first check if the file has already been registered
+			generatedDungeon = loadFromCache(param.params, param.tileset);
+			
+			//if no dungeon could be loaded from cache, createa new one
+			if (generatedDungeon == null)
+			{
+				generatedDungeon = create(param.params, param.tileset, this);
+			}
+			
+			final TiledMap map = new TiledMap();
+			map.getTileSets().addTileSet(param.tileset);
+			generatedDungeon.setMap(map);
+			generatedDungeon.build(param.tileset);
 		}
 
 		@Override
@@ -473,9 +435,7 @@ public class DungeonFactory {
 		public static class DungeonParam extends AssetLoaderParameters<Dungeon>
 		{
 			public IDungeonContainer dungeonContainer;
-			public FileType type;
-			public String fileName;
-			public int difficulty;
+			public DungeonParams params;
 			public TiledMapTileSet tileset;
 		}
 	}

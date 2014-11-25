@@ -28,7 +28,7 @@ import core.components.Monster;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
-import core.datatypes.Dungeon;
+import core.datatypes.dungeon.Dungeon;
 import core.datatypes.quests.Quest;
 
 /**

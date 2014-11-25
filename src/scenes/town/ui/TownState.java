@@ -1,6 +1,11 @@
 package scenes.town.ui;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import github.nhydock.ssm.SceneManager;
 import scene2d.ui.extras.TabbedPane;
@@ -30,6 +35,7 @@ import core.datatypes.Craftable;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.QuestTracker.Reward;
+import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
@@ -351,7 +357,7 @@ enum TownState implements UIState {
 	
 		@Override
 		public String[] defineButtons(){
-			return new String[]{"Return", "Explore Dungeon", "Random Dungeon"};
+			return new String[]{"Return", "Explore Dungeon", "Random Dungeon", "Daily Dungeon"};
 		}
 		
 		@Override
@@ -365,28 +371,23 @@ enum TownState implements UIState {
 				}
 				else
 				{
-					FileType ext = FileType.Other;
-					int diff = 1;
-					
 					scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
+					DungeonParams params;
+					FileHandle f = null;
 					//load selected file dungeon
 					if (t.message == MenuMessage.Explore)
 					{
 						if (ui.exploreTabs.getChecked().getName().equals("history"))
 						{
-							FileHandle f = TownUI.history.get(ui.fileList.getSelectedIndex());
-							ext = FileType.getType(f.extension());
-							diff = ext.difficulty(f.length());
-							dungeon.setDungeon(f, diff);
+							f = TownUI.history.get(ui.fileList.getSelectedIndex());
+							params = DungeonParams.loadDataFromFile(f);
 						}
 						else
 						{
-							FileHandle f = ui.directoryList.get(ui.fileList.getSelectedIndex());
+							f = ui.directoryList.get(ui.fileList.getSelectedIndex());
 							if (f != null && !f.isDirectory())
 							{
-								ext = FileType.getType(f.extension());
-								diff = ext.difficulty(f.length());
-								dungeon.setDungeon(f, diff);
+								params = DungeonParams.loadDataFromFile(f);
 								TownUI.history.add(f);
 								TownUI.historyPaths.add(f.name());
 							}
@@ -395,13 +396,13 @@ enum TownState implements UIState {
 								return false;
 							}
 						}
+						dungeon.setDungeon(params, f);
 					}
 					//random dungeons
 					else
 					{
-						ext = FileType.values()[MathUtils.random(FileType.values().length-1)];
-						diff = MathUtils.random(1, 5);
-						dungeon.setDungeon(ext, diff);
+						params = DungeonParams.loadRandomDungeon();
+						dungeon.setDungeon(params, null);
 						TownUI.directory = null;
 					}
 				
@@ -710,7 +711,80 @@ enum TownState implements UIState {
 			}
 			return true;
 		}
-	}, 
+	},
+	//State used for waiting on the connection to be made with the server
+	// to pull down a dungeon hash
+	NetworkLoad() {
+		private final String DAILY_DUNGEON_SERVER = "http://storymode.nhydock.me/daily";
+		Thread downloaderThread;
+		String dungeonData;
+		
+		
+		@Override
+		public String[] defineButtons() {
+			return new String[]{"Cancel Download"};
+		}
+
+		@Override
+		public void enter(TownUI entity) {
+			
+			Runnable downloader = new Runnable(){
+
+				@Override
+				public void run() {
+					try {
+						URL url = new URL(DAILY_DUNGEON_SERVER) ;
+						URLConnection conn = url.openConnection() ;
+						try (InputStream inputStream = conn.getInputStream();
+							 Scanner scanner = new Scanner(inputStream)){
+						
+							long filesize = conn.getContentLength() ;
+							System.out.println("Size of the file to download in kb is:-" + filesize/1024 ) ;
+							
+							String output = "";
+							while (scanner.hasNextLine()) {
+								output += scanner.nextLine();
+							}
+							dungeonData = output;
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+			
+			downloaderThread = new Thread(downloader);
+			downloaderThread.start();
+		}
+
+		@Override
+		public void update(TownUI entity) {
+			if (downloaderThread == null)
+				return;
+			
+			if (!downloaderThread.isInterrupted() && !downloaderThread.isAlive()){
+				downloaderThread = null;
+				
+				scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene)SceneManager.create("dungeon");
+				
+				dungeon.setDungeon(DungeonParams.loadFromSimpleData(dungeonData), null);
+				
+				SceneManager.switchToScene(dungeon);
+			}
+		}
+		
+		@Override
+		public boolean onMessage(TownUI entity, Telegram telegram) {
+			if (telegram.message == GameUI.Messages.Selected)
+			{
+				//cancel the download
+				downloaderThread.interrupt();
+				downloaderThread = null;
+			}
+			return false;
+		}
+		
+	},
 	QuestMenu(){
 
 		boolean completeView = false;

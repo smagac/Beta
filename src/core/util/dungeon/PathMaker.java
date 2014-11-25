@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-import core.datatypes.Dungeon.FloorData;
+import core.datatypes.dungeon.Dungeon.FloorData;
 
 /**
  * System for generating a floor, its rooms, and connecting all paths in the room
@@ -41,13 +41,13 @@ public class PathMaker {
 	public static void run(FloorData f, int roomCount)
 	{
 		float[] filled = {0};
-		float size = f.tiles.length * f.tiles[0].length;
 		
-		int[][] board = f.tiles;
-		Array<Room> rooms = f.rooms;
+		int[][] board = f.getTiles();
+		float size = board.length * board[0].length;
+		Array<Room> rooms = f.getRooms();
 		
 		//place a handleful of random rooms until threshold is met
-		while (f.rooms.size < roomCount && filled[0]/size < MAX_SATURATION)
+		while (rooms.size < roomCount && filled[0]/size < MAX_SATURATION)
 		{
 			int width = MathUtils.random(10)+3;
 			int height = MathUtils.random(10)+3;
