@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-import core.datatypes.dungeon.Dungeon.FloorData;
+import core.datatypes.dungeon.FloorData;
 
 /**
  * System for generating a floor, its rooms, and connecting all paths in the room
