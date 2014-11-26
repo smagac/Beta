@@ -97,6 +97,9 @@ public class TownUI extends GameUI {
     List<Quest> availableQuests;
     List<Quest> acceptedQuests;
 
+    // download display
+    Group downloadWindow;
+
     Image goddess;
     Group goddessDialog;
     Label gMsg;
@@ -843,6 +846,32 @@ public class TownUI extends GameUI {
         display.addActor(window);
     }
 
+    /**
+     * Make the popup display for the downloader
+     */
+    private void makeDownload() {
+        Group window = downloadWindow = super.makeWindow(skin, 600, 200, true);
+        Table table = new Table();
+
+        Label label = new Label("Downloading Daily Map", skin, "prompt");
+        table.add(label).expand().align(Align.center);
+        table.setFillParent(true);
+
+        Image spinner = new Image(skin, playerService.getWorship());
+        spinner.setSize(32f, 32f);
+        spinner.setOrigin(spinner.getCenterX(), spinner.getCenterY());
+        spinner.addAction(Actions.forever(Actions.rotateBy(-360f, 2f)));
+
+        spinner.setAlign(Align.center);
+        spinner.setCenterPosition(window.getCenterX(), 60f);
+
+        window.setPosition(display.getWidth() / 2f - window.getWidth() / 2f, display.getHeight());
+        window.addActor(table);
+        window.addActor(spinner);
+
+        display.addActor(window);
+    }
+
     @Override
     public void extend() {
         makeMain();
@@ -850,6 +879,7 @@ public class TownUI extends GameUI {
         makeExplore();
         makeQuest();
         makeSave();
+        makeDownload();
 
         goddess = new Image(skin.getRegion(playerService.getWorship()));
         goddess.setSize(128f, 128f);
@@ -924,6 +954,8 @@ public class TownUI extends GameUI {
             loadDir(queueDir);
             queueDir = null;
         }
+
+        menu.update();
     }
 
     @Override
@@ -957,6 +989,7 @@ public class TownUI extends GameUI {
         fileDetails.clearActions();
         questDetails.clearActions();
         questSubmenu.clearActions();
+        downloadWindow.clearActions();
 
         saveWindow.clearActions();
 
@@ -972,6 +1005,8 @@ public class TownUI extends GameUI {
         questDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
         saveWindow.addAction(Actions.moveTo(display.getWidth() / 2 - saveWindow.getWidth() / 2, display.getHeight(),
                 .2f, Interpolation.circleOut));
+        downloadWindow.addAction(Actions.moveTo(display.getWidth() / 2 - downloadWindow.getWidth() / 2,
+                display.getHeight(), .2f, Interpolation.circleOut));
         setMessage("What're we doing next?");
 
         enableMenuInput();

@@ -18,5 +18,7 @@ class MenuMessage {
     static final int Refresh = 2;
 
     static final int Random = 2;
+    static final int DailyDungeon = 3;
 
+    static final int CancelDownload = 0;
 }

@@ -85,8 +85,11 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
         Tracker.NumberValues.Files_Explored.increment();
         Tracker.StringValues.Favourite_File_Type.increment(params.getType().name());
-        Tracker.NumberValues.Largest_File.set((int) Math.max(Tracker.NumberValues.Largest_File.value(),
-                file.length() / 1000f));
+
+        if (file != null) {
+            Tracker.NumberValues.Largest_File.set((int) Math.max(Tracker.NumberValues.Largest_File.value(),
+                    file.length() / 1000f));
+        }
     }
 
     @Override

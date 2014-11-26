@@ -198,9 +198,6 @@ public class DungeonFactory {
 
         Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, map);
 
-        // try saving the dungeon to cache
-        writeCacheFile(params, d);
-
         return d;
     }
 
@@ -423,6 +420,9 @@ public class DungeonFactory {
             // if no dungeon could be loaded from cache, createa new one
             if (generatedDungeon == null) {
                 generatedDungeon = create(param.params, param.tileset, this);
+
+                // try saving the dungeon to cache
+                writeCacheFile(param.params, generatedDungeon);
             }
 
             final TiledMap map = new TiledMap();

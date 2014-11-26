@@ -59,8 +59,6 @@ public class DungeonParams {
      */
     private DungeonParams(FileHandle file, String hashName) {
         try {
-            this.seed = getFileHash(file.file());
-            this.cached = false;
             this.ext = FileType.getType(file.name());
             this.difficulty = ext.difficulty(file.length());
 
@@ -68,6 +66,12 @@ public class DungeonParams {
             this.hashFile = Gdx.files.absolute(tmpDir + "/storymode/" + hashName + ".tmp");
             if (this.hashFile.exists()) {
                 this.cached = true;
+                this.seed = -1; // don't need to seed generate on already loaded
+                                // files
+            }
+            else {
+                this.seed = getFileHash(file.file());
+                this.cached = false;
             }
 
             this.fileName = file.path();

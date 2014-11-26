@@ -402,6 +402,10 @@ enum TownState implements UIState {
                 ui.changeState(Main);
                 return true;
             }
+            else if (t.message == MenuMessage.DailyDungeon) {
+                ui.changeState(NetworkLoad);
+                return true;
+            }
 
             return false;
         }
@@ -637,9 +641,8 @@ enum TownState implements UIState {
         }
 
         @Override
-        public void enter(TownUI entity) {
-
-            Runnable downloader = new Runnable() {
+        public void enter(final TownUI entity) {
+            final Runnable downloader = new Runnable() {
 
                 @Override
                 public void run() {
@@ -649,48 +652,56 @@ enum TownState implements UIState {
                         try (InputStream inputStream = conn.getInputStream();
                                 Scanner scanner = new Scanner(inputStream)) {
 
-                            long filesize = conn.getContentLength();
-                            System.out.println("Size of the file to download in kb is:-" + filesize / 1024);
-
                             String output = "";
                             while (scanner.hasNextLine()) {
                                 output += scanner.nextLine();
                             }
+                            System.out.println(output);
                             dungeonData = output;
                         }
+
+                        DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
+
+                        scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.create("dungeon");
+                        dungeon.setDungeon(params, null);
+
+                        SceneManager.switchToScene(dungeon);
                     }
                     catch (IOException e) {
                         e.printStackTrace();
+
+                        entity.changeState(Explore);
                     }
                 }
             };
 
-            downloaderThread = new Thread(downloader);
-            downloaderThread.start();
+            entity.downloadWindow.addAction(Actions.sequence(Actions.moveTo(entity.getDisplayWidth() / 2f
+                    - entity.downloadWindow.getWidth() / 2f,
+                    entity.getDisplayHeight() / 2f - entity.downloadWindow.getHeight() / 2f, .4f,
+                    Interpolation.circleOut), Actions.run(new Runnable() {
+
+                @Override
+                public void run() {
+                    downloaderThread = new Thread(downloader);
+                    downloaderThread.start();
+                }
+
+            })));
         }
 
         @Override
-        public void update(TownUI entity) {
-            if (downloaderThread == null)
-                return;
-
-            if (!downloaderThread.isInterrupted() && !downloaderThread.isAlive()) {
+        public void exit(TownUI entity) {
+            if (downloaderThread != null) {
+                // cancel the download
+                downloaderThread.interrupt();
                 downloaderThread = null;
-
-                scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.create("dungeon");
-
-                dungeon.setDungeon(DungeonParams.loadFromSimpleData(dungeonData), null);
-
-                SceneManager.switchToScene(dungeon);
             }
         }
 
         @Override
         public boolean onMessage(TownUI entity, Telegram telegram) {
-            if (telegram.message == GameUI.Messages.Selected) {
-                // cancel the download
-                downloaderThread.interrupt();
-                downloaderThread = null;
+            if (telegram.message == MenuMessage.CancelDownload) {
+                entity.changeState(Explore);
             }
             return false;
         }
