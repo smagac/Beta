@@ -253,17 +253,36 @@ public class MonsterFactory {
      */
     private Entity create(World world, MonsterTemplate t, Item item, int depth) {
         Entity e = world.createEntity();
-        String adjective = AdjectiveFactory.getAdjective();
-        StatModifier modifier = AdjectiveFactory.getModifier(adjective);
-        Stats s = new Stats((int) (Math.max(1, t.getHp(depth) * modifier.hp)), (int) (t.getStr(depth) * modifier.str),
-                (int) (t.getDef(depth) * modifier.def), (int) (t.getSpd(depth) * modifier.spd), t.getExp(depth));
+        String describer = "";
+        
+        int modify = MathUtils.random(1, Math.max(1, depth/15));
+        int hp = 0, 
+            str = 0, 
+            def = 0, 
+            spd = 0;
+        for (int i = 0; i < modify; i++)
+        {
+            String adj = AdjectiveFactory.getAdjective();
+            StatModifier mod = AdjectiveFactory.getModifier(adj);
+            describer += adj + ((i > 0)?" ":"");
+            hp += mod.hp;
+            str += mod.str;
+            def += mod.def;
+            spd += mod.spd;
+        }
+        Stats s = new Stats(
+                    (int) (Math.max(1, t.getHp(depth) * hp)), 
+                    (int) (t.getStr(depth) * str),
+                    (int) (t.getDef(depth) * def), 
+                    (int) (t.getSpd(depth) * spd), 
+                    t.getExp(depth)
+                  );
         s.hidden = t.boss;
         e.addComponent(s);
-        e.addComponent(new Identifier(t.name, AdjectiveFactory.getAdjective(), t.hideName));
+        e.addComponent(new Identifier(t.name, describer, t.hideName));
         e.addComponent(new Renderable(icons.findRegion(t.type)));
 
         Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
-
         e.addComponent(c);
 
         return e;
