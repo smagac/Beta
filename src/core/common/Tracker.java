@@ -124,8 +124,15 @@ public final class Tracker implements Serializable {
      *
      */
     public enum NumberValues {
-        Times_Slept, Monsters_Killed, Items_Crafted, Loot_Found, Times_Died, Loot_Sacrificed, Files_Explored, Deepest_Floor_Traveled, Largest_File(
-                "kb");
+        Times_Slept,
+        Monsters_Killed,
+        Items_Crafted,
+        Loot_Found,
+        Times_Died,
+        Loot_Sacrificed,
+        Files_Explored,
+        Deepest_Floor_Traveled,
+        Largest_File("kb");
 
         private String tag;
         private int count = 0;

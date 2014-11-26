@@ -1,11 +1,12 @@
 package core.datatypes;
 
 public enum FileType {
-    Audio(1000, 3000, 10000, 25000, "mp3", "ogg", "m4a", "flac", "wav", "mid"), Video(50000, 500000, 1000000, 3500000,
-            "mp4", "mpeg", "wmv", "avi", "mkv", "divx", "xvid", "flv", "vob"), Image(500, 1000, 7500, 50000, "png",
-            "jpg", "jpeg", "gif", "bmp", "apng", "tiff", "raw", "xcf"), Executable(500, 5000, 100000, 2500000, "exe",
-            "sh", "bat", "bin", "jar"), Compressed(100, 1500, 75000, 500000, "zip", "rar", "pak", "ue3", "game", "7z",
-            "tar", "gz", "bzip", "smc", "nes"), Other(500, 5000, 1000000, 5000000);
+    Audio(1000, 3000, 10000, 25000, "mp3", "ogg", "m4a", "flac", "wav", "mid"),
+    Video(50000, 500000, 1000000, 3500000, "mp4", "mpeg", "wmv", "avi", "mkv", "divx", "xvid", "flv", "vob"),
+    Image(500, 1000, 7500, 50000, "png", "jpg", "jpeg", "gif", "bmp", "apng", "tiff", "raw", "xcf"),
+    Executable(500, 5000, 100000, 2500000, "exe", "sh", "bat", "bin", "jar"),
+    Compressed(100, 1500, 75000, 500000, "zip", "rar", "pak", "ue3", "game", "7z", "tar", "gz", "bzip", "smc", "nes"),
+    Other(500, 5000, 1000000, 5000000);
 
     private final String[] types;
     private final int[] difficulty;
