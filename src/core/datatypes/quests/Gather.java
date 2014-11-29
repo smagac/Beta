@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
+import core.datatypes.quests.info.GatherInfo;
 import core.factories.ItemFactory;
 
 /**
@@ -34,9 +35,10 @@ class Gather extends Quest {
          * we are looking for
          */
         if (msg == Actions.Gather) {
-            String name = (String) info;
+            GatherInfo data = (GatherInfo) info;
+            String name = data.itemName;
             if (name.equals(item)) {
-                gathered++;
+                gathered = data.itemCount;
                 return true;
             }
         }
@@ -99,4 +101,6 @@ class Gather extends Quest {
         expires = jsonData.getInt("expires");
         location = jsonData.getString("loc");
     }
+    
+
 }

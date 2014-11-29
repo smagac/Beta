@@ -31,6 +31,7 @@ public abstract class Quest implements Agent, Serializable {
         // allows those systems to display progress information of the quest
         public static final int Notify = 0x9004;
         public static final int Expired = 0x9005;
+        public static final int Used = 0x9006;
     }
 
     // amount of time the quest is available for
@@ -115,8 +116,7 @@ public abstract class Quest implements Agent, Serializable {
     @Override
     public final boolean handleMessage(Telegram msg) {
         if (handleQuestNotification(msg.message, msg.extraInfo)) {
-            MessageDispatcher.getInstance()
-                    .dispatchMessage(0, this, null, Quest.Actions.Notify, getObjectiveProgress());
+            MessageDispatcher.getInstance().dispatchMessage(0, this, null, Quest.Actions.Notify, getObjectiveProgress());
             return true;
         }
         return false;

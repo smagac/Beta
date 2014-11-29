@@ -24,7 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import core.common.Tracker;
 import core.components.Combat;
 import core.components.Identifier;
-import core.components.Monster;
+import core.components.Groups.*;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
@@ -270,9 +270,6 @@ public class MovementSystem extends EntityProcessingSystem {
                     Combat combat = combatMap.get(opponent);
                     parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));
                     parentScene.getItem(combat.getDrop());
-                    MessageDispatcher.getInstance().dispatchMessage(0, null,
-                            parentScene.playerService.getQuestTracker(), Quest.Actions.Gather,
-                            combat.getDrop().fullname());
 
                     aStats.exp += bStats.exp;
                     if (aStats.canLevelUp()) {

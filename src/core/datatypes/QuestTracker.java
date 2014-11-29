@@ -27,6 +27,10 @@ public class QuestTracker implements Agent, Serializable {
         quests = new Array<Quest>();
         activeQuests = new Array<Quest>();
         refresh();
+        
+        MessageDispatcher.getInstance().addListener(Actions.Gather, this);
+        MessageDispatcher.getInstance().addListener(Actions.Hunt, this);
+        MessageDispatcher.getInstance().addListener(Actions.Used, this);
     }
 
     /**
@@ -42,7 +46,7 @@ public class QuestTracker implements Agent, Serializable {
             refresh();
             return true;
         }
-        if (msg.message == Actions.Gather || msg.message == Actions.Hunt) {
+        if (msg.message == Actions.Gather || msg.message == Actions.Hunt || msg.message == Actions.Used) {
             for (Quest q : activeQuests) {
                 q.handleMessage(msg);
             }

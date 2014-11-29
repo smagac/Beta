@@ -1,6 +1,9 @@
 package core.datatypes;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.Agent;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -8,6 +11,8 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Keys;
 
 import core.common.Tracker;
+import core.datatypes.quests.Quest;
+import core.datatypes.quests.info.GatherInfo;
 import core.factories.CraftableFactory;
 
 import com.badlogic.gdx.utils.Json.Serializable;
@@ -284,8 +289,7 @@ public class Inventory implements Serializable {
      * @param item
      */
     public void pickup(Item item) {
-        tmp.put(item, tmp.get(item, 0) + 1);
-        all.put(item, all.get(item, 0) + 1);
+        pickup(item, 1);
     }
 
     /**
@@ -296,6 +300,8 @@ public class Inventory implements Serializable {
     public void pickup(Item item, int i) {
         tmp.put(item, tmp.get(item, 0) + i);
         all.put(item, all.get(item, 0) + i);
+        
+        MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Gather, new GatherInfo(item.fullname(), all.get(item)));
     }
 
     /**
@@ -363,5 +369,4 @@ public class Inventory implements Serializable {
 
         calcProgress();
     }
-
 }

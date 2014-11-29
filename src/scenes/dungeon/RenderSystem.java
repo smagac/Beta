@@ -35,7 +35,7 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.components.Identifier;
-import core.components.Monster;
+import core.components.Groups.*;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
