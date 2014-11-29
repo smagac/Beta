@@ -13,6 +13,8 @@ public interface FloorData {
 
     public Array<Room> getRooms();
 
+    public int getMonsters();
+    
     public int[][] getTiles();
 
     TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height);

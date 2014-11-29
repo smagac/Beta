@@ -59,6 +59,7 @@ public class AdjectiveFactory {
         JsonValue bossData = jv.get("boss");
         for (String adj : bossData.get("adjectives").asStringArray()) {
             bossAdjectives.add(adj);
+            modifierMap.put(adj, "boss");
         }
 
         loaded = true;

@@ -175,4 +175,9 @@ public class RandomFloorData implements Serializable, FloorData {
     public int[][] getTiles() {
         return tiles;
     }
+    
+    @Override
+    public int getMonsters() {
+        return monsters;
+    }
 }

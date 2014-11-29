@@ -40,6 +40,7 @@ import core.components.Stats;
 import core.datatypes.dungeon.BossFloor;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonParams;
+import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorData;
 import core.datatypes.dungeon.RandomFloorData;
 import core.datatypes.dungeon.Dungeon.*;
@@ -170,7 +171,9 @@ public class DungeonFactory {
             }
         }
 
-        MathUtils.random.setSeed(params.getSeed());
+        Random oldRandom = MathUtils.random;
+        Random seededRandom = new Random(params.getSeed());
+        MathUtils.random = seededRandom;
 
         // please don't ask about my numbers, they're so randomly picked out
         // from my head
@@ -183,21 +186,22 @@ public class DungeonFactory {
         floors.addAll(new FloorData[depth]);
         // final Thread[] makerThreads = new Thread[Math.min(Math.max(1,
         // depth/8), 4)];
-        int[] unavailable = { 0 };
 
         // pick out which floors are floors where a boss appears
         final Array<Integer> bossRooms = new Array<Integer>();
+        bossRooms.add(0);
         for (int i = 0, set = 1; i < 1 + (depth / 10); i++, set += 10) {
             bossRooms.add(MathUtils.random(1, 10) + set);
         }
 
-        for (int i = depth; i > 0; i--) {
-            Runnable run = new FloorMaker(params.getDifficulty(), unavailable, loader, floors, bossRooms);
+        for (int i = depth-1, made=1; i >= 0; i--, made++) {
+            Runnable run = new FloorMaker(params.getDifficulty(), i, loader, floors, bossRooms);
             run.run();
+            loader.progress = (int)((made / (float)depth) * 100);
         }
 
         Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, map);
-
+        MathUtils.random = oldRandom;
         return d;
     }
 
@@ -210,7 +214,6 @@ public class DungeonFactory {
             FloorLoader loader) {
         // give a new random for the floor so it has different values every time
         // it's played
-        MathUtils.random = new Random();
         ItemFactory itemFactory = new ItemFactory(dungeon.type());
         MonsterFactory monsterFactory = new MonsterFactory(atlas, dungeon.type());
 
@@ -353,46 +356,33 @@ public class DungeonFactory {
         final DungeonLoader loader;
         final Array<FloorData> dungeon;
         final Array<Integer> bossRooms;
-        volatile int[] unavailable;
 
-        private FloorMaker(int difficulty, int[] unavailable, DungeonLoader loader, Array<FloorData> dungeon,
+        private FloorMaker(int difficulty, int depth, DungeonLoader loader, Array<FloorData> dungeon,
                 Array<Integer> bossRooms) {
             this.difficulty = difficulty;
             this.loader = loader;
             this.dungeon = dungeon;
-            this.unavailable = unavailable;
-            this.depth = unavailable[0];
+            this.depth = depth;
             this.bossRooms = bossRooms;
         }
 
         @Override
         public void run() {
+            FloorData floor;
+            if (!bossRooms.contains(depth, false)) {
+                width = 50 + (5 * (depth / 5));
+                height = 50 + (5 * (depth / 5));
+                floor = new RandomFloorData(difficulty, depth + 1, width, height);
 
-            while (depth < dungeon.size) {
-                synchronized (unavailable) {
-                    depth = unavailable[0]++;
-                    if (depth >= dungeon.size) {
-                        break;
-                    }
-                }
-
-                FloorData floor;
-                if (!bossRooms.contains(depth, false)) {
-                    width = 50 + (5 * (depth / 5));
-                    height = 50 + (5 * (depth / 5));
-                    floor = new RandomFloorData(difficulty, depth + 1, width, height);
-
-                    int roomCount = MathUtils.random(Math.max(5, ((3 * depth) / 10) + depth),
-                            Math.max(5, ((5 * depth) / 10) + depth));
-                    PathMaker.run(floor, roomCount);
-                }
-                else {
-                    // TODO make boss floor
-                    floor = new BossFloor(difficulty, depth + 1);
-                }
-                dungeon.set(depth, floor);
-                loader.progress += (int) (1 / (float) dungeon.size * 100);
+                int roomCount = MathUtils.random(Math.max(5, ((3 * depth) / 10) + depth),
+                        Math.max(5, ((5 * depth) / 10) + depth));
+                PathMaker.run(floor, roomCount);
             }
+            else {
+                // TODO make boss floor
+                floor = new BossFloor(difficulty, depth + 1);
+            }
+            dungeon.set(depth, floor);
         }
     }
 

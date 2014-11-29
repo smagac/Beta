@@ -16,6 +16,7 @@ public class BossFloor implements FloorData {
     JsonValue map;
     int depth;
     int[][] tiles;
+    Array<Room> rooms;
 
     public BossFloor(int difficulty, int depth) {
         super();
@@ -32,9 +33,12 @@ public class BossFloor implements FloorData {
         int[] t = data.get("data").asIntArray();
         for (int i = 0, x = 0, y = 0; i < t.length; y++) {
             for (x = 0; x < width; x++, i++) {
-                tiles[y][x] = t[i];
+                tiles[x][y] = t[i];
             }
         }
+        
+        rooms = new Array<Room>();
+        rooms.add(new Room(width/2, height/2, 1, 1));
     }
 
     @Override
@@ -52,7 +56,7 @@ public class BossFloor implements FloorData {
      */
     @Override
     public Array<Room> getRooms() {
-        return null;
+        return rooms;
     }
 
     /**
@@ -66,20 +70,24 @@ public class BossFloor implements FloorData {
             for (int row = 0; row < tiles[0].length; row++) {
                 Cell cell = new Cell();
                 int tile = tiles[col][row];
-                if (tile == 0) {
+                //wall
+                if (tile == 2) {
                     cell.setTile(tileset.getTile(0));
                 }
+                //floor
                 else if (tile == 1) {
                     cell.setTile(tileset.getTile(2));
                 }
+                //down stairs
                 else if (tile == 3) {
-                    cell.setTile(tileset.getTile(3));
-                }
-                else if (tile == 4) {
                     cell.setTile(tileset.getTile(4));
                 }
+                //up stairs
+                else if (tile == 4) {
+                    cell.setTile(tileset.getTile(3));
+                }
                 else {
-                    cell.setTile(tileset.getTile(1));
+                    continue;
                 }
 
                 layer.setCell(col, row, cell);
@@ -97,5 +105,11 @@ public class BossFloor implements FloorData {
     @Override
     public int[][] getTiles() {
         return tiles;
+    }
+
+    @Override
+    public int getMonsters() {
+        //there are no monsters aside from the boss
+        return 0;
     }
 }

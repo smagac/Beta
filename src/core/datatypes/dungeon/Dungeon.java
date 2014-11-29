@@ -64,24 +64,6 @@ public class Dungeon implements Serializable {
         return type;
     }
 
-    public static class Floor {
-        final public TiledMapTileLayer layer;
-        final public int roomCount;
-        final public int depth;
-        final public Array<Room> rooms;
-        public int monsters;
-        public int loot;
-
-        public Floor(TiledMapTileLayer layer, FloorData data) {
-            this.layer = layer;
-            roomCount = data.getRoomCount();
-            depth = data.getDepth();
-            rooms = data.getRooms();
-            monsters = -1;
-            loot = -1;
-        }
-    }
-
     @Override
     public void write(Json json) {
         json.writeValue("type", this.type.name());
