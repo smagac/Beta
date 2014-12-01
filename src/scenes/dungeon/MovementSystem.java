@@ -5,30 +5,28 @@ import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
 
-import com.artemis.Aspect;
-import com.artemis.ComponentMapper;
-import com.artemis.Entity;
-import com.artemis.annotations.Mapper;
-import com.artemis.managers.GroupManager;
-import com.artemis.managers.TagManager;
-import com.artemis.systems.EntityProcessingSystem;
-import com.artemis.utils.ImmutableBag;
+import com.badlogic.ashley.core.ComponentMapper;
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.EntityListener;
+import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.utils.Array;
 
 import core.common.Tracker;
 import core.components.Combat;
 import core.components.Identifier;
 import core.components.Groups.*;
+import core.components.Groups;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
-import core.datatypes.dungeon.Dungeon;
+import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
 
 /**
@@ -37,37 +35,26 @@ import core.datatypes.quests.Quest;
  * @author nhydock
  *
  */
-public class MovementSystem extends EntityProcessingSystem {
-
-    private scenes.dungeon.Scene parentScene;
+public class MovementSystem extends EntitySystem implements EntityListener {
 
     private boolean[][] collision;
     private int[] start, end;
 
-    @Mapper
-    private ComponentMapper<Position> positionMap;
-    @Mapper
-    private ComponentMapper<Stats> statMap;
-    @Mapper
-    private ComponentMapper<Combat> combatMap;
-    @Mapper
-    private ComponentMapper<Identifier> idMap;
+    ComponentMapper<Position> positionMap = ComponentMapper.getFor(Position.class);
+    ComponentMapper<Identifier> identityMap = ComponentMapper.getFor(Identifier.class);
+    ComponentMapper<Monster> monsterMap = ComponentMapper.getFor(Monster.class);
+    ComponentMapper<Combat> combatMap = ComponentMapper.getFor(Combat.class);
+    ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
     private Entity player;
-    protected ImmutableBag<Entity> monsters;
+    Array<Entity> monsters = new Array<Entity>();
 
-    private Sound hit;
+    private Engine engine;
+    private scenes.dungeon.Scene parentScene;
 
-    @SuppressWarnings("unchecked")
-    /**
-     * Creates a new movement and combat handler
-     * @param floor - floor number representation of this system
-     */
-    public MovementSystem(int depth, Dungeon map) {
-        super(Aspect.getAspectForAll(Monster.class));
-
+    public void setMap(Floor floorData) {
         // build collision map
-        TiledMapTileLayer floor = map.getFloor(depth).layer;
+        TiledMapTileLayer floor = floorData.layer;
         collision = new boolean[floor.getWidth()][floor.getHeight()];
         for (int x = 0; x < collision.length; x++) {
             for (int y = 0; y < collision[0].length; y++) {
@@ -89,12 +76,7 @@ public class MovementSystem extends EntityProcessingSystem {
             }
         }
     }
-
-    @Override
-    protected boolean checkProcessing() {
-        return true;
-    }
-
+    
     /**
      * Checks to see if a tile is specifically of type wall
      * 
@@ -119,11 +101,11 @@ public class MovementSystem extends EntityProcessingSystem {
      */
     private Entity checkFoe(int x, int y, Entity e) {
         if (monsters != null) {
-            for (int i = 0; i < monsters.size(); i++) {
-                Entity monster = monsters.get(i);
-                Position p = positionMap.get(monster);
+            for (int i = 0; i < monsters.size; i++) {
+                Entity m = monsters.get(i);
+                Position p = positionMap.get(m);
                 if ((p.getX() == x && p.getY() == y)) {
-                    return monster;
+                    return m;
                 }
             }
         }
@@ -169,11 +151,11 @@ public class MovementSystem extends EntityProcessingSystem {
                 if (e == player) {
                     // descend
                     if (x == (int) end[0] && y == (int) end[1]) {
-                        parentScene.descend();
+                        parentScene.setFloor(parentScene.nextFloor());
                     }
                     // ascend
                     else if (x == (int) start[0] && y == (int) start[1]) {
-                        parentScene.ascend();
+                        parentScene.setFloor(parentScene.prevFloor());
                     }
                 }
 
@@ -200,13 +182,22 @@ public class MovementSystem extends EntityProcessingSystem {
             return;
         }
 
+        // if one of the actors is a boss, invoke a boss fight
+        if (Groups.bossType.matches(opponent)) {
+            MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameState.Messages.FIGHT, opponent);
+            return;
+        } else if (Groups.bossType.matches(actor)) {
+            MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameState.Messages.FIGHT, actor);
+            return;
+        }
+        
         Renderable aChar = actor.getComponent(Renderable.class);
         Renderable bChar = opponent.getComponent(Renderable.class);
 
         float shiftX, shiftY, x, y;
 
         Position p = positionMap.get(actor);
-        float scale = world.getSystem(RenderSystem.class).getScale();
+        float scale = engine.getSystem(RenderSystem.class).getScale();
         x = p.getX() * scale;
         y = p.getY() * scale;
         shiftX = bChar.getActor().getX() - x;
@@ -218,17 +209,17 @@ public class MovementSystem extends EntityProcessingSystem {
                         Actions.moveTo(x + shiftX / 4f, y + shiftY / 4f, RenderSystem.MoveSpeed / 2f),
                         Actions.moveTo(x, y, RenderSystem.MoveSpeed / 2f)));
 
-        RenderSystem rs = world.getSystem(RenderSystem.class);
+        RenderSystem rs = engine.getSystem(RenderSystem.class);
 
         if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
-            hit.play();
+            parentScene.hitSound.play();
             float chance = MathUtils.random(.8f, MULT);
             int dmg = Math.max(0, (int) (chance * aStats.getStrength()) - bStats.getDefense());
             bStats.hp = Math.max(0, bStats.hp - dmg);
 
             String msg = "";
             if (actor == player) {
-                Identifier id = idMap.get(opponent);
+                Identifier id = identityMap.get(opponent);
                 String name = id.toString();
                 id.show();
                 if (dmg == 0) {
@@ -246,7 +237,7 @@ public class MovementSystem extends EntityProcessingSystem {
                 combatProp.aggress();
             }
             else {
-                Identifier id = idMap.get(actor);
+                Identifier id = identityMap.get(actor);
                 String name = id.toString();
                 id.show();
                 if (dmg == 0) {
@@ -268,42 +259,45 @@ public class MovementSystem extends EntityProcessingSystem {
                 // drop enemy item
                 else {
                     Combat combat = combatMap.get(opponent);
-                    parentScene.log(combat.getDeathMessage(idMap.get(opponent).toString()));
+                    String cmsg = combat.getDeathMessage(identityMap.get(opponent).toString());
+                    
+                    parentScene.log(cmsg);
                     parentScene.getItem(combat.getDrop());
-
+                    
                     aStats.exp += bStats.exp;
                     if (aStats.canLevelUp()) {
                         parentScene.levelUp();
                     }
                     Tracker.NumberValues.Monsters_Killed.increment();
-                    opponent.deleteFromWorld();
+                    engine.removeEntity(opponent);
+                   
+                    Identifier id = identityMap.get(opponent);
 
-                    Identifier id = idMap.get(opponent);
-
-                    if (id.toString().endsWith(Monster.Loot)) {
+                    String name = id.toString();
+                    if (name.endsWith(Monster.Loot)) {
                         parentScene.progress.lootFound++;
                         parentScene.progress.totalLootFound++;
-                    }
-                    else {
+                    } else {
                         parentScene.progress.monstersKilled++;
-                        MessageDispatcher.getInstance().dispatchMessage(0, null,
-                                parentScene.playerService.getQuestTracker(), Quest.Actions.Hunt, id.getType());
+                        MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
                 }
             }
         }
         else {
             if (actor == player) {
-                Identifier id = idMap.get(opponent);
+                Identifier id = identityMap.get(opponent);
                 String name = id.toString();
                 id.show();
-                parentScene.log("You attacked " + name + " but missed!");
+                String msg = "You attacked " + name + ", but missed!";
+                parentScene.log(msg);
             }
             else {
-                Identifier id = idMap.get(actor);
+                Identifier id = identityMap.get(actor);
                 String name = id.toString();
                 id.show();
-                parentScene.log(name + " attacked you and missed");
+                String msg = name + "attacked you, but missed!";
+                parentScene.log(msg);
             }
             rs.hit(opponent, "Miss");
         }
@@ -329,12 +323,6 @@ public class MovementSystem extends EntityProcessingSystem {
         p.move((int) end[0], (int) end[1]);
     }
 
-    /**
-     * Assigns a direct reference to the player in the system for faster access
-     */
-    public void setPlayer() {
-        player = world.getManager(TagManager.class).getEntity("player");
-    }
 
     /**
      * Moves just the player entity and executes a turn
@@ -364,14 +352,16 @@ public class MovementSystem extends EntityProcessingSystem {
 
         if (moveEntity(x, y, player)) {
             // execute a turn
-            process();
+            for (int i = 0; i < monsters.size; i++)
+            {
+                process(monsters.get(i));
+            }
             return true;
         }
 
         return false;
     }
 
-    @Override
     protected void process(Entity e) {
         Position m = positionMap.get(e);
         Position p = positionMap.get(player);
@@ -453,29 +443,43 @@ public class MovementSystem extends EntityProcessingSystem {
         }
     }
 
-    public void setScene(scenes.dungeon.Scene scene) {
-        this.parentScene = scene;
-        if (scene != null)
-            this.hit = parentScene.hitSound;
-    }
-
-    @Override
-    public void begin() {
-        monsters = world.getManager(GroupManager.class).getEntities("monsters");
-    }
-
-    @Override
-    public void end() {
-        parentScene.refresh();
-    }
-
     /**
      * Dereference as much as we can
      */
     public void dispose() {
         parentScene = null;
-        hit = null;
         monsters = null;
         player = null;
+    }
+    
+    @Override
+    public void addedToEngine(Engine engine) {
+        this.engine = engine;
+    }
+
+    @Override
+    public void entityAdded(Entity entity) {
+        if (Groups.monsterType.matches(entity)) {
+            monsters.add(entity);
+        } 
+        /**
+         * Assigns a direct reference to the player in the system for faster access
+         */
+        else if (Groups.playerType.matches(entity)) {
+            player = entity;
+        }
+    }
+
+    @Override
+    public void entityRemoved(Entity entity) {
+        if (Groups.monsterType.matches(entity)) {
+            monsters.removeValue(entity, true);
+        } else if (Groups.playerType.matches(entity)) {
+            player = null;
+        }
+    }
+
+    public void setScene(Scene scene) {
+        parentScene = scene;
     }
 }

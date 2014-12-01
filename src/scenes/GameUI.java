@@ -440,7 +440,8 @@ public abstract class GameUI extends UI {
     @Override
     public final void act(float delta) {
         // update time
-        timeStats.setText(String.format(timeFormat, playerService.getTimeElapsed()));
+        String time = String.format(timeFormat, playerService.getTimeElapsed());
+        timeStats.setText(time);
 
         // update stats
         Stats s = playerService.getPlayer();

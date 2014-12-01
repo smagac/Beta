@@ -24,7 +24,7 @@ public abstract class Scene<View extends UI> implements Screen {
     /**
      * Provided asset manager for asynchronous loading
      */
-    protected final AssetManager manager;
+    protected AssetManager manager;
 
     @Inject
     public IColorMode color;
@@ -47,7 +47,7 @@ public abstract class Scene<View extends UI> implements Screen {
     }
 
     @Override
-    public final void resize(int width, int height) {
+    public void resize(int width, int height) {
         ui.resize(width, height);
     }
 
@@ -106,5 +106,4 @@ public abstract class Scene<View extends UI> implements Screen {
     public void hide() {
         dispose();
     }
-
 }

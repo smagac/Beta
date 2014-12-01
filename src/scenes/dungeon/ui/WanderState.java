@@ -27,7 +27,7 @@ import core.datatypes.quests.Quest;
  * @author nhydock
  *
  */
-enum WanderState implements UIState {
+public enum WanderState implements UIState {
     Wander() {
 
         private float walkTimer = -1f;
@@ -42,7 +42,7 @@ enum WanderState implements UIState {
         public void update(WanderUI entity) {
             if (walkTimer >= 0f) {
                 MovementSystem ms = entity.dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
-                float delta = entity.dungeonService.getCurrentFloor().getDelta();
+                float delta = Gdx.graphics.getDeltaTime();
                 walkTimer += delta;
                 if (walkTimer > RenderSystem.MoveSpeed * 2f) {
                     Direction d = Direction.valueOf(Gdx.input);

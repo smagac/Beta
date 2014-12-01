@@ -14,7 +14,7 @@ public class SceneManager {
 
     private static Game game;
     private static ObjectMap<String, Class<? extends Screen>> map;
-
+    
     static {
         map = new ObjectMap<String, Class<? extends Screen>>();
     }
@@ -52,15 +52,17 @@ public class SceneManager {
         throw (new NullPointerException(name + " is not a registered Scene"));
     }
 
-    public static void switchToScene(String name) {
+    public static Screen switchToScene(String name) {
         try {
             Screen s = create(name);
-            SceneManager.switchToScene(s);
+            switchToScene(s);
+            return s;
         }
         catch (NullPointerException e) {
             e.printStackTrace();
             System.exit(-1);
         }
+        return null;
     }
 
     /**
@@ -69,7 +71,6 @@ public class SceneManager {
      * @param scene
      */
     public static void switchToScene(Screen scene) {
-        ServiceManager.inject(scene);
         game.setScreen(scene);
     }
 

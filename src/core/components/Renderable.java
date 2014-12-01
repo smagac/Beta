@@ -1,6 +1,6 @@
 package core.components;
 
-import com.artemis.Component;
+import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -10,17 +10,21 @@ public class Renderable extends Component {
 
     private final TextureRegion sprite;
     private Actor actor;
+    private String spriteName;
 
-    public Renderable(TextureRegion region) {
+    public Renderable(String type, TextureRegion region) {
         sprite = region;
+        this.spriteName = type;
+        this.actor = new Image(region);
+        this.actor.setPosition(-1, -1);
     }
 
+    public String getSpriteName() {
+        return spriteName;
+    }
+    
     public TextureRegion getSprite() {
         return sprite;
-    }
-
-    public void setActor(Image sprite2) {
-        actor = sprite2;
     }
 
     public void move(float f, float g) {

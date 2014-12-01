@@ -1,17 +1,22 @@
 package scenes.dungeon;
 
+import scenes.UI;
+import scenes.dungeon.ui.BattleUI;
 import scenes.dungeon.ui.MenuMessage;
+import scenes.dungeon.ui.Transition;
 import scenes.dungeon.ui.WanderUI;
 
-import com.artemis.Entity;
-import com.artemis.World;
-import com.artemis.managers.GroupManager;
-import com.artemis.utils.ImmutableBag;
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.Agent;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.AbsoluteFileHandleResolver;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
@@ -22,7 +27,10 @@ import com.badlogic.gdx.utils.Array;
 import core.DLC;
 import core.DataDirs;
 import core.common.Tracker;
+import core.components.Groups;
 import core.components.Identifier;
+import core.components.Position;
+import core.components.Renderable;
 import core.components.Groups.*;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.Floor;
@@ -31,47 +39,69 @@ import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.factories.DungeonFactory;
-import core.factories.DungeonFactory.DungeonLoader;
-import core.factories.DungeonFactory.FloorLoader;
+import core.factories.FloorFactory;
 import core.factories.DungeonFactory.DungeonLoader.DungeonParam;
-import core.factories.DungeonFactory.FloorLoader.FloorParam;
+import core.factories.FloorFactory.FloorLoader.FloorParam;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
-public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
+public class Scene extends scenes.Scene<UI> implements IDungeonContainer, Agent {
 
     @Inject
     public IPlayerContainer playerService;
 
     AssetManager dungeonManager;
-    DungeonLoader dungeonLoader;
     boolean dungeonLoaded;
     boolean floorLoaded;
     private boolean descending;
     protected Sound hitSound;
-    private FloorLoader floorLoader;
 
     // factory data
     private Dungeon dungeon;
     private int currentFloorNumber;
-    private World currentFloor;
+    private Engine floorEngine;
 
     protected Progress progress;
 
     private DungeonParams params;
+    
+    private Entity player;
+    
+    StateMachine<Scene> statemachine;
 
+    WanderUI wanderUI;
+    BattleUI battleUI;
+    Transition transition;
+    
     public Scene() {
         super();
-        dungeonManager = new AssetManager(new AbsoluteFileHandleResolver());
-        dungeonLoader = new DungeonLoader(new InternalFileHandleResolver());
-        floorLoader = new FloorLoader(new InternalFileHandleResolver());
-        dungeonManager.setLoader(Dungeon.class, dungeonLoader);
-        dungeonManager.setLoader(World.class, floorLoader);
         progress = new Progress();
+        
+        manager = new AssetManager();
+        floorEngine = new Engine();
 
-        ServiceManager.register(IDungeonContainer.class, this);
+        MovementSystem ms = new MovementSystem();
+        RenderSystem rs = new RenderSystem();
+        floorEngine.addSystem(ms);
+        floorEngine.addSystem(rs);
+        floorEngine.addEntityListener(ms);
+        floorEngine.addEntityListener(rs);
+        ms.setProcessing(false);
+        rs.setProcessing(false);
+        
+        ServiceManager.inject(ms);
+        ServiceManager.inject(rs);
+        
+        player = new Entity();
+        player.add(new Position(0, 0));
+        player.add(new Groups.Player());
+        player.add(playerService.getPlayer());
+        
+        statemachine = new DefaultStateMachine<Scene>(this, GameState.Wander);
+        MessageDispatcher.getInstance().addListener(GameState.Messages.FIGHT, this);
+        MessageDispatcher.getInstance().addListener(GameState.Messages.KILLED, this);
     }
 
     public void setDungeon(DungeonParams params, FileHandle file) {
@@ -97,7 +127,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
         if (!dungeonManager.update()) {
             if (!dungeonLoaded) {
                 loader.setLoading(true);
-                loader.setLoadingMessage(String.format("Creating Dungeon...%d%%", dungeonLoader.getProgress()));
+                loader.setLoadingMessage(String.format("Creating Dungeon...%d%%", DungeonFactory.dungeonLoader.getProgress()));
                 return;
             }
             else if (!floorLoaded) {
@@ -115,10 +145,8 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
             floorLoaded = true;
         }
         else {
-            if (getCurrentFloor() != null) {
-                World floor = getCurrentFloor();
-                floor.setDelta(delta);
-                floor.process();
+            if (getCurrentFloorNumber() > 0) {
+                floorEngine.update(delta);
             }
         }
 
@@ -127,8 +155,18 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
     @Override
     public void show() {
-        ui = new WanderUI(manager);
-
+        ServiceManager.register(IDungeonContainer.class, this);
+        ServiceManager.inject(this);
+        
+        manager = new AssetManager();
+        dungeonManager = new AssetManager(new AbsoluteFileHandleResolver());
+        DungeonFactory.prepareManager(dungeonManager);
+        FloorFactory.prepareManager(dungeonManager);
+        
+        wanderUI = new WanderUI(manager);
+        battleUI = new BattleUI(manager);
+        transition = new Transition(manager);
+        
         if (!audio.hasBgm()) {
             Array<FileHandle> bgms = new Array<FileHandle>();
             bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/001.mp3"));
@@ -146,85 +184,66 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
         }
 
         audio.playBgm();
+        loaded = false;
     }
 
     @Override
     public void dispose() {
+        floorEngine.removeAllEntities();
+        player.removeAll();
         dungeonManager.dispose();
         ServiceManager.register(IDungeonContainer.class, null);
+        MessageDispatcher.getInstance().removeListener(GameState.Messages.FIGHT, this);
+        MessageDispatcher.getInstance().removeListener(GameState.Messages.KILLED, this);
+        
+        floorEngine.getSystem(RenderSystem.class).dispose();
         super.dispose();
     }
-
-    public void ascend() {
-        if (!hasPrevFloor()) {
+    
+    public void setFloor(int i) {
+        if (i == 0) {
+            leave();
+            return;
+        } else if (i == dungeon.getDepth()) {
             leave();
             return;
         }
-        else {
-            input.removeProcessor(ui);
-
-            FloorParam param = new FloorParam();
-            param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
-            param.dungeonContainer = this;
-            param.depth = prevFloor();
-            param.dungeon = dungeon;
-            param.player = playerService.getPlayer();
-            param.character = param.atlas.findRegion(playerService.getGender());
-
-            dungeonManager.load("floor", World.class, param);
-            descending = false;
-            floorLoaded = false;
+        
+        if (i > 1) {
+            // prevent more monsters from respawning after clearing a floor so
+            // then you can't just keep grinding on lower levels in a single dungeon run
+            Floor floor = dungeon.getFloor(i-1);
+            floor.monsters = progress.monstersTotal - progress.monstersKilled;
+            floor.loot = floor.loot - progress.lootFound;
         }
-    }
+        descending = (i > currentFloorNumber);
+        currentFloorNumber = i;
+        
+        FloorParam param = new FloorParam();
+        param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+        param.dungeonContainer = this;
+        param.depth = i;
+        param.dungeon = dungeon;
 
-    public void descend() {
-        if (!hasNextFloor()) {
-            leave();
-            return;
-        }
-        else {
-            input.removeProcessor(ui);
-
-            FloorParam param = new FloorParam();
-            param.atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
-            param.dungeonContainer = this;
-            param.depth = nextFloor();
-            param.dungeon = dungeon;
-            param.player = playerService.getPlayer();
-            param.character = param.atlas.findRegion(playerService.getGender());
-
-            dungeonManager.load("floor", World.class, param);
-            descending = true;
-            floorLoaded = false;
-        }
+        dungeonManager.load("floor", ImmutableArray.class, param);
+        floorLoaded = false;
     }
 
     private void changeFloor() {
         int depth = getCurrentFloorNumber();
 
-        final World floor = dungeonManager.get("floor", World.class);
-        MovementSystem ms = floor.getSystem(MovementSystem.class);
-
-        if (descending) {
-            ms.moveToStart();
-            depth++;
-        }
-        else {
-            ms.moveToEnd();
-            depth--;
-        }
-        ms.setScene(this);
-
-        log("You move onto floor " + depth + " of " + dungeon.size());
+        wanderUI.setMessage("You move onto floor " + depth + " of " + dungeon.size());
 
         final int d = depth;
 
-        ui.fade(new Runnable() {
+        wanderUI.fade(new Runnable() {
 
             @Override
             public void run() {
                 input.addProcessor(ui);
-                setCurrentFloor(d, floor);
+                
+                setCurrentFloor(d);
+                
                 dungeonManager.unload("floor");
                 resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             }
@@ -257,19 +276,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
         playerService.getInventory().pickup(item);
         MessageDispatcher.getInstance().dispatchMessage(0, null, playerService.getQuestTracker(), Quest.Actions.Gather,
                 item.type());
-        ui.setMessage("Obtained " + item.fullname());
+        wanderUI.setMessage("Obtained " + item.fullname());
     }
-
-    /**
-     * Adds a new message to the combat log in the bottom right corner of the
-     * screen
-     * 
-     * @param message
-     */
-    protected void log(String message) {
-        ui.setMessage(message);
-    }
-
+    
     /**
      * Refreshes the HUD at the top of the screen to display the proper current
      * progress of the dungeon
@@ -277,28 +286,45 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
     protected void refresh() {
         MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Refresh, progress);
     }
+    
+    @Override
+    public void resize(int width, int height) {
+        wanderUI.resize(width, height);
+        battleUI.resize(width, height);
+    }
 
     @Override
     protected void init() {
-        ui.init();
+        wanderUI.init();
+        transition.init();
+        ui = wanderUI;
+        hitSound = manager.get(DataDirs.hit, Sound.class);
         // ui.levelUp();
 
+        player.add(new Renderable(playerService.getGender(), wanderUI.getSkin().getRegion(playerService.getGender())));
+        floorEngine.getSystem(RenderSystem.class).setView(wanderUI, wanderUI.getSkin());
+        floorEngine.getSystem(RenderSystem.class).setNull(manager.get(DataDirs.Home + "null.png", Texture.class));
+        floorEngine.getSystem(MovementSystem.class).setScene(this);
+        
         TextureAtlas atlas = manager.get(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         TiledMapTileSet ts = DungeonFactory.buildTileSet(atlas);
         DungeonParam param = new DungeonParam();
         param.tileset = ts;
         param.params = this.params;
         param.dungeonContainer = this;
+        if (dungeon != null)
+        {
+            param.generatedDungeon = dungeon;
+        }
 
-        hitSound = manager.get(DataDirs.hit, Sound.class);
-        dungeonManager.load("dungeon", Dungeon.class, param);
+        dungeonManager.load("dungeon", Dungeon.class, param);  
 
         Gdx.input.setInputProcessor(input);
     }
 
     protected void initPostDungeon() {
         setDungeon(dungeonManager.get("dungeon", Dungeon.class));
-        descend();
+        setFloor(1);
     }
 
     @Override
@@ -306,8 +332,9 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
         this.dungeon = floors;
         // currentFloorNumber = floors.size()-1;
         currentFloorNumber = 0;
-        currentFloor = null;
         progress.floors = dungeon.size();
+        
+        this.floorEngine.getSystem(RenderSystem.class).setMap(floors);
     }
 
     @Override
@@ -322,30 +349,7 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
      * @param world
      */
     @Override
-    public void setCurrentFloor(int depth, World world) {
-        if (currentFloor != null) {
-            input.removeProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
-
-            MovementSystem ms = currentFloor.getSystem(MovementSystem.class);
-            // prevent more monsters from respawning after clearing a floor so
-            // then you can't
-            // just keep grinding on lower levels in a single dungeon run
-            if (ms.monsters != null) {
-                Floor floor = dungeon.getFloor(currentFloorNumber);
-                floor.monsters = progress.monstersTotal - progress.monstersKilled;
-                floor.loot = floor.loot - progress.lootFound;
-            }
-            currentFloor.getSystem(RenderSystem.class).dispose();
-            ms.dispose();
-
-            for (int i = 0; i < currentFloor.getSystems().size(); i++) {
-                ServiceManager.unhook(currentFloor.getSystems().get(i));
-            }
-        }
-        currentFloor = world;
-        for (int i = 0; i < currentFloor.getSystems().size(); i++) {
-            ServiceManager.inject(currentFloor.getSystems().get(i));
-        }
+    public void setCurrentFloor(int depth) {
 
         // setup progress
         {
@@ -355,10 +359,10 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
             progress.lootTotal = 0;
             progress.lootFound = 0;
 
-            ImmutableBag<Entity> monsters = currentFloor.getManager(GroupManager.class).getEntities("monsters");
-            for (int i = 0; i < monsters.size(); i++) {
-                Identifier id = monsters.get(i).getComponent(Identifier.class);
-                if (id.toString().endsWith(Monster.Loot)) {
+            ImmutableArray<Entity> monsters = floorEngine.getEntitiesFor(Groups.monsterType);
+            for (Entity e : monsters) {
+                Identifier id = e.getComponent(Identifier.class);
+                if (id.getType().endsWith(Monster.Loot)) {
                     progress.lootTotal++;
                 }
                 else {
@@ -369,24 +373,21 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
             refresh();
         }
 
-        // make sure enemy list is populated at least once
-        currentFloor.getSystem(MovementSystem.class).begin();
-
-        // ensure the render system is properly tied into the rendering of
-        // everything else
-        currentFloor.getSystem(RenderSystem.class).setView(ui, ui.getSkin());
-        currentFloor.getSystem(RenderSystem.class).setNull(manager.get("data/null.png", Texture.class));
-
-        // hide processing but set up everything
-        currentFloor.getSystem(RenderSystem.class).process(true);
-
-        input.addProcessor(currentFloor.getSystem(RenderSystem.class).getStage());
-        currentFloorNumber = depth;
-    }
-
-    @Override
-    public World getCurrentFloor() {
-        return currentFloor;
+        floorEngine.removeAllEntities();
+        floorEngine.getSystem(MovementSystem.class).setMap(getFloor(currentFloorNumber));
+        floorEngine.getSystem(RenderSystem.class).setFloor(currentFloorNumber);
+        for (Entity e : (ImmutableArray<Entity>)dungeonManager.get("floor", ImmutableArray.class)) {
+            floorEngine.addEntity(e);   
+        }
+        floorEngine.addEntity(player);
+        
+        MovementSystem ms = floorEngine.getSystem(MovementSystem.class);
+        if (descending) {
+            ms.moveToStart();
+        }
+        else {
+            ms.moveToEnd();
+        }
     }
 
     @Override
@@ -416,5 +417,28 @@ public class Scene extends scenes.Scene<WanderUI> implements IDungeonContainer {
 
     public void levelUp() {
         MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.LevelUp);
+    }
+    
+    public void setUI(UI ui) {
+        this.ui = ui;
+    }
+
+    @Override
+    public Engine getCurrentFloor() {
+        return floorEngine;
+    }
+
+    @Override
+    public void update(float delta) {
+        statemachine.update();
+    }
+
+    @Override
+    public boolean handleMessage(Telegram msg) {
+        return statemachine.handleMessage(msg);
+    }
+
+    public void log(String msg) {
+        wanderUI.setMessage(msg);
     }
 }

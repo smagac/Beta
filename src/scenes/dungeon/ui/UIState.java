@@ -8,6 +8,6 @@ import com.badlogic.gdx.ai.fsm.State;
  * @author nhydock
  *
  */
-interface UIState extends State<WanderUI> {
+public interface UIState extends State<WanderUI> {
     public String[] defineButtons();
 }

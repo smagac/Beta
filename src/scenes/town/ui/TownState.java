@@ -321,7 +321,7 @@ enum TownState implements UIState {
                     ui.setMessage("You need to rest first!");
                 }
                 else {
-                    scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.create("dungeon");
+                    scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                     DungeonParams params;
                     FileHandle f = null;
                     // load selected file dungeon
@@ -349,8 +349,6 @@ enum TownState implements UIState {
                         dungeon.setDungeon(params, null);
                         TownUI.directory = null;
                     }
-
-                    SceneManager.switchToScene(dungeon);
                     return true;
                 }
             }
@@ -660,12 +658,9 @@ enum TownState implements UIState {
                             dungeonData = output;
                         }
 
+                        scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                         DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
-
-                        scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.create("dungeon");
                         dungeon.setDungeon(params, null);
-
-                        SceneManager.switchToScene(dungeon);
                     }
                     catch (IOException e) {
                         e.printStackTrace();

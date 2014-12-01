@@ -1,17 +1,11 @@
 package core.components;
 
-import com.artemis.Component;
-import com.artemis.ComponentType;
+import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class Stats extends Component implements Serializable {
-    /**
-     * Fast referencing type for this component
-     */
-    public static final ComponentType CType = ComponentType.getTypeFor(Stats.class);
-
     private int level;
     public int hp;
     public int maxhp;

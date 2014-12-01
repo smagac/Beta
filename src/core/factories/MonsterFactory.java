@@ -1,9 +1,9 @@
 package core.factories;
 
-import com.artemis.Entity;
-import com.artemis.World;
-import com.artemis.managers.GroupManager;
-import com.artemis.utils.ImmutableBag;
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -112,9 +112,6 @@ public class MonsterFactory {
         // sprite type to use
         final String type;
 
-        // certain monsters are able to hide their name and/or stat bubble
-        final boolean boss; // hp turns into ???/???, this is useful for
-                            // rare/boss enemies
         final boolean hideName; // hides the entire bubble if no name is
                                 // available
 
@@ -136,7 +133,6 @@ public class MonsterFactory {
             passive = src.getBoolean("passive", false);
             location = src.getString("where", null);
             type = src.getString("type", "rat");
-            boss = src.getBoolean("boss", false);
             hideName = src.getBoolean("hideName", false);
         }
 
@@ -206,12 +202,11 @@ public class MonsterFactory {
      * @return an array of all the monsters that have just been created and
      *         added to the world
      */
-    public void makeMonsters(World world, int size, ItemFactory lootMaker, core.datatypes.dungeon.Floor floor) {
+    public void makeMonsters(Array<Entity> entities, int size, ItemFactory lootMaker, core.datatypes.dungeon.Floor floor) {
 
         Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
         selection.addAll(MonsterFactory.monsters.get(area));
         selection.addAll(MonsterFactory.monsters.get(FileType.Other));
-        GroupManager gm = world.getManager(GroupManager.class);
 
         if (floor.isBossFloor)
         {
@@ -223,14 +218,12 @@ public class MonsterFactory {
             // don't allow loot chests to be bosses
             while (t.name.equals("treasure chest"));
             
-            Entity monster = create(world, t, lootMaker.createItem(), floor.depth, true);
-            monster.addComponent(new Monster());
-            monster.addComponent(new Boss());
-            monster.addComponent(new Position((int)floor.rooms.get(0).x, (int)floor.rooms.get(0).y));
+            Entity monster = create(t, lootMaker.createItem(), floor.depth, true);
+            monster.add(new Monster());
+            monster.add(new Boss());
+            monster.add(new Position((int)floor.rooms.get(0).x, (int)floor.rooms.get(0).y));
 
-            monster.addToWorld();
-
-            gm.add(monster, "monsters");
+            entities.add(monster);
             return;
         }
 
@@ -242,8 +235,8 @@ public class MonsterFactory {
             // don't allow mimics as normal enemies
             while (t.name.equals("mimic") || t.name.equals("treasure chest"));
 
-            Entity monster = create(world, t, lootMaker.createItem(), floor.depth, false);
-            monster.addComponent(new Monster());
+            Entity monster = create(t, lootMaker.createItem(), floor.depth, false);
+            monster.add(new Monster());
 
             // add its position into a random room
             int x = 0;
@@ -256,11 +249,9 @@ public class MonsterFactory {
                 tile = floor.layer.getCell(x, y).getTile();
             }
             while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
-            monster.addComponent(new Position(x, y));
+            monster.add(new Position(x, y));
 
-            monster.addToWorld();
-
-            gm.add(monster, "monsters");
+            entities.add(monster);
         }
     }
 
@@ -273,8 +264,8 @@ public class MonsterFactory {
      *            - template we use to base our entity from
      * @return an entity
      */
-    private Entity create(World world, MonsterTemplate t, Item item, int depth, boolean boss) {
-        Entity e = world.createEntity();
+    private Entity create(MonsterTemplate t, Item item, int depth, boolean boss) {
+        Entity e = new Entity();
         String describer = "";
         String suffix = "";
         
@@ -315,22 +306,21 @@ public class MonsterFactory {
                     t.getExp(depth)
                   );
         s.hidden = boss;
-        e.addComponent(s);
-        e.addComponent(new Identifier(t.name, describer, suffix, t.hideName || s.hidden));
-        e.addComponent(new Renderable(icons.findRegion(t.type)));
+        e.add(s);
+        e.add(new Identifier(t.name, describer, suffix, t.hideName || s.hidden));
+        e.add(new Renderable(t.type, icons.findRegion(t.type)));
 
         Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
-        e.addComponent(c);
+        e.add(c);
 
         return e;
     }
 
-    private float calculateDensity(World world, Room r) {
+    private float calculateDensity(Array<Entity> m, Room r) {
 
         // calculate population density
         int mCount = 0;
-        ImmutableBag<Entity> m = world.getManager(GroupManager.class).getEntities("monsters");
-        for (int i = 0; i < m.size(); i++) {
+        for (int i = 0; i < m.size; i++) {
             Position position = m.get(i).getComponent(Position.class);
             if (r.contains(position.getX(), position.getY())) {
                 mCount++;
@@ -350,11 +340,10 @@ public class MonsterFactory {
      * @param lootMaker
      * @param depth
      */
-    public void makeTreasure(World world, ItemFactory lootMaker, Floor floor) {
+    public void makeTreasure(Array<Entity> entities, ItemFactory lootMaker, Floor floor) {
         if (floor.isBossFloor)
             return;
         
-        GroupManager gm = world.getManager(GroupManager.class);
         MonsterTemplate treasure = allMonsters.get("treasure chest");
         MonsterTemplate mimic = allMonsters.get("mimic");
 
@@ -365,7 +354,7 @@ public class MonsterFactory {
             if (limit == 0)
                 break;
 
-            float density = calculateDensity(world, r);
+            float density = calculateDensity(entities, r);
 
             // randomly place a treasure chest
             // higher chance of there being a chest if the room is empty
@@ -373,12 +362,12 @@ public class MonsterFactory {
                 // low chance of chest actually being a mimic
                 Entity monster;
                 if (MathUtils.randomBoolean(.02f + (floor.depth / 300f))) {
-                    monster = create(world, mimic, lootMaker.createItem(), floor.depth, false);
+                    monster = create(mimic, lootMaker.createItem(), floor.depth, false);
                 }
                 else {
-                    monster = create(world, treasure, lootMaker.createItem(), floor.depth, false);
+                    monster = create(treasure, lootMaker.createItem(), floor.depth, false);
                 }
-                monster.addComponent(new Monster());
+                monster.add(new Monster());
                 int x = 0;
                 int y = 0;
                 TiledMapTile tile;
@@ -388,11 +377,9 @@ public class MonsterFactory {
                     tile = floor.layer.getCell(x, y).getTile();
                 }
                 while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
-                monster.addComponent(new Position(x, y));
-
-                monster.addToWorld();
-
-                gm.add(monster, "monsters");
+                monster.add(new Position(x, y));
+                entities.add(monster);
+                
                 limit--;
                 made++;
             }

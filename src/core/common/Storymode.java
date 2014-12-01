@@ -154,6 +154,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
         // this way we can call switches from the UI at any point
         if (queued != null) {
             Screen old = super.getScreen();
+            ServiceManager.inject(queued);
             super.setScreen(queued);
             queued = null;
             if (old != null) {
@@ -161,7 +162,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
                 System.gc();
             }
         }
-
+        
         Palette p = getPalette();
         Color clear = new Color(isInverted() ? p.high : p.low);
         float contrast = getContrast();

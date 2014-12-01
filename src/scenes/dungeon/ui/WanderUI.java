@@ -11,6 +11,7 @@ import scenes.dungeon.MovementSystem;
 import scenes.dungeon.Progress;
 import scenes.dungeon.RenderSystem;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
@@ -109,6 +110,7 @@ public class WanderUI extends GameUI {
         super.load();
         manager.load("data/dungeon.atlas", TextureAtlas.class);
         manager.load("data/null.png", Texture.class);
+        
         manager.load(DataDirs.hit, Sound.class);
         manager.load(DataDirs.dead, Sound.class);
     }
@@ -589,15 +591,14 @@ public class WanderUI extends GameUI {
 
     @Override
     protected void externalRender() {
-        if (dungeonService.getCurrentFloor() != null) {
-            dungeonService.getCurrentFloor().getSystem(RenderSystem.class).process();
+        if (dungeonService.getCurrentFloorNumber() > 0) {
+            dungeonService.getCurrentFloor().getSystem(RenderSystem.class).update(Gdx.graphics.getDeltaTime());
         }
     }
 
     @Override
     protected void extendAct(float delta) {
         if (dungeonService.getCurrentFloor() != null) {
-            dungeonService.getCurrentFloor().setDelta(delta);
             menu.update();
         }
     }
@@ -830,7 +831,7 @@ public class WanderUI extends GameUI {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        if (dungeonService.getCurrentFloor() != null) {
+        if (dungeonService.getCurrentFloorNumber() > 0) {
             dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport()
                     .update(width, height, true);
         }

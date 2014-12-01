@@ -3,12 +3,11 @@ package scenes.dungeon;
 import scenes.dungeon.ui.WanderUI;
 import github.nhydock.ssm.Inject;
 
-import com.artemis.Aspect;
-import com.artemis.ComponentMapper;
-import com.artemis.Entity;
-import com.artemis.annotations.Mapper;
-import com.artemis.managers.TagManager;
-import com.artemis.systems.EntityProcessingSystem;
+import com.badlogic.ashley.core.ComponentMapper;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.EntityListener;
+import com.badlogic.ashley.core.EntitySystem;
+import com.badlogic.ashley.core.Family;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
@@ -35,14 +34,14 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.components.Identifier;
-import core.components.Groups.*;
+import core.components.Groups;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.dungeon.Dungeon;
 import core.service.interfaces.IColorMode;
 
-public class RenderSystem extends EntityProcessingSystem {
+public class RenderSystem extends EntitySystem implements EntityListener {
 
     public static final float MoveSpeed = .25f;
 
@@ -50,19 +49,12 @@ public class RenderSystem extends EntityProcessingSystem {
     private OrthographicCamera camera;
     private OrthogonalTiledMapRenderer mapRenderer;
 
-    @Mapper
-    private ComponentMapper<Position> positionMap;
-    @Mapper
-    private ComponentMapper<Renderable> renderMap;
-    @Mapper
-    private ComponentMapper<Monster> monsterMap;
-    @Mapper
-    private ComponentMapper<Identifier> idMap;
-    @Mapper
-    private ComponentMapper<Stats> statMap;
+    ComponentMapper<Position> positionMap = ComponentMapper.getFor(Position.class);
+    ComponentMapper<Renderable> renderMap = ComponentMapper.getFor(Renderable.class);
+    ComponentMapper<Identifier> idMap = ComponentMapper.getFor(Identifier.class);
+    ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
     private float scale;
-    private TiledMap map;
     private TextureRegion nullTile;
 
     private final Array<Actor> addQueue;
@@ -83,24 +75,44 @@ public class RenderSystem extends EntityProcessingSystem {
 
     @Inject
     public IColorMode color;
+    
+    Family type = Family.all(Renderable.class, Position.class).get();
 
-    @SuppressWarnings("unchecked")
-    public RenderSystem(int depth, Dungeon dungeon) {
-        super(Aspect.getAspectForAll(Renderable.class, Position.class));
+    Array<Entity> entities = new Array<Entity>();
+    Entity player;
+    
+    public RenderSystem() {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
-        this.layers = new int[] { depth - 1 };
-        this.map = dungeon.getMap();
+        this.layers = new int[] { 0 };
+    }
+    
+    public void setMap(Dungeon dungeon) {
+        TiledMap map = dungeon.getMap();
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
+        scale = 32f * mapRenderer.getUnitScale();
+    }
+    
+    public void setFloor(int depth) {
+        this.layers[0] = depth-1;
     }
 
     @Override
-    protected void inserted(final Entity e) {
-        super.inserted(e);
-
+    public void entityAdded(final Entity e) {
+        if (!type.matches(e)) {
+            return;
+        }
+        
+        if (Groups.playerType.matches(e)){
+            player = e;
+            System.out.print("Player added\n");
+        }
+        
+        entities.add(e);
         Renderable r = renderMap.get(e);
-        final Image sprite = new Image(r.getSprite());
+        final Image sprite = (Image) r.getActor();
         sprite.setSize(scale, scale);
-        if (monsterMap.has(e)) {
+        if (Groups.monsterType.matches(e)) {
             // Gdx.app.log("[Entity]",
             // "Entity is monster, adding hover controls");
             sprite.addListener(new InputListener() {
@@ -130,26 +142,16 @@ public class RenderSystem extends EntityProcessingSystem {
                 }
             });
         }
-        r.setActor(sprite);
 
         addQueue.add(sprite);
     }
 
-    @Override
-    protected void removed(final Entity e) {
-        Renderable r = renderMap.get(e);
-        removeQueue.add(r.getActor());
-
-        super.removed(e);
-    }
-
-    @Override
     protected void process(Entity e) {
         Position p = positionMap.get(e);
         Renderable r = renderMap.get(e);
 
         // adjust position to be aligned with tiles
-        if (r.getActor().getX() == 0 && r.getActor().getY() == 0) {
+        if (r.getActor().getX() < 0 && r.getActor().getY() < 0) {
             r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale));
         }
 
@@ -158,19 +160,82 @@ public class RenderSystem extends EntityProcessingSystem {
             p.update();
         }
     }
+    
+    @Override
+    public void update(float delta) {
+        for (Actor r : removeQueue) {
+            stage.getRoot().removeActor(r);
+            r.clear();
+            r.setPosition(-1, -1);
+        }
+
+        for (Actor a : addQueue) {
+            stage.addActor(a);
+        }
+        
+        removeQueue.clear();
+        addQueue.clear();
+
+        if (!invisible) {        
+            float x = camera.position.x;
+            float y = camera.position.y;
+    
+            camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
+            camera.update();
+            // fill background
+            if (nullTile != null) {
+                nullTile.setRegionWidth((int) camera.viewportWidth);
+                nullTile.setRegionHeight((int) camera.viewportHeight);
+                batch.setProjectionMatrix(camera.combined);
+                batch.begin();
+                batch.draw(nullTile, 0, 0, camera.viewportWidth, camera.viewportHeight);
+                batch.end();
+            }
+            
+            camera.position.x = x;
+            camera.position.y = y;
+            camera.update();
+            mapRenderer.setView(camera);
+            mapRenderer.render(layers);
+        }
+
+        //process the entities
+        for (Entity e : entities) {
+            process(e);
+        }
+        
+        stage.act(delta);
+
+        if (invisible) {
+            invisible = false;
+            return;
+        }
+
+        stage.draw();
+
+        batch.begin();
+        stats.draw(batch, stats.getColor().a);
+        damageNumbers.draw(batch, damageNumbers.getColor().a);
+        batch.end();
+        batch.setColor(1f, 1f, 1f, 1f);
+        
+        if (player != null)
+        {
+            Renderable r = renderMap.get(player);
+            camera.position.x = r.getActor().getX();
+            camera.position.y = r.getActor().getY();    
+        }
+        
+    }
 
     public void setView(WanderUI view, Skin skin) {
         Viewport v = view.getViewport();
-        this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(),
-                new OrthographicCamera()));
+        this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
 
         this.batch = (SpriteBatch) this.stage.getBatch();
 
         this.batch.setShader(color.getShader());
         this.camera = (OrthographicCamera) this.stage.getCamera();
-
-        mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
-        scale = 32f * mapRenderer.getUnitScale();
 
         uiSkin = skin;
 
@@ -201,86 +266,14 @@ public class RenderSystem extends EntityProcessingSystem {
         }
     }
 
-    @Override
-    protected void begin() {
-        for (Actor a : addQueue) {
-            stage.addActor(a);
-        }
-
-        for (Actor r : removeQueue) {
-            r.remove();
-        }
-
-        if (invisible) {
-            return;
-        }
-
-        float x = camera.position.x;
-        float y = camera.position.y;
-
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        camera.update();
-        // fill background
-        if (nullTile != null) {
-            nullTile.setRegionWidth((int) camera.viewportWidth);
-            nullTile.setRegionHeight((int) camera.viewportHeight);
-            batch.setProjectionMatrix(camera.combined);
-            batch.begin();
-            batch.draw(nullTile, 0, 0, camera.viewportWidth, camera.viewportHeight);
-            batch.end();
-        }
-        Entity player = world.getManager(TagManager.class).getEntity("player");
-        Renderable r = renderMap.get(player);
-
-        if (r.getActor() == null)
-            return;
-
-        camera.position.set(x, y, 0);
-        camera.update();
-        mapRenderer.setView(camera);
-        mapRenderer.render(layers);
-    }
-
-    @Override
-    protected void end() {
-        stage.act(world.getDelta());
-
-        if (invisible) {
-            invisible = false;
-            return;
-        }
-
-        stage.draw();
-
-        stage.getBatch().begin();
-        stats.draw(stage.getBatch(), stats.getColor().a);
-        damageNumbers.draw(stage.getBatch(), damageNumbers.getColor().a);
-        stage.getBatch().end();
-        stage.getBatch().setColor(1f, 1f, 1f, 1f);
-
-        Entity player = world.getManager(TagManager.class).getEntity("player");
-        Renderable r = renderMap.get(player);
-        if (r.getActor() == null)
-            return;
-
-        camera.position.x = r.getActor().getX();
-        camera.position.y = r.getActor().getY();
-    }
-
     public void dispose() {
         batch = null;
         camera = null;
         stage.clear();
         stage.dispose();
         stage = null;
-        map = null;
         mapRenderer = null;
         nullTile = null;
-    }
-
-    @Override
-    protected boolean checkProcessing() {
-        return true;
     }
 
     protected float getScale() {
@@ -355,8 +348,14 @@ public class RenderSystem extends EntityProcessingSystem {
         stats.addAction(Actions.alpha(0f, .3f));
     }
 
-    public void process(boolean b) {
-        invisible = b;
-        super.process();
+    @Override
+    public void entityRemoved(Entity entity) {
+        Renderable r = renderMap.get(entity);
+        removeQueue.add(r.getActor());
+        
+        if (Groups.playerType.matches(entity)) {
+            player = null;
+        }
+        entities.removeValue(entity, true);
     }
 }

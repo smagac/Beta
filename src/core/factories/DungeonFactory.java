@@ -11,18 +11,12 @@ import java.util.Random;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import scenes.dungeon.MovementSystem;
-import scenes.dungeon.RenderSystem;
-
-import com.artemis.Entity;
-import com.artemis.World;
-import com.artemis.managers.GroupManager;
-import com.artemis.managers.TagManager;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -34,16 +28,10 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
-import core.components.Position;
-import core.components.Renderable;
-import core.components.Stats;
-import core.datatypes.dungeon.BossFloor;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonParams;
-import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorData;
 import core.datatypes.dungeon.RandomFloorData;
-import core.datatypes.dungeon.Dungeon.*;
 import core.service.interfaces.IDungeonContainer;
 import core.util.dungeon.PathMaker;
 
@@ -54,13 +42,12 @@ import core.util.dungeon.PathMaker;
  *
  */
 public class DungeonFactory {
-    // directory to save dungeon files into
-    // private final String tmpDir;
-
-    // acceptable characters for serial id generation
-    // private static final String acceptable =
-    // "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
+    public static final DungeonLoader dungeonLoader = new DungeonLoader(new InternalFileHandleResolver());
+    
+    public static void prepareManager(AssetManager manager) {
+        manager.setLoader(Dungeon.class, dungeonLoader);
+    }
+    
     public static TiledMapTileSet buildTileSet(TextureAtlas atlas) {
         TiledMapTileSet tileset = new TiledMapTileSet();
 
@@ -181,21 +168,14 @@ public class DungeonFactory {
         int depth = MathUtils.random(5 * params.getDifficulty(), 10 * params.getDifficulty()
                 + (params.getDifficulty() - 1) * 10);
         // to stress test, uncomment next line
-        // int depth = 99;
+        //depth = 99;
         final Array<FloorData> floors = new Array<FloorData>();
         floors.addAll(new FloorData[depth]);
         // final Thread[] makerThreads = new Thread[Math.min(Math.max(1,
         // depth/8), 4)];
 
-        // pick out which floors are floors where a boss appears
-        final Array<Integer> bossRooms = new Array<Integer>();
-        bossRooms.add(0);
-        for (int i = 0, set = 1; i < 1 + (depth / 10); i++, set += 10) {
-            bossRooms.add(MathUtils.random(1, 10) + set);
-        }
-
         for (int i = depth-1, made=1; i >= 0; i--, made++) {
-            Runnable run = new FloorMaker(params.getDifficulty(), i, loader, floors, bossRooms);
+            Runnable run = new FloorMaker(params.getDifficulty(), i, floors);
             run.run();
             loader.progress = (int)((made / (float)depth) * 100);
         }
@@ -203,69 +183,6 @@ public class DungeonFactory {
         Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, map);
         MathUtils.random = oldRandom;
         return d;
-    }
-
-    /**
-     * Prepare a world to be loaded and stepped into
-     * 
-     * @param ts
-     */
-    private static World create(Dungeon dungeon, int depth, Stats player, TextureAtlas atlas, TextureRegion character,
-            FloorLoader loader) {
-        // give a new random for the floor so it has different values every time
-        // it's played
-        ItemFactory itemFactory = new ItemFactory(dungeon.type());
-        MonsterFactory monsterFactory = new MonsterFactory(atlas, dungeon.type());
-
-        /*
-         * String suffix = String.format("%02d", floor); FileHandle file =
-         * Gdx.files.absolute(tmpDir + "/" + serial + "." + suffix); Dungeon
-         * dungeon = (new Json()).fromJson(Dungeon.class, file);
-         */
-        Floor floor = dungeon.getFloor(depth);
-        int base = Math.min(floor.roomCount, depth * 2);
-        int monsters = floor.monsters;
-        if (monsters == -1) {
-            int a = (int) (base * Math.max(1, dungeon.getDifficulty() * depth / 50f));
-            int b = (int) (base * Math.max(2, 2 * dungeon.getDifficulty() * depth / 50f));
-            monsters = MathUtils.random(a, b);
-            floor.monsters = monsters;
-        }
-
-        World world = new World();
-        MovementSystem ms = new MovementSystem(depth, dungeon);
-        RenderSystem rs = new RenderSystem(depth, dungeon);
-        world.setManager(new TagManager());
-        world.setManager(new GroupManager());
-        world.setSystem(rs, true);
-        world.setSystem(ms, true);
-        loader.progress = 10;
-
-        // add monsters to rooms
-        // monster count is anywhere between 5-20 on easy and 25-100 on hard
-        monsterFactory.makeMonsters(world, monsters, itemFactory, dungeon.getFloor(depth));
-        loader.progress = 60;
-
-        // forcibly add some loot monsters
-        monsterFactory.makeTreasure(world, itemFactory, dungeon.getFloor(depth));
-        loader.progress = 90;
-
-        world.initialize();
-
-        // make player
-        Entity e = world.createEntity();
-        e.addComponent(new Position(0, 0));
-        e.addComponent(player); // shared stats reference
-        e.addComponent(new Renderable(character));
-        e.addToWorld();
-
-        world.getManager(TagManager.class).register("player", e);
-
-        world.getSystem(MovementSystem.class).setPlayer();
-        loader.progress = 100;
-        // put entity at start position on each floor
-
-        return world;
     }
 
     /**
@@ -353,35 +270,24 @@ public class DungeonFactory {
         private int depth;
         private int width;
         private int height;
-        final DungeonLoader loader;
         final Array<FloorData> dungeon;
-        final Array<Integer> bossRooms;
 
-        private FloorMaker(int difficulty, int depth, DungeonLoader loader, Array<FloorData> dungeon,
-                Array<Integer> bossRooms) {
+        private FloorMaker(int difficulty, int depth, Array<FloorData> dungeon) {
             this.difficulty = difficulty;
-            this.loader = loader;
             this.dungeon = dungeon;
             this.depth = depth;
-            this.bossRooms = bossRooms;
         }
 
         @Override
         public void run() {
             FloorData floor;
-            if (!bossRooms.contains(depth, false)) {
-                width = 50 + (5 * (depth / 5));
-                height = 50 + (5 * (depth / 5));
-                floor = new RandomFloorData(difficulty, depth + 1, width, height);
+            width = 50 + (5 * (depth / 5));
+            height = 50 + (5 * (depth / 5));
+            floor = new RandomFloorData(difficulty, depth + 1, width, height);
 
-                int roomCount = MathUtils.random(Math.max(5, ((3 * depth) / 10) + depth),
-                        Math.max(5, ((5 * depth) / 10) + depth));
-                PathMaker.run(floor, roomCount);
-            }
-            else {
-                // TODO make boss floor
-                floor = new BossFloor(difficulty, depth + 1);
-            }
+            int roomCount = MathUtils.random(Math.max(5, ((3 * depth) / 10) + depth),
+                    Math.max(5, ((5 * depth) / 10) + depth));
+            PathMaker.run(floor, roomCount);
             dungeon.set(depth, floor);
         }
     }
@@ -404,15 +310,21 @@ public class DungeonFactory {
 
         @Override
         public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-            // first check if the file has already been registered
-            generatedDungeon = loadFromCache(param.params, param.tileset);
+            // check if we just need to rebuild a dungeon
+            if (param.generatedDungeon == null)
+            {
+                // first check if the file has already been registered
+                generatedDungeon = loadFromCache(param.params, param.tileset);
 
-            // if no dungeon could be loaded from cache, createa new one
-            if (generatedDungeon == null) {
-                generatedDungeon = create(param.params, param.tileset, this);
+                // if no dungeon could be loaded from cache, createa new one
+                if (generatedDungeon == null) {
+                    generatedDungeon = create(param.params, param.tileset, this);
 
-                // try saving the dungeon to cache
-                writeCacheFile(param.params, generatedDungeon);
+                    // try saving the dungeon to cache
+                    writeCacheFile(param.params, generatedDungeon);
+                }
+            } else {
+                generatedDungeon = param.generatedDungeon;
             }
 
             final TiledMap map = new TiledMap();
@@ -441,52 +353,7 @@ public class DungeonFactory {
             public IDungeonContainer dungeonContainer;
             public DungeonParams params;
             public TiledMapTileSet tileset;
-        }
-    }
-
-    /**
-     * Loader for entire floors as assets. Makes artemis worlds!
-     * 
-     * @author nhydock
-     *
-     */
-    public static class FloorLoader extends AsynchronousAssetLoader<World, FloorLoader.FloorParam> {
-
-        public FloorLoader(FileHandleResolver resolver) {
-            super(resolver);
-        }
-
-        private World generatedFloor;
-
-        private int progress;
-
-        @Override
-        public void loadAsync(AssetManager manager, String fileName, FileHandle file, FloorLoader.FloorParam param) {
-            generatedFloor = create(param.dungeon, param.depth, param.player, param.atlas, param.character, this);
-        }
-
-        @Override
-        public World loadSync(AssetManager manager, String fileName, FileHandle file, FloorLoader.FloorParam param) {
-            return generatedFloor;
-        }
-
-        @SuppressWarnings("rawtypes")
-        @Override
-        public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, FloorLoader.FloorParam param) {
-            return null;
-        }
-
-        public int getProgress() {
-            return progress;
-        }
-
-        public static class FloorParam extends AssetLoaderParameters<World> {
-            public int depth;
-            public IDungeonContainer dungeonContainer;
-            public Dungeon dungeon;
-            public Stats player;
-            public TextureAtlas atlas;
-            public TextureRegion character;
+            public Dungeon generatedDungeon;
         }
     }
 }

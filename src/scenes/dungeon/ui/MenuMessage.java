@@ -7,12 +7,12 @@ package scenes.dungeon.ui;
  *
  */
 public class MenuMessage {
-    static final int Movement = -1;
-    static final int Assist = 0;
-    static final int Heal = 1;
-    static final int Leave = 2;
+    public static final int Movement = -1;
+    public static final int Assist = 0;
+    public static final int Heal = 1;
+    public static final int Leave = 2;
 
-    static final int Sacrifice = 1;
+    public static final int Sacrifice = 1;
 
     public static final int Dead = 0x3000;
     public static final int Exit = 0x3001;

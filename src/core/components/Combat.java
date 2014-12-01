@@ -1,6 +1,6 @@
 package core.components;
 
-import com.artemis.Component;
+import com.badlogic.ashley.core.Component;
 
 import core.datatypes.Item;
 
