@@ -4,7 +4,6 @@ import github.nhydock.ssm.SceneManager;
 import scenes.GameUI;
 import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;
-import scenes.dungeon.Progress;
 import scenes.dungeon.RenderSystem;
 
 import com.badlogic.gdx.Gdx;
@@ -19,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import core.DataDirs;
 import core.common.Tracker;
 import core.components.Stats;
+import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 
 /**
@@ -41,7 +41,7 @@ public enum WanderState implements UIState {
         @Override
         public void update(WanderUI entity) {
             if (walkTimer >= 0f) {
-                MovementSystem ms = entity.dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
+                MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
                 float delta = Gdx.graphics.getDeltaTime();
                 walkTimer += delta;
                 if (walkTimer > RenderSystem.MoveSpeed * 2f) {
@@ -71,7 +71,7 @@ public enum WanderState implements UIState {
                     walkTimer = -1f;
                 }
                 else {
-                    entity.dungeonService.getCurrentFloor().getSystem(MovementSystem.class).movePlayer(direction);
+                    entity.dungeonService.getEngine().getSystem(MovementSystem.class).movePlayer(direction);
                     walkTimer = 0f;
                 }
                 return true;
@@ -176,7 +176,7 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently "
-                    + entity.dungeonService.getCurrentFloorNumber() + " floors deep.");
+                    + entity.fleeCost + " floors deep.");
             entity.showLoot();
         }
 
@@ -189,8 +189,7 @@ public enum WanderState implements UIState {
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
             if (telegram.message == MenuMessage.Sacrifice) {
-                if (entity.playerService.getInventory().sacrifice(entity.sacrifices,
-                        entity.dungeonService.getCurrentFloorNumber())) {
+                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, entity.fleeCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
                         Tracker.NumberValues.Loot_Sacrificed.increment();
                     }
@@ -198,8 +197,7 @@ public enum WanderState implements UIState {
                     return true;
                 }
                 else {
-                    entity.showGoddess("That's not enough!\nYou need to sacrifice "
-                            + entity.dungeonService.getCurrentFloorNumber() + " items");
+                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + entity.fleeCost + " items");
                 }
             }
             else {
@@ -271,13 +269,14 @@ public enum WanderState implements UIState {
         }
 
         @Override
-        public boolean onMessage(WanderUI entity, Telegram telegram) {
+        public boolean onMessage(final WanderUI entity, Telegram telegram) {
             if (telegram.message == GameUI.Messages.Close) {
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
                 entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
                     public void run() {
                         SceneManager.switchToScene("town");
+                        entity.dungeonService.clear();
                     }
                 })));
                 return true;

@@ -11,12 +11,6 @@ import java.util.Random;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.badlogic.gdx.assets.AssetDescriptor;
-import com.badlogic.gdx.assets.AssetLoaderParameters;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader;
-import com.badlogic.gdx.assets.loaders.FileHandleResolver;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -32,7 +26,6 @@ import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.FloorData;
 import core.datatypes.dungeon.RandomFloorData;
-import core.service.interfaces.IDungeonContainer;
 import core.util.dungeon.PathMaker;
 
 /**
@@ -42,11 +35,6 @@ import core.util.dungeon.PathMaker;
  *
  */
 public class DungeonFactory {
-    public static final DungeonLoader dungeonLoader = new DungeonLoader(new InternalFileHandleResolver());
-    
-    public static void prepareManager(AssetManager manager) {
-        manager.setLoader(Dungeon.class, dungeonLoader);
-    }
     
     public static TiledMapTileSet buildTileSet(TextureAtlas atlas) {
         TiledMapTileSet tileset = new TiledMapTileSet();
@@ -69,7 +57,7 @@ public class DungeonFactory {
      * @param params
      * @return
      */
-    private static Dungeon loadFromCache(DungeonParams params, TiledMapTileSet tileset) {
+    public static Dungeon loadFromCache(DungeonParams params) {
         if (params.isCached()) {
             FileHandle hashFile = params.getCacheFile();
 
@@ -108,7 +96,7 @@ public class DungeonFactory {
      * @param dungeon
      * @return
      */
-    private static void writeCacheFile(DungeonParams params, Dungeon dungeon) {
+    public static void writeCacheFile(DungeonParams params, Dungeon dungeon) {
         // ignore randomly created dungeons for caching because
         // they don't have a cache file
         // also don't overwrite files that have already been cached
@@ -133,15 +121,10 @@ public class DungeonFactory {
      * @param difficulty
      *            - defines how large and how many monsters the dungeon will
      *            have, but also more loot
-     * @param tileset
      * @throws IOException
      * @return an array of the serial ids of the floors on the file system
      */
-    protected static Dungeon create(DungeonParams params, final TiledMapTileSet tileset, DungeonLoader loader) {
-        // prepare a tile map to hold the floor layers
-        final TiledMap map = new TiledMap();
-        map.getTileSets().addTileSet(tileset);
-
+    public static Dungeon create(DungeonParams params, int[] progress) {
         // make sure dungeon dir exists
         // Gdx.files.absolute(tmpDir).mkdirs();
         // make sure to create cache files one first create
@@ -177,10 +160,10 @@ public class DungeonFactory {
         for (int i = depth-1, made=1; i >= 0; i--, made++) {
             Runnable run = new FloorMaker(params.getDifficulty(), i, floors);
             run.run();
-            loader.progress = (int)((made / (float)depth) * 100);
+            progress[0] = (int)((made / (float)depth) * 100);
         }
 
-        Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, map);
+        Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors);
         MathUtils.random = oldRandom;
         return d;
     }
@@ -289,71 +272,6 @@ public class DungeonFactory {
                     Math.max(5, ((5 * depth) / 10) + depth));
             PathMaker.run(floor, roomCount);
             dungeon.set(depth, floor);
-        }
-    }
-
-    /**
-     * Loader for entire dungeons as assets
-     * 
-     * @author nhydock
-     *
-     */
-    @SuppressWarnings("rawtypes")
-    public static class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoader.DungeonParam> {
-
-        public DungeonLoader(FileHandleResolver resolver) {
-            super(resolver);
-        }
-
-        private Dungeon generatedDungeon;
-        private int progress;
-
-        @Override
-        public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-            // check if we just need to rebuild a dungeon
-            if (param.generatedDungeon == null)
-            {
-                // first check if the file has already been registered
-                generatedDungeon = loadFromCache(param.params, param.tileset);
-
-                // if no dungeon could be loaded from cache, createa new one
-                if (generatedDungeon == null) {
-                    generatedDungeon = create(param.params, param.tileset, this);
-
-                    // try saving the dungeon to cache
-                    writeCacheFile(param.params, generatedDungeon);
-                }
-            } else {
-                generatedDungeon = param.generatedDungeon;
-            }
-
-            final TiledMap map = new TiledMap();
-            map.getTileSets().addTileSet(param.tileset);
-            generatedDungeon.setMap(map);
-            generatedDungeon.build(param.tileset);
-        }
-
-        @Override
-        public Dungeon loadSync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-            param.dungeonContainer.setDungeon(generatedDungeon);
-
-            return generatedDungeon;
-        }
-
-        @Override
-        public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-            return null;
-        }
-
-        public int getProgress() {
-            return progress;
-        }
-
-        public static class DungeonParam extends AssetLoaderParameters<Dungeon> {
-            public IDungeonContainer dungeonContainer;
-            public DungeonParams params;
-            public TiledMapTileSet tileset;
-            public Dungeon generatedDungeon;
         }
     }
 }

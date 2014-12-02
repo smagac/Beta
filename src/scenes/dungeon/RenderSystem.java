@@ -4,6 +4,7 @@ import scenes.dungeon.ui.WanderUI;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.ComponentMapper;
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Interpolation;
@@ -38,7 +40,6 @@ import core.components.Groups;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
-import core.datatypes.dungeon.Dungeon;
 import core.service.interfaces.IColorMode;
 
 public class RenderSystem extends EntitySystem implements EntityListener {
@@ -73,13 +74,17 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     // selective map layer to draw
     private int[] layers;
 
-    @Inject
-    public IColorMode color;
+    @Inject public IColorMode color;
     
     Family type = Family.all(Renderable.class, Position.class).get();
 
     Array<Entity> entities = new Array<Entity>();
     Entity player;
+    
+    //temp vars used for hover effect
+    static Vector2 v1 = new Vector2(0,0);
+    static Vector2 v2 = new Vector2(0,0);
+    
     
     public RenderSystem() {
         addQueue = new Array<Actor>();
@@ -87,8 +92,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         this.layers = new int[] { 0 };
     }
     
-    public void setMap(Dungeon dungeon) {
-        TiledMap map = dungeon.getMap();
+    public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
         scale = 32f * mapRenderer.getUnitScale();
     }
@@ -96,7 +100,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     public void setFloor(int depth) {
         this.layers[0] = depth-1;
     }
-
+    
     @Override
     public void entityAdded(final Entity e) {
         if (!type.matches(e)) {
@@ -110,12 +114,16 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         
         entities.add(e);
         Renderable r = renderMap.get(e);
+        Position p = positionMap.get(e);
+        r.loadImage(uiSkin);
         final Image sprite = (Image) r.getActor();
         sprite.setSize(scale, scale);
+        sprite.setPosition(p.getX() * scale, p.getY() * scale);
         if (Groups.monsterType.matches(e)) {
             // Gdx.app.log("[Entity]",
             // "Entity is monster, adding hover controls");
             sprite.addListener(new InputListener() {
+                
                 @Override
                 public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
                     Stats s = statMap.get(e);
@@ -123,16 +131,19 @@ public class RenderSystem extends EntitySystem implements EntityListener {
                     if (id.hidden())
                         return;
 
-                    Vector2 v = sprite.localToStageCoordinates(new Vector2(0, 0));
-                    Vector2 v2 = sprite.localToStageCoordinates(new Vector2(0, sprite.getHeight() + 6));
+                    v1.set(0, 0);
+                    v2.set(0, sprite.getHeight() + 6);
+                    
+                    Vector2 hv = sprite.localToStageCoordinates(v1);
+                    Vector2 hv2 = sprite.localToStageCoordinates(v2);
 
                     // Gdx.app.log("[Input]", id.toString() +
                     // " has been hovered over. " + v.x + "," + v.y);
                     if (s.hidden) {
-                        showStats(v, v2, id.toString(), "HP: ??? / ???");
+                        showStats(hv, hv2, id.toString(), "HP: ??? / ???");
                     }
                     else {
-                        showStats(v, v2, id.toString(), String.format("HP: %3d / %3d", s.hp, s.maxhp));
+                        showStats(hv, hv2, id.toString(), String.format("HP: %3d / %3d", s.hp, s.maxhp));
                     }
                 }
 
@@ -151,10 +162,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         Renderable r = renderMap.get(e);
 
         // adjust position to be aligned with tiles
-        if (r.getActor().getX() < 0 && r.getActor().getY() < 0) {
-            r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale));
-        }
-
         if (p.changed()) {
             r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale, MoveSpeed));
             p.update();
@@ -166,7 +173,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         for (Actor r : removeQueue) {
             stage.getRoot().removeActor(r);
             r.clear();
-            r.setPosition(-1, -1);
         }
 
         for (Actor a : addQueue) {
@@ -233,8 +239,8 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
 
         this.batch = (SpriteBatch) this.stage.getBatch();
-
-        this.batch.setShader(color.getShader());
+        ShaderProgram shader = color.getShader();
+        this.batch.setShader(shader);
         this.camera = (OrthographicCamera) this.stage.getCamera();
 
         uiSkin = skin;
@@ -264,16 +270,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             damageNumbers.setVisible(false);
             stage.addActor(damageNumbers);
         }
-    }
-
-    public void dispose() {
-        batch = null;
-        camera = null;
-        stage.clear();
-        stage.dispose();
-        stage = null;
-        mapRenderer = null;
-        nullTile = null;
     }
 
     protected float getScale() {
@@ -357,5 +353,29 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             player = null;
         }
         entities.removeValue(entity, true);
+    }
+    
+    public void addedToEngine(Engine engine) {
+        entities.clear();
+        for (Entity e : engine.getEntitiesFor(type)) {
+            this.entityAdded(e);
+        }
+    }
+    
+    @Override
+    public void removedFromEngine(Engine engine) {
+        batch = null;
+        camera = null;
+        mapRenderer.dispose();
+        stage.clear();
+        stage.dispose();
+        uiSkin.dispose();
+        stage = null;
+        mapRenderer = null;
+        nullTile = null;
+    }
+
+    public void resize(int width, int height) {
+        this.stage.getViewport().update(width, height, true);
     }
 }

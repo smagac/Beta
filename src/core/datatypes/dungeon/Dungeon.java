@@ -1,6 +1,5 @@
 package core.datatypes.dungeon;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -19,7 +18,6 @@ public class Dungeon implements Serializable {
     IntMap<BossFloor> bossFloors = new IntMap<BossFloor>();
     int difficulty;
     FileType type;
-    TiledMap map;
     int depth;
     
     boolean prepared;
@@ -35,14 +33,12 @@ public class Dungeon implements Serializable {
      *            - difficulty
      * @param f
      *            - premade floors to register with the dungeon
-     * @param map
      */
 
-    public Dungeon(FileType type, int d, Array<FloorData> data, TiledMap map) {
+    public Dungeon(FileType type, int d, Array<FloorData> data) {
         this.type = type;
         this.floors = new Array<Floor>();
         this.difficulty = d;
-        this.map = map;
         this.floorData = data;
         this.depth = data.size;
         genBossFloors();
@@ -53,19 +49,10 @@ public class Dungeon implements Serializable {
      */
     private void genBossFloors() {
         this.bossFloors.put(0, new BossFloor(difficulty, 0));
-        for (int i = 0, set = 1; i < 1 + (getDepth() / 10); i++, set += 10) {
+        for (int i = 0, set = 1; i < 1 + (size() / 10); i++, set += 10) {
             int floor = MathUtils.random(1, 10) + set;
             this.bossFloors.put(floor, new BossFloor(difficulty, floor));
         }
-    }
-
-    public void setMap(TiledMap map) {
-        this.map = map;
-        this.prepared = false;
-    }
-
-    public TiledMap getMap() {
-        return this.map;
     }
 
     public int getDifficulty() {
@@ -74,10 +61,6 @@ public class Dungeon implements Serializable {
 
     public FileType type() {
         return type;
-    }
-    
-    public int getDepth() {
-        return depth;
     }
 
     @Override
@@ -102,15 +85,13 @@ public class Dungeon implements Serializable {
     }
 
     public int size() {
-        return floors.size;
+        return depth;
     }
 
-    public void build(TiledMapTileSet tileset) {
-        if (prepared) {
-            Gdx.app.error("Dungeon Builder", "Map has already been built, can not build again");
-            return;
-        }
-        
+    public TiledMap build(TiledMapTileSet tileset) {
+        TiledMap map = new TiledMap();
+        map.getTileSets().addTileSet(tileset);
+
         // build the tile layers
         floors = new Array<Floor>();
         for (int i = 0; i < floorData.size; i++) {
@@ -127,5 +108,7 @@ public class Dungeon implements Serializable {
         }
         floorData.clear();
         floorData = null;
+        
+        return map;
     }
 }

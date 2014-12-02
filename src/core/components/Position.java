@@ -5,28 +5,30 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Position extends Component {
 
-    private final Vector2 loc;
+    private float x, y;
     private boolean changed;
 
     public Position(int x, int y) {
-        loc = new Vector2(x, y);
+        this.x = x;
+        this.y = y;
     }
 
     public void move(int x, int y) {
-        loc.set(x, y);
+        this.x = x;
+        this.y = y;
         changed = true;
     }
 
     public int getX() {
-        return (int) loc.x;
+        return (int) x;
     }
 
     public int getY() {
-        return (int) loc.y;
+        return (int) y;
     }
 
     public float distance(Position p) {
-        return loc.dst(p.loc);
+        return Vector2.dst(this.x, this.y, x, y);
     }
 
     public void update() {

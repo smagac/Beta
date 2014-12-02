@@ -7,8 +7,6 @@ import scene2d.ui.extras.ScrollFocuser;
 import scenes.GameUI;
 import scenes.UI;
 import scenes.dungeon.Direction;
-import scenes.dungeon.MovementSystem;
-import scenes.dungeon.Progress;
 import scenes.dungeon.RenderSystem;
 
 import com.badlogic.gdx.Gdx;
@@ -40,6 +38,7 @@ import com.badlogic.gdx.utils.SnapshotArray;
 
 import core.DataDirs;
 import core.datatypes.Item;
+import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
@@ -65,6 +64,7 @@ public class WanderUI extends GameUI {
     Image goddess;
 
     int healCost;
+    int fleeCost;
     private Group goddessDialog;
     private Label gMsg;
     private Table itemSubmenu;
@@ -90,10 +90,8 @@ public class WanderUI extends GameUI {
     FocusGroup levelUpGroup;
 
     // services
-    @Inject
-    public IPlayerContainer playerService;
-    @Inject
-    public IDungeonContainer dungeonService;
+    @Inject public IPlayerContainer playerService;
+    @Inject public IDungeonContainer dungeonService;
 
     public WanderUI(AssetManager manager) {
         super(manager);
@@ -591,14 +589,14 @@ public class WanderUI extends GameUI {
 
     @Override
     protected void externalRender() {
-        if (dungeonService.getCurrentFloorNumber() > 0) {
-            dungeonService.getCurrentFloor().getSystem(RenderSystem.class).update(Gdx.graphics.getDeltaTime());
+        if (dungeonService.getProgress().depth > 0) {
+            dungeonService.getEngine().getSystem(RenderSystem.class).update(Gdx.graphics.getDeltaTime());
         }
     }
 
     @Override
     protected void extendAct(float delta) {
-        if (dungeonService.getCurrentFloor() != null) {
+        if (dungeonService.getProgress().depth > 0) {
             menu.update();
         }
     }
@@ -617,7 +615,6 @@ public class WanderUI extends GameUI {
     }
 
     void showGoddess(String string) {
-        dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
         gMsg.setText(string);
 
         goddess.clearActions();
@@ -631,7 +628,6 @@ public class WanderUI extends GameUI {
     }
 
     void hideGoddess() {
-        dungeonService.getCurrentFloor().getSystem(MovementSystem.class);
         goddess.clearActions();
         goddessDialog.clearActions();
         goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight() / 2 - 64f, .3f));
@@ -784,11 +780,22 @@ public class WanderUI extends GameUI {
         sacrificeList.pack();
     }
 
-    public void fade(Runnable cmd) {
-        fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(1f, .3f), Actions.run(cmd),
-                Actions.alpha(0f, .3f)));
+    public void fadeOut(Runnable cmd) {
+        fader.addAction(
+            Actions.sequence(
+                Actions.alpha(0f), 
+                Actions.alpha(1f, .3f), 
+                Actions.run(cmd)
+            )
+        );
     }
-
+    
+    public void fadeIn() {
+        fader.addAction(
+            Actions.alpha(0f, .3f)
+        );
+    }
+    
     @Override
     public String[] defineButtons() {
         return ((UIState) menu.getCurrentState()).defineButtons();
@@ -831,9 +838,8 @@ public class WanderUI extends GameUI {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        if (dungeonService.getCurrentFloorNumber() > 0) {
-            dungeonService.getCurrentFloor().getSystem(RenderSystem.class).getStage().getViewport()
-                    .update(width, height, true);
+        if (dungeonService.getProgress().depth > 0) {
+            dungeonService.getEngine().getSystem(RenderSystem.class).resize(width, height);
         }
     }
 

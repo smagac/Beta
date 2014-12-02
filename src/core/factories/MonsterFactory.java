@@ -1,12 +1,8 @@
 package core.factories;
 
-import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.Family;
-import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -172,7 +168,6 @@ public class MonsterFactory {
         return allMonsters.keys().toArray().random();
     }
 
-    private final TextureAtlas icons;
     private final FileType area;
 
     /**
@@ -183,8 +178,7 @@ public class MonsterFactory {
      * @param type
      *            - type of factory we should create
      */
-    public MonsterFactory(TextureAtlas icons, FileType type) {
-        this.icons = icons;
+    public MonsterFactory(FileType type) {
         this.area = type;
     }
 
@@ -308,7 +302,7 @@ public class MonsterFactory {
         s.hidden = boss;
         e.add(s);
         e.add(new Identifier(t.name, describer, suffix, t.hideName || s.hidden));
-        e.add(new Renderable(t.type, icons.findRegion(t.type)));
+        e.add(new Renderable(t.type));
 
         Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
         e.add(c);

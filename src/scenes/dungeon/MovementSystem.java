@@ -4,6 +4,7 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
+import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
@@ -28,6 +29,7 @@ import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
+import core.service.interfaces.IDungeonContainer;
 
 /**
  * Handles all movement for dungeoning, as well as bump combat
@@ -51,7 +53,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
     private Engine engine;
     private scenes.dungeon.Scene parentScene;
-
+    @Inject public IDungeonContainer dungeonService;
+    
     public void setMap(Floor floorData) {
         // build collision map
         TiledMapTileLayer floor = floorData.layer;
@@ -151,11 +154,11 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 if (e == player) {
                     // descend
                     if (x == (int) end[0] && y == (int) end[1]) {
-                        parentScene.setFloor(parentScene.nextFloor());
+                        parentScene.setFloor(dungeonService.getProgress().nextFloor());
                     }
                     // ascend
                     else if (x == (int) start[0] && y == (int) start[1]) {
-                        parentScene.setFloor(parentScene.prevFloor());
+                        parentScene.setFloor(dungeonService.getProgress().prevFloor());
                     }
                 }
 
@@ -275,10 +278,10 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
                     String name = id.toString();
                     if (name.endsWith(Monster.Loot)) {
-                        parentScene.progress.lootFound++;
-                        parentScene.progress.totalLootFound++;
+                        dungeonService.getProgress().lootFound++;
+                        dungeonService.getProgress().totalLootFound++;
                     } else {
-                        parentScene.progress.monstersKilled++;
+                        dungeonService.getProgress().monstersKilled++;
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
                 }
@@ -311,6 +314,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         Position p = positionMap.get(player);
 
         p.move((int) start[0], (int) start[1]);
+        p.update();
     }
 
     /**
@@ -321,6 +325,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         Position p = positionMap.get(player);
 
         p.move((int) end[0], (int) end[1]);
+        p.update();
     }
 
 

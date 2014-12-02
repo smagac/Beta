@@ -3,10 +3,7 @@ package scenes.dungeon;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.State;
-import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
-
-import core.datatypes.quests.Quest;
 
 public enum GameState implements State<Scene> {
     Wander(){
@@ -45,12 +42,6 @@ public enum GameState implements State<Scene> {
         
         @Override
         public boolean onMessage(Scene entity, Telegram telegram) {
-            if (telegram.message == Messages.KILLED) {
-                String name = (String) telegram.extraInfo;
-                entity.progress.monstersKilled++;
-                MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
-                entity.statemachine.changeState(Wander);
-            }
             return false;
         }
     };
