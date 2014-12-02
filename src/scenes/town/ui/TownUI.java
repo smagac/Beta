@@ -993,20 +993,20 @@ public class TownUI extends GameUI {
 
         saveWindow.clearActions();
 
-        exploreImg.addAction(Actions.moveTo(display.getWidth() / 2 - exploreImg.getWidth() / 2, 118f, .8f));
+        exploreImg.addAction(Actions.moveTo(getDisplayCenterX() - exploreImg.getWidth() / 2, 118f, .8f));
         sleepImg.addAction(Actions.moveTo(0, 0, .8f));
-        craftImg.addAction(Actions.moveTo(display.getWidth() - craftImg.getWidth(), 0, .8f));
-        character.addAction(Actions.moveTo(display.getWidth() / 2 - character.getWidth() / 2, 18f, .8f));
+        craftImg.addAction(Actions.moveTo(getDisplayWidth() - craftImg.getWidth(), 0, .8f));
+        character.addAction(Actions.moveTo(getDisplayCenterX() - character.getWidth() / 2, 18f, .8f));
         lootSubmenu.addAction(Actions.moveTo(-lootSubmenu.getWidth(), 0, .3f));
-        craftSubmenu.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+        craftSubmenu.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
         exploreSubmenu.addAction(Actions.moveTo(-exploreSubmenu.getWidth(), 0, .3f));
-        fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
+        fileDetails.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
         questSubmenu.addAction(Actions.moveTo(-questSubmenu.getWidth(), 0, .3f));
-        questDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-        saveWindow.addAction(Actions.moveTo(display.getWidth() / 2 - saveWindow.getWidth() / 2, display.getHeight(),
+        questDetails.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
+        saveWindow.addAction(Actions.moveTo(getDisplayCenterX() - saveWindow.getWidth() / 2, getDisplayHeight(),
                 .2f, Interpolation.circleOut));
-        downloadWindow.addAction(Actions.moveTo(display.getWidth() / 2 - downloadWindow.getWidth() / 2,
-                display.getHeight(), .2f, Interpolation.circleOut));
+        downloadWindow.addAction(Actions.moveTo(getDisplayCenterX() - downloadWindow.getWidth() / 2,
+                getDisplayHeight(), .2f, Interpolation.circleOut));
         setMessage("What're we doing next?");
 
         enableMenuInput();

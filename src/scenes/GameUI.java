@@ -541,6 +541,14 @@ public abstract class GameUI extends UI {
     public final float getDisplayHeight() {
         return display.getHeight();
     }
+    
+    public final float getDisplayCenterX() {
+        return display.getWidth() / 2f;
+    }
+    
+    public final float getDisplayCenterY() {
+        return display.getHeight() /2f;
+    }
 
     public static class Messages {
         // used to close the menu

@@ -2,8 +2,6 @@ package scenes.town.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -13,6 +11,8 @@ import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.audio.Sound;
@@ -630,9 +630,9 @@ enum TownState implements UIState {
     // to pull down a dungeon hash
     NetworkLoad() {
         private final String DAILY_DUNGEON_SERVER = "http://storymode.nhydock.me/daily";
-        Thread downloaderThread;
+        Net.HttpRequest connection;
         String dungeonData;
-
+        
         @Override
         public String[] defineButtons() {
             return new String[] { "Cancel Download" };
@@ -640,63 +640,64 @@ enum TownState implements UIState {
 
         @Override
         public void enter(final TownUI entity) {
-            final Runnable downloader = new Runnable() {
-
+            entity.downloadWindow.addAction(
+                   Actions.moveTo(entity.getDisplayWidth() / 2 - entity.downloadWindow.getWidth()/2f, 
+                                  entity.getDisplayHeight() / 2f - entity.downloadWindow.getHeight()/2f,
+                                  .3f, Interpolation.circleOut)
+            );
+            
+            connection = new Net.HttpRequest(Net.HttpMethods.GET);
+            connection.setUrl(DAILY_DUNGEON_SERVER);
+            connection.setTimeOut(5000);
+            Gdx.net.sendHttpRequest(connection, new Net.HttpResponseListener() {
+                
                 @Override
-                public void run() {
-                    try {
-                        URL url = new URL(DAILY_DUNGEON_SERVER);
-                        URLConnection conn = url.openConnection();
-                        try (InputStream inputStream = conn.getInputStream();
-                                Scanner scanner = new Scanner(inputStream)) {
-
-                            String output = "";
-                            while (scanner.hasNextLine()) {
-                                output += scanner.nextLine();
-                            }
-                            System.out.println(output);
-                            dungeonData = output;
-                        }
-
-                        scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
-                        DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
-                        dungeon.setDungeon(params, null);
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-
-                        entity.changeState(Explore);
-                    }
+                public void handleHttpResponse(HttpResponse httpResponse) {
+                   try (InputStream content = httpResponse.getResultAsStream();
+                        Scanner scanner = new Scanner(content))
+                   {
+                       String output = "";
+                       while (scanner.hasNextLine()) {
+                           output += scanner.nextLine();
+                       }
+                       System.out.println(output);
+                       dungeonData = output;
+       
+                       scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
+                       DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
+                       dungeon.setDungeon(params, null);
+                   }
+                   catch (IOException e) {
+                       e.printStackTrace();
+                       entity.changeState(Explore);
+                   }  
                 }
-            };
-
-            entity.downloadWindow.addAction(Actions.sequence(Actions.moveTo(entity.getDisplayWidth() / 2f
-                    - entity.downloadWindow.getWidth() / 2f,
-                    entity.getDisplayHeight() / 2f - entity.downloadWindow.getHeight() / 2f, .4f,
-                    Interpolation.circleOut), Actions.run(new Runnable() {
-
+                
                 @Override
-                public void run() {
-                    downloaderThread = new Thread(downloader);
-                    downloaderThread.start();
+                public void failed(Throwable t) {
+                    entity.changeState(Explore);
                 }
-
-            })));
+                
+                @Override
+                public void cancelled() {
+                    entity.changeState(Explore);
+                }
+            });
         }
-
+        
         @Override
         public void exit(TownUI entity) {
-            if (downloaderThread != null) {
-                // cancel the download
-                downloaderThread.interrupt();
-                downloaderThread = null;
-            }
+            entity.downloadWindow.addAction(Actions.moveTo(entity.getDisplayCenterX() - entity.downloadWindow.getWidth() / 2,
+                    entity.getDisplayHeight(), .2f, Interpolation.circleOut));
+            
         }
 
         @Override
         public boolean onMessage(TownUI entity, Telegram telegram) {
             if (telegram.message == MenuMessage.CancelDownload) {
-                entity.changeState(Explore);
+                if (connection != null) {
+                    Gdx.net.cancelHttpRequest(connection);
+                }
             }
             return false;
         }
