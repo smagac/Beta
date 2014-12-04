@@ -166,8 +166,9 @@ public class Scene extends scenes.Scene<UI> implements Agent {
 
     @Override
     public void dispose() {
-        player.removeAll();
         dungeonService.clear();
+
+        player.removeAll();
         
         MessageDispatcher.getInstance().removeListener(GameState.Messages.FIGHT, this);
         MessageDispatcher.getInstance().removeListener(GameState.Messages.KILLED, this);
@@ -208,7 +209,6 @@ public class Scene extends scenes.Scene<UI> implements Agent {
 
                     @Override
                     public void run() {
-                        e.addEntity(player);
                         input.addProcessor(wanderUI);
                         wanderUI.setMessage("You move onto floor " + depth + " of " + d.size());
                         
@@ -219,11 +219,12 @@ public class Scene extends scenes.Scene<UI> implements Agent {
                         
                         MovementSystem ms = e.getSystem(MovementSystem.class);
                         if (descending) {
-                            ms.moveToStart();
+                            ms.moveToStart(player);
                         }
                         else {
-                            ms.moveToEnd();
+                            ms.moveToEnd(player);
                         }
+                        e.addEntity(player);
                         
                         wanderUI.fadeIn();
                     }

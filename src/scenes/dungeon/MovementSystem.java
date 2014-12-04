@@ -309,20 +309,21 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     /**
      * Set the system's main player and moves them to their starting position
      * Used to descend to the next level
+     * @param entity 
      */
-    public void moveToStart() {
-        Position p = positionMap.get(player);
+    public void moveToStart(Entity entity) {
+        Position p = positionMap.get(entity);
 
         p.move((int) start[0], (int) start[1]);
         p.update();
     }
 
     /**
-     * Sets the player to the end position of a level. Used when ascending to a
-     * previous level
+     * Sets an entity to the end position of a level. Used when ascending to a
+     * previous level.  Primarily for the player, but can be used for anything.
      */
-    public void moveToEnd() {
-        Position p = positionMap.get(player);
+    public void moveToEnd(Entity entity) {
+        Position p = positionMap.get(entity);
 
         p.move((int) end[0], (int) end[1]);
         p.update();
