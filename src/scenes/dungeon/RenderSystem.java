@@ -75,44 +75,44 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     // selective map layer to draw
     private int[] layers;
 
-    @Inject public IColorMode color;
-    
+    @Inject
+    public IColorMode color;
+
     Family type = Family.all(Renderable.class, Position.class).get();
 
     Array<Entity> entities = new Array<Entity>();
     Entity player;
-    
-    //temp vars used for hover effect
-    static Vector2 v1 = new Vector2(0,0);
-    static Vector2 v2 = new Vector2(0,0);
-    
-    
+
+    // temp vars used for hover effect
+    static Vector2 v1 = new Vector2(0, 0);
+    static Vector2 v2 = new Vector2(0, 0);
+
     public RenderSystem() {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
         this.layers = new int[] { 0 };
     }
-    
+
     public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
         scale = 32f * mapRenderer.getUnitScale();
     }
-    
+
     public void setFloor(int depth) {
-        this.layers[0] = depth-1;
+        this.layers[0] = depth - 1;
     }
-    
+
     @Override
     public void entityAdded(final Entity e) {
         if (!type.matches(e)) {
             return;
         }
-        
-        if (Groups.playerType.matches(e)){
+
+        if (Groups.playerType.matches(e)) {
             player = e;
             System.out.print("Player added\n");
         }
-        
+
         entities.add(e);
         Renderable r = renderMap.get(e);
         Position p = positionMap.get(e);
@@ -121,9 +121,9 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         sprite.setSize(scale, scale);
         sprite.setPosition(p.getX() * scale, p.getY() * scale);
         if (Groups.monsterType.matches(e)) {
-            Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
+            //Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
             sprite.addListener(new InputListener() {
-                
+
                 @Override
                 public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
                     Stats s = statMap.get(e);
@@ -133,7 +133,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
 
                     v1.set(0, 0);
                     v2.set(0, sprite.getHeight() + 6);
-                    
+
                     Vector2 hv = sprite.localToStageCoordinates(v1);
                     Vector2 hv2 = sprite.localToStageCoordinates(v2);
 
@@ -167,7 +167,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             p.update();
         }
     }
-    
+
     @Override
     public void update(float delta) {
         for (Actor r : removeQueue) {
@@ -178,14 +178,14 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         for (Actor a : addQueue) {
             stage.addActor(a);
         }
-        
+
         removeQueue.clear();
         addQueue.clear();
 
-        if (!invisible) {        
+        if (!invisible) {
             float x = camera.position.x;
             float y = camera.position.y;
-    
+
             camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
             camera.update();
             // fill background
@@ -197,7 +197,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
                 batch.draw(nullTile, 0, 0, camera.viewportWidth, camera.viewportHeight);
                 batch.end();
             }
-            
+
             camera.position.x = x;
             camera.position.y = y;
             camera.update();
@@ -205,12 +205,18 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             mapRenderer.render(layers);
         }
 
-        //process the entities
+        // process the entities
         for (Entity e : entities) {
             process(e);
         }
-        
+
         stage.act(delta);
+
+        if (player != null) {
+            Renderable r = renderMap.get(player);
+            camera.position.x = r.getActor().getX();
+            camera.position.y = r.getActor().getY();
+        }
 
         if (invisible) {
             invisible = false;
@@ -224,19 +230,13 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         damageNumbers.draw(batch, damageNumbers.getColor().a);
         batch.end();
         batch.setColor(1f, 1f, 1f, 1f);
-        
-        if (player != null)
-        {
-            Renderable r = renderMap.get(player);
-            camera.position.x = r.getActor().getX();
-            camera.position.y = r.getActor().getY();    
-        }
-        
+
     }
 
     public void setView(WanderUI view, Skin skin) {
         Viewport v = view.getViewport();
-        this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(), new OrthographicCamera()));
+        this.stage = new Stage(new ScalingViewport(Scaling.fit, v.getWorldWidth(), v.getWorldHeight(),
+                new OrthographicCamera()));
 
         this.batch = (SpriteBatch) this.stage.getBatch();
         ShaderProgram shader = color.getShader();
@@ -305,8 +305,9 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
         stats.setWidth(width);
 
-        stats.addAction(Actions.sequence(Actions.alpha(0f), Actions.moveTo(v.x - stats.getPrefWidth() / 2f, v.y),
-                Actions.parallel(Actions.alpha(1f, .2f), Actions.moveTo(v2.x - stats.getPrefWidth() / 2f, v2.y, .2f))));
+        stats.addAction(Actions.sequence(
+                Actions.parallel(Actions.alpha(0f), Actions.moveTo(v.x - (stats.getPrefWidth() / 2f), v.y)),
+                Actions.parallel(Actions.alpha(1f, .2f), Actions.moveTo(v2.x - (stats.getPrefWidth() / 2f), v2.y, .2f))));
     }
 
     /**
@@ -348,13 +349,13 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     public void entityRemoved(Entity entity) {
         Renderable r = renderMap.get(entity);
         removeQueue.add(r.getActor());
-        
+
         if (Groups.playerType.matches(entity)) {
             player = null;
         }
         entities.removeValue(entity, true);
     }
-    
+
     @Override
     public void addedToEngine(Engine engine) {
         for (Entity e : entities) {
@@ -368,7 +369,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             this.entityAdded(e);
         }
     }
-    
+
     @Override
     public void removedFromEngine(Engine engine) {
         batch = null;
