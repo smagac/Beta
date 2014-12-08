@@ -1,4 +1,4 @@
-package core.common;
+package core.service.implementations;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 
+import core.common.Tracker;
 import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
@@ -155,7 +156,7 @@ public class PlayerManager implements IPlayerContainer {
             json.writeValue("date", df.format(Calendar.getInstance().getTime()));
             json.writeValue("inventory", inventory, Inventory.class);
             json.writeValue("stats", player, Stats.class);
-            json.writeValue("tracker", Tracker._instance, Tracker.class);
+            json.writeValue("tracker", Tracker.getInstance(), Tracker.class);
             json.writeValue("quests", quests, QuestTracker.class);
             json.writeObjectEnd();
             js.close();
@@ -182,7 +183,7 @@ public class PlayerManager implements IPlayerContainer {
         this.player = new Stats();
         this.player.read(json, root.get("stats"));
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
-        Tracker._instance.read(json, root.get("tracker"));
+        Tracker.getInstance().read(json, root.get("tracker"));
         made = true;
     }
 
@@ -246,5 +247,15 @@ public class PlayerManager implements IPlayerContainer {
     @Override
     public void updateTime(float delta) {
         time += delta;
+    }
+
+    @Override
+    public void onRegister() {
+        // Do nothing   
+    }
+
+    @Override
+    public void onUnregister() {
+        // Do nothing
     }
 }

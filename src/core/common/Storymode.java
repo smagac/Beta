@@ -4,8 +4,6 @@ import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -20,18 +18,22 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.DLC;
 import core.Palette;
-import core.datatypes.dungeon.DungeonManager;
 import core.factories.AllFactories;
+import core.service.implementations.AudioManager;
+import core.service.implementations.DungeonManager;
+import core.service.implementations.PlayerManager;
+import core.service.implementations.SharedLoader;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IGame;
 import core.service.interfaces.ILoader;
 import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.ISharedResources;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
-public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, ILoader, IAudioManager {
+public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGame, ILoader {
 
     public static final int[] InternalRes = { 960, 540 };
 
@@ -58,17 +60,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
 
     private IPlayerContainer playerManager;
     private IDungeonContainer dungeonManager;
+    private AudioManager audioManager;
 
-    // currently playing bgm
-    private Music bgm;
-    private boolean hasBgmStarted;
-    private float BgmVolume;
-    private float SfxVolume;
-
-    protected Storymode() {
-        BgmVolume = 1.0f;
-        SfxVolume = 1.0f;
-    }
+    protected Storymode() {}
 
     @Override
     public void resize(int width, int height) {
@@ -98,12 +92,15 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
         ServiceManager.register(ILoader.class, this);
         ServiceManager.register(IGame.class, this);
         ServiceManager.register(IColorMode.class, this);
-        ServiceManager.register(IAudioManager.class, this);
-
+        
+        audioManager = new AudioManager();
+        ServiceManager.register(IAudioManager.class, audioManager);
         playerManager = new PlayerManager();
         ServiceManager.register(IPlayerContainer.class, playerManager);
-        dungeonManager = new DungeonManager(this);
+        dungeonManager = new DungeonManager();
         ServiceManager.register(IDungeonContainer.class, dungeonManager);
+        
+        ServiceManager.register(ISharedResources.class, new SharedLoader());
         
         SceneManager.register("town", scenes.town.Scene.class);
         SceneManager.register("dungeon", scenes.dungeon.Scene.class);
@@ -208,6 +205,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
         }
 
         playerManager.updateTime(delta);
+        audioManager.update(delta);
         this.getScreen().render(delta);
 
         if (loading) {
@@ -237,16 +235,13 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
         super.resume();
         resumed = true;
 
-        // only resume a bgm if it's already started playing and exists
-        if (this.hasBgmStarted) {
-            bgm.play();
-        }
+        audioManager.playBgm();
     }
 
     @Override
     public void pause() {
         super.pause();
-        pauseBgm();
+        audioManager.pauseBgm();
     }
 
     @Override
@@ -325,92 +320,23 @@ public class Storymode extends com.badlogic.gdx.Game implements IColorMode, IGam
     }
 
     @Override
-    public void playBgm() {
-        if (hasBgm()) {
-            this.bgm.play();
-            this.hasBgmStarted = true;
-        }
+    public void onRegister() {
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
-    public void setBgm(Music bgm) {
-        setBgm(bgm, true);
+    public void onUnregister() {
+        // TODO Auto-generated method stub
+        
     }
 
-    @Override
-    public void playBgm(Music bgm) {
-        playBgm(bgm, true);
-    }
-
-    @Override
-    public void stopBgm() {
-        if (hasBgm()) {
-            this.bgm.stop();
-        }
-    }
-
-    @Override
     public void setBgmVol(float vol) {
-        this.BgmVolume = vol;
+        audioManager.setBgmVol(vol);
     }
 
-    @Override
     public void setSfxVol(float vol) {
-        this.SfxVolume = vol;
-    }
-
-    @Override
-    public void playSfx(Sound clip) {
-        clip.play(this.SfxVolume);
-    }
-
-    @Override
-    public boolean isPlayingBgm() {
-        if (hasBgm()) {
-            return bgm.isPlaying();
-        }
-        return false;
-    }
-
-    @Override
-    public void pauseBgm() {
-        if (hasBgm()) {
-            bgm.pause();
-        }
-    }
-
-    @Override
-    public boolean hasBgm() {
-        return this.bgm != null;
-    }
-
-    @Override
-    public void setBgm(Music bgm, boolean loop) {
-        if (hasBgm()) {
-            this.bgm.stop();
-            this.bgm.dispose();
-        }
-        this.bgm = bgm;
-        this.bgm.setVolume(this.BgmVolume);
-        this.bgm.setLooping(loop);
-        this.hasBgmStarted = false;
-    }
-
-    @Override
-    public void playBgm(Music bgm, boolean loop) {
-
-        setBgm(bgm, loop);
-        this.bgm.play();
-        this.hasBgmStarted = true;
-    }
-
-    @Override
-    public void clearBgm() {
-        if (hasBgm()) {
-            this.bgm.stop();
-            this.bgm = null;
-            this.hasBgmStarted = false;
-        }
+        audioManager.setSfxVol(vol);
     }
 
 }

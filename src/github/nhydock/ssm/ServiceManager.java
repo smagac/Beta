@@ -28,11 +28,17 @@ public class ServiceManager {
     public static void register(Class<? extends Service> cls, Service service) {
         // allow passing null to deregister a service entirely
         if (service == null) {
-            services.remove(cls);
+            Service s = services.remove(cls);
+            if (s != null) {
+                s.onUnregister();
+            }
             return;
         }
+        
         if (cls.isAssignableFrom(service.getClass())) {
+            inject(service);
             services.put(cls, service);
+            service.onRegister();
         }
         else {
             throw (new NullPointerException("Service registered is not of type specified: " + cls.getCanonicalName()));

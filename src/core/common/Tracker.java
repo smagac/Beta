@@ -11,6 +11,14 @@ public final class Tracker implements Serializable {
     protected static Tracker _instance = new Tracker();
 
     /**
+     * Not necessary except for json saving
+     * @return
+     */
+    public static Tracker getInstance() {
+        return _instance;
+    }
+    
+    /**
      * Reset all the tracker's values
      */
     public static void reset() {

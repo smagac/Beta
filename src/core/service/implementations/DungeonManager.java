@@ -1,4 +1,6 @@
-package core.datatypes.dungeon;
+package core.service.implementations;
+
+import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
@@ -14,15 +16,17 @@ import com.badlogic.gdx.utils.Pools;
 import core.components.Identifier;
 import core.components.Groups.Monster;
 import core.datatypes.dungeon.DungeonLoader.DungeonParam;
+import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.FloorLoader;
 import core.datatypes.dungeon.DungeonLoader;
+import core.datatypes.dungeon.Progress;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.ILoader;
 
 public class DungeonManager implements IDungeonContainer {
 
-    ILoader loader;
+    @Inject ILoader loader;
     
     Dungeon dungeon;
     Engine engine;
@@ -36,16 +40,9 @@ public class DungeonManager implements IDungeonContainer {
     DungeonLoader dl;
     FloorLoader fl;
     
-    public DungeonManager(ILoader loader) {
-        this.loader = loader;
-        dungeonLoader = new AssetManager();
+    public DungeonManager() {
         dl = new DungeonLoader(new InternalFileHandleResolver());
         fl = new FloorLoader(new InternalFileHandleResolver());
-        dungeonLoader.setLoader(Dungeon.class, dl);
-        dungeonLoader.setLoader(ImmutableArray.class, fl);
-        
-        engine = new Engine();
-        progress = new Progress();
     }
     
     @Override
@@ -67,7 +64,7 @@ public class DungeonManager implements IDungeonContainer {
             public void finishedLoading(AssetManager assetManager, String fileName, Class type) {
                 dungeon = (Dungeon) dungeonLoader.get(fileName, type);
                 progress = new Progress();
-                progress.floors = dungeon.depth;
+                progress.floors = dungeon.size();
                 
                 if (params.onLoad != null) {
                     params.onLoad.run();
@@ -171,6 +168,26 @@ public class DungeonManager implements IDungeonContainer {
     @Override
     public Progress getProgress() {
         return progress;
+    }
+
+    @Override
+    public void onRegister() {
+        dungeonLoader = new AssetManager();
+        
+        dungeonLoader = new AssetManager();
+        dungeonLoader.setLoader(Dungeon.class, dl);
+        dungeonLoader.setLoader(ImmutableArray.class, fl);
+        
+        engine = new Engine();
+        progress = new Progress();
+    }
+
+    @Override
+    public void onUnregister() {
+        dungeonLoader.dispose();
+        dungeon = null;
+        progress = null;
+        engine = null;
     }
 
 }
