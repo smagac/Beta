@@ -1,5 +1,7 @@
 package scenes.newgame;
 
+import github.nhydock.ssm.Inject;
+
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -55,14 +57,13 @@ public class NewUI extends UI {
     private ButtonGroup gender;
     private LabeledTicker<Integer> number;
 
-    private IPlayerContainer player;
+    @Inject public IPlayerContainer player;
 
     private StateMachine<NewUI> sm;
 
-    public NewUI(Scene scene, AssetManager manager, IPlayerContainer p) {
+    public NewUI(Scene scene, AssetManager manager) {
         super(manager);
         parent = scene;
-        player = p;
 
         sm = new DefaultStateMachine<NewUI>(this);
     }
@@ -191,7 +192,7 @@ public class NewUI extends UI {
 
                 @Override
                 public void run() {
-                    manager.get(DataDirs.tick, Sound.class).play();
+                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                     number.defaultLeftClick.run();
                 }
 
@@ -201,7 +202,7 @@ public class NewUI extends UI {
 
                 @Override
                 public void run() {
-                    manager.get(DataDirs.tick, Sound.class).play();
+                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                     number.defaultRightClick.run();
                 }
 
@@ -269,7 +270,7 @@ public class NewUI extends UI {
                         createFrame.clearListeners();
                         accept.clearListeners();
                         createFocus.clearListeners();
-                        manager.get(DataDirs.accept, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         hidePointer();
                     }
 
@@ -434,7 +435,7 @@ public class NewUI extends UI {
             public boolean onMessage(final NewUI entity, Telegram telegram) {
                 final int index = telegram.message;
                 if (index == 0) {
-                    entity.manager.get(DataDirs.accept, Sound.class).play();
+                    entity.audio.playSfx(entity.shared.getResource(DataDirs.accept, Sound.class));
                     entity.slotFrame.addAction(Actions.sequence(Actions.sequence(Actions.run(new Runnable() {
                         @Override
                         public void run() {
@@ -455,11 +456,11 @@ public class NewUI extends UI {
                 }
                 else {
                     if (telegram.extraInfo == null) {
-                        entity.manager.get(DataDirs.tick, Sound.class).play();
+                        entity.audio.playSfx(entity.shared.getResource(DataDirs.tick, Sound.class));
                         return false;
                     }
 
-                    entity.manager.get(DataDirs.accept, Sound.class).play();
+                    entity.audio.playSfx(entity.shared.getResource(DataDirs.accept, Sound.class));
                     entity.slotFrame.addAction(Actions.sequence(Actions.sequence(Actions.run(new Runnable() {
                         @Override
                         public void run() {
@@ -624,7 +625,7 @@ public class NewUI extends UI {
 
                                         @Override
                                         public void run() {
-                                            entity.manager.get(DataDirs.shimmer, Sound.class).play();
+                                            entity.audio.playSfx(entity.shared.getResource(DataDirs.shimmer, Sound.class));
                                         }
 
                                     }), Actions.moveTo(entity.goddess.getX(), entity.getHeight() + 128f, .4f)))));

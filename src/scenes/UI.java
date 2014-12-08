@@ -1,5 +1,6 @@
 package scenes;
 
+import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
@@ -22,6 +23,8 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 
 import core.common.Storymode;
+import core.service.interfaces.IAudioManager;
+import core.service.interfaces.ISharedResources;
 
 public abstract class UI extends Stage implements Agent {
 
@@ -31,6 +34,9 @@ public abstract class UI extends Stage implements Agent {
     protected Image pointer;
     protected final Image fill;
 
+    @Inject public ISharedResources shared;
+    @Inject public IAudioManager audio;
+    
     public UI(AssetManager manager) {
         super(new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]));
         this.manager = manager;

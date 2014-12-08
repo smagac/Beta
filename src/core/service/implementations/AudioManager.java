@@ -119,4 +119,14 @@ public class AudioManager implements IAudioManager {
     private float getSFXVol() {
         return sfxController.getColor().a;
     }
+
+    @Override
+    public void playSfx(Sound sound, int vol, float pitch, int pan) {
+        sound.play(vol * getSFXVol(), pitch, pan);
+    }
+
+    @Override
+    public void playSfx(Sound sound, float vol) {
+        sound.play(vol * getSFXVol());
+    }
 }

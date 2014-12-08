@@ -1,6 +1,7 @@
 package core.service.implementations;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -19,16 +20,20 @@ public class SharedLoader implements ISharedResources {
         manager = new AssetManager();
         
         // add shared resources
-        
         manager.load(DataDirs.Home + "uiskin.json", Skin.class);
         manager.load(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "loading.fnt", BitmapFont.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
+        manager.load(DataDirs.accept, Sound.class);
+        manager.load(DataDirs.tick, Sound.class);
+        manager.load(DataDirs.hit, Sound.class);
+        manager.load(DataDirs.shimmer, Sound.class);
         
         // shared resources matter a lot, so make sure they're loaded before
         // doing anything else;
         while (!manager.update());
         
+        // skin is used in a lot of places so we add addition regions to it to make things easier
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
         TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
         uiSkin.add("fill", new TextureRegion(manager.get(DataDirs.Home + "fill.png", Texture.class)), TextureRegion.class);

@@ -466,7 +466,7 @@ public class WanderUI extends GameUI {
 
                     @Override
                     public void run() {
-                        manager.get(DataDirs.tick, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                         if (ticker.getValueIndex() > 0) {
                             ticker.defaultLeftClick.run();
                             setPoints(points + 1);
@@ -478,7 +478,7 @@ public class WanderUI extends GameUI {
 
                     @Override
                     public void run() {
-                        manager.get(DataDirs.tick, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                         if (ticker.getValueIndex() < ticker.length() && points > 0) {
                             ticker.defaultRightClick.run();
                             setPoints(points - 1);
@@ -517,7 +517,7 @@ public class WanderUI extends GameUI {
                 @Override
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     if (points > 0) {
-                        manager.get(DataDirs.tick, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         return false;
                     }
 

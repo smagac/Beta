@@ -1,5 +1,7 @@
 package scenes.endgame;
 
+import github.nhydock.ssm.Inject;
+
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -32,6 +34,7 @@ import core.DataDirs;
 import core.common.Tracker;
 import core.common.Tracker.NumberValues;
 import core.common.Tracker.StringValues;
+import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IPlayerContainer;
 
 public class EndUI extends UI {
@@ -48,14 +51,14 @@ public class EndUI extends UI {
 
     Scene parent;
 
-    IPlayerContainer player;
+    @Inject public IPlayerContainer player;
+    @Inject public IAudioManager audio;
 
     private Group stats;
 
-    public EndUI(Scene scene, AssetManager manager, IPlayerContainer player) {
+    public EndUI(Scene scene, AssetManager manager) {
         super(manager);
         parent = scene;
-        this.player = player;
     }
 
     @Override
@@ -100,7 +103,7 @@ public class EndUI extends UI {
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        manager.get(DataDirs.shimmer, Sound.class).play(.4f);
+                        audio.playSfx(manager.get(DataDirs.shimmer, Sound.class), .4f);
                     }
                 }),
                 Actions.parallel(Actions.sizeTo(128f, 128f), Actions.repeat(3, Actions.rotateBy(360f, .2f)),
@@ -108,7 +111,7 @@ public class EndUI extends UI {
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        manager.get(DataDirs.hit, Sound.class).play(1, .5f, 0);
+                        audio.playSfx(manager.get(DataDirs.hit, Sound.class), 1, .5f, 0);
                     }
                 }),
                 Actions.delay(1f),
@@ -249,7 +252,7 @@ public class EndUI extends UI {
                     @Override
                     public void run() {
                         done.clearListeners();
-                        manager.get(DataDirs.accept, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                     }
 
                 }), Actions.alpha(0f, .5f), Actions.run(new Runnable() {
@@ -333,7 +336,7 @@ public class EndUI extends UI {
 
                             @Override
                             public void run() {
-                                manager.get(DataDirs.shimmer, Sound.class).play();
+                                audio.playSfx(shared.getResource(DataDirs.shimmer, Sound.class));
                             }
 
                         }), Actions.moveTo(goddess.getX(), getHeight() + 128f, .4f)))));

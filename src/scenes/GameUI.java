@@ -35,6 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import core.DataDirs;
 import core.components.Stats;
 import core.datatypes.Inventory;
+import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IPlayerContainer;
 
 /**
@@ -109,18 +110,14 @@ public abstract class GameUI extends UI {
     }
 
     @Override
-    protected void load() {
-        manager.load("data/uiskin.json", Skin.class);
-        manager.load(DataDirs.accept, Sound.class);
-        manager.load(DataDirs.tick, Sound.class);
-    }
+    protected void load() {}
 
     /**
      * Initialize the ui after all assets have been loaded
      */
     @Override
     public final void init() {
-        skin = manager.get("data/uiskin.json", Skin.class);
+        skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
 
         // stat frame
         {
@@ -221,7 +218,7 @@ public abstract class GameUI extends UI {
                         return true;
                     }
                     if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
-                        manager.get(DataDirs.accept, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         triggerAction(getIndex());
                         hidePointer();
                         return true;
@@ -343,7 +340,7 @@ public abstract class GameUI extends UI {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        manager.get(DataDirs.accept, Sound.class).play();
+                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         triggerAction(getIndex());
                     }
                     return false;

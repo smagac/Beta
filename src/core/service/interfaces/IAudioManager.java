@@ -97,4 +97,8 @@ public interface IAudioManager extends Service {
      * Sets there to be no currently managed/playing bgm
      */
     public void clearBgm();
+
+    public void playSfx(Sound sound, int vol, float pitch, int pan);
+
+    public void playSfx(Sound sound, float vol);
 }

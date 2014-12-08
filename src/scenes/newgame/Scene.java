@@ -5,18 +5,14 @@ import github.nhydock.ssm.SceneManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 
 import core.DataDirs;
 import core.service.interfaces.IGame;
-import core.service.interfaces.IPlayerContainer;
 
 public class Scene extends scenes.Scene<NewUI> {
 
     @Inject
     public IGame gameService;
-    @Inject
-    public IPlayerContainer playerService;
 
     @Override
     public void extend(float delta) {
@@ -30,13 +26,9 @@ public class Scene extends scenes.Scene<NewUI> {
 
     @Override
     public void show() {
-        ui = new NewUI(this, manager, playerService);
+        ui = new NewUI(this, manager);
 
         manager.load(DataDirs.Audio + "story.mp3", Music.class);
-
-        manager.load(DataDirs.tick, Sound.class);
-        manager.load(DataDirs.shimmer, Sound.class);
-        manager.load(DataDirs.accept, Sound.class);
     }
 
     @Override

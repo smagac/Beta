@@ -42,6 +42,7 @@ import core.datatypes.Item;
 import core.factories.DungeonFactory;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.ISharedResources;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
@@ -49,6 +50,9 @@ public class Scene extends scenes.Scene<UI> implements Agent {
 
     @Inject
     public IPlayerContainer playerService;
+    
+    @Inject
+    public ISharedResources shared;
     
     @Inject
     public IDungeonContainer dungeonService;
@@ -244,7 +248,7 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         playerService.getInventory().abandon();
 
         Tracker.NumberValues.Times_Died.increment();
-        manager.get(DataDirs.dead, Sound.class).play();
+        audio.playSfx(shared.getResource(DataDirs.dead, Sound.class));
     }
 
     protected void leave() {
