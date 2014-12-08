@@ -2,6 +2,7 @@ package core.service.interfaces;
 
 import github.nhydock.ssm.Service;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 import core.Palette;
@@ -23,4 +24,6 @@ public interface IColorMode extends Service {
     public boolean isInverted();
 
     public ShaderProgram getShader();
+
+    public Color getClear();
 }
