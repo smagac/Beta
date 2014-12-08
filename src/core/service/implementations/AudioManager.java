@@ -51,7 +51,7 @@ public class AudioManager implements IAudioManager {
 
     @Override
     public void setBgm(Music bgm, boolean loop) {
-        if (this.bgm == null) {
+        if (this.bgm != null) {
             this.bgm.stop();
             this.bgm = null;
         }

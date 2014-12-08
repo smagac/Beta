@@ -27,7 +27,7 @@ public class SharedLoader implements ISharedResources {
         
         // shared resources matter a lot, so make sure they're loaded before
         // doing anything else;
-        while (manager.update());
+        while (!manager.update());
         
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
         TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");

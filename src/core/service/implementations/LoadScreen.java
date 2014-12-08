@@ -27,8 +27,8 @@ public class LoadScreen implements ILoader {
     BitmapFont font;
     TextureRegion fill;
     
-    @Inject ISharedResources shared;
-    @Inject IColorMode colorMode;
+    @Inject public ISharedResources shared;
+    @Inject public IColorMode colorMode;
     private boolean loading;
     private String loadingMessage;
 
