@@ -28,7 +28,7 @@ public class Position extends Component {
     }
 
     public float distance(Position p) {
-        return Vector2.dst(this.x, this.y, x, y);
+        return Vector2.dst(this.x, this.y, p.x, p.y);
     }
 
     public void update() {

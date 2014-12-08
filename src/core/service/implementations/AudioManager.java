@@ -113,7 +113,8 @@ public class AudioManager implements IAudioManager {
 
     @Override
     public void clearBgm() {
-        
+        stopBgm();
+        this.bgm = null;
     }
 
     private float getSFXVol() {

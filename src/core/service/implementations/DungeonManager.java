@@ -26,7 +26,7 @@ import core.service.interfaces.ILoader;
 
 public class DungeonManager implements IDungeonContainer {
 
-    @Inject ILoader loader;
+    @Inject public ILoader loader;
     
     Dungeon dungeon;
     Engine engine;
@@ -123,17 +123,15 @@ public class DungeonManager implements IDungeonContainer {
     @Override
     public boolean isLoading() {
         if (!dungeonLoader.update()) {
-            loader.setLoading(true);
             if (!dungeonLoader.isLoaded("dungeon") && dungeon == null) {
+                loader.setLoading(true);
                 loader.setLoadingMessage(String.format("Creating Dungeon...%d%%", dl.getProgress()));
-            } else if (!dungeonLoader.isLoaded("floor")) {
-                loader.setLoadingMessage("Populating Floor");
             }
             return true;
+        } else {
+            loader.setLoading(false);
+            return false;
         }
-        loader.setLoading(false);
-
-        return false;
     }
 
     @Override

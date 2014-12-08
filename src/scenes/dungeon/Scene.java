@@ -136,6 +136,8 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         rs.setNull(manager.get(DataDirs.Home + "null.png", Texture.class));
         rs.setMap(map);
         ms.setScene(this);
+        
+        input.addProcessor(rs.getStage());
     }
 
     @Override
@@ -171,7 +173,7 @@ public class Scene extends scenes.Scene<UI> implements Agent {
     @Override
     public void dispose() {
         dungeonService.clear();
-
+        audio.clearBgm();
         player.removeAll();
         
         MessageDispatcher.getInstance().removeListener(GameState.Messages.FIGHT, this);

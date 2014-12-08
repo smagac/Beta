@@ -22,12 +22,12 @@ public class SharedLoader implements ISharedResources {
         // add shared resources
         manager.load(DataDirs.Home + "uiskin.json", Skin.class);
         manager.load(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
-        manager.load(DataDirs.Home + "loading.fnt", BitmapFont.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
         manager.load(DataDirs.accept, Sound.class);
         manager.load(DataDirs.tick, Sound.class);
         manager.load(DataDirs.hit, Sound.class);
         manager.load(DataDirs.shimmer, Sound.class);
+        manager.load(DataDirs.dead, Sound.class);
         
         // shared resources matter a lot, so make sure they're loaded before
         // doing anything else;
@@ -37,7 +37,6 @@ public class SharedLoader implements ISharedResources {
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
         TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
         uiSkin.add("fill", new TextureRegion(manager.get(DataDirs.Home + "fill.png", Texture.class)), TextureRegion.class);
-        uiSkin.add("loading", manager.get(DataDirs.Home + "loading.fnt", BitmapFont.class), BitmapFont.class);
         uiSkin.addRegions(dungeonSprites);
     }
     

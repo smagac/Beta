@@ -9,6 +9,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
@@ -120,8 +121,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         sprite.setSize(scale, scale);
         sprite.setPosition(p.getX() * scale, p.getY() * scale);
         if (Groups.monsterType.matches(e)) {
-            // Gdx.app.log("[Entity]",
-            // "Entity is monster, adding hover controls");
+            Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
             sprite.addListener(new InputListener() {
                 
                 @Override
@@ -355,7 +355,14 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         entities.removeValue(entity, true);
     }
     
+    @Override
     public void addedToEngine(Engine engine) {
+        for (Entity e : entities) {
+            Renderable r = renderMap.get(e);
+            if (r != null) {
+                removeQueue.add(r.getActor());
+            }
+        }
         entities.clear();
         for (Entity e : engine.getEntitiesFor(type)) {
             this.entityAdded(e);
