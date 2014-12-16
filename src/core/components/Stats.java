@@ -20,7 +20,7 @@ public class Stats extends Component implements Serializable {
     public int maxhp;
     private int strength;
     private int defense;
-    private float speed;
+    private int speed;
     public int exp;
     public int nextExp;
     public boolean hidden;
@@ -30,18 +30,22 @@ public class Stats extends Component implements Serializable {
     /**
      * Keep track of 
      */
-    private Array<StatModifier> mods;
+    private Array<StatModifier> mods = new Array<StatModifier>();
     
-    public Stats() {
-        mods = new Array<StatModifier>();
-    }
+    public Stats() { }
 
     public Stats(int[] values, StatModifier[] mods) {
         level = 1;
-        exp = baseStats[4];
         nextExp = 10;
-        
         baseStats = values;
+        
+        maxhp = baseStats[0];
+        hp = maxhp;
+        strength = baseStats[1];
+        defense = baseStats[2];
+        speed = baseStats[3];
+        exp = baseStats[4];
+        
         this.mods.addAll(mods);
         recalculate(true);
     }
@@ -56,6 +60,9 @@ public class Stats extends Component implements Serializable {
         strength = baseStats[1];
         defense = baseStats[2];
         speed = baseStats[3];
+        
+        if (mods.size == 0)
+            return;
         
         float maxhpBonus = 0;
         float strengthBonus = 0;
@@ -172,5 +179,13 @@ public class Stats extends Component implements Serializable {
         maxhp = jsonData.getInt("mhp");
         hp = jsonData.getInt("hp");
         exp = jsonData.getInt("exp");
+        
+        baseStats = new int[5];
+        baseStats[0] = maxhp;
+        baseStats[1] = strength;
+        baseStats[2] = defense;
+        baseStats[3] = speed;
+        baseStats[4] = exp;
+        
     }
 }
