@@ -70,5 +70,18 @@ Dungeoning
     Decktonic - Fair Game
     Sycamore Drive - Kicks
     Revolution Void - Telluric Undercurrent
+    Benjamin Briggs - Benji Needs A Lawyer (http://benbriggs.net/track/benji-needs-a-lawyer)
     
-    
+## FOSS Libraries Used
+
+LibGDX - core engine of the game
+http://libgdx.badlogicgames.com/
+
+Ashley - an entity system, used in dungeoning
+https://github.com/libgdx/ashley
+
+SquidLib - FOV calculations
+https://github.com/SquidPony/SquidLib
+
+roguelikelib - dungeon generation algorithm
+http://sourceforge.net/projects/roguelikelib/
