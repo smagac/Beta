@@ -1,6 +1,7 @@
 package core.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.gdx.utils.Array;
 
 public class Identifier extends Component {
 
@@ -9,12 +10,22 @@ public class Identifier extends Component {
     String type;
     String description;
     boolean hidden;
+    
+    Array<String> modifiers;
 
-    public Identifier(String base, String adjective, String suffix, boolean hidden) {
+    public Identifier(String base, String suffix, String... adjectives) {
         this.type = base;
-        this.adjective = adjective;
         this.suffix = suffix;
-        this.hidden = hidden;
+        
+        modifiers = new Array<String>(adjectives);
+        buildName();
+    }
+
+    private void buildName() {
+        this.adjective = "";
+        for (String adj : modifiers) {
+            this.adjective += adj + " ";
+        }
     }
 
     @Override
@@ -30,7 +41,25 @@ public class Identifier extends Component {
         return hidden;
     }
 
+    public void hide() {
+        hidden = true;
+    }
+    
     public void show() {
         hidden = false;
+    }
+    
+    public void addModifier(String adj) {
+        modifiers.add(adj);
+        buildName();
+    }
+    
+    /**
+     * Removes the first instance of the adjective in the name
+     * @param adj
+     */
+    public void removeModifier(String adj) {
+        modifiers.removeValue(adj, false);
+        buildName();
     }
 }

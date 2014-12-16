@@ -17,6 +17,7 @@ import core.common.Tracker;
 import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
+import core.datatypes.StatModifier;
 import core.service.interfaces.IPlayerContainer;
 
 public class PlayerManager implements IPlayerContainer {
@@ -222,7 +223,7 @@ public class PlayerManager implements IPlayerContainer {
         this.difficulty = difficulty;
 
         // make a player
-        player = new Stats(10, 5, 5, 10, 0);
+        player = new Stats(new int[]{10, 5, 5, 10, 0}, new StatModifier[0]);
 
         // make crafting requirements
         inventory = new Inventory(difficulty);

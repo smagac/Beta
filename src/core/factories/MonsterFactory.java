@@ -260,48 +260,45 @@ public class MonsterFactory {
      */
     private Entity create(MonsterTemplate t, Item item, int depth, boolean boss) {
         Entity e = new Entity();
-        String describer = "";
         String suffix = "";
         
         int modify = MathUtils.random(1, Math.max(1, depth/15));
-        int hp = 0, 
-            str = 0, 
-            def = 0, 
-            spd = 0;
         
+        StatModifier[] mods;
         if (boss) {
             String adj = AdjectiveFactory.getBossAdjective();
-            StatModifier mod = AdjectiveFactory.getModifier(adj);
-            hp += mod.hp;
-            str += mod.str;
-            def += mod.def;
-            spd += mod.spd;
             
             modify -= 1;
             suffix = " " + adj;
+            mods = new StatModifier[modify + 1];
+            mods[0] = AdjectiveFactory.getModifier(adj);
+        } else {
+            mods = new StatModifier[modify];
         }
+        String[] adjs = new String[modify];
         
-        for (int i = 0; i < modify; i++)
-        {
+        for (int i = 0, n = (boss)?1:0; i < modify; i++, n++) {
             String adj = AdjectiveFactory.getAdjective();
-            StatModifier mod = AdjectiveFactory.getModifier(adj);
-            describer += adj + " ";
-            hp += mod.hp;
-            str += mod.str;
-            def += mod.def;
-            spd += mod.spd;
+            adjs[i] = adj;
+            mods[n] = AdjectiveFactory.getModifier(adj);
         }
         
-        Stats s = new Stats(
-                    (int) (Math.max(1, t.getHp(depth) * hp)), 
-                    (int) (t.getStr(depth) * str),
-                    (int) (t.getDef(depth) * def), 
-                    (int) (t.getSpd(depth) * spd), 
-                    t.getExp(depth)
+        Stats s = new Stats(new int[]{
+                        t.getHp(depth), 
+                        t.getStr(depth),
+                        t.getDef(depth), 
+                        t.getSpd(depth), 
+                        t.getExp(depth)
+                    },
+                    mods
                   );
         s.hidden = boss;
         e.add(s);
-        e.add(new Identifier(t.name, describer, suffix, t.hideName || s.hidden));
+        Identifier id = new Identifier(t.name, suffix, adjs);
+        if (t.hideName || s.hidden) {
+            id.hide();
+        }
+        e.add(id);
         e.add(new Renderable(t.type));
 
         Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);

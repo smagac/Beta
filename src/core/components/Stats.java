@@ -1,10 +1,19 @@
 package core.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
+import core.datatypes.StatModifier;
+
+/**
+ * Component consisting of the stats that an entity may have, representing it
+ * in the field.
+ * @author nhydock
+ *
+ */
 public class Stats extends Component implements Serializable {
     private int level;
     public int hp;
@@ -16,18 +25,62 @@ public class Stats extends Component implements Serializable {
     public int nextExp;
     public boolean hidden;
 
+    private int[] baseStats;
+    
+    /**
+     * Keep track of 
+     */
+    private Array<StatModifier> mods;
+    
     public Stats() {
+        mods = new Array<StatModifier>();
     }
 
-    public Stats(int... values) {
+    public Stats(int[] values, StatModifier[] mods) {
         level = 1;
-        hp = values[0];
-        maxhp = values[0];
-        strength = values[1];
-        defense = values[2];
-        speed = values[3];
-        exp = values[4];
+        exp = baseStats[4];
         nextExp = 10;
+        
+        baseStats = values;
+        this.mods.addAll(mods);
+        recalculate(true);
+    }
+
+    /**
+     * Recalculate the stat levels based on modifiers
+     * @param fresh - when true, we calculate from the base stats, if false, we use the current values.
+     *   This only applies to hp, which is flexible.
+     */
+    private void recalculate(boolean fresh) {
+        maxhp = baseStats[0];
+        strength = baseStats[1];
+        defense = baseStats[2];
+        speed = baseStats[3];
+        
+        float maxhpBonus = 0;
+        float strengthBonus = 0;
+        float defenseBonus = 0;
+        float speedBonus = 0;
+        
+        for (StatModifier mod : mods) {
+            maxhpBonus += mod.hp;
+            strengthBonus += mod.str;
+            defenseBonus += mod.def;
+            speedBonus += mod.spd;
+        }
+        
+        //do not allow negative hp
+        maxhp = (int)Math.max(maxhp * maxhpBonus, 1);
+        //do not allow attacks to heal
+        strength = (int)Math.max(strength * strengthBonus, 0);
+        defense *= defenseBonus;
+        speed *= speedBonus;
+        
+        if (fresh) {
+            hp = maxhp;
+        } else {
+            hp = (int)Math.max(hp * maxhpBonus, 1);
+        }
     }
 
     public int getLevel() {
@@ -54,14 +107,26 @@ public class Stats extends Component implements Serializable {
         return maxhp / 2;
     }
 
+    /**
+     * The amount of experience points the entity currently has
+     * @return if it's a player, it returns their current amount, if the entity is an enemy, it returns the amount
+     *         that they are going to reward the player with.
+     */
     public float getExp() {
         return exp;
     }
 
+    /**
+     * @return true if the entity has enough experience points accumulated to level up
+     */
     public boolean canLevelUp() {
         return exp >= nextExp;
     }
 
+    /**
+     * Level up an entity, setting its stats to the provided list
+     * @param stats - new stats of the entity after level up
+     */
     public void levelUp(int[] stats) {
         level++;
         strength = stats[0];
@@ -72,6 +137,20 @@ public class Stats extends Component implements Serializable {
         nextExp = level * 10;
     }
 
+    public void addModifier(StatModifier mod) {
+        mods.add(mod);
+        recalculate(false);
+    }
+    
+    public void removeModifier(StatModifier mod) {
+        mods.removeValue(mod, true);
+        recalculate(false);
+    }
+    
+    /**
+     * Saves an entity's stats to a json file.
+     * Used primarily for saving a player's stats to a save file.
+     */
     @Override
     public void write(Json json) {
         json.writeValue("str", strength);
