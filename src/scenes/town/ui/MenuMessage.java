@@ -6,7 +6,7 @@ package scenes.town.ui;
  * @author nhydock
  *
  */
-class MenuMessage {
+interface MenuMessage {
     static final int Sleep = 0;
     static final int Explore = 1;
     static final int Craft = 2;

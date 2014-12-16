@@ -14,7 +14,6 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -102,17 +101,7 @@ public class WanderUI extends GameUI {
 
         menu = new DefaultStateMachine<WanderUI>(this, WanderState.Wander);
     }
-
-    @Override
-    protected void load() {
-        super.load();
-        manager.load("data/dungeon.atlas", TextureAtlas.class);
-        manager.load("data/null.png", Texture.class);
-        
-        manager.load(DataDirs.hit, Sound.class);
-        manager.load(DataDirs.dead, Sound.class);
-    }
-
+    
     @Override
     protected void extend() {
 
@@ -123,7 +112,7 @@ public class WanderUI extends GameUI {
         // header bar
         {
             Table table = new Table();
-            TextureAtlas atlas = manager.get("data/dungeon.atlas", TextureAtlas.class);
+            TextureAtlas atlas = shared.getResource(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
             table.setBackground(new TextureRegionDrawable(atlas.findRegion("floor")));
             table.setHeight(32f);
             table.setWidth(display.getWidth());

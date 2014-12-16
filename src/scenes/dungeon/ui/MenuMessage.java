@@ -6,7 +6,7 @@ package scenes.dungeon.ui;
  * @author nhydock
  *
  */
-public class MenuMessage {
+public interface MenuMessage {
     public static final int Movement = -1;
     public static final int Assist = 0;
     public static final int Heal = 1;
