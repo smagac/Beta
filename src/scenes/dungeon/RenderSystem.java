@@ -1,6 +1,8 @@
 package scenes.dungeon;
 
 import scenes.dungeon.ui.WanderUI;
+import squidpony.squidgrid.fov.FOVSolver;
+import squidpony.squidgrid.fov.ShadowFOV;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.ComponentMapper;
@@ -17,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
@@ -41,12 +44,19 @@ import core.components.Groups;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.dungeon.Floor;
 import core.service.interfaces.IColorMode;
+import core.service.interfaces.IDungeonContainer;
 
 public class RenderSystem extends EntitySystem implements EntityListener {
 
     public static final float MoveSpeed = .25f;
 
+    //SquidPony's FOV System
+    private float[][] wallMap;
+    private float[][] fov;
+    private FOVSolver fovSolver;
+    
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private OrthogonalTiledMapRenderer mapRenderer;
@@ -73,14 +83,18 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     private boolean invisible;
 
     // selective map layer to draw
+    private TiledMap map;
     private int[] layers;
 
-    @Inject
-    public IColorMode color;
-
+    @Inject public IColorMode color;
+    @Inject public IDungeonContainer dungeonService;
+    
     Family type = Family.all(Renderable.class, Position.class).get();
 
     Array<Entity> entities = new Array<Entity>();
+    Array<Actor> shadows = new Array<Actor>();
+    Group shadowLayer = new Group();
+    Group entityLayer = new Group();
     Entity player;
 
     // temp vars used for hover effect
@@ -91,15 +105,36 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
         this.layers = new int[] { 0 };
+        fovSolver = new ShadowFOV();
     }
 
     public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
         scale = 32f * mapRenderer.getUnitScale();
+        this.map = map;
     }
 
     public void setFloor(int depth) {
         this.layers[0] = depth - 1;
+        
+        TiledMapTileLayer layer = (TiledMapTileLayer)this.map.getLayers().get(layers[0]);
+        wallMap = new float[layer.getWidth()][layer.getHeight()];
+        
+        //set shadow mapping
+        Floor f = dungeonService.getDungeon().getFloor(depth);
+        this.wallMap = f.getShadowMap();
+        
+        shadowLayer.clear();
+        shadows.clear();
+        for (int x = 0, rx = 0; x < wallMap.length; x++, rx += scale) {
+            for (int y = 0, ry = 0; y < wallMap.length; y++, ry += scale) {
+                Image image = new Image(uiSkin, "fill");
+                image.setSize(scale, scale);
+                image.setPosition(rx, ry);
+                shadowLayer.addActor(image);
+                shadows.add(image);
+            }
+        }
     }
 
     @Override
@@ -107,15 +142,17 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         if (!type.matches(e)) {
             return;
         }
-
-        if (Groups.playerType.matches(e)) {
-            player = e;
-            System.out.print("Player added\n");
-        }
-
         entities.add(e);
         Renderable r = renderMap.get(e);
         Position p = positionMap.get(e);
+        
+        if (Groups.playerType.matches(e)) {
+            player = e;
+            fov = fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f);
+            calcFov();
+            System.out.print("Player added\n");
+        }
+
         r.loadImage(uiSkin);
         final Image sprite = (Image) r.getActor();
         sprite.setSize(scale, scale);
@@ -165,42 +202,37 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         if (p.changed()) {
             r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale, MoveSpeed));
             p.update();
+            //update fov on move
+            if (e == player) {
+                fov = fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f);
+                calcFov();
+            }
+        }
+    }
+    
+    private void calcFov() {
+        for (int x = 0, i = 0; x < fov.length; x++) {
+            for (int y = 0; y < fov.length; y++, i++) {
+                shadows.get(i).addAction(Actions.alpha(1.0f-fov[x][y]));
+            }
         }
     }
 
     @Override
     public void update(float delta) {
         for (Actor r : removeQueue) {
-            stage.getRoot().removeActor(r);
+            entityLayer.removeActor(r);
             r.clear();
         }
 
         for (Actor a : addQueue) {
-            stage.addActor(a);
+            entityLayer.addActor(a);
         }
 
         removeQueue.clear();
         addQueue.clear();
 
         if (!invisible) {
-            float x = camera.position.x;
-            float y = camera.position.y;
-
-            camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-            camera.update();
-            // fill background
-            if (nullTile != null) {
-                nullTile.setRegionWidth((int) camera.viewportWidth);
-                nullTile.setRegionHeight((int) camera.viewportHeight);
-                batch.setProjectionMatrix(camera.combined);
-                batch.begin();
-                batch.draw(nullTile, 0, 0, camera.viewportWidth, camera.viewportHeight);
-                batch.end();
-            }
-
-            camera.position.x = x;
-            camera.position.y = y;
-            camera.update();
             mapRenderer.setView(camera);
             mapRenderer.render(layers);
         }
@@ -230,7 +262,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         damageNumbers.draw(batch, damageNumbers.getColor().a);
         batch.end();
         batch.setColor(1f, 1f, 1f, 1f);
-
     }
 
     public void setView(WanderUI view, Skin skin) {
@@ -270,6 +301,11 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             damageNumbers.setVisible(false);
             stage.addActor(damageNumbers);
         }
+        
+        entityLayer = new Group();
+        shadowLayer = new Group();
+        stage.addActor(entityLayer);
+        stage.addActor(shadowLayer);
     }
 
     protected float getScale() {

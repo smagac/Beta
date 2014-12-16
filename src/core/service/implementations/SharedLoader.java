@@ -23,6 +23,7 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.Home + "uiskin.json", Skin.class);
         manager.load(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
+        manager.load(DataDirs.Home + "null.png", Texture.class);
         manager.load(DataDirs.accept, Sound.class);
         manager.load(DataDirs.tick, Sound.class);
         manager.load(DataDirs.hit, Sound.class);
@@ -36,6 +37,8 @@ public class SharedLoader implements ISharedResources {
         // skin is used in a lot of places so we add addition regions to it to make things easier
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
         TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
+        Texture nullSpace = manager.get(DataDirs.Home + "null.png");
+        uiSkin.add("null", nullSpace, Texture.class);
         uiSkin.add("fill", new TextureRegion(manager.get(DataDirs.Home + "fill.png", Texture.class)), TextureRegion.class);
         uiSkin.addRegions(dungeonSprites);
     }

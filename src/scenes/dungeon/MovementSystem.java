@@ -56,28 +56,10 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     @Inject public IDungeonContainer dungeonService;
     
     public void setMap(Floor floorData) {
-        // build collision map
-        TiledMapTileLayer floor = floorData.layer;
-        collision = new boolean[floor.getWidth()][floor.getHeight()];
-        for (int x = 0; x < collision.length; x++) {
-            for (int y = 0; y < collision[0].length; y++) {
-                Cell c = floor.getCell(x, y);
-                if (c == null || c.getTile() == null) {
-                    collision[x][y] = false;
-                }
-                else {
-                    TiledMapTile t = c.getTile();
-                    collision[x][y] = t.getProperties().get("passable", Boolean.class);
-                    // set as start or end if they're step tiles
-                    if (t.getId() == 4) {
-                        start = new int[] { x, y };
-                    }
-                    else if (t.getId() == 3) {
-                        end = new int[] { x, y };
-                    }
-                }
-            }
-        }
+        // set collision map
+        collision = floorData.getBooleanMap();
+        start = floorData.getStartPosition();
+        end = floorData.getEndPosition();
     }
     
     /**

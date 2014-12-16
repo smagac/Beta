@@ -1,7 +1,6 @@
 package scenes.dungeon;
 
 import scenes.UI;
-import scenes.dungeon.ui.BattleUI;
 import scenes.dungeon.ui.MenuMessage;
 import scenes.dungeon.ui.Transition;
 import scenes.dungeon.ui.WanderUI;
@@ -67,7 +66,6 @@ public class Scene extends scenes.Scene<UI> implements Agent {
     StateMachine<Scene> statemachine;
 
     WanderUI wanderUI;
-    BattleUI battleUI;
     Transition transition;
 
     private TiledMapTileSet tileset;
@@ -132,8 +130,8 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         ms.setProcessing(false);
         rs.setProcessing(false);
         
-        rs.setView(wanderUI, manager.get(DataDirs.Home + "uiskin.json", Skin.class));
-        rs.setNull(manager.get(DataDirs.Home + "null.png", Texture.class));
+        rs.setView(wanderUI, shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
+        rs.setNull(shared.getResource(DataDirs.Home + "null.png", Texture.class));
         rs.setMap(map);
         ms.setScene(this);
         
@@ -145,7 +143,6 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         manager = new AssetManager();
         
         wanderUI = new WanderUI(manager);
-        battleUI = new BattleUI(manager);
         transition = new Transition(manager);
         
         if (!audio.hasBgm()) {
@@ -283,20 +280,19 @@ public class Scene extends scenes.Scene<UI> implements Agent {
     @Override
     public void resize(int width, int height) {
         wanderUI.resize(width, height);
-        battleUI.resize(width, height);
     }
 
     @Override
     protected void init() {
-        TextureAtlas atlas = manager.get(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
+        TextureAtlas atlas = shared.getResource(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         tileset = DungeonFactory.buildTileSet(atlas);
-        Skin skin = manager.get(DataDirs.Home + "uiskin.json", Skin.class);
+        Skin skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
         skin.addRegions(atlas);
         
         wanderUI.init();
         transition.init();
         ui = wanderUI;
-        hitSound = manager.get(DataDirs.hit, Sound.class);
+        hitSound = shared.getResource(DataDirs.hit, Sound.class);
         // ui.levelUp();
 
         Renderable r = new Renderable(playerService.getGender());
