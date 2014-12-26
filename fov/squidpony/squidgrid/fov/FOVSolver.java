@@ -50,7 +50,7 @@ public interface FOVSolver {
      * @param radiusStrategy provides a means to calculate the radius as desired
      * @return the computed light grid
      */
-    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float force, float decay, RadiusStrategy radiusStrategy);
+    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float force, float decay, RadiusStrategy radiusStrategy, float[][] out);
 
     /**
      * Calculates the Field of View in the same manner as the version with more
@@ -65,5 +65,5 @@ public interface FOVSolver {
      * @param radius
      * @return
      */
-    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float radius);
+    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float radius, float[][] out);
 }

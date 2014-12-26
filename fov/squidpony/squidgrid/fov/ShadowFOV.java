@@ -21,7 +21,7 @@ public class ShadowFOV implements FOVSolver {
     private RadiusStrategy rStrat;
 
     @Override
-    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float force, float decay, RadiusStrategy rStrat) {
+    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float force, float decay, RadiusStrategy rStrat, float[][] out) {
         this.startx = startx;
         this.starty = starty;
         this.force = force;
@@ -31,7 +31,7 @@ public class ShadowFOV implements FOVSolver {
 
         width = resistanceMap.length;
         height = resistanceMap[0].length;
-        lightMap = new float[width][height];
+        lightMap = out;
         radius = (force / decay);
 
         lightMap[startx][starty] = force;//light the starting cell
@@ -90,7 +90,7 @@ public class ShadowFOV implements FOVSolver {
     }
 
     @Override
-    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float radius) {
-        return calculateFOV(resistanceMap, startx, starty, 1, 1 / radius, BasicRadiusStrategy.CIRCLE);
+    public float[][] calculateFOV(float[][] resistanceMap, int startx, int starty, float radius, float[][] out) {
+        return calculateFOV(resistanceMap, startx, starty, 1, 1 / radius, BasicRadiusStrategy.CIRCLE, out);
     }
 }

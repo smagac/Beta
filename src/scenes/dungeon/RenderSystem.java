@@ -118,11 +118,11 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         this.layers[0] = depth - 1;
         
         TiledMapTileLayer layer = (TiledMapTileLayer)this.map.getLayers().get(layers[0]);
-        wallMap = new float[layer.getWidth()][layer.getHeight()];
         
         //set shadow mapping
         Floor f = dungeonService.getDungeon().getFloor(depth);
-        this.wallMap = f.getShadowMap();
+        wallMap = f.getShadowMap();
+        fov = f.getShadowMap().clone();
         
         shadowLayer.clear();
         shadows.clear();
@@ -148,7 +148,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         
         if (Groups.playerType.matches(e)) {
             player = e;
-            fov = fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f);
+            fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
             calcFov();
             System.out.print("Player added\n");
         }
@@ -204,7 +204,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             p.update();
             //update fov on move
             if (e == player) {
-                fov = fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f);
+                fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
                 calcFov();
             }
         }
