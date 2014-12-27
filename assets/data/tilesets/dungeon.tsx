@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset name="Dungeon" tilewidth="32" tileheight="32">
- <image source="tilesets/dungeon.png" width="96" height="96"/>
+ <image source="data/tilesets/dungeon.png" width="96" height="96"/>
  <tile id="0">
   <properties>
    <property name="block" value="true"/>

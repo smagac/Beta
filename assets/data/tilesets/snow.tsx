@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset name="snow" tilewidth="32" tileheight="32">
- <image source="tilesets/snow.png" width="96" height="96"/>
+ <image source="data/tilesets/snow.png" width="96" height="96"/>
  <tile id="0">
   <properties>
    <property name="block" value="true"/>

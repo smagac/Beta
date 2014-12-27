@@ -18,7 +18,8 @@ public class DataDirs {
     public static final String accept = sfx + "accept.wav";
     public static final String dead = sfx + "dead.wav";
 
-    public static final String Tilesets = "tilesets/";
+    public static final String Tilesets = Home + "tilesets/";
+    public static final String Lore = Home + "lore/";
     
     /**
      * Allows getting a specified list of children in an internal directory
