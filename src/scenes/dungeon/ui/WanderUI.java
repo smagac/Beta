@@ -62,8 +62,6 @@ public class WanderUI extends GameUI {
     Group dialog;
     Image goddess;
 
-    int healCost;
-    int fleeCost;
     private Group goddessDialog;
     private Label gMsg;
     private Table itemSubmenu;
@@ -97,7 +95,6 @@ public class WanderUI extends GameUI {
 
         loot = new ObjectMap<Item, Integer>();
         sacrifices = new ObjectMap<Item, Integer>();
-        healCost = 1;
 
         menu = new DefaultStateMachine<WanderUI>(this, WanderState.Wander);
     }

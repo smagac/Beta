@@ -11,8 +11,7 @@ public class Progress {
 
     public int depth;
     public int floors;
-
-
+    public int healed;
 
     public boolean hasPrevFloor(int depth){
         return depth - 1 >= 0;
@@ -28,5 +27,4 @@ public class Progress {
         return depth - 1;
     }
 
-    
 }

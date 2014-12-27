@@ -138,7 +138,9 @@ public enum WanderState implements UIState {
 
         @Override
         public void enter(WanderUI entity) {
-            entity.showGoddess("So you'd like me to heal you?\nThat'll cost you " + (entity.healCost) + " loot.");
+            int healCost = entity.dungeonService.getProgress().healed + 1;
+            
+            entity.showGoddess("So you'd like me to heal you?\nThat'll cost you " + healCost + " loot.");
             entity.showLoot();
         }
 
@@ -150,18 +152,19 @@ public enum WanderState implements UIState {
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
             if (telegram.message == MenuMessage.Sacrifice) {
-
-                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, entity.healCost)) {
+                
+                int healCost = entity.dungeonService.getProgress().healed + 1;
+                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
                         Tracker.NumberValues.Loot_Sacrificed.increment();
                     }
                     entity.playerService.recover();
-                    entity.healCost++;
+                    entity.dungeonService.getProgress().healed = healCost;
                     entity.changeState(Wander);
                     return true;
                 }
                 else {
-                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + entity.healCost + " items");
+                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + healCost + " items");
                 }
             }
             else {
@@ -175,8 +178,9 @@ public enum WanderState implements UIState {
 
         @Override
         public void enter(WanderUI entity) {
+            int fleeCost = entity.dungeonService.getProgress().depth;
             entity.showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently "
-                    + entity.fleeCost + " floors deep.");
+                    + fleeCost + " floors deep.");
             entity.showLoot();
         }
 
@@ -189,7 +193,8 @@ public enum WanderState implements UIState {
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
             if (telegram.message == MenuMessage.Sacrifice) {
-                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, entity.fleeCost)) {
+                int fleeCost = entity.dungeonService.getProgress().depth;
+                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, fleeCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
                         Tracker.NumberValues.Loot_Sacrificed.increment();
                     }
@@ -197,7 +202,7 @@ public enum WanderState implements UIState {
                     return true;
                 }
                 else {
-                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + entity.fleeCost + " items");
+                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + fleeCost + " items");
                 }
             }
             else {
