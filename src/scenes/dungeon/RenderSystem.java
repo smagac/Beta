@@ -2,7 +2,7 @@ package scenes.dungeon;
 
 import scenes.dungeon.ui.WanderUI;
 import squidpony.squidgrid.fov.FOVSolver;
-import squidpony.squidgrid.fov.ShadowFOV;
+import squidpony.squidgrid.fov.RippleFOV;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.ComponentMapper;
@@ -11,7 +11,6 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
@@ -105,7 +104,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
         this.layers = new int[] { 0 };
-        fovSolver = new ShadowFOV();
+        fovSolver = new RippleFOV();
     }
 
     public void setMap(TiledMap map) {
@@ -117,17 +116,15 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     public void setFloor(int depth) {
         this.layers[0] = depth - 1;
         
-        TiledMapTileLayer layer = (TiledMapTileLayer)this.map.getLayers().get(layers[0]);
-        
         //set shadow mapping
         Floor f = dungeonService.getDungeon().getFloor(depth);
         wallMap = f.getShadowMap();
-        fov = f.getShadowMap().clone();
+        fov = new float[wallMap.length][wallMap[0].length];
         
         shadowLayer.clear();
         shadows.clear();
         for (int x = 0, rx = 0; x < wallMap.length; x++, rx += scale) {
-            for (int y = 0, ry = 0; y < wallMap.length; y++, ry += scale) {
+            for (int y = 0, ry = 0; y < wallMap[0].length; y++, ry += scale) {
                 Image image = new Image(uiSkin, "fill");
                 image.setSize(scale, scale);
                 image.setPosition(rx, ry);
@@ -411,9 +408,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         batch = null;
         camera = null;
         mapRenderer.dispose();
-        stage.clear();
         stage.dispose();
-        uiSkin.dispose();
         stage = null;
         mapRenderer = null;
         nullTile = null;
