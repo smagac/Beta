@@ -34,7 +34,7 @@ public class BossFloor implements FloorData {
         tiles = new int[width][height];
         int[] t = data.get("data").asIntArray();
         collision = new boolean[width][height];
-        for (int i = 0, x = 0, y = 0; i < t.length; y++) {
+        for (int i = 0, x = 0, y = height-1; i < t.length; y--) {
             for (x = 0; x < width; x++, i++) {
                 tiles[x][y] = t[i];
                 collision[x][y] = true;
