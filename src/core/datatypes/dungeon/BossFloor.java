@@ -17,6 +17,8 @@ public class BossFloor implements FloorData {
     int depth;
     int[][] tiles;
     Array<Room> rooms;
+    int[] start, end;
+    boolean[][] collision;
 
     public BossFloor(int difficulty, int depth) {
         super();
@@ -29,11 +31,24 @@ public class BossFloor implements FloorData {
         JsonValue data = map.get("layers").get(0);
         int width = data.getInt("width");
         int height = data.getInt("height");
-        tiles = new int[height][width];
+        tiles = new int[width][height];
         int[] t = data.get("data").asIntArray();
+        collision = new boolean[width][height];
         for (int i = 0, x = 0, y = 0; i < t.length; y++) {
             for (x = 0; x < width; x++, i++) {
                 tiles[x][y] = t[i];
+                collision[x][y] = true;
+                if (t[i] == 3) {
+                    end = new int[]{x, y};
+                    collision[x][y] = false;
+                }
+                else if (t[i] == 4) {
+                    start = new int[]{x, y};
+                    collision[x][y] = false;
+                }
+                else if (t[i] == 1) {
+                    collision[x][y] = false;
+                }
             }
         }
         
@@ -76,18 +91,19 @@ public class BossFloor implements FloorData {
                 }
                 //floor
                 else if (tile == 1) {
-                    cell.setTile(tileset.getTile(2));
+                    cell.setTile(tileset.getTile(1));
                 }
                 //down stairs
                 else if (tile == 3) {
-                    cell.setTile(tileset.getTile(4));
+                    cell.setTile(tileset.getTile(5));
                 }
                 //up stairs
                 else if (tile == 4) {
                     cell.setTile(tileset.getTile(3));
                 }
+                //null
                 else {
-                    continue;
+                    cell.setTile(tileset.getTile(2));
                 }
 
                 layer.setCell(col, row, cell);
@@ -111,5 +127,30 @@ public class BossFloor implements FloorData {
     public int getMonsters() {
         //there are no monsters aside from the boss
         return 0;
+    }
+
+    @Override
+    public int[] getStart() {
+        return start;
+    }
+
+    @Override
+    public int[] getEnd() {
+        return end;
+    }
+
+    @Override
+    public boolean[][] getCollision() {
+        return collision;
+    }
+
+    @Override
+    public int getWidth() {
+        return tiles.length;
+    }
+
+    @Override
+    public int getHeight() {
+        return tiles[0].length;
     }
 }

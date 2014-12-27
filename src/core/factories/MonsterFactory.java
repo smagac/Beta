@@ -3,7 +3,6 @@ package core.factories;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -233,17 +232,7 @@ public class MonsterFactory {
             monster.add(new Monster());
 
             // add its position into a random room
-            int x = 0;
-            int y = 0;
-            TiledMapTile tile;
-            do {
-                Room r = floor.rooms.random();
-                x = MathUtils.random(r.innerLeft(), r.innerRight());
-                y = MathUtils.random(r.innerBottom(), r.innerTop());
-                tile = floor.layer.getCell(x, y).getTile();
-            }
-            while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
-            monster.add(new Position(x, y));
+            monster.add(new Position(floor.getOpenTile()));
 
             entities.add(monster);
         }
@@ -359,16 +348,7 @@ public class MonsterFactory {
                     monster = create(treasure, lootMaker.createItem(), floor.depth, false);
                 }
                 monster.add(new Monster());
-                int x = 0;
-                int y = 0;
-                TiledMapTile tile;
-                do {
-                    x = MathUtils.random(r.innerLeft(), r.innerRight());
-                    y = MathUtils.random(r.innerBottom(), r.innerTop());
-                    tile = floor.layer.getCell(x, y).getTile();
-                }
-                while (!tile.getProperties().get("passable", Boolean.class) || tile.getId() == 3 || tile.getId() == 4);
-                monster.add(new Position(x, y));
+                monster.add(new Position(floor.getOpenTile()));
                 entities.add(monster);
                 
                 limit--;

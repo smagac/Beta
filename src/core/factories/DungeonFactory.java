@@ -12,12 +12,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.MapProperties;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -35,21 +29,6 @@ import core.util.dungeon.PathMaker;
  *
  */
 public class DungeonFactory {
-    
-    public static TiledMapTileSet buildTileSet(TextureAtlas atlas) {
-        TiledMapTileSet tileset = new TiledMapTileSet();
-
-        tileset.putTile(0, new SimpleTile(atlas.findRegion("null"), 0, false)); // empty
-        tileset.putTile(1, new SimpleTile(atlas.findRegion("floor"), 1, true)); // room
-                                                                                // walls
-        tileset.putTile(2, new SimpleTile(atlas.findRegion("floor"), 2, true)); // floor
-        tileset.putTile(3, new SimpleTile(atlas.findRegion("down"), 3, true)); // stairs
-                                                                               // down
-        tileset.putTile(4, new SimpleTile(atlas.findRegion("up"), 4, true)); // stairs
-                                                                             // up
-
-        return tileset;
-    }
 
     /**
      * Load a file from its cachefile
@@ -166,78 +145,6 @@ public class DungeonFactory {
         Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors);
         MathUtils.random = oldRandom;
         return d;
-    }
-
-    /**
-     * Super simple class that just represents a tile with a region. Nothing
-     * special, but it allows us to generate tile sets in our code
-     * 
-     * @author nhydock
-     */
-    private static class SimpleTile implements TiledMapTile {
-
-        final TextureRegion region;
-        final MapProperties prop;
-        final int id;
-
-        SimpleTile(TextureRegion r, int id) {
-            region = r;
-            prop = new MapProperties();
-            prop.put("passable", false);
-            this.id = id;
-            setId(id);
-        }
-
-        SimpleTile(TextureRegion r, int id, boolean passable) {
-            this(r, id);
-            prop.put("passable", passable);
-        }
-
-        @Override
-        public int getId() {
-            return id;
-        }
-
-        @Override
-        public void setId(int id) {
-        } // do nothing, id is final
-
-        @Override
-        public BlendMode getBlendMode() {
-            return BlendMode.NONE;
-        }
-
-        @Override
-        public void setBlendMode(BlendMode blendMode) {
-        }
-
-        @Override
-        public TextureRegion getTextureRegion() {
-            return region;
-        }
-
-        @Override
-        public float getOffsetX() {
-            return 0;
-        }
-
-        @Override
-        public void setOffsetX(float offsetX) {
-        }
-
-        @Override
-        public float getOffsetY() {
-            return 0;
-        }
-
-        @Override
-        public void setOffsetY(float offsetY) {
-        }
-
-        @Override
-        public MapProperties getProperties() {
-            return prop;
-        }
     }
 
     /**

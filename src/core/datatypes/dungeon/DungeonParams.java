@@ -14,6 +14,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.MathUtils;
 
+import core.DataDirs;
 import core.datatypes.FileType;
 
 /**
@@ -29,6 +30,7 @@ public class DungeonParams {
     private int difficulty;
     private FileHandle hashFile;
     private String fileName;
+    private String type;
 
     /**
      * Generate Random Dungeon parameters
@@ -40,6 +42,7 @@ public class DungeonParams {
         this.cached = false;
         this.hashFile = null;
         this.fileName = null;
+        this.type = "snow";
     }
 
     private DungeonParams(long seed, FileType ext, int difficulty) {
@@ -49,6 +52,7 @@ public class DungeonParams {
         this.cached = false;
         this.hashFile = null;
         this.fileName = null;
+        this.type = "dungeon";
     }
 
     /**
@@ -84,6 +88,8 @@ public class DungeonParams {
             this.cached = false;
             this.fileName = file.path();
         }
+
+        this.type = "dungeon";
     }
 
     public long getSeed() {
@@ -198,6 +204,10 @@ public class DungeonParams {
             buf.append(hexDigit[b[j] & 0x0f]);
         }
         return buf.toString();
+    }
+
+    public FileHandle getTileset() {
+        return Gdx.files.internal(DataDirs.Tilesets + type + ".tsx");
     }
 
 }

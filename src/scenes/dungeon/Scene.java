@@ -42,6 +42,7 @@ import core.factories.DungeonFactory;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
+import core.util.dungeon.TsxTileSet;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
@@ -285,7 +286,7 @@ public class Scene extends scenes.Scene<UI> implements Agent {
     @Override
     protected void init() {
         TextureAtlas atlas = shared.getResource(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
-        tileset = DungeonFactory.buildTileSet(atlas);
+        tileset = new TsxTileSet(params.getTileset(), shared.getAssetManager());
         Skin skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
         skin.addRegions(atlas);
         

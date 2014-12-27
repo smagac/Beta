@@ -47,6 +47,10 @@ public class PathMaker {
         float[] filled = { 0 };
 
         int[][] board = f.getTiles();
+        int[] start = f.getStart();
+        int[] end = f.getEnd();
+        boolean[][] collision = f.getCollision();
+        
         float size = board.length * board[0].length;
         Array<Room> rooms = f.getRooms();
 
@@ -69,12 +73,12 @@ public class PathMaker {
                 filled[0] += r.width * r.height;
 
                 for (int x = r.left(); x <= r.right(); x++) {
-                    board[x][r.bottom()] = WALL;
-                    board[x][r.top()] = WALL;
+                    board[x][r.bottom()] = ROOM;
+                    board[x][r.top()] = ROOM;
                 }
                 for (int y = r.bottom(); y <= r.top(); y++) {
-                    board[r.left()][y] = WALL;
-                    board[r.right()][y] = WALL;
+                    board[r.left()][y] = ROOM;
+                    board[r.right()][y] = ROOM;
                 }
             }
             locations = null;
@@ -91,6 +95,8 @@ public class PathMaker {
         }
         while (board[x][y] != ROOM);
         board[x][y] = UP;
+        start[0] = x;
+        start[1] = y;
 
         do {
             x = MathUtils.random(0, board.length - 1);
@@ -98,6 +104,33 @@ public class PathMaker {
         }
         while (board[x][y] != ROOM);
         board[x][y] = DOWN;
+        end[0] = x;
+        end[1] = y;
+        
+        //add wall padding
+        for (int i = 0; i < board.length; i++) {
+            for (int n = 0; n < board[i].length; n++) {
+                if (board[i][n] == NULL) {
+                    boolean placeWall = false;
+                    for (int a = Math.max(0, i-1); a <= Math.min(board.length-1, i+1) && !placeWall; a++)
+                    {
+                        for (int b = Math.max(0, n-1); b <= Math.min(board[i].length-1, n+1) && !placeWall; b++)
+                        {
+                            placeWall = board[a][b] == ROOM || board[a][b] == HALL;
+                        }
+                    }
+                    if (placeWall) {
+                        board[i][n] = WALL;
+                    }
+                }
+            }
+        }
+        
+        for (int i = 0; i < board.length; i++) {
+            for (int n = 0; n < board[i].length; n++) {
+                collision[i][n] = board[i][n] == NULL || board[i][n] == WALL;
+            }
+        }
     }
 
     /**
@@ -111,9 +144,9 @@ public class PathMaker {
 
         // go across horizontally, finding areas where the rectangle may fit
         // width wise
-        for (int y = 0; y < board[0].length; ++y) {
+        for (int y = 1; y < board[0].length-1; ++y) {
             int horizontal_count = 0;
-            for (int x = 0; x < board.length; ++x) {
+            for (int x = 1; x < board.length-1; ++x) {
                 // count up in areas where there is no room
                 if (board[x][y] == NULL)
                     horizontal_count++;

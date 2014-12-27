@@ -20,6 +20,8 @@ public class RandomFloorData implements Serializable, FloorData {
     int floor;
     int width, height;
     int size;
+    int[] start, end;
+    private boolean[][] collision;
 
     public RandomFloorData() {
     }
@@ -39,6 +41,9 @@ public class RandomFloorData implements Serializable, FloorData {
 
         tiles = new int[width][height];
         rooms = new Array<Room>();
+        start = new int[2];
+        end = new int[2];
+        collision = new boolean[width][height];
     }
 
     /**
@@ -53,53 +58,34 @@ public class RandomFloorData implements Serializable, FloorData {
      */
     @Override
     public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int tW, int tH) {
-        // add padding so it doesn't look like the rooms flood into nothingness
-        TiledMapTileLayer layer = new TiledMapTileLayer(tiles.length + 2, tiles[0].length + 2, tW, tH);
+        TiledMapTileLayer layer = new TiledMapTileLayer(tiles.length, tiles[0].length, tW, tH);
 
-        for (int x = -1, sX = 0; sX <= layer.getWidth(); x++, sX++) {
-            for (int y = -1, sY = 0; sY <= layer.getHeight(); y++, sY++) {
+        for (int x = 0; x < tiles.length; x++) {
+            for (int y = 0; y < tiles[0].length; y++) {
                 Cell cell = new Cell();
-
                 TiledMapTile tile = null;
-                if (x < 0 || x >= tiles.length || y < 0 || y >= tiles[0].length) {
-                    boolean set = false;
-                    for (int i = Math.max(0, x - 1); i <= Math.min(x + 1, tiles.length - 1) && !set; i++) {
-                        for (int j = Math.max(0, y - 1); j <= Math.min(y + 1, tiles[0].length - 1) && !set; j++) {
-                            if (tiles[i][j] != PathMaker.NULL) {
-                                tile = tileset.getTile(0);
-                                set = true;
-                            }
-                        }
-                    }
-                }
-                else if (tiles[x][y] == PathMaker.NULL) {
-                    boolean set = false;
-                    for (int i = Math.max(0, x - 1); i <= Math.min(x + 1, tiles.length - 1) && !set; i++) {
-                        for (int j = Math.max(0, y - 1); j <= Math.min(y + 1, tiles[0].length - 1) && !set; j++) {
-                            if (tiles[i][j] != PathMaker.NULL) {
-                                tile = tileset.getTile(0);
-                                set = true;
-                            }
-                        }
-                    }
-                }
-                else if (tiles[x][y] == PathMaker.WALL) {
-                    tile = tileset.getTile(1);
-                }
-                else if (tiles[x][y] == PathMaker.UP) {
-                    tile = tileset.getTile(4);
-                }
-                else if (tiles[x][y] == PathMaker.DOWN) {
-                    tile = tileset.getTile(3);
-                }
-                else {
+                if (tiles[x][y] == PathMaker.NULL)
+                {
                     tile = tileset.getTile(2);
                 }
+                else if (tiles[x][y] == PathMaker.ROOM || tiles[x][y] == PathMaker.HALL)
+                {
+                    tile = tileset.getTile(1);
+                }
+                else if (tiles[x][y] == PathMaker.WALL) {
+                    tile = tileset.getTile(0);
+                }
+                else if (tiles[x][y] == PathMaker.UP) {
+                    tile = tileset.getTile(3);
+                }
+                else if (tiles[x][y] == PathMaker.DOWN) {
+                    tile = tileset.getTile(5);
+                }
                 cell.setTile(tile);
-                layer.setCell(x + 1, y + 1, cell);
+                layer.setCell(x, y, cell);
             }
         }
-
+        System.out.println("layer painted");
         return layer;
     }
 
@@ -179,5 +165,30 @@ public class RandomFloorData implements Serializable, FloorData {
     @Override
     public int getMonsters() {
         return monsters;
+    }
+
+    @Override
+    public int[] getStart() {
+        return start;
+    }
+
+    @Override
+    public int[] getEnd() {
+        return end;
+    }
+
+    @Override
+    public boolean[][] getCollision() {
+        return collision;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
     }
 }

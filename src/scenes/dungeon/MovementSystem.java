@@ -72,7 +72,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     protected boolean isWall(int x, int y) {
         if ((x < 0 || x >= collision.length) || (y < 0 || y >= collision.length))
             return true;
-        return !collision[x][y];
+        return collision[x][y];
     }
 
     /**

@@ -1,9 +1,11 @@
 package core.service.implementations;
 
+import java.util.Scanner;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -13,7 +15,7 @@ import core.service.interfaces.ISharedResources;
 
 public class SharedLoader implements ISharedResources {
 
-    AssetManager manager;
+    private AssetManager manager;
 
     @Override
     public void onRegister() {
@@ -29,6 +31,14 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.hit, Sound.class);
         manager.load(DataDirs.shimmer, Sound.class);
         manager.load(DataDirs.dead, Sound.class);
+        
+        //load tilesets
+        try (Scanner s = new Scanner(Gdx.files.internal(DataDirs.Tilesets + "list.txt").read())) {
+            while (s.hasNextLine()) {
+                String file = s.nextLine().trim();
+                manager.load(DataDirs.Tilesets + file, Texture.class);
+            }
+        }
         
         // shared resources matter a lot, so make sure they're loaded before
         // doing anything else;
@@ -52,5 +62,10 @@ public class SharedLoader implements ISharedResources {
     public void onUnregister() {
         manager.dispose();
         manager = null;
+    }
+
+    @Override
+    public AssetManager getAssetManager() {
+        return manager;
     }
 }

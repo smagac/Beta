@@ -20,4 +20,13 @@ public interface FloorData {
     TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height);
 
     void dispose();
+
+    public int[] getStart();
+
+    public int[] getEnd();
+    
+    public boolean[][] getCollision();
+
+    public int getWidth();
+    public int getHeight();
 }

@@ -2,13 +2,12 @@ package core.datatypes.dungeon;
 
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
 import core.util.dungeon.Room;
 
 public class Floor {
-    final public TiledMapTileLayer layer;
     final public int roomCount;
     final public int depth;
     final public Array<Room> rooms;
@@ -22,7 +21,6 @@ public class Floor {
     private int[] end;
     
     public Floor(TiledMapTileLayer layer, FloorData data) {
-        this.layer = layer;
         roomCount = data.getRoomCount();
         depth = data.getDepth();
         rooms = data.getRooms();
@@ -30,30 +28,21 @@ public class Floor {
         loot = -1;
         isBossFloor = (data instanceof BossFloor);
         
-        collision = new boolean[layer.getWidth()][layer.getHeight()];
-        shadow = new float[layer.getWidth()][layer.getHeight()];
-        
-        for (int x = 0; x < collision.length; x++) {
-            for (int y = 0; y < collision[0].length; y++) {
-                Cell c = layer.getCell(x, y);
-                if (c == null || c.getTile() == null) {
-                    collision[x][y] = false;
-                    shadow[x][y] = 0.0f;
-                }
-                else {
-                    TiledMapTile t = c.getTile();
-                    collision[x][y] = t.getProperties().get("passable", Boolean.class);
-                    shadow[x][y] = collision[x][y]?0.0f:1.0f;
-                    // set as start or end if they're step tiles
-                    if (t.getId() == 4) {
-                        start = new int[] { x, y };
-                    }
-                    else if (t.getId() == 3) {
-                        end = new int[] { x, y };
-                    }
-                }
+        collision = data.getCollision();
+        shadow = new float[data.getWidth()][layer.getHeight()];
+        for (int i = 0; i < layer.getWidth(); i++)
+        {
+            for (int n = 0; n < layer.getHeight(); n++)
+            {
+                TiledMapTile tile = layer.getCell(i, n).getTile();
+                float density = tile.getProperties().get("density", 0f, Float.class);
+                shadow[i][n] = density;
             }
-        }    
+        }
+        
+        
+        start = data.getStart();
+        end = data.getEnd();
     }
 
 
@@ -71,5 +60,20 @@ public class Floor {
     
     public int[] getEndPosition() {
         return end;
+    }
+    
+    /**
+     * @return an available tile on this floor
+     */
+    public int[] getOpenTile()
+    {
+        Room r = rooms.random();
+        int x, y;
+        do {
+            x = MathUtils.random(r.innerLeft(), r.innerRight());
+            y = MathUtils.random(r.innerBottom(), r.innerTop());
+        } while ((x == start[0] && y == start[1]) || (x == end[0] && y == end[1]));
+        
+        return new int[]{x, y};
     }
 }

@@ -13,4 +13,5 @@ public class DataDirs {
     public static final String accept = sfx + "accept.wav";
     public static final String dead = sfx + "dead.wav";
 
+    public static final String Tilesets = "tilesets/";
 }

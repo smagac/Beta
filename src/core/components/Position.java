@@ -13,6 +13,11 @@ public class Position extends Component {
         this.y = y;
     }
 
+    public Position(int[] p) {
+        this.x = p[0];
+        this.y = p[1];
+    }
+
     public void move(int x, int y) {
         this.x = x;
         this.y = y;
