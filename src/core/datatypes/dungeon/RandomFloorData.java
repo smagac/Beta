@@ -85,7 +85,6 @@ public class RandomFloorData implements Serializable, FloorData {
                 layer.setCell(x, y, cell);
             }
         }
-        System.out.println("layer painted");
         return layer;
     }
 

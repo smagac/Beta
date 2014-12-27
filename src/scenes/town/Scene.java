@@ -16,10 +16,14 @@ public class Scene extends scenes.Scene<TownUI> {
     @Inject
     public IPlayerContainer playerService;
 
+    private String bgm;
+    
     @Override
     public void show() {
         ui = new TownUI(manager);
-        manager.load(DataDirs.Audio + "town.mp3", Music.class);
+        
+        bgm = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "town/")).random();
+        manager.load(bgm, Music.class);
 
         InputMultiplexer input = new InputMultiplexer();
         input.addProcessor(ui);
@@ -30,7 +34,7 @@ public class Scene extends scenes.Scene<TownUI> {
     @Override
     protected void init() {
         ui.init();
-        audio.playBgm(manager.get(DataDirs.Audio + "town.mp3", Music.class));
+        audio.playBgm(manager.get(bgm, Music.class));
     }
 
     @Override

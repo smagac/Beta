@@ -1,7 +1,5 @@
 package core.service.implementations;
 
-import java.util.Scanner;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
@@ -33,11 +31,8 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.dead, Sound.class);
         
         //load tilesets
-        try (Scanner s = new Scanner(Gdx.files.internal(DataDirs.Tilesets + "list.txt").read())) {
-            while (s.hasNextLine()) {
-                String file = s.nextLine().trim();
-                manager.load(DataDirs.Tilesets + file, Texture.class);
-            }
+        for (String file : DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets))) {
+            manager.load(file, Texture.class);
         }
         
         // shared resources matter a lot, so make sure they're loaded before

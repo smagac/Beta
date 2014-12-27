@@ -1,2 +1,0 @@
-dungeon.png
-snow.png

@@ -18,7 +18,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
@@ -27,13 +26,17 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -82,7 +85,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     private boolean invisible;
 
     // selective map layer to draw
-    private TiledMap map;
     private int[] layers;
 
     @Inject public IColorMode color;
@@ -91,9 +93,10 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     Family type = Family.all(Renderable.class, Position.class).get();
 
     Array<Entity> entities = new Array<Entity>();
-    Array<Actor> shadows = new Array<Actor>();
+    Array<Image> shadows = new Array<Image>();
     Group shadowLayer = new Group();
     Group entityLayer = new Group();
+    Pool<Image> shadowPool = Pools.get(Image.class, 4000);
     Entity player;
 
     // temp vars used for hover effect
@@ -110,7 +113,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
         scale = 32f * mapRenderer.getUnitScale();
-        this.map = map;
     }
 
     public void setFloor(int depth) {
@@ -122,10 +124,16 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         fov = new float[wallMap.length][wallMap[0].length];
         
         shadowLayer.clear();
+        for (Image s : shadows)
+        {
+            shadowPool.free(s);
+        }
         shadows.clear();
+        Drawable d = uiSkin.getDrawable("fill");
         for (int x = 0, rx = 0; x < wallMap.length; x++, rx += scale) {
             for (int y = 0, ry = 0; y < wallMap[0].length; y++, ry += scale) {
-                Image image = new Image(uiSkin, "fill");
+                Image image = shadowPool.obtain();
+                image.setDrawable(d);
                 image.setSize(scale, scale);
                 image.setPosition(rx, ry);
                 shadowLayer.addActor(image);
@@ -210,7 +218,15 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     private void calcFov() {
         for (int x = 0, i = 0; x < fov.length; x++) {
             for (int y = 0; y < fov.length; y++, i++) {
-                shadows.get(i).addAction(Actions.alpha(1.0f-fov[x][y]));
+                Actor a = shadows.get(i);
+                a.addAction(Actions.alpha(1.0f-fov[x][y]));
+                if (fov[x][y] < .5f) {
+                    a.setTouchable(Touchable.disabled);
+                } 
+                //block hover over enemies when they're in the shadows
+                else {
+                    a.setTouchable(Touchable.enabled);
+                }
             }
         }
     }

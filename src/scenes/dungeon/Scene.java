@@ -1,5 +1,7 @@
 package scenes.dungeon;
 
+import java.util.Scanner;
+
 import scenes.UI;
 import scenes.dungeon.ui.MenuMessage;
 import scenes.dungeon.ui.Transition;
@@ -148,10 +150,14 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         
         if (!audio.hasBgm()) {
             Array<FileHandle> bgms = new Array<FileHandle>();
-            bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/001.mp3"));
-            bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/002.mp3"));
-            bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/003.mp3"));
-            bgms.add(Gdx.files.internal(DataDirs.Audio + "dungeon/004.mp3"));
+            FileHandle musicDir = Gdx.files.internal(DataDirs.Audio + "dungeon/");
+            try (Scanner s = new Scanner(musicDir.child("list").read())) {
+                while (s.hasNextLine()) {
+                    String file = s.nextLine().trim();
+                    bgms.add(musicDir.child(file));
+                }
+            }
+            
             for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal(DataDirs.Audio + "dungeon/"))) {
                 if (!f.path().startsWith("data")) {
                     Gdx.app.log("DLC", "found more in " + f.path());
