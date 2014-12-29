@@ -42,6 +42,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     private ColorManager colorMode;
 
     protected Storymode() {}
+    
+    private boolean started;
 
     @Override
     public void resize(int width, int height) {
@@ -79,6 +81,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         SceneManager.register("title", scenes.title.Scene.class);
         SceneManager.register("newgame", scenes.newgame.Scene.class);
         SceneManager.register("endgame", scenes.endgame.Scene.class);
+        SceneManager.register("lore", scenes.lore.Scene.class);
 
         SceneManager.switchToScene("title");
 
@@ -91,6 +94,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         dungeonManager.clear();
         Tracker.reset();
         TownUI.clearHistory();
+        started = true;
     }
 
     /**
@@ -102,6 +106,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IPlayerContainer.class, playerManager);
 
         SceneManager.switchToScene("title");
+        started = false;
     }
 
     /**
@@ -115,6 +120,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
         startGame(3, true);
         SceneManager.switchToScene("town");
+        started = true;
     }
 
     @Override
@@ -202,6 +208,11 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     public void setSfxVol(float vol) {
         audioManager.setSfxVol(vol);
+    }
+
+    @Override
+    public boolean hasStarted() {
+        return started;
     }
 
 }

@@ -1036,9 +1036,4 @@ public class TownUI extends GameUI {
         }
         return null;
     }
-
-    @Override
-    public void update(float delta) {
-        // Do nothing
-    }
 }

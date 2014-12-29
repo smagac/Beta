@@ -210,4 +210,8 @@ public abstract class UI extends Stage implements Agent {
         return false;
     }
 
+    public final void act(float delta) {
+        update(delta);
+        super.act(delta);
+    }
 }

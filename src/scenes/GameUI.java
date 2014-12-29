@@ -435,7 +435,7 @@ public abstract class GameUI extends UI {
     }
 
     @Override
-    public final void act(float delta) {
+    public final void update(float delta) {
         // update time
         String time = String.format(timeFormat, playerService.getTimeElapsed());
         timeStats.setText(time);
@@ -450,7 +450,6 @@ public abstract class GameUI extends UI {
         craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
 
         // update animations
-        super.act(delta);
         extendAct(delta);
         // display.act(delta);
     }

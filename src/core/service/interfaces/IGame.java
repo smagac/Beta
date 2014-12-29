@@ -11,4 +11,6 @@ public interface IGame extends Service {
     public void softReset();
 
     public void endGame();
+
+    public boolean hasStarted();
 }

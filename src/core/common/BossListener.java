@@ -88,6 +88,12 @@ public class BossListener implements InputProcessor {
             getGameService().fastStart();
             return true;
         }
+        if (keycode == Keys.F7) {
+            if (getGameService().hasStarted()) {
+                SceneManager.switchToScene("lore");
+                return true;
+            }
+        }
         if (keycode == Keys.F9) {
             // EXIT LIKE A BITCH
             Gdx.app.exit();
