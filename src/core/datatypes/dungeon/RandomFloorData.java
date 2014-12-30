@@ -96,9 +96,12 @@ public class RandomFloorData implements Serializable, FloorData {
         json.writeValue("width", width);
         json.writeValue("height", height);
         json.writeValue("monsters", monsters);
+        json.writeValue("start", start);
+        json.writeValue("end", end);
 
         json.writeValue("tiles", tiles);
-
+        json.writeValue("collision", collision);
+        
         // write rooms
         json.writeArrayStart("rooms");
         for (Room r : rooms) {
@@ -121,7 +124,15 @@ public class RandomFloorData implements Serializable, FloorData {
         this.width = jsonData.getInt("width");
         this.height = jsonData.getInt("height");
         this.monsters = jsonData.getInt("monsters");
-
+        this.start = jsonData.get("start").asIntArray();
+        this.end = jsonData.get("end").asIntArray();
+        this.collision = new boolean[width][];
+        
+        for (int i = 0; i < width; i++)
+        {
+            this.collision[i] = jsonData.get("collision").get(i).asBooleanArray();
+        }
+        
         // load rooms
         Array<Room> rooms = new Array<Room>();
         JsonValue roomsData = jsonData.get("rooms");
