@@ -106,7 +106,6 @@ public class TownUI extends GameUI {
     Label gMsg;
 
     private boolean changeDir;
-    private int lastIndex = -1;
     private ButtonGroup<Button> craftTabs;
     private FileHandle queueDir;
 
@@ -495,43 +494,49 @@ public class TownUI extends GameUI {
                         return;
                     }
 
-                    if (selected == null && lastIndex == listIndex) {
-                        // go to parent directory
-                        queueDir = directory.parent();
-                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
-                        return;
-                    }
-                    else if (selected != null) {
-                        if (selected.isDirectory()) {
-                            fileDetails.clearActions();
-                            fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
-
-                            if (lastIndex == listIndex) {
-                                changeDir = true;
-                                fileList.setItems();
-                                fileList.addAction(Actions.sequence(Actions.moveTo(-fileList.getWidth(), 0, .3f),
-                                        Actions.run(new Runnable() {
-
-                                            @Override
-                                            public void run() {
-                                                queueDir = selected;
-                                            }
-
-                                        }), Actions.moveTo(0, 0, .3f)));
-                                return;
-                            }
-                        }
-                        else {
-                            MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected,
-                                    selected);
-                        }
+                    if (selected != null && !selected.isDirectory()) {
+                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, selected);
+                    } else {
+                        fileDetails.clearActions();
+                        fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
                     }
 
-                    if (lastIndex != -1) {
-                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
-                    }
-                    lastIndex = listIndex;
+                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                 }
+            });
+            
+            //handle double clicking on directories
+            fileList.addListener(new InputListener(){
+               private int lastIndex = -1;
+               
+               @Override
+               public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                   int listIndex = fileList.getSelectedIndex();
+                   
+                   if (lastIndex == listIndex) {
+                       FileHandle selected = directoryList.get(listIndex);
+                       if (selected == null || selected.isDirectory()) {
+                           if (selected == null) {
+                               selected = directory.parent();
+                           }
+                           final FileHandle dest = selected;
+                           changeDir = true;
+                           fileList.setItems();
+                           fileList.addAction(Actions.sequence(Actions.moveTo(-fileList.getWidth(), 0, .3f),
+                                   Actions.run(new Runnable() {
+
+                                       @Override
+                                       public void run() {
+                                           queueDir = dest;
+                                       }
+
+                                   }), Actions.moveTo(0, 0, .3f)));
+                       }
+                   } else {
+                       lastIndex = listIndex;
+                   }
+                   return true;
+               }
             });
         }
 
@@ -584,20 +589,18 @@ public class TownUI extends GameUI {
                         fileDetails.clearActions();
                         fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
 
-                        if (lastIndex == listIndex) {
-                            changeDir = true;
-                            fileList.setItems();
-                            fileList.addAction(Actions.sequence(Actions.moveTo(-fileList.getWidth(), 0, .3f),
-                                    Actions.run(new Runnable() {
+                        changeDir = true;
+                        fileList.setItems();
+                        fileList.addAction(Actions.sequence(Actions.moveTo(-fileList.getWidth(), 0, .3f),
+                                Actions.run(new Runnable() {
 
-                                        @Override
-                                        public void run() {
-                                            queueDir = selected;
-                                        }
+                                    @Override
+                                    public void run() {
+                                        queueDir = selected;
+                                    }
 
-                                    }), Actions.moveTo(0, 0, .3f)));
-                            return true;
-                        }
+                                }), Actions.moveTo(0, 0, .3f)));
+                        return true;
                     }
                 }
 
@@ -908,7 +911,6 @@ public class TownUI extends GameUI {
     }
 
     private void loadDir(FileHandle external) {
-        lastIndex = -1;
         // disable input while loading directory
         InputProcessor input = Gdx.input.getInputProcessor();
         Gdx.input.setInputProcessor(null);
