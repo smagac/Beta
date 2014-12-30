@@ -32,7 +32,7 @@ import core.service.interfaces.IPlayerContainer;
 public class LoreUI extends UI {
 	
 	protected static final float NORMAL = 1f;
-    protected static final float FAST = .5f;
+    protected static final float FAST = 5f;
     Scene parent;
 	@Inject public IPlayerContainer player;
 	
@@ -81,7 +81,7 @@ public class LoreUI extends UI {
 		Image dargon = new Image(skin, "dargon");
 		dargon.setScale(5f);
 		dargon.setColor(1,1,1,0f);
-		dargon.setPosition(40f, getHeight() - dargon.getHeight() * dargon.getScaleY());
+		dargon.setPosition(40f, 130f);
 		dargon.addAction(
 		        Actions.sequence(
 		            Actions.delay(2f),
@@ -100,7 +100,7 @@ public class LoreUI extends UI {
 		you.addAction(Actions.alpha(1f, 2f));
 		addActor(you);
 		
-		Image fader = new Image(skin, "fill");
+		fader = new Image(skin, "fill");
 		fader.setSize(getWidth(), getHeight());
 		fader.setColor(1, 1, 1, 0f);
 		
