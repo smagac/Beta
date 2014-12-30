@@ -67,10 +67,10 @@ public class WanderUI extends GameUI {
     private Table itemSubmenu;
     private Table lootList;
     private ObjectMap<Item, Integer> loot;
-    private ButtonGroup lootButtons;
+    private ButtonGroup<Button> lootButtons;
     private Table sacrificeList;
     ObjectMap<Item, Integer> sacrifices;
-    private ButtonGroup sacrificeButtons;
+    private ButtonGroup<Button> sacrificeButtons;
 
     private ScrollPane lootPane;
     private ScrollPane sacrificePane;
@@ -396,8 +396,8 @@ public class WanderUI extends GameUI {
                     setFocus(a);
                 }
             });
-            lootButtons = new ButtonGroup();
-            sacrificeButtons = new ButtonGroup();
+            lootButtons = new ButtonGroup<Button>();
+            sacrificeButtons = new ButtonGroup<Button>();
 
             goddess = new Image(skin.getRegion(playerService.getWorship()));
             goddess.setSize(128f, 128f);
@@ -546,7 +546,7 @@ public class WanderUI extends GameUI {
             addActor(levelUpDialog);
             addActor(levelUpGroup);
 
-            MessageDispatcher.getInstance().addListener(Quest.Actions.Notify, this);
+            MessageDispatcher.getInstance().addListener(this, Quest.Actions.Notify);
         }
 
         // key listener for moving the character by pressing the arrow keys or

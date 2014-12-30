@@ -22,12 +22,6 @@ public class BossBattle implements IBattleContainer {
     private Entity target;
     
     private Array<Effect> effectWatch = new Array<Effect>();
-    
-    @Override
-    public void update(float delta) {
-        // DO NOTHING.  
-        // Realtime processing is not handled by the boss battle, as it is turn based
-    }
 
     @Override
     public boolean handleMessage(Telegram msg) {

@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -54,7 +55,7 @@ public class NewUI extends UI {
     private FocusGroup slotFocus;
 
     Scene parent;
-    private ButtonGroup gender;
+    private ButtonGroup<Button> gender;
     private LabeledTicker<Integer> number;
 
     @Inject public IPlayerContainer player;
@@ -226,7 +227,7 @@ public class NewUI extends UI {
             final TextButton right = new TextButton("Female", skin, "big");
             right.pad(10);
 
-            gender = new ButtonGroup(left, right);
+            gender = new ButtonGroup<Button>(left, right);
 
             window.center();
             table.add(left).width(80f).right().padRight(10f);

@@ -27,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -66,7 +67,7 @@ public class TownUI extends GameUI {
 
     // explore display
     private FocusGroup exploreGroup;
-    ButtonGroup exploreTabs;
+    ButtonGroup<Button> exploreTabs;
     Table exploreSubmenu;
     List<String> fileList;
     List<String> recentFileList;
@@ -106,7 +107,7 @@ public class TownUI extends GameUI {
 
     private boolean changeDir;
     private int lastIndex = -1;
-    private ButtonGroup craftTabs;
+    private ButtonGroup<Button> craftTabs;
     private FileHandle queueDir;
 
     @Inject
@@ -219,7 +220,7 @@ public class TownUI extends GameUI {
         craftSubmenu.setWidth(250f);
         craftSubmenu.setHeight(display.getHeight());
 
-        craftTabs = new ButtonGroup();
+        craftTabs = new ButtonGroup<Button>();
         final TextButton myButton = new TextButton("My List", skin);
         myButton.setName("required");
         craftTabs.add(myButton);
@@ -452,7 +453,7 @@ public class TownUI extends GameUI {
         }
         changeDir = false;
 
-        exploreTabs = new ButtonGroup();
+        exploreTabs = new ButtonGroup<Button>();
 
         {
             final TextButton browseButton = new TextButton("Browse", skin);
@@ -662,7 +663,7 @@ public class TownUI extends GameUI {
         availableQuests.setItems(playerService.getQuestTracker().getQuests());
         acceptedQuests.setItems(playerService.getQuestTracker().getAcceptedQuests());
 
-        ButtonGroup questTabs = new ButtonGroup();
+        ButtonGroup<Button> questTabs = new ButtonGroup<Button>();
         {
             final TextButton availableButton = new TextButton("Available", skin);
             availableButton.setName("available");
@@ -859,11 +860,11 @@ public class TownUI extends GameUI {
 
         Image spinner = new Image(skin, playerService.getWorship());
         spinner.setSize(32f, 32f);
-        spinner.setOrigin(spinner.getCenterX(), spinner.getCenterY());
+        spinner.setOrigin(spinner.getX(Align.center), spinner.getY(Align.center));
         spinner.addAction(Actions.forever(Actions.rotateBy(-360f, 2f)));
 
         spinner.setAlign(Align.center);
-        spinner.setCenterPosition(window.getCenterX(), 60f);
+        spinner.setPosition(window.getX(Align.center), 60f, Align.center);
 
         window.setPosition(display.getWidth() / 2f - window.getWidth() / 2f, display.getHeight());
         window.addActor(table);
@@ -903,7 +904,7 @@ public class TownUI extends GameUI {
 
         setMessage("What're we doing next?");
 
-        MessageDispatcher.getInstance().addListener(Quest.Actions.Expired, this);
+        MessageDispatcher.getInstance().addListener(this, Quest.Actions.Expired);
     }
 
     private void loadDir(FileHandle external) {

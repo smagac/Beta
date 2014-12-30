@@ -1,9 +1,7 @@
 package core.datatypes;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
-import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;

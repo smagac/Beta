@@ -1,9 +1,9 @@
 package core.datatypes.quests;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json.Serializable;
@@ -15,7 +15,7 @@ import core.factories.AdjectiveFactory;
 import core.factories.ItemFactory;
 import core.factories.MonsterFactory;
 
-public abstract class Quest implements Agent, Serializable {
+public abstract class Quest implements Telegraph, Serializable {
 
     /**
      * Response messages for the message dispatcher
@@ -73,13 +73,6 @@ public abstract class Quest implements Agent, Serializable {
     }
 
     abstract protected String getType();
-
-    /**
-     * Inherited from Gdx AI, ignore
-     */
-    @Override
-    public final void update(float delta) {
-    }
 
     /**
      * @return true if requirements for the quest's completion have been met

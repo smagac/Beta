@@ -4,8 +4,8 @@ import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -26,7 +26,7 @@ import core.common.Storymode;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.ISharedResources;
 
-public abstract class UI extends Stage implements Agent {
+public abstract class UI extends Stage implements Telegraph {
 
     protected Skin skin;
     protected Image fader;
@@ -201,15 +201,14 @@ public abstract class UI extends Stage implements Agent {
         return manager;
     }
 
-    @Override
-    public void update(float delta) { /* do nothing */
-    }
+    public void update(float delta) { /* do nothing */ }
 
     @Override
     public boolean handleMessage(Telegram msg) {
         return false;
     }
 
+    @Override
     public final void act(float delta) {
         update(delta);
         super.act(delta);

@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 /**
  * Little menu used in the battle scene for showing the
@@ -22,7 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
  */
 public class CrossMenu extends Group
 {
-	ButtonGroup menu;
+	ButtonGroup<Button> menu;
 	Button attack;
 	Button item;
 	Button defend;
@@ -38,7 +39,7 @@ public class CrossMenu extends Group
 		item = new ImageButton(skin, "item");
 		defend = new ImageButton(skin, "defend");
 		
-		menu = new ButtonGroup(attack, item, defend);
+		menu = new ButtonGroup<Button>(attack, item, defend);
 		
 		addActor(attack);
 		addActor(item);
@@ -91,9 +92,9 @@ public class CrossMenu extends Group
 	 * Opens the menu and enables input
 	 */
 	public void show(){
-	    attack.addAction(Actions.moveTo(getCenterX() - 100f, getCenterY() + 50f, .5f));
-        item.addAction(Actions.moveTo(getCenterX(), getCenterY() - 50f, .5f));
-        defend.addAction(Actions.moveTo(getCenterX() + 100f, getCenterY() + 50f, .5f));
+	    attack.addAction(Actions.moveTo(getX(Align.center) - 100f, getY(Align.center) + 50f, .5f));
+        item.addAction(Actions.moveTo(getX(Align.center), getY(Align.center) - 50f, .5f));
+        defend.addAction(Actions.moveTo(getX(Align.center) + 100f, getY(Align.center) + 50f, .5f));
         
         addAction(Actions.sequence(Actions.alpha(0f, .2f)));
         
@@ -104,9 +105,9 @@ public class CrossMenu extends Group
 	 * Closes the menu and prevents further input
 	 */
 	public void hide(){
-	    attack.addAction(Actions.moveTo(getCenterX(), getCenterY(), .5f));
-	    item.addAction(Actions.moveTo(getCenterX(), getCenterY(), .5f));
-	    defend.addAction(Actions.moveTo(getCenterX(), getCenterY(), .5f));
+	    attack.addAction(Actions.moveTo(getX(Align.center), getY(Align.center), .5f));
+	    item.addAction(Actions.moveTo(getX(Align.center), getY(Align.center), .5f));
+	    defend.addAction(Actions.moveTo(getX(Align.center), getY(Align.center), .5f));
 	    
 	    addAction(Actions.sequence(Actions.delay(.3f), Actions.alpha(0f, .2f)));
 	    

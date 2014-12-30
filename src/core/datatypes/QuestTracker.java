@@ -1,8 +1,8 @@
 package core.datatypes;
 
-import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -14,7 +14,7 @@ import core.datatypes.quests.Quest.Actions;
 import core.datatypes.quests.Quest.QuestFactory;
 import core.factories.AdjectiveFactory;
 
-public class QuestTracker implements Agent, Serializable {
+public class QuestTracker implements Telegraph, Serializable {
 
     private static final int MAX_QUESTS = 10;
 
@@ -28,16 +28,9 @@ public class QuestTracker implements Agent, Serializable {
         activeQuests = new Array<Quest>();
         refresh();
         
-        MessageDispatcher.getInstance().addListener(Actions.Gather, this);
-        MessageDispatcher.getInstance().addListener(Actions.Hunt, this);
-        MessageDispatcher.getInstance().addListener(Actions.Used, this);
-    }
-
-    /**
-     * Our tracker is entirely turn based, so we don't need to use this
-     */
-    @Override
-    public final void update(float delta) { /* do nothing */
+        MessageDispatcher.getInstance().addListener(this, Actions.Gather);
+        MessageDispatcher.getInstance().addListener(this, Actions.Hunt);
+        MessageDispatcher.getInstance().addListener(this, Actions.Used);
     }
 
     @Override

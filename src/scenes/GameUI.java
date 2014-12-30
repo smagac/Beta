@@ -35,7 +35,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import core.DataDirs;
 import core.components.Stats;
 import core.datatypes.Inventory;
-import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IPlayerContainer;
 
 /**
@@ -67,7 +66,7 @@ public abstract class GameUI extends UI {
     private Rectangle tmpBound;
 
     protected final HorizontalGroup buttonList;
-    private ButtonGroup buttons;
+    private ButtonGroup<Button> buttons;
     protected final ChangeListener focusListener;
 
     private Label hpStats;
@@ -84,7 +83,7 @@ public abstract class GameUI extends UI {
         super(manager);
 
         buttonList = new HorizontalGroup();
-        buttons = new ButtonGroup();
+        buttons = new ButtonGroup<Button>();
 
         tmpBound = new Rectangle();
         displayBounds = new Rectangle();
@@ -284,8 +283,8 @@ public abstract class GameUI extends UI {
 
         act(0);
 
-        MessageDispatcher.getInstance().addListener(Messages.Notify, this);
-        MessageDispatcher.getInstance().addListener(TabbedPane.Messages.ChangeTabs, this);
+        MessageDispatcher.getInstance().addListener(this, Messages.Notify);
+        MessageDispatcher.getInstance().addListener(this, TabbedPane.Messages.ChangeTabs);
 
     }
 
@@ -325,7 +324,7 @@ public abstract class GameUI extends UI {
 
         buttonList.clearChildren();
 
-        buttons = new ButtonGroup();
+        buttons = new ButtonGroup<Button>();
 
         for (int i = 0; i < butt.length; i++) {
             final Button button = new TextButton(butt[i], skin);
@@ -501,8 +500,8 @@ public abstract class GameUI extends UI {
         super.dispose();
         // make sure this ui stops listening to notifications to unhook it from
         // the system
-        MessageDispatcher.getInstance().removeListener(Messages.Notify, this);
-        MessageDispatcher.getInstance().removeListener(TabbedPane.Messages.ChangeTabs, this);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Notify);
+        MessageDispatcher.getInstance().removeListener(this, TabbedPane.Messages.ChangeTabs);
     }
 
     @Override

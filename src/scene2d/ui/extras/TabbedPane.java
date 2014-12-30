@@ -29,7 +29,7 @@ public class TabbedPane extends Table {
         public static final int ChangeTabs = 0x2000;
     }
 
-    ButtonGroup buttons;
+    ButtonGroup<Button> buttons;
     Table tabs;
     Table panes;
 
@@ -37,7 +37,7 @@ public class TabbedPane extends Table {
 
     Runnable changedTab;
 
-    public TabbedPane(final ButtonGroup buttons, final boolean vertical) {
+    public TabbedPane(final ButtonGroup<Button> buttons, final boolean vertical) {
         final TabbedPane me = this;
         this.vertical = vertical;
         this.buttons = buttons;

@@ -10,11 +10,11 @@ import scenes.dungeon.ui.WanderUI;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.Agent;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
@@ -40,7 +40,6 @@ import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.datatypes.Item;
-import core.factories.DungeonFactory;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
@@ -48,7 +47,7 @@ import core.util.dungeon.TsxTileSet;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
-public class Scene extends scenes.Scene<UI> implements Agent {
+public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Inject
     public IPlayerContainer playerService;
@@ -84,8 +83,8 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         player.add(playerService.getPlayer());
         
         statemachine = new DefaultStateMachine<Scene>(this, GameState.Wander);
-        MessageDispatcher.getInstance().addListener(GameState.Messages.FIGHT, this);
-        MessageDispatcher.getInstance().addListener(GameState.Messages.KILLED, this);
+        MessageDispatcher.getInstance().addListener(this, GameState.Messages.FIGHT);
+        MessageDispatcher.getInstance().addListener(this, GameState.Messages.KILLED);
     }
 
     public void setDungeon(DungeonParams params, FileHandle file) {
@@ -114,6 +113,7 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         }
         
         ui.draw();
+        statemachine.update();
     }
 
     private void prepareMap() {
@@ -180,8 +180,8 @@ public class Scene extends scenes.Scene<UI> implements Agent {
         audio.clearBgm();
         player.removeAll();
         
-        MessageDispatcher.getInstance().removeListener(GameState.Messages.FIGHT, this);
-        MessageDispatcher.getInstance().removeListener(GameState.Messages.KILLED, this);
+        MessageDispatcher.getInstance().removeListener(this, GameState.Messages.FIGHT);
+        MessageDispatcher.getInstance().removeListener(this, GameState.Messages.KILLED);
         super.dispose();
     }
     
@@ -358,12 +358,6 @@ public class Scene extends scenes.Scene<UI> implements Agent {
      */
     public void log(String msg) {
         wanderUI.setMessage(msg);
-    }
-    
-
-    @Override
-    public void update(float delta) {
-        statemachine.update();
     }
 
     @Override
