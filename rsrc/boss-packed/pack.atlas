@@ -1,0 +1,41 @@
+
+pack.png
+size: 256,64
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+audo
+  rotate: false
+  xy: 2, 2
+  size: 64, 32
+  orig: 64, 32
+  offset: 0, 0
+  index: -1
+defend
+  rotate: false
+  xy: 134, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+fight
+  rotate: false
+  xy: 168, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+item
+  rotate: false
+  xy: 202, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+manual
+  rotate: false
+  xy: 68, 2
+  size: 64, 32
+  orig: 64, 32
+  offset: 0, 0
+  index: -1

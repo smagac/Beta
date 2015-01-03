@@ -121,6 +121,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         //set shadow mapping
         Floor f = dungeonService.getDungeon().getFloor(depth);
         wallMap = f.getShadowMap();
+        System.out.println(depth + " : " + wallMap);
         fov = new float[wallMap.length][wallMap[0].length];
         
         shadowLayer.clear();
@@ -155,7 +156,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             player = e;
             fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
             calcFov();
-            System.out.print("Player added\n");
         }
 
         r.loadImage(uiSkin);

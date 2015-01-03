@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
+import core.util.dungeon.TsxTileSet;
 
 public class RandomFloorData implements Serializable, FloorData {
     int monsters;
@@ -66,14 +67,14 @@ public class RandomFloorData implements Serializable, FloorData {
                 TiledMapTile tile = null;
                 if (tiles[x][y] == PathMaker.NULL)
                 {
-                    tile = tileset.getTile(2);
+                    tile = tileset.getTile(TsxTileSet.NULL);
                 }
                 else if (tiles[x][y] == PathMaker.ROOM || tiles[x][y] == PathMaker.HALL)
                 {
-                    tile = tileset.getTile(1);
+                    tile = tileset.getTile(TsxTileSet.FLOOR);
                 }
                 else if (tiles[x][y] == PathMaker.WALL) {
-                    tile = tileset.getTile(0);
+                    tile = tileset.getTile(TsxTileSet.WALL);
                 }
                 else if (tiles[x][y] == PathMaker.UP) {
                     tile = tileset.getTile(3);

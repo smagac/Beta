@@ -10,12 +10,14 @@ import com.badlogic.gdx.graphics.GL20;
 import core.DLC;
 import core.factories.AllFactories;
 import core.service.implementations.AudioManager;
+import core.service.implementations.BossBattle;
 import core.service.implementations.ColorManager;
 import core.service.implementations.DungeonManager;
 import core.service.implementations.LoadScreen;
 import core.service.implementations.PlayerManager;
 import core.service.implementations.SharedLoader;
 import core.service.interfaces.IAudioManager;
+import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IGame;
@@ -37,6 +39,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     private IPlayerContainer playerManager;
     private IDungeonContainer dungeonManager;
+    private IBattleContainer battleManager;
     private AudioManager audioManager;
     private LoadScreen loadScreen;
     private ColorManager colorMode;
@@ -73,7 +76,9 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IPlayerContainer.class, playerManager);
         dungeonManager = new DungeonManager();
         ServiceManager.register(IDungeonContainer.class, dungeonManager);
-    
+        battleManager = new BossBattle();
+        ServiceManager.register(IBattleContainer.class, battleManager);
+        
         boss = new BossListener(colorMode, this);
         
         SceneManager.register("town", scenes.town.Scene.class);
@@ -82,6 +87,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         SceneManager.register("newgame", scenes.newgame.Scene.class);
         SceneManager.register("endgame", scenes.endgame.Scene.class);
         SceneManager.register("lore", scenes.lore.Scene.class);
+        SceneManager.register("battle", scenes.battle.Scene.class);
 
         SceneManager.switchToScene("title");
 

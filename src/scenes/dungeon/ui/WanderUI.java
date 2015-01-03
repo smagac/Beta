@@ -574,7 +574,7 @@ public class WanderUI extends GameUI {
     }
 
     @Override
-    protected void externalRender() {
+    protected void preRender() {
         if (dungeonService.getProgress().depth > 0) {
             dungeonService.getEngine().getSystem(RenderSystem.class).update(Gdx.graphics.getDeltaTime());
         }

@@ -1,11 +1,14 @@
 package core.service.implementations;
 
 import scenes.battle.ui.BattleMessages;
+import scenes.dungeon.GameState;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.utils.Array;
 
+import core.components.Identifier;
 import core.components.Stats;
 import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
@@ -25,6 +28,12 @@ public class BossBattle implements IBattleContainer {
 
     @Override
     public boolean handleMessage(Telegram msg) {
+        //set's the boss for the service
+        if (msg.message == GameState.Messages.FIGHT)
+        {
+            setBoss((Entity)msg.extraInfo);
+            return true;
+        }
         //sets the target for the next effect
         if (msg.message == BattleMessages.TARGET) {
             target = (Entity)msg.extraInfo;
@@ -51,10 +60,16 @@ public class BossBattle implements IBattleContainer {
             
             //build a modifier effect
             Effect e = new Effect(target, adj);
+            e.apply();
+            effectWatch.add(e);
+            return true;
         }
         //advance to the next turn
         if (msg.message == BattleMessages.ADVANCE) {
-            
+            for (Effect e : effectWatch) {
+                e.advance();
+            }
+            return true;
         }
         return false;
     }
@@ -64,6 +79,12 @@ public class BossBattle implements IBattleContainer {
         boss = bossEntity;
     }
 
+
+    @Override
+    public Entity getBoss() {
+        return boss;
+    }
+    
     /**
      * Temporary modifier affect to attach to entities
      * @author nhydock
@@ -83,8 +104,30 @@ public class BossBattle implements IBattleContainer {
         }
         
         private void apply() {
-            
+            target.getComponent(Identifier.class).addModifier(adjective);
+            target.getComponent(Stats.class).addModifier(mod);
+        }
+        
+        private void advance() {
+            turns--;
+            if (turns <= 0) {
+                expire();
+            }
+        }
+        
+        private void expire() {
+            target.getComponent(Identifier.class).removeModifier(adjective);
+            target.getComponent(Stats.class).removeModifier(mod);
         }
     }
-    
+
+    @Override
+    public void onRegister() {
+        MessageDispatcher.getInstance().addListener(this, GameState.Messages.FIGHT);
+    }
+
+    @Override
+    public void onUnregister() {
+        MessageDispatcher.getInstance().removeListener(this, GameState.Messages.FIGHT);
+    }
 }

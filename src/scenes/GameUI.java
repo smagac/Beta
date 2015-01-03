@@ -294,11 +294,17 @@ public abstract class GameUI extends UI {
     protected abstract void extend();
 
     /**
-     * Allow rendering into the display things that aren't stage2d elements
+     * Allow rendering into the display things that aren't stage2d elements.
+     * This method is called before things in the display are rendered.
      */
-    protected void externalRender() {
-    }
+    protected void preRender() {}
 
+    /**
+     * Allow rendering into the display things that aren't stage2d elements.
+     * This method is called after things in the display are rendered.
+     */
+    protected void postRender() {}
+    
     /**
      * Handles an action to be performed when a button in the menu is clicked
      * 
@@ -463,11 +469,12 @@ public abstract class GameUI extends UI {
         b.end();
 
         ScissorStack.pushScissors(tmpBound);
-        externalRender();
         b.setProjectionMatrix(getCamera().combined);
+        preRender();
         b.begin();
         display.draw(b, getRoot().getColor().a);
         b.end();
+        postRender();
         ScissorStack.popScissors();
 
         // hide display during rendering of the stage

@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.common.Storymode;
 import core.service.interfaces.IAudioManager;
@@ -28,6 +29,8 @@ import core.service.interfaces.ISharedResources;
 
 public abstract class UI extends Stage implements Telegraph {
 
+    public static final Viewport viewport = new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]);
+    
     protected Skin skin;
     protected Image fader;
     protected AssetManager manager;
@@ -38,7 +41,7 @@ public abstract class UI extends Stage implements Telegraph {
     @Inject public IAudioManager audio;
     
     public UI(AssetManager manager) {
-        super(new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]));
+        super(viewport);
         this.manager = manager;
         fill = new Image(new Texture(Gdx.files.internal("data/fill.png")));
 

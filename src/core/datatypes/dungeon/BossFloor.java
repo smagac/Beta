@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import core.DataDirs;
 import core.util.dungeon.Room;
+import core.util.dungeon.TsxTileSet;
 
 public class BossFloor implements FloorData {
 
@@ -87,11 +88,11 @@ public class BossFloor implements FloorData {
                 int tile = tiles[col][row];
                 //wall
                 if (tile == 2) {
-                    cell.setTile(tileset.getTile(0));
+                    cell.setTile(tileset.getTile(TsxTileSet.WALL));
                 }
                 //floor
                 else if (tile == 1) {
-                    cell.setTile(tileset.getTile(1));
+                    cell.setTile(tileset.getTile(TsxTileSet.FLOOR));
                 }
                 //down stairs
                 else if (tile == 3) {
@@ -103,7 +104,7 @@ public class BossFloor implements FloorData {
                 }
                 //null
                 else {
-                    cell.setTile(tileset.getTile(2));
+                    cell.setTile(tileset.getTile(TsxTileSet.NULL));
                 }
 
                 layer.setCell(col, row, cell);

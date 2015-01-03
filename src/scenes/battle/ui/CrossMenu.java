@@ -1,6 +1,7 @@
 package scenes.battle.ui;
 
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -56,6 +57,17 @@ public class CrossMenu extends Group
 		           return true;
 		       }
 		   }
+		   
+		   @Override
+		   public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+		       attack.addAction(Actions.scaleTo(1.2f, 1.2f, .1f));
+		   }
+		   
+		   @Override
+           public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+               attack.addAction(Actions.scaleTo(1f, 1f, .1f));
+           }
+           
 		});
 		
 		item.addListener(new InputListener() {

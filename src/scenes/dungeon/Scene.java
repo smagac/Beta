@@ -1,7 +1,5 @@
 package scenes.dungeon;
 
-import java.util.Scanner;
-
 import scenes.UI;
 import scenes.dungeon.ui.MenuMessage;
 import scenes.dungeon.ui.Transition;
@@ -10,8 +8,6 @@ import scenes.dungeon.ui.WanderUI;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
-import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
@@ -19,13 +15,10 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
-
-import core.DLC;
 import core.DataDirs;
 import core.common.Tracker;
 import core.components.Groups;
@@ -40,11 +33,13 @@ import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 import core.util.dungeon.TsxTileSet;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
 public class Scene extends scenes.Scene<UI> implements Telegraph {
@@ -57,6 +52,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     
     @Inject
     public IDungeonContainer dungeonService;
+    
+    @Inject
+    public IBattleContainer battleService;
 
     private boolean descending;
     protected Sound hitSound;
@@ -64,13 +62,20 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     private DungeonParams params;
     
     private Entity player;
-    
-    StateMachine<Scene> statemachine;
 
     WanderUI wanderUI;
     Transition transition;
 
-    private TiledMapTileSet tileset;
+    TiledMapTileSet tileset;
+    
+    /**
+     * Identify that we're entering a boss battle, do not dispose of the dungeon
+     */
+    private boolean fight;
+
+    private UI newUI;
+
+    private boolean capture;
     
     public Scene() {
         super();
@@ -82,7 +87,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         player.add(new Groups.Player());
         player.add(playerService.getPlayer());
         
-        statemachine = new DefaultStateMachine<Scene>(this, GameState.Wander);
         MessageDispatcher.getInstance().addListener(this, GameState.Messages.FIGHT);
         MessageDispatcher.getInstance().addListener(this, GameState.Messages.KILLED);
     }
@@ -113,7 +117,25 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         
         ui.draw();
-        statemachine.update();
+        
+        if (newUI != null) {
+            ui = newUI;
+            newUI = null;
+            if (capture) {
+                transition.init();
+            }
+            if (fight) {
+                transition.playAnimation(new Runnable(){
+
+                    @Override
+                    public void run() {
+                        scenes.battle.Scene scene = (scenes.battle.Scene)SceneManager.switchToScene("battle");
+                        scene.setEnvironment(tileset);
+                    }
+
+                });
+            }
+        } 
     }
 
     private void prepareMap() {
@@ -149,34 +171,23 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         transition = new Transition(manager);
         
         if (!audio.hasBgm()) {
-            Array<FileHandle> bgms = new Array<FileHandle>();
-            FileHandle musicDir = Gdx.files.internal(DataDirs.Audio + "dungeon/");
-            try (Scanner s = new Scanner(musicDir.child("list").read())) {
-                while (s.hasNextLine()) {
-                    String file = s.nextLine().trim();
-                    bgms.add(musicDir.child(file));
-                }
-            }
-            
-            for (FileHandle f : DLC.getAll("audio/dungeon", Gdx.files.internal(DataDirs.Audio + "dungeon/"))) {
-                if (!f.path().startsWith("data")) {
-                    Gdx.app.log("DLC", "found more in " + f.path());
-                    bgms.addAll(f.list("mp3"));
-                    bgms.addAll(f.list("ogg"));
-                }
-            }
-            audio.setBgm(Gdx.audio.newMusic(bgms.random()));
+            Array<String> files = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "dungeon/"));
+            String bgm = files.random();
+            audio.setBgm(Gdx.audio.newMusic(Gdx.files.internal(bgm)));
         }
 
         audio.playBgm();
         loaded = false;
         
         ui = wanderUI;
+        Gdx.input.setInputProcessor(wanderUI);
     }
 
     @Override
     public void dispose() {
-        dungeonService.clear();
+        if (!fight) {
+            dungeonService.clear();
+        }
         audio.clearBgm();
         player.removeAll();
         
@@ -291,13 +302,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Override
     protected void init() {
-        TextureAtlas atlas = shared.getResource(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         tileset = new TsxTileSet(params.getTileset(), shared.getAssetManager());
-        Skin skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
-        skin.addRegions(atlas);
         
         wanderUI.init();
-        transition.init();
         ui = wanderUI;
         hitSound = shared.getResource(DataDirs.hit, Sound.class);
         // ui.levelUp();
@@ -349,7 +356,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
      * @param ui
      */
     public void setUI(UI ui) {
-        this.ui = ui;
+        this.newUI = ui;
     }
     
     /**
@@ -362,7 +369,15 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Override
     public boolean handleMessage(Telegram msg) {
-        return statemachine.handleMessage(msg);
+        if (msg.message == GameState.Messages.FIGHT) {
+            fight = true;
+            battleService.setBoss((Entity)msg.extraInfo);
+            capture = true;
+            Gdx.input.setInputProcessor(null);
+            setUI(transition);
+            return true;
+        }
+        return false;
     }
 
 }
