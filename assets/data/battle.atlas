@@ -1,41 +1,69 @@
 
 battle.png
-size: 256,64
+size: 256,128
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-auto
+attack
   rotate: false
-  xy: 2, 2
-  size: 64, 32
-  orig: 64, 32
-  offset: 0, 0
-  index: -1
-defend
-  rotate: false
-  xy: 134, 2
+  xy: 68, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-attack
+auto
   rotate: false
-  xy: 168, 2
+  xy: 2, 20
+  size: 64, 32
+  orig: 64, 32
+  offset: 0, 0
+  index: -1
+clouds
+  rotate: false
+  xy: 2, 54
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+defend
+  rotate: false
+  xy: 198, 86
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 item
   rotate: false
-  xy: 202, 2
+  xy: 132, 52
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 manual
   rotate: false
-  xy: 68, 2
+  xy: 132, 86
   size: 64, 32
   orig: 64, 32
+  offset: 0, 0
+  index: -1
+meter_active
+  rotate: false
+  xy: 2, 2
+  size: 32, 16
+  orig: 32, 16
+  offset: 0, 0
+  index: -1
+meter_inactive
+  rotate: false
+  xy: 36, 2
+  size: 32, 16
+  orig: 32, 16
+  offset: 0, 0
+  index: -1
+sacrifice
+  rotate: false
+  xy: 166, 52
+  size: 32, 32
+  orig: 32, 32
   offset: 0, 0
   index: -1

@@ -1,7 +1,0 @@
-{
-com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
-	attack: { down: attack, up: attack, checked: attack },
-    defend: { down: defend, up: defend, checked: defend },	
-	item:   { down: item, up: item, checked: item}
-},
-}

@@ -13,7 +13,7 @@ import com.badlogic.gdx.ai.msg.Telegraph;
 public interface IBattleContainer extends Telegraph, Service {
 
     public void setBoss(Entity bossEntity);
-
+    public Entity getTarget();
     public Entity getBoss();
     
 }

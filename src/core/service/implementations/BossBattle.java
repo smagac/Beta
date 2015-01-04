@@ -69,6 +69,7 @@ public class BossBattle implements IBattleContainer {
             for (Effect e : effectWatch) {
                 e.advance();
             }
+            MessageDispatcher.getInstance().dispatchMessage(this, BattleMessages.MODIFY_UPDATE, effectWatch);
             return true;
         }
         return false;
@@ -90,7 +91,9 @@ public class BossBattle implements IBattleContainer {
      * @author nhydock
      *
      */
-    private class Effect {
+    public static class Effect {
+        public static final int LASTING_LENGTH = 3;
+        
         Entity target;
         StatModifier mod;
         String adjective;
@@ -100,7 +103,7 @@ public class BossBattle implements IBattleContainer {
             this.target = target;
             this.adjective = adj;
             this.mod = AdjectiveFactory.getModifier(adjective);
-            this.turns = 3;
+            this.turns = LASTING_LENGTH;
         }
         
         private void apply() {
@@ -110,7 +113,7 @@ public class BossBattle implements IBattleContainer {
         
         private void advance() {
             turns--;
-            if (turns <= 0) {
+            if (turns < 0) {
                 expire();
             }
         }
@@ -118,6 +121,18 @@ public class BossBattle implements IBattleContainer {
         private void expire() {
             target.getComponent(Identifier.class).removeModifier(adjective);
             target.getComponent(Stats.class).removeModifier(mod);
+        }
+        
+        public String getAdjective() {
+            return adjective;
+        }
+        
+        public int turns() {
+            return turns;
+        }
+        
+        public Entity getTarget() {
+            return target;
         }
     }
 
@@ -129,5 +144,10 @@ public class BossBattle implements IBattleContainer {
     @Override
     public void onUnregister() {
         MessageDispatcher.getInstance().removeListener(this, GameState.Messages.FIGHT);
+    }
+
+    @Override
+    public Entity getTarget() {
+        return target;
     }
 }

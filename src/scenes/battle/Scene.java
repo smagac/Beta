@@ -26,7 +26,7 @@ public class Scene extends scenes.Scene<BattleUI>
     
     private String bgm;
     
-    private Texture environment;
+    private TiledMapTileSet environment;
     
 	@Override
 	public void show()
@@ -35,6 +35,9 @@ public class Scene extends scenes.Scene<BattleUI>
 	    
         bgm = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "combat/")).random();
         manager.load(bgm, Music.class);
+        
+        input.addProcessor(ui);
+        Gdx.input.setInputProcessor(input);
 	}
 	
 	/**
@@ -43,26 +46,7 @@ public class Scene extends scenes.Scene<BattleUI>
 	 */
 	public void setEnvironment(TiledMapTileSet tileset)
 	{
-	    Texture tx = new Texture(32, 128, Pixmap.Format.RGBA8888);
-	    
-	    int[] tileTypes = {TsxTileSet.NULL, 2, TsxTileSet.WALL, 1, TsxTileSet.FLOOR, 1};
-	    for (int i = 0, y = 0; i < tileTypes.length; i += 2) {
-	        int type = tileTypes[i]; 
-	        int n = tileTypes[i+1];
-	        
-	        TextureRegion tile = tileset.getTile(type).getTextureRegion();
-	        Texture tileTx = tile.getTexture();
-	        tileTx.getTextureData().prepare();
-	        Pixmap pm = tileTx.getTextureData().consumePixmap();
-	        
-	        for (int k = 0; k < n; k++, y += 32) {
-	            tx.draw(pm, 0, y);
-	        }
-	        //pm.dispose();
-	    }
-	    
-	    environment = tx;
-	    environment.setWrap(TextureWrap.Repeat, TextureWrap.ClampToEdge);
+	    environment = tileset;
 	}
 
 	@Override

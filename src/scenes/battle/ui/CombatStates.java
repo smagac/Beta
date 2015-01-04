@@ -8,8 +8,8 @@ public enum CombatStates implements State<BattleUI> {
     MAIN(){
         @Override
         public void enter(final BattleUI entity) {
-            entity.boss.addAction(Actions.moveBy(-50f, 0f, .3f));
-            entity.player.addAction(Actions.moveBy(50f, 0f, .3f));
+            entity.boss.addAction(Actions.moveBy(-80f, 0f, .3f));
+            entity.player.addAction(Actions.moveBy(80f, 0f, .3f));
             entity.player.addAction(Actions.addAction(Actions.run(new Runnable() {
                 
                 @Override
@@ -17,34 +17,89 @@ public enum CombatStates implements State<BattleUI> {
                     entity.mainmenu.show();
                 }
             }), entity.mainmenu));
+            
+            entity.setFocus(entity.mainmenu);
         }
         
         @Override
         public void exit(final BattleUI entity) {
-            entity.mainmenu.addAction(Actions.sequence(
-                    Actions.alpha(0f, .2f),
-                    Actions.run(new Runnable(){
+            entity.mainmenu.hide();
+            entity.boss.addAction(Actions.moveBy(80f, 0f, .3f));
+            entity.player.addAction(Actions.moveBy(-80f, 0f, .3f));
+            
+        }
 
-                        @Override
-                        public void run() {
-                            entity.mainmenu.setVisible(false);
-                        }
-                        
-                    })
-            ));
+        @Override
+        public boolean onMessage(final BattleUI entity, Telegram telegram) {
+            if (telegram.message == BattleMessages.ITEM) {
+                //TODO fix up to go to the item menu
+                entity.changeState(ATTACK);
+            }
+            
+            // TODO Auto-generated method stub
+            return false;
         }
     },
     ATTACK(){
         @Override
-        public void enter(BattleUI entity) {
-            // TODO Auto-generated method stub
+        public void enter(final BattleUI entity) {
+            entity.addAction(Actions.sequence(Actions.delay(.8f), Actions.run(new Runnable(){
+
+                @Override
+                public void run() {
+                    entity.playSacrificeAnimation(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            entity.changeState(MAIN);
+                        }
+                    });
+                }
+                
+            })));
             
+        }
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
         }
     },
     MANUAL(){
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
+        }
         
     },
     AUTO(){
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        
+    },
+    FORCE(){
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        
+    },
+    MODIFY(){
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
+        }
         
     };
     
@@ -63,10 +118,5 @@ public enum CombatStates implements State<BattleUI> {
         // TODO Auto-generated method stub
         
     }
-    @Override
-    public boolean onMessage(BattleUI entity, Telegram telegram) {
-        // TODO Auto-generated method stub
-        return false;
-    };
     
 }

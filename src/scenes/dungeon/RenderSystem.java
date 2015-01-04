@@ -12,10 +12,7 @@ import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -69,7 +66,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
     private float scale;
-    private TextureRegion nullTile;
 
     private final Array<Actor> addQueue;
     private final Array<Actor> removeQueue;
@@ -325,17 +321,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         return scale;
     }
 
-    public void setNull(Texture texture) {
-        if (texture != null) {
-            texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-            this.nullTile = new TextureRegion(texture);
-        }
-        else {
-            this.nullTile = null;
-        }
-
-    }
-
     public Stage getStage() {
         return stage;
     }
@@ -427,7 +412,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         stage.dispose();
         stage = null;
         mapRenderer = null;
-        nullTile = null;
     }
 
     public void resize(int width, int height) {

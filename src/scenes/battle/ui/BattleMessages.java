@@ -37,11 +37,12 @@ public interface BattleMessages {
      * Message used to signify a item has been used to modify a target
      */
     public static final int MODIFY = 0x4001;
+    public static final int MODIFY_UPDATE = 0x4002;
     
     /**
      * Message used to signify that a modifier has expired.
      * Pack with which modifier to remove.
      */
-    public static final int DEBUFF = 0x4002;
+    public static final int DEBUFF = 0x4003;
     
 }

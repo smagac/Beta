@@ -8,6 +8,7 @@ import scenes.dungeon.ui.WanderUI;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
@@ -19,6 +20,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+
 import core.DataDirs;
 import core.common.Tracker;
 import core.components.Groups;
@@ -72,10 +74,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
      * Identify that we're entering a boss battle, do not dispose of the dungeon
      */
     private boolean fight;
-
-    private UI newUI;
-
-    private boolean capture;
     
     public Scene() {
         super();
@@ -117,25 +115,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         
         ui.draw();
-        
-        if (newUI != null) {
-            ui = newUI;
-            newUI = null;
-            if (capture) {
-                transition.init();
-            }
-            if (fight) {
-                transition.playAnimation(new Runnable(){
-
-                    @Override
-                    public void run() {
-                        scenes.battle.Scene scene = (scenes.battle.Scene)SceneManager.switchToScene("battle");
-                        scene.setEnvironment(tileset);
-                    }
-
-                });
-            }
-        } 
     }
 
     private void prepareMap() {
@@ -156,7 +135,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         rs.setProcessing(false);
         
         rs.setView(wanderUI, shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
-        rs.setNull(shared.getResource(DataDirs.Home + "null.png", Texture.class));
         rs.setMap(map);
         ms.setScene(this);
         
@@ -352,14 +330,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     }
     
     /**
-     * Sets the active UI of the dungeon scene
-     * @param ui
-     */
-    public void setUI(UI ui) {
-        this.newUI = ui;
-    }
-    
-    /**
      * Sends a text message to the currently active UI
      * @param msg
      */
@@ -370,11 +340,19 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     @Override
     public boolean handleMessage(Telegram msg) {
         if (msg.message == GameState.Messages.FIGHT) {
-            fight = true;
             battleService.setBoss((Entity)msg.extraInfo);
-            capture = true;
+            transition.init();
+            transition.playAnimation(new Runnable(){
+
+                @Override
+                public void run() {
+                    scenes.battle.Scene scene = (scenes.battle.Scene)SceneManager.switchToScene("battle");
+                    scene.setEnvironment(tileset);
+                }
+
+            });
+            ui = transition;
             Gdx.input.setInputProcessor(null);
-            setUI(transition);
             return true;
         }
         return false;

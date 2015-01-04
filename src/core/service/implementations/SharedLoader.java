@@ -22,8 +22,8 @@ public class SharedLoader implements ISharedResources {
         // add shared resources
         manager.load(DataDirs.Home + "uiskin.json", Skin.class);
         manager.load(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
+        manager.load(DataDirs.Home + "battle.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
-        manager.load(DataDirs.Home + "null.png", Texture.class);
         manager.load(DataDirs.Home + "dargon.png", Texture.class);
         manager.load(DataDirs.accept, Sound.class);
         manager.load(DataDirs.tick, Sound.class);
@@ -42,14 +42,14 @@ public class SharedLoader implements ISharedResources {
         
         // skin is used in a lot of places so we add addition regions to it to make things easier
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
-        TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
-        Texture nullSpace = manager.get(DataDirs.Home + "null.png");
         Texture dargon = manager.get(DataDirs.Home + "dargon.png");
         Texture fillTex = manager.get(DataDirs.Home + "fill.png", Texture.class);
-        uiSkin.add("null", nullSpace, Texture.class);
         uiSkin.add("fill", new TextureRegion(fillTex), TextureRegion.class);
         uiSkin.add("dargon", dargon, Texture.class);
+        TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
         uiSkin.addRegions(dungeonSprites);
+        TextureAtlas battleSprites = manager.get(DataDirs.Home + "battle.atlas");
+        uiSkin.addRegions(battleSprites);
     }
     
     @Override
