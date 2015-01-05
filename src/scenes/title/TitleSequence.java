@@ -4,7 +4,6 @@ import github.nhydock.ssm.SceneManager;
 import scenes.UI;
 
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -15,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+
+import core.common.Input;
 
 public class TitleSequence extends UI {
 
@@ -252,8 +253,7 @@ public class TitleSequence extends UI {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
                 // skip the intro
-                if (keycode == Keys.ENTER || keycode == Keys.SPACE || keycode == Keys.ESCAPE
-                        || keycode == Keys.BACKSPACE) {
+                if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
                     SceneManager.switchToScene("newgame");
                     return true;
                 }

@@ -12,7 +12,6 @@ import scenes.GameUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -41,6 +40,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
+import core.common.Input;
 import core.datatypes.Craftable;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
@@ -252,13 +252,13 @@ public class TownUI extends GameUI {
             p.addListener(new InputListener() {
                 @Override
                 public boolean keyDown(InputEvent evt, int keycode) {
-                    if (keycode == Keys.DOWN || keycode == Keys.S) {
+                    if (Input.DOWN.match(keycode)) {
                         list.setSelectedIndex(Math.min(list.getItems().size - 1, list.getSelectedIndex() + 1));
                         float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                         p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
                         return true;
                     }
-                    if (keycode == Keys.UP || keycode == Keys.W) {
+                    if (Input.UP.match(keycode)) {
                         list.setSelectedIndex(Math.max(0, list.getSelectedIndex() - 1));
                         float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                         p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
@@ -294,13 +294,13 @@ public class TownUI extends GameUI {
             p.addListener(new InputListener() {
                 @Override
                 public boolean keyDown(InputEvent evt, int keycode) {
-                    if (keycode == Keys.DOWN || keycode == Keys.S) {
+                    if (Input.DOWN.match(keycode)) {
                         list.setSelectedIndex(Math.min(list.getItems().size - 1, list.getSelectedIndex() + 1));
                         float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                         p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
                         return true;
                     }
-                    if (keycode == Keys.UP || keycode == Keys.W) {
+                    if (Input.UP.match(keycode)) {
                         list.setSelectedIndex(Math.max(0, list.getSelectedIndex() - 1));
                         float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                         p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
@@ -345,10 +345,10 @@ public class TownUI extends GameUI {
                     l = todayList;
                 }
 
-                if (keycode == Keys.DOWN || keycode == Keys.S) {
+                if (Input.DOWN.match(keycode)) {
                     l.setSelectedIndex(Math.min(l.getItems().size - 1, l.getSelectedIndex() + 1));
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     l.setSelectedIndex(Math.max(0, l.getSelectedIndex() - 1));
                 }
 
@@ -399,10 +399,10 @@ public class TownUI extends GameUI {
         lootPane.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                if (keycode == Keys.DOWN || keycode == Keys.S) {
+                if (Input.DOWN.match(keycode)) {
                     lootPane.fling(.4f, 0, -64f / .4f);
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     lootPane.fling(.4f, 0, 64f / .4f);
                 }
                 return false;
@@ -576,7 +576,7 @@ public class TownUI extends GameUI {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
 
-                if ((keycode == Keys.ENTER || keycode == Keys.SPACE) && exploreMenu.getOpenTabIndex() == 0) {
+                if (Input.ACCEPT.match(keycode) && exploreMenu.getOpenTabIndex() == 0) {
                     int listIndex = fileList.getSelectedIndex();
                     final FileHandle selected = directoryList.get(listIndex);
                     if (selected == null) {
@@ -619,10 +619,10 @@ public class TownUI extends GameUI {
                     l = recentFileList;
                 }
 
-                if (keycode == Keys.DOWN || keycode == Keys.S) {
+                if (Input.DOWN.match(keycode)) {
                     l.setSelectedIndex(Math.min(l.getItems().size - 1, l.getSelectedIndex() + 1));
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     l.setSelectedIndex(Math.max(0, l.getSelectedIndex() - 1));
                 }
 
@@ -737,10 +737,10 @@ public class TownUI extends GameUI {
                     l = acceptedQuests;
                 }
 
-                if (keycode == Keys.DOWN || keycode == Keys.S) {
+                if (Input.DOWN.match(keycode)) {
                     l.setSelectedIndex(Math.min(l.getItems().size - 1, l.getSelectedIndex() + 1));
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     l.setSelectedIndex(Math.max(0, l.getSelectedIndex() - 1));
                 }
 
@@ -831,13 +831,13 @@ public class TownUI extends GameUI {
         window.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                if (keycode == Keys.DOWN || keycode == Keys.S) {
+                if (Input.DOWN.match(keycode)) {
                     formFocus.next(true);
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     formFocus.prev(true);
                 }
-                if (keycode == Keys.SPACE || keycode == Keys.ENTER) {
+                if (Input.ACCEPT.match(keycode)) {
                     MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected,
                             formFocus.getFocusedIndex());
                 }

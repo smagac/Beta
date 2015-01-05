@@ -4,17 +4,10 @@ import github.nhydock.ssm.Inject;
 import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.HAlignment;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -22,11 +15,11 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 
 import core.DataDirs;
+import core.common.Input;
 import core.service.interfaces.IPlayerContainer;
 
 public class LoreUI extends UI {
@@ -75,8 +68,6 @@ public class LoreUI extends UI {
 	@Override
 	public void init() {
 		skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
-		
-		final LoreUI ui = this;
 		
 		Image dargon = new Image(skin, "dargon");
 		dargon.setScale(5f);
@@ -133,7 +124,7 @@ public class LoreUI extends UI {
 		   @Override
 		   public boolean keyDown(InputEvent evt, int keycode)
 		   {
-		       if (keycode == Keys.SPACE || keycode == Keys.ENTER) {
+		       if (Input.ACCEPT.match(keycode)) {
 		           scrollRate = FAST;
 		           return true;
 		       }
@@ -142,7 +133,7 @@ public class LoreUI extends UI {
 		   
 		   @Override
 		   public boolean keyUp(InputEvent evt, int keycode) {
-		       if (keycode == Keys.SPACE || keycode == Keys.ENTER) {
+		       if (Input.ACCEPT.match(keycode)) {
                    scrollRate = NORMAL;
                    return true;
                }

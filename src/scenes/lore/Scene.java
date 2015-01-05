@@ -5,7 +5,6 @@ import github.nhydock.ssm.SceneManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 
 import core.DataDirs;
 import core.service.interfaces.IGame;

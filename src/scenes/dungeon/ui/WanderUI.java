@@ -11,7 +11,6 @@ import scenes.dungeon.RenderSystem;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -36,6 +35,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
 
 import core.DataDirs;
+import core.common.Input;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
@@ -233,7 +233,7 @@ public class WanderUI extends GameUI {
                 lootPane.addListener(new InputListener() {
                     @Override
                     public boolean keyDown(InputEvent evt, int keycode) {
-                        if (keycode == Keys.RIGHT || keycode == Keys.D) {
+                        if (Input.RIGHT.match(keycode)) {
                             sacrificeGroup.setFocus(sacrificePane);
                             return true;
                         }
@@ -242,7 +242,7 @@ public class WanderUI extends GameUI {
                             return false;
                         }
 
-                        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                        if (Input.ACCEPT.match(keycode)) {
                             Item item = (Item) lootButtons.getChecked().getUserObject();
                             Integer k = loot.get(item);
 
@@ -255,7 +255,7 @@ public class WanderUI extends GameUI {
                             return true;
                         }
 
-                        if (keycode == Keys.DOWN || keycode == Keys.S) {
+                        if (Input.DOWN.match(keycode)) {
                             if (lootButtons.getChecked() == null) {
                                 Button next = lootButtons.getButtons().first();
                                 if (next != null) {
@@ -275,7 +275,7 @@ public class WanderUI extends GameUI {
                             }
                             return true;
                         }
-                        if (keycode == Keys.UP || keycode == Keys.W) {
+                        if (Input.UP.match(keycode)) {
                             if (lootButtons.getChecked() == null) {
                                 Button next = lootButtons.getButtons().first();
                                 if (next != null) {
@@ -302,7 +302,7 @@ public class WanderUI extends GameUI {
                 sacrificePane.addListener(new InputListener() {
                     @Override
                     public boolean keyDown(InputEvent evt, int keycode) {
-                        if (keycode == Keys.LEFT || keycode == Keys.A) {
+                        if (Input.LEFT.match(keycode)) {
                             sacrificeGroup.setFocus(lootPane);
                             return true;
                         }
@@ -311,7 +311,7 @@ public class WanderUI extends GameUI {
                             return false;
                         }
 
-                        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                        if (Input.ACCEPT.match(keycode)) {
                             Item item = (Item) sacrificeButtons.getChecked().getUserObject();
                             Integer k = sacrifices.get(item);
 
@@ -327,7 +327,7 @@ public class WanderUI extends GameUI {
                             return true;
                         }
 
-                        if (keycode == Keys.DOWN || keycode == Keys.S) {
+                        if (Input.DOWN.match(keycode)) {
                             if (sacrificeButtons.getChecked() == null) {
                                 Button next = sacrificeButtons.getButtons().first();
                                 if (next != null) {
@@ -348,7 +348,7 @@ public class WanderUI extends GameUI {
                             }
                             return true;
                         }
-                        if (keycode == Keys.UP || keycode == Keys.W) {
+                        if (Input.UP.match(keycode)) {
                             if (sacrificeButtons.getChecked() == null) {
                                 Button next = sacrificeButtons.getButtons().first();
                                 if (next != null) {
@@ -515,15 +515,15 @@ public class WanderUI extends GameUI {
             levelUpDialog.addListener(new InputListener() {
                 @Override
                 public boolean keyDown(InputEvent evt, int keycode) {
-                    if (keycode == Keys.DOWN || keycode == Keys.S) {
+                    if (Input.DOWN.match(keycode)) {
                         levelUpGroup.next();
                         return true;
                     }
-                    if (keycode == Keys.UP || keycode == Keys.W) {
+                    if (Input.UP.match(keycode)) {
                         levelUpGroup.prev();
                         return true;
                     }
-                    if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                    if (Input.ACCEPT.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Close);
                         return true;
                     }
@@ -564,6 +564,28 @@ public class WanderUI extends GameUI {
                 return false;
             }
 
+            @Override
+            public boolean keyUp(InputEvent evt,  int keycode) {
+                if (menu.isInState(WanderState.Wander)) {
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement);
+                    return true;
+                }
+                return false;
+            }
+        });
+        
+        display.addListener(new InputListener() {
+           
+            @Override
+            public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                if (menu.isInState(WanderState.Wander)) {
+                    Direction to = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement, to);
+                    return true;
+                }
+                return false;
+            }
+            
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
                 if (menu.isInState(WanderState.Wander)) {

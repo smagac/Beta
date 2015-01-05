@@ -10,7 +10,6 @@ import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
@@ -31,6 +30,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
+import core.common.Input;
 import core.common.Tracker;
 import core.common.Tracker.NumberValues;
 import core.common.Tracker.StringValues;
@@ -126,11 +126,11 @@ public class EndUI extends UI {
                                     return false;
 
                                 boolean hit = false;
-                                if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE) {
+                                if (Input.CANCEL.match(keycode)) {
                                     hit = true;
                                     end();
                                 }
-                                else if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                                else if (Input.ACCEPT.match(keycode)) {
                                     hit = true;
                                     next();
                                 }
@@ -268,15 +268,15 @@ public class EndUI extends UI {
         stats.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                if (Input.ACCEPT.match(keycode)) {
                     done.setChecked(true);
                     return true;
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     p.setScrollY(p.getScrollY() - 16);
                     return true;
                 }
-                else if (keycode == Keys.DOWN || keycode == Keys.S) {
+                else if (Input.DOWN.match(keycode)) {
                     p.setScrollY(p.getScrollY() + 16);
                     return true;
                 }

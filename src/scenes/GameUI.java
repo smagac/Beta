@@ -5,7 +5,6 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.TabbedPane;
 
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -33,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 
 import core.DataDirs;
+import core.common.Input;
 import core.components.Stats;
 import core.datatypes.Inventory;
 import core.service.interfaces.IPlayerContainer;
@@ -208,15 +208,15 @@ public abstract class GameUI extends UI {
                     if (!buttonList.isVisible())
                         return false;
 
-                    if (keycode == Keys.LEFT || keycode == Keys.A) {
+                    if (Input.LEFT.match(keycode)) {
                         setIndex(getIndex() - 1);
                         return true;
                     }
-                    if (keycode == Keys.RIGHT || keycode == Keys.D) {
+                    if (Input.RIGHT.match(keycode)) {
                         setIndex(getIndex() + 1);
                         return true;
                     }
-                    if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                    if (Input.ACCEPT.match(keycode)) {
                         audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         triggerAction(getIndex());
                         hidePointer();
@@ -239,12 +239,12 @@ public abstract class GameUI extends UI {
                     return false;
                 }
 
-                if (keycode == Keys.TAB || keycode == Keys.CONTROL_RIGHT) {
+                if (Input.SWITCH.match(keycode)) {
                     focusList().next(true);
                     return true;
                 }
 
-                if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE) {
+                if (Input.CANCEL.match(keycode)) {
                     setFocus(buttonList);
                     triggerAction(-1);
                     hidePointer();

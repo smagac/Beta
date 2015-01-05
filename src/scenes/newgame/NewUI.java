@@ -11,7 +11,6 @@ import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -38,6 +37,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
+import core.common.Input;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
 
@@ -147,9 +147,9 @@ public class NewUI extends UI {
                     }
 
                     @Override
-                    public boolean keyDown(InputEvent evt, int key) {
+                    public boolean keyDown(InputEvent evt, int keycode) {
                         if (slotFocus.getFocusedIndex() == index) {
-                            if (key == Keys.ENTER || key == Keys.SPACE) {
+                            if (Input.ACCEPT.match(keycode)) {
                                 MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui,
                                         slotFocus.getFocusedIndex(), s);
                                 return true;
@@ -240,11 +240,11 @@ public class NewUI extends UI {
                 public boolean keyDown(InputEvent evt, int keycode) {
                     boolean hit = false;
 
-                    if (keycode == Keys.LEFT || keycode == Keys.A) {
+                    if (Input.LEFT.match(keycode)) {
                         hit = true;
                         left.setChecked(true);
                     }
-                    if (keycode == Keys.RIGHT || keycode == Keys.D) {
+                    if (Input.RIGHT.match(keycode)) {
                         hit = true;
                         right.setChecked(true);
                     }
@@ -294,15 +294,15 @@ public class NewUI extends UI {
             public boolean keyDown(InputEvent evt, int keycode) {
                 boolean hit = false;
 
-                if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                if (Input.ACCEPT.match(keycode)) {
                     hit = true;
                     accept.setChecked(true);
                 }
-                if (keycode == Keys.DOWN || keycode == Keys.S) {
+                if (Input.DOWN.match(keycode)) {
                     hit = true;
                     createFocus.next();
                 }
-                if (keycode == Keys.UP || keycode == Keys.W) {
+                if (Input.UP.match(keycode)) {
                     hit = true;
                     createFocus.prev();
                 }
@@ -391,13 +391,13 @@ public class NewUI extends UI {
                                 entity.slotFrame.addListener(new InputListener() {
                                     @Override
                                     public boolean keyDown(InputEvent evt, int keycode) {
-                                        if (keycode == Keys.DOWN || keycode == Keys.S) {
+                                        if (Input.DOWN.match(keycode)) {
                                             entity.slotFocus.next(true);
                                         }
-                                        if (keycode == Keys.UP || keycode == Keys.W) {
+                                        if (Input.UP.match(keycode)) {
                                             entity.slotFocus.prev(true);
                                         }
-                                        if (keycode == Keys.SPACE || keycode == Keys.ENTER) {
+                                        if (Input.ACCEPT.match(keycode)) {
                                             MessageDispatcher.getInstance().dispatchMessage(0f, entity, entity,
                                                     entity.slotFocus.getFocusedIndex(),
                                                     entity.slotFocus.getFocused().getUserObject());
@@ -534,7 +534,7 @@ public class NewUI extends UI {
                 entity.addListener(new InputListener() {
                     @Override
                     public boolean keyDown(InputEvent evt, int keycode) {
-                        if (keycode == Keys.ESCAPE || keycode == Keys.BACKSPACE) {
+                        if (Input.CANCEL.match(keycode)) {
                             entity.sm.changeState(Over);
                             return true;
                         }
@@ -562,7 +562,7 @@ public class NewUI extends UI {
                                 entity.addListener(new InputListener() {
                                     @Override
                                     public boolean keyDown(InputEvent evt, int keycode) {
-                                        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+                                        if (Input.ACCEPT.match(keycode)) {
                                             entity.sm.update();
                                             return true;
                                         }
