@@ -3,10 +3,10 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="libs/gdx-ai.jar"/>
 	<classpathentry kind="lib" path="libs/gdx-backend-headless.jar"/>
-	<classpathentry kind="lib" path="libs/gdx-natives.jar"/>
-	<classpathentry kind="lib" path="libs/gdx.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Storymode"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Storymode"/>
+	<classpathentry kind="lib" path="/Storymode/libs/gdx-ai-1.4.0.jar" sourcepath="/Storymode/libs/sources/gdx-ai-1.4.0-sources.jar"/>
+	<classpathentry kind="lib" path="/Storymode/libs/gdx-natives.jar"/>
+	<classpathentry kind="lib" path="/Storymode/libs/gdx.jar" sourcepath="/Storymode/libs/sources/gdx-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

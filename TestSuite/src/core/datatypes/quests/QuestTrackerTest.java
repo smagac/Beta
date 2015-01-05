@@ -9,17 +9,13 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 
-import core.common.QuestTracker;
-import core.common.QuestTracker.Reward;
 import core.datatypes.Craftable;
+import core.datatypes.QuestTracker;
+import core.datatypes.QuestTracker.Reward;
 import core.datatypes.quests.Hunt;
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.Quest.QuestFactory;
-import factories.AdjectiveFactory;
-import factories.CraftableFactory;
-import factories.ItemFactory;
-import factories.MonsterFactory;
-
+import core.factories.*;
 
 public class QuestTrackerTest {
 
@@ -54,7 +50,6 @@ public class QuestTrackerTest {
 	@Test
 	public void testAcceptingQuest() {
 		QuestTracker qt = new QuestTracker();
-		qt.prepare();
 		
 		QuestFactory qf = new QuestFactory();
 		Quest sample = qf.createQuest();
@@ -73,7 +68,6 @@ public class QuestTrackerTest {
 	@Test
 	public void testCompletingQuest() {
 		QuestTracker qt = new QuestTracker();
-		qt.prepare();
 		
 		Hunt hunt = new Hunt();
 		
@@ -102,7 +96,6 @@ public class QuestTrackerTest {
 	@Test
 	public void testGettingReward() {
 		QuestTracker qt = new QuestTracker();
-		qt.prepare();
 		
 		CraftableFactory cf = new CraftableFactory();
 		Craftable c = cf.createRandomCraftable();
