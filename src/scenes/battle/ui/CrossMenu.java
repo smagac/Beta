@@ -123,11 +123,11 @@ public class CrossMenu extends Group
 	}
 	
     private static Action grow() {
-        return Actions.scaleTo(1.2f, 1.2f, .2f, Interpolation.circleOut);
+        return Actions.scaleTo(1.1f, 1.1f, .2f, Interpolation.circleOut);
     }
     
     private static Action shrink() {
-        return Actions.scaleTo(1.0f, 1.0f, .2f, Interpolation.circleOut);
+        return Actions.scaleTo(.8f, .8f, .2f, Interpolation.circleOut);
     }
 	
 	private void setChecked(int index) {

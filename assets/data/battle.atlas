@@ -1,21 +1,28 @@
 
 battle.png
-size: 256,128
+size: 512,128
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 attack
   rotate: false
-  xy: 68, 20
+  xy: 264, 86
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 auto
   rotate: false
-  xy: 2, 20
+  xy: 132, 86
   size: 64, 32
   orig: 64, 32
+  offset: 0, 0
+  index: -1
+blessing
+  rotate: false
+  xy: 2, 20
+  size: 128, 32
+  orig: 128, 32
   offset: 0, 0
   index: -1
 clouds
@@ -27,21 +34,28 @@ clouds
   index: -1
 defend
   rotate: false
-  xy: 198, 86
+  xy: 264, 52
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-item
+force
   rotate: false
   xy: 132, 52
+  size: 64, 32
+  orig: 64, 32
+  offset: 0, 0
+  index: -1
+item
+  rotate: false
+  xy: 298, 86
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 manual
   rotate: false
-  xy: 132, 86
+  xy: 198, 86
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
@@ -55,14 +69,21 @@ meter_active
   index: -1
 meter_inactive
   rotate: false
-  xy: 36, 2
+  xy: 132, 34
   size: 32, 16
   orig: 32, 16
   offset: 0, 0
   index: -1
+modify
+  rotate: false
+  xy: 198, 52
+  size: 64, 32
+  orig: 64, 32
+  offset: 0, 0
+  index: -1
 sacrifice
   rotate: false
-  xy: 166, 52
+  xy: 298, 52
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

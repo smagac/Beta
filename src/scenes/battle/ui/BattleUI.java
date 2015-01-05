@@ -55,6 +55,7 @@ public class BattleUI extends GameUI
     Image sacrifice;
     Image cloudsPan1;
     Image cloudsPan2;
+    Image blessingLight;
     
     /*
      * Sacrifice menu
@@ -83,7 +84,7 @@ public class BattleUI extends GameUI
 	    makeSacrificeScene();
 	    
 	    mainmenu = new CrossMenu(skin, this);
-        mainmenu.setPosition(getDisplayWidth()/2f, getDisplayHeight()/2f - 48f);
+        mainmenu.setPosition(getDisplayWidth()/2f, getDisplayHeight()/2f - 64f);
         
 	    display.addActor(mainmenu);
 	}
@@ -117,7 +118,7 @@ public class BattleUI extends GameUI
         
         player = new Image(skin, playerService.getGender());
         player.setSize(64f, 64f);
-        player.setPosition(getDisplayWidth(), 32f, Align.bottom);
+        player.setPosition(getDisplayWidth(), 24f, Align.bottom);
         player.addAction(
             Actions.sequence(
                 Actions.moveBy(-getDisplayWidth()/2f, 0, 1f),
@@ -137,8 +138,8 @@ public class BattleUI extends GameUI
         Renderable rC = bossEntity.getComponent(Renderable.class);
         String sName = rC.getSpriteName();
         boss = new Image(skin, sName);
-        boss.setSize(128f, 128f);
-        boss.setPosition(-64f, getDisplayHeight()-64, Align.top);
+        boss.setSize(192f, 192f);
+        boss.setPosition(0, getDisplayHeight()-64f, Align.top);
         boss.addAction(Actions.moveBy(getDisplayWidth()/2f, 0f, 1f));
         
         
@@ -184,6 +185,10 @@ public class BattleUI extends GameUI
 	    sacrifice.setPosition(-64, -64);
 	    sacrifice.setOrigin(Align.center);
 	    display.addActor(sacrifice);
+	    
+	    blessingLight = new Image(new TiledDrawable(skin.getRegion("blessing")));
+	    blessingLight.setSize(128f, 0f);
+	    display.addActorBefore(boss, blessingLight);
 	}
 	
 	/**
@@ -237,54 +242,62 @@ public class BattleUI extends GameUI
 	                    Actions.rotateBy(360*4, 1.4f),
 	                    Actions.sequence(
 	                            Actions.moveTo(getDisplayWidth()-230f, getDisplayHeight() - 100f, .7f, Interpolation.circleOut),
-	                            Actions.moveTo(getDisplayWidth()-230f, getDisplayHeight()/2f - 64f, .7f, Interpolation.bounceOut)
+	                            Actions.moveTo(getDisplayWidth()-230f, getDisplayHeight()/2f - 40f, .7f, Interpolation.bounceOut)
 	                    )
 	            )
 	    ));
 	    
-	    sacrifice.addAction(Actions.sequence(
+	    sacrifice.addAction(
+            Actions.sequence(
 	            Actions.scaleTo(1f, 1f),
 	            Actions.moveToAligned(200f, -32f, Align.top),
 	            Actions.alpha(1f),
 	            Actions.delay(4f),
 	            Actions.moveToAligned(200f, getDisplayHeight()/2f, Align.center, .2f, Interpolation.circleOut),
-	            Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(1.0f, 1.0f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(1.0f, 1.0f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(2.0f, 2.0f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(2.0f, 2.0f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(2.4f, 2.4f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(2.4f, 2.4f, .1f, Interpolation.circleOut),
-	            Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(1.0f, 1.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(1.0f, 1.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(2.0f, 2.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(2.0f, 2.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(2.4f, 2.4f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(2.4f, 2.4f, .1f, Interpolation.circleOut),
+                Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),    
                 Actions.delay(.7f),
                 Actions.addAction(Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight(), Align.top, .5f, Interpolation.circleOut), goddess),
                 Actions.parallel(
-                        Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight() - 64f, Align.center, .5f, Interpolation.circleOut),
-                        Actions.scaleTo(.5f, .5f, .4f)
+                    Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight() - 96f, Align.bottom, .5f, Interpolation.circleOut),
+                    Actions.scaleTo(.5f, .5f, .4f)
                 ),
                 Actions.delay(.4f),
                 Actions.moveBy(0f, -500f, .15f),
-                        Actions.addAction(Actions.moveBy(0, getDisplayHeight(), .5f, Interpolation.circleOut), goddess),
-                        Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), fader),
-                        Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), cloudsPan1),
-                        Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), cloudsPan2),       
+                Actions.addAction(Actions.moveBy(0, getDisplayHeight(), .5f, Interpolation.circleOut), goddess),
+                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), fader),
+                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), cloudsPan1),
+                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), cloudsPan2),       
                 Actions.delay(2f),
-                Actions.scaleTo(3, 3),
-                Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight() + 300f, Align.bottom),
-                Actions.parallel(
-                    Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight()/2f, Align.center, .6f),
-                    Actions.scaleTo(.0f, .0f, .6f)
-	            ),
-                Actions.delay(.2f),
-                Actions.scaleTo(100f, 100f, .5f),
-                Actions.alpha(0f, 2f),
-                Actions.run(after)
-	    ));
+                Actions.addAction(
+                    Actions.sequence(
+                        Actions.sizeTo(128f, 0f),
+                        Actions.moveTo(boss.getX(Align.center)-64f, getDisplayHeight()),
+                        Actions.parallel(
+                            Actions.sizeBy(0, getDisplayHeight() - boss.getY(), .4f, Interpolation.circleOut),
+                            Actions.moveBy(0, -(getDisplayHeight() - boss.getY()), .4f, Interpolation.circleOut)
+                        ),
+                        Actions.delay(.9f),
+                        Actions.sizeTo(128f, 0, .4f, Interpolation.circleOut),
+                        Actions.run(after)
+                        
+                    ), 
+                    blessingLight
+                
+                )
+            )
+        );
 	}
 	
 	protected Action playerAttackAnimation() {
@@ -348,6 +361,6 @@ public class BattleUI extends GameUI
 	@Override
 	public String[] defineButtons()
 	{
-		return null;
+	    return null;
 	}
 }

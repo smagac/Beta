@@ -158,7 +158,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         loaded = false;
         
         ui = wanderUI;
-        Gdx.input.setInputProcessor(wanderUI);
+        input.addProcessor(wanderUI);
     }
 
     @Override
