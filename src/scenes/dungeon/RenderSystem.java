@@ -255,8 +255,9 @@ public class RenderSystem extends EntitySystem implements EntityListener {
 
         if (player != null) {
             Renderable r = renderMap.get(player);
-            camera.position.x = r.getActor().getX();
-            camera.position.y = r.getActor().getY();
+            Actor a = r.getActor();
+            camera.position.x = a.getX(Align.center);
+            camera.position.y = a.getY() - a.getHeight()/2f;
         }
 
         if (invisible) {
