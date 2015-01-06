@@ -24,8 +24,12 @@ import core.service.interfaces.IPlayerContainer;
 
 public class LoreUI extends UI {
 	
-	protected static final float NORMAL = 1f;
-    protected static final float FAST = 5f;
+	protected static final float NORMAL = .8f;
+    protected static final float FAST = 3f;
+    protected static final float FASTER = 5f;
+    protected static final float FASTEST = 10f;
+    
+    
     Scene parent;
 	@Inject public IPlayerContainer player;
 	
@@ -96,16 +100,14 @@ public class LoreUI extends UI {
 		fader.setColor(1, 1, 1, 0f);
 		
 		Label l = lore = new Label(text, skin, "prompt");
-		l.setWrap(true);
-        l.setWidth(view.width);
-        scrollY = -l.getPrefHeight();
-		l.setPosition(view.x, scrollY);
+		l.setWidth(crop.width);
+        l.setWrap(true);
 		l.setAlignment(Align.left);
 		l.setVisible(false);
 		
 		fader.addAction(Actions.sequence(
                 Actions.delay(10f),
-                Actions.alpha(.6f, 2f),
+                Actions.alpha(.8f, 2f),
                 Actions.run(new Runnable(){
 
                     @Override
@@ -125,18 +127,41 @@ public class LoreUI extends UI {
 		   public boolean keyDown(InputEvent evt, int keycode)
 		   {
 		       if (Input.ACCEPT.match(keycode)) {
-		           scrollRate = FAST;
+		           if (Input.CANCEL.isPressed()) {
+		               scrollRate = FASTEST;
+		           } else {
+	                   scrollRate = FAST;   
+		           }
+		           return true;
+		       }
+		       if (Input.CANCEL.match(keycode)) {
+		           if (Input.ACCEPT.isPressed()) {
+		               scrollRate = FASTEST;
+		           } else {
+		               scrollRate = FASTER;
+		           }
 		           return true;
 		       }
 		       return false;
-		   }
+ 		   }
 		   
 		   @Override
 		   public boolean keyUp(InputEvent evt, int keycode) {
 		       if (Input.ACCEPT.match(keycode)) {
-                   scrollRate = NORMAL;
+		           if (Input.CANCEL.isPressed()) {
+		               scrollRate = FASTER;
+		           } else {
+		               scrollRate = NORMAL;
+		           }
                    return true;
                }
+		       if (Input.CANCEL.match(keycode)) {
+		           if (Input.ACCEPT.isPressed()) {
+		               scrollRate = FAST;
+		           } else {
+		               scrollRate = NORMAL;
+		           }
+		       }
 		       return false;
 		   }
 		});
@@ -147,8 +172,7 @@ public class LoreUI extends UI {
 	    if (ready)
 	    {
             scrollY += lore.getStyle().font.getLineHeight() * scrollRate * delta;
-            lore.setPosition(view.x, scrollY);
-            if (scrollY > getHeight()) {
+            if (scrollY > view.y + lore.getPrefHeight() + lore.getStyle().font.getLineHeight()) {
                 fader.addAction(Actions.sequence(
                     Actions.alpha(1f, 2f),
                     Actions.run(new Runnable() {
@@ -161,7 +185,10 @@ public class LoreUI extends UI {
                 ));
                 ready = false;
             }
+	    } else if (!done) {
+	        scrollY = view.y - view.height - (lore.getStyle().font.getLineHeight() * NORMAL);
 	    }
+	    lore.setPosition(view.x, scrollY, Align.topLeft);
 	}
 
 	@Override

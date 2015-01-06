@@ -46,6 +46,7 @@ public class BattleUI extends GameUI
      * Main menu
      */
     CrossMenu mainmenu;
+    FocusGroup mainFocus;
     
     /*
      * Goddess animation
@@ -66,6 +67,13 @@ public class BattleUI extends GameUI
     Group effectWindow;
     TextButton sacrificeButton;
     
+    /*
+     * Dice Roll
+     */
+    Image playerDie;
+    Image bossDie;
+    Label attack;
+    
     @Inject public IBattleContainer battleService;
     @Inject public IPlayerContainer playerService;
     
@@ -82,11 +90,15 @@ public class BattleUI extends GameUI
 	    makeField();
 	    makeSacrificeMenu();
 	    makeSacrificeScene();
-	    
-	    mainmenu = new CrossMenu(skin, this);
-        mainmenu.setPosition(getDisplayWidth()/2f, getDisplayHeight()/2f - 64f);
+	    makeAttackElements();
         
-	    display.addActor(mainmenu);
+	    mainmenu = new CrossMenu(skin, this);
+        mainmenu.setPosition(getDisplayWidth(), getDisplayHeight()/2f);
+        
+        mainFocus = new FocusGroup(mainmenu);
+        
+        display.addActor(mainmenu);
+        setFocus(mainmenu);
 	}
 	
 	/**
@@ -99,7 +111,8 @@ public class BattleUI extends GameUI
         {
             Image floor = new Image(new TiledDrawable(environment.getTile(TsxTileSet.FLOOR).getTextureRegion()));
             floor.setWidth(getDisplayWidth());
-            floor.setHeight(getDisplayHeight());
+            floor.setHeight(128f);
+            floor.setPosition(0, getDisplayHeight(), Align.topLeft);
             
             Image wall = new Image(new TiledDrawable(environment.getTile(TsxTileSet.WALL).getTextureRegion()));
             wall.setWidth(getDisplayWidth());
@@ -119,6 +132,7 @@ public class BattleUI extends GameUI
         player = new Image(skin, playerService.getGender());
         player.setSize(64f, 64f);
         player.setPosition(getDisplayWidth(), 24f, Align.bottom);
+        player.setOrigin(Align.center);
         player.addAction(
             Actions.sequence(
                 Actions.moveBy(-getDisplayWidth()/2f, 0, 1f),
@@ -139,15 +153,35 @@ public class BattleUI extends GameUI
         String sName = rC.getSpriteName();
         boss = new Image(skin, sName);
         boss.setSize(192f, 192f);
+        boss.setOrigin(Align.center);
         boss.setPosition(0, getDisplayHeight()-64f, Align.top);
         boss.addAction(Actions.moveBy(getDisplayWidth()/2f, 0f, 1f));
         
-        
-        
         display.addActor(player);
         display.addActor(boss);
+        
+        fader = new Image(skin, "fill");
+        fader.setSize(getDisplayWidth(), getDisplayHeight());
+        fader.setPosition(-getDisplayWidth(), 0);
+        display.addActor(fader);
 	}
 
+	/**
+	 * Constructs the elements required for the attack phase of the battle
+	 */
+	private void makeAttackElements() {
+	    bossDie = new Image(skin, "d1");
+	    playerDie = new Image(skin, "d2");
+	    attack = new Label("", skin, "prompt");
+	    
+	    bossDie.setPosition(0, 0, Align.topRight);
+	    playerDie.setPosition(0, 0, Align.topRight);
+	    
+	    display.addActor(bossDie);
+	    display.addActor(playerDie);
+	    display.addActor(attack);
+	}
+	
 	/**
 	 * Construct the view for sacrificing items
 	 */
@@ -159,10 +193,6 @@ public class BattleUI extends GameUI
 	 * Construct the elements needed for the sacrifice animation
 	 */
 	private void makeSacrificeScene(){
-	    fader = new Image(skin, "fill");
-	    fader.setSize(getDisplayWidth(), getDisplayHeight());
-	    fader.setPosition(-getDisplayWidth(), 0);
-	    display.addActor(fader);
 	    
 	    cloudsPan1 = new Image(new TiledDrawable(skin.getRegion("clouds")));
 	    cloudsPan2 = new Image(new TiledDrawable(skin.getRegion("clouds")));
@@ -203,6 +233,7 @@ public class BattleUI extends GameUI
 	    sacrifice.clearActions();
 	    
 	    fader.addAction(Actions.sequence(
+	            Actions.alpha(1f),
 	            Actions.moveToAligned(-getDisplayWidth(), 0, Align.bottomLeft),
 	            Actions.moveToAligned(0, 0, Align.bottomLeft, .5f, Interpolation.linear)
 	    ));
@@ -300,10 +331,90 @@ public class BattleUI extends GameUI
         );
 	}
 	
+	protected void playFightAnimation(final boolean playerPhase, int playerRoll, int bossRoll, final Runnable after) {
+	    bossDie.setDrawable(getSkin(), "d"+bossRoll);
+        playerDie.setDrawable(getSkin(), "d"+playerRoll);
+        int hits;
+                
+        if (playerPhase) {
+            playerRoll++;
+            hits = playerRoll - bossRoll;
+            attack.setText((hits > 0)?(hits > 1)?String.format("You land %d hits!", hits):"You attack for 1 hit":"Your attack is Blocked!");
+        } else {
+            hits = bossRoll - playerRoll;
+            attack.setText((hits > 0)?String.format("The boss strikes with all its might"):"Blocked!");
+        }
+        attack.setColor(1, 1, 1, 0);
+        
+        bossDie.setPosition(getDisplayWidth(), boss.getY(Align.top), Align.topLeft);
+        playerDie.setPosition(-playerDie.getWidth(), player.getY(Align.top), Align.bottomLeft);
+        attack.setPosition(getDisplayWidth()/2f, getDisplayHeight()/2f - 100f, Align.center);
+        attack.setAlignment(Align.center);
+        
+        fader.addAction(
+            Actions.sequence(
+                Actions.alpha(0f),
+                Actions.moveTo(0, 0),
+                Actions.alpha(.8f, .3f),
+                Actions.addAction(
+                    Actions.sequence(
+                        Actions.moveTo(getDisplayWidth()*.25f, bossDie.getY(), .3f, Interpolation.circleOut),
+                        Actions.moveBy(-20f, 0f, 1.4f),
+                        Actions.moveTo(-bossDie.getWidth(), bossDie.getY(), .2f, Interpolation.circleIn)
+                    ), 
+                    bossDie
+                ),
+                Actions.addAction(
+                    Actions.sequence(
+                        Actions.moveToAligned(getDisplayWidth()*.75f, playerDie.getY(), Align.bottomRight, .3f, Interpolation.circleOut),
+                        Actions.moveBy(20f, 0f, 1.4f),
+                        Actions.moveTo(getDisplayWidth(), playerDie.getY(), .2f, Interpolation.circleIn)
+                    ), 
+                    playerDie
+                ),
+                Actions.delay(2f),
+                Actions.addAction(
+                    Actions.sequence(
+                        Actions.alpha(0f),
+                        Actions.parallel(
+                            Actions.moveBy(0, -30, .2f, Interpolation.sineOut),
+                            Actions.alpha(1, .3f)
+                        ),
+                        Actions.moveBy(0, 130, .3f, Interpolation.sineIn),
+                        Actions.delay(.3f),
+                        Actions.alpha(0f, .2f),
+                        Actions.delay(.2f),
+                        Actions.addAction(
+                            Actions.sequence(
+                                Actions.alpha(0f, .2f),
+                                Actions.run(new Runnable(){
+
+                                    @Override
+                                    public void run() {
+                                        if (playerPhase) {
+                                            player.addAction(Actions.sequence(playerAttackAnimation(), Actions.run(after)));
+                                        } else {
+                                            boss.addAction(Actions.sequence(bossAttackAnimation(), Actions.run(after)));
+                                        }
+                                    }
+                                    
+                                })
+                            ), fader
+                        )
+                    ), attack
+                )
+            )
+        );
+	}
+	
+	protected void fight(boolean phase, int hits){
+	    //TODO deal damage to entities
+	}
+	
 	protected Action playerAttackAnimation() {
 	    return Actions.sequence(
-                Actions.scaleTo(-1f, 1f, .18f, Interpolation.sineIn),
-                Actions.scaleTo(1f, 1f, .18f, Interpolation.sineIn),
+                Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
+                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
                 Actions.addAction(
                     Actions.sequence(
                         Actions.run(new Runnable(){
@@ -318,14 +429,15 @@ public class BattleUI extends GameUI
                         Actions.alpha(1f, .1f)
                     ), 
                     boss
-                )
+                ),
+                Actions.delay(.2f)
             );
 	}
 	
 	protected Action bossAttackAnimation() {
 	    return Actions.sequence(
-                Actions.scaleTo(-1f, 1f, .18f, Interpolation.sineIn),
-                Actions.scaleTo(1f, 1f, .18f, Interpolation.sineIn),
+                Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
+                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
                 Actions.addAction(
                     Actions.sequence(
                         Actions.run(new Runnable(){
@@ -340,7 +452,8 @@ public class BattleUI extends GameUI
                         Actions.alpha(1f, .1f)
                     ), 
                     player
-                )
+                ),
+                Actions.delay(.2f)
             );
 	}
 	
@@ -354,8 +467,7 @@ public class BattleUI extends GameUI
 	@Override
 	protected FocusGroup focusList()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return mainFocus;
 	}
 
 	@Override

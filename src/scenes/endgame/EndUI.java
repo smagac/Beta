@@ -103,7 +103,7 @@ public class EndUI extends UI {
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        audio.playSfx(manager.get(DataDirs.shimmer, Sound.class), .4f);
+                        audio.playSfx(shared.getResource(DataDirs.shimmer, Sound.class), .4f);
                     }
                 }),
                 Actions.parallel(Actions.sizeTo(128f, 128f), Actions.repeat(3, Actions.rotateBy(360f, .2f)),
@@ -111,7 +111,7 @@ public class EndUI extends UI {
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        audio.playSfx(manager.get(DataDirs.hit, Sound.class), 1, .5f, 0);
+                        audio.playSfx(shared.getResource(DataDirs.hit, Sound.class), 1, .5f, 0);
                     }
                 }),
                 Actions.delay(1f),

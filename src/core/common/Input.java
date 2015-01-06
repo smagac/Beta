@@ -1,5 +1,6 @@
 package core.common;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 
 public enum Input {
@@ -45,5 +46,16 @@ public enum Input {
             }
         }
         return false;
+    }
+
+    public boolean isPressed() {
+        boolean pressed = false;
+        for (int key : keys) {
+            if (Gdx.input.isKeyPressed(key)) {
+                pressed = true;
+                break;
+            }
+        }
+        return pressed;
     }
 }

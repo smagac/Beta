@@ -110,7 +110,7 @@ public class WanderUI extends GameUI {
         {
             Table table = new Table();
             TextureAtlas atlas = shared.getResource(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
-            table.setBackground(new TextureRegionDrawable(atlas.findRegion("floor")));
+            table.setBackground(new TextureRegionDrawable(atlas.findRegion("header")));
             table.setHeight(32f);
             table.setWidth(display.getWidth());
 
