@@ -2,6 +2,7 @@ package scenes.dungeon.ui;
 
 import github.nhydock.ssm.SceneManager;
 import scenes.GameUI;
+import scenes.Messages;
 import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;
 import scenes.dungeon.RenderSystem;
@@ -65,7 +66,7 @@ public enum WanderState implements UIState {
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
-            if (telegram.message == MenuMessage.Movement) {
+            if (telegram.message == Messages.Dungeon.Movement) {
                 Direction direction = (Direction) telegram.extraInfo;
                 if (direction == null) {
                     walkTimer = -1f;
@@ -76,24 +77,24 @@ public enum WanderState implements UIState {
                 }
                 return true;
             }
-            else if (telegram.message == MenuMessage.Assist) {
+            else if (telegram.message == Messages.Dungeon.Assist) {
                 entity.changeState(Assist);
                 return true;
             }
             else if (telegram.message == Quest.Actions.Notify) {
                 String notification = telegram.extraInfo.toString();
-                MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameUI.Messages.Notify, notification);
+                MessageDispatcher.getInstance().dispatchMessage(0, null, null, Messages.Interface.Notify, notification);
             }
-            else if (telegram.message == MenuMessage.Dead) {
+            else if (telegram.message == Messages.Dungeon.Dead) {
                 entity.changeState(WanderState.Dead);
             }
-            else if (telegram.message == MenuMessage.Exit) {
+            else if (telegram.message == Messages.Dungeon.Exit) {
                 entity.changeState(WanderState.Exit);
             }
-            else if (telegram.message == MenuMessage.Refresh) {
+            else if (telegram.message == Messages.Dungeon.Refresh) {
                 entity.refresh((Progress) telegram.extraInfo);
             }
-            else if (telegram.message == MenuMessage.LevelUp) {
+            else if (telegram.message == Messages.Dungeon.LevelUp) {
                 entity.changeState(WanderState.LevelUp);
             }
             return false;
@@ -116,11 +117,11 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == MenuMessage.Heal) {
+            if (telegram.message == Messages.Dungeon.Heal) {
                 entity.changeState(Sacrifice_Heal);
                 return true;
             }
-            else if (telegram.message == MenuMessage.Leave) {
+            else if (telegram.message == Messages.Dungeon.Leave) {
                 entity.changeState(Sacrifice_Leave);
                 return true;
             }
@@ -151,7 +152,7 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == MenuMessage.Sacrifice) {
+            if (telegram.message == Messages.Dungeon.Sacrifice) {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
@@ -192,7 +193,7 @@ public enum WanderState implements UIState {
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
-            if (telegram.message == MenuMessage.Sacrifice) {
+            if (telegram.message == Messages.Dungeon.Sacrifice) {
                 int fleeCost = entity.dungeonService.getProgress().depth;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, fleeCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
@@ -236,7 +237,7 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == GameUI.Messages.Close) {
+            if (telegram.message == Messages.Interface.Close) {
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
                 entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
@@ -275,7 +276,7 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(final WanderUI entity, Telegram telegram) {
-            if (telegram.message == GameUI.Messages.Close) {
+            if (telegram.message == Messages.Interface.Close) {
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
                 entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
@@ -301,7 +302,7 @@ public enum WanderState implements UIState {
 
             entity.setPoints(POINTS_REWARDED);
 
-            Stats s = entity.playerService.getPlayer();
+            Stats s = entity.playerService.getPlayer().getComponent(Stats.class);
             Integer[] str = new Integer[POINTS_REWARDED + 1];
             Integer[] def = new Integer[POINTS_REWARDED + 1];
             Integer[] spd = new Integer[POINTS_REWARDED + 1];
@@ -348,7 +349,7 @@ public enum WanderState implements UIState {
 
             })));
             entity.levelUpDialog.setTouchable(Touchable.disabled);
-            entity.playerService.getPlayer().levelUp(
+            entity.playerService.getPlayer().getComponent(Stats.class).levelUp(
                     new int[] { entity.strTicker.getValue(), entity.defTicker.getValue(), entity.spdTicker.getValue(),
                             entity.vitTicker.getValue() });
             entity.strTicker.setValue(0);
@@ -366,7 +367,7 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == GameUI.Messages.Close) {
+            if (telegram.message == Messages.Interface.Close) {
                 if (entity.points > 0) {
                     entity.getManager().get(DataDirs.tick, Sound.class).play();
                     return false;

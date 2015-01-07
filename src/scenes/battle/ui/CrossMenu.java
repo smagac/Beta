@@ -139,7 +139,7 @@ public class CrossMenu extends Group
 	public void show(){
 	    setTouchable(Touchable.enabled);
         sm.changeState(MenuState.MAIN);
-	}
+    }
 	
 	/**
 	 * Closes the menu and prevents further input
@@ -149,6 +149,24 @@ public class CrossMenu extends Group
             Actions.sequence(
                 Actions.parallel(
                     Actions.moveToAligned(0, attack.getY(), Align.bottomLeft, .2f),
+                    Actions.alpha(1f, .1f)
+                )
+            )
+        );
+        
+	    attackAuto.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                    Actions.moveToAligned(0, attackAuto.getY(), Align.bottomLeft, .2f),
+                    Actions.alpha(1f, .1f)
+                )
+            )
+        );
+    
+	    attackManual.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                    Actions.moveToAligned(0, attackManual.getY(), Align.bottomLeft, .2f),
                     Actions.alpha(1f, .1f)
                 )
             )
@@ -185,11 +203,12 @@ public class CrossMenu extends Group
 	    MAIN(){
 	        @Override
 	        public void enter(CrossMenu entity) {
+	            entity.mainSet.select(entity.attack);
 	            entity.attack.addAction(
                     Actions.sequence(
                         Actions.delay(.7f),
                         Actions.parallel(
-                            Actions.moveTo(-32f, entity.attack.getY(), .3f, Interpolation.circleOut),
+                            Actions.moveTo(-96f, entity.attack.getY(), .3f, Interpolation.circleOut),
                             Actions.alpha(1f, .2f)
                         )
                     )
@@ -214,8 +233,6 @@ public class CrossMenu extends Group
                         )
                     )
                 );
-	            
-	            MessageDispatcher.getInstance().dispatchMessage(0, null, entity.sm, Messages.Select, entity.attack);
 	        }
 	        
 	        @Override
@@ -271,7 +288,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.delay(.3f),
                         Actions.parallel(
-                            Actions.moveBy(-entity.attackAuto.getWidth(), 0, .3f, Interpolation.circleOut),
+                            Actions.moveTo(-entity.attackAuto.getWidth() - 16, entity.attackAuto.getY(), .3f, Interpolation.circleOut),
                             Actions.alpha(1f, .2f)
                         )
                     )
@@ -281,14 +298,13 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.delay(.4f),
                         Actions.parallel(
-                            Actions.moveBy(-entity.attackManual.getWidth(), 0, .3f, Interpolation.circleOut),
+                            Actions.moveTo(-entity.attackManual.getWidth(), entity.attackManual.getY(), .3f, Interpolation.circleOut),
                             Actions.alpha(1f, .2f)
                         )
                     )
                 );
                 
-                MessageDispatcher.getInstance().dispatchMessage(0, null, entity.sm, Messages.Select, entity.attackAuto);
-                
+                entity.attackSet.select(entity.attackAuto);
             }
 	        
 	        @Override
@@ -297,7 +313,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.delay(0f),
                         Actions.parallel(
-                            Actions.moveBy(entity.attackAuto.getWidth(), 0, .3f, Interpolation.circleOut),
+                            Actions.moveTo(0, entity.attackAuto.getY(), .3f, Interpolation.circleOut),
                             Actions.alpha(0f, .2f)
                         )
                     )
@@ -307,7 +323,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.delay(.1f),
                         Actions.parallel(
-                            Actions.moveBy(entity.attackManual.getWidth(), 0, .3f, Interpolation.circleOut),
+                            Actions.moveTo(0, entity.attackManual.getY(), .3f, Interpolation.circleOut),
                             Actions.alpha(0f, .2f)
                         )
                     )
@@ -329,7 +345,7 @@ public class CrossMenu extends Group
                             old.addAction(Actions.moveTo(-old.getWidth(), old.getY(), .2f, Interpolation.circleOut));
                         }
                         Actor selected = entity.attackSet.select((Actor)telegram.extraInfo);
-                        selected.addAction(Actions.moveTo(-(old.getWidth() + 32), selected.getY(), .2f, Interpolation.circleOut));
+                        selected.addAction(Actions.moveTo(-(old.getWidth() + 16), selected.getY(), .2f, Interpolation.circleOut));
                         return true;
                     }
                     if (telegram.extraInfo == entity.attack) {

@@ -15,6 +15,8 @@ public class Identifier extends Component {
 
     public Identifier(String base, String suffix, String... adjectives) {
         this.type = base;
+        if (suffix == null)
+            suffix = "";
         this.suffix = suffix;
         
         modifiers = new Array<String>(adjectives);

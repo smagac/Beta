@@ -154,7 +154,9 @@ public class RenderSystem extends EntitySystem implements EntityListener {
             calcFov();
         }
 
-        r.loadImage(uiSkin);
+        if (r.getActor() == null) {
+            r.loadImage(uiSkin);
+        }
         final Image sprite = (Image) r.getActor();
         sprite.setSize(scale, scale);
         sprite.setPosition(p.getX() * scale, p.getY() * scale);

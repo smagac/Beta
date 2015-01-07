@@ -1,5 +1,6 @@
 package scenes.battle.ui;
 
+import scenes.Messages;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.Entity;
@@ -37,7 +38,7 @@ public class StatusPane extends Group implements Telegraph {
          * Update all the progress meters that state how many turns 
          * are left on any adjectives possessed by the entity
          */
-        if (msg.message == BattleMessages.MODIFY_UPDATE) {
+        if (msg.message == Messages.Battle.MODIFY_UPDATE) {
             @SuppressWarnings("unchecked")
             Array<Effect> info = (Array<Effect>)msg.extraInfo;
             for (Effect e : info) {

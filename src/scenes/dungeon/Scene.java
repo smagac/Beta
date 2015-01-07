@@ -1,7 +1,7 @@
 package scenes.dungeon;
 
+import scenes.Messages;
 import scenes.UI;
-import scenes.dungeon.ui.MenuMessage;
 import scenes.dungeon.ui.Transition;
 import scenes.dungeon.ui.WanderUI;
 
@@ -80,13 +80,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         manager = new AssetManager();
 
-        player = new Entity();
+        player = playerService.getPlayer();
         player.add(new Position(0, 0));
-        player.add(new Groups.Player());
-        player.add(playerService.getPlayer());
         
-        MessageDispatcher.getInstance().addListener(this, GameState.Messages.FIGHT);
-        MessageDispatcher.getInstance().addListener(this, GameState.Messages.KILLED);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.FIGHT);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.KILLED);
     }
 
     public void setDungeon(DungeonParams params, FileHandle file) {
@@ -167,10 +165,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             dungeonService.clear();
         }
         audio.clearBgm();
-        player.removeAll();
         
-        MessageDispatcher.getInstance().removeListener(this, GameState.Messages.FIGHT);
-        MessageDispatcher.getInstance().removeListener(this, GameState.Messages.KILLED);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.FIGHT);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.KILLED);
         super.dispose();
     }
     
@@ -237,7 +234,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     }
     
     protected void dead() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Dead);
+        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.Dead);
 
         // lose all found items
         playerService.getInventory().abandon();
@@ -247,7 +244,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     }
 
     protected void leave() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Exit);
+        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.Exit);
 
         // merge loot into inventory
         playerService.getInventory().merge();
@@ -270,7 +267,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
      * progress of the dungeon
      */
     protected void refresh() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.Refresh, dungeonService.getProgress());
+        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.Refresh, dungeonService.getProgress());
     }
     
     @Override
@@ -287,10 +284,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         hitSound = shared.getResource(DataDirs.hit, Sound.class);
         // ui.levelUp();
 
-        Renderable r = new Renderable(playerService.getGender());
-        r.loadImage(wanderUI.getSkin());
-        player.add(r);
-        
         DungeonParam param = new DungeonParam();
         param.params = this.params;
         
@@ -326,7 +319,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
      * Send a message to the UI that the player has leveled up
      */
     public void levelUp() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, MenuMessage.LevelUp);
+        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.LevelUp);
     }
     
     /**
@@ -339,8 +332,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Override
     public boolean handleMessage(Telegram msg) {
-        if (msg.message == GameState.Messages.FIGHT) {
+        if (msg.message == Messages.Dungeon.FIGHT) {
             battleService.setBoss((Entity)msg.extraInfo);
+            battleService.setPlayer(player);
             transition.init();
             transition.playAnimation(new Runnable(){
 

@@ -1,5 +1,7 @@
 package core.service.interfaces;
 
+import com.badlogic.ashley.core.Entity;
+
 import github.nhydock.ssm.Service;
 import core.components.Stats;
 import core.datatypes.Inventory;
@@ -11,7 +13,7 @@ public interface IPlayerContainer extends Service {
 
     public QuestTracker getQuestTracker();
 
-    public Stats getPlayer();
+    public Entity getPlayer();
 
     public void rest();
 

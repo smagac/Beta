@@ -9,6 +9,7 @@ import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
+import scenes.Messages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -146,7 +147,7 @@ public class TownUI extends GameUI {
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
-                            MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Explore);
+                            MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Town.Explore);
                             audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         }
                         return true;
@@ -168,7 +169,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
 
                         if (menu.isInState(TownState.Main)) {
-                            triggerAction(MenuMessage.Sleep);
+                            triggerAction(Messages.Town.Sleep);
                             audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         }
                         return true;
@@ -245,7 +246,7 @@ public class TownUI extends GameUI {
                     requirementList.clear();
 
                     // build requirements list
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh, list.getSelected());
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh, list.getSelected());
                     audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                 }
             });
@@ -286,7 +287,7 @@ public class TownUI extends GameUI {
                 public void changed(ChangeEvent event, Actor actor) {
                     float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                     p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh, list.getSelected());
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh, list.getSelected());
                     audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
                 }
             });
@@ -323,11 +324,11 @@ public class TownUI extends GameUI {
                 todayList.setSelectedIndex(0);
 
                 if (craftMenu.getOpenTabIndex() == 0) {
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh,
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh,
                             craftList.getSelected());
                 }
                 else {
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, MenuMessage.Refresh,
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh,
                             todayList.getSelected());
                 }
             }
@@ -495,7 +496,7 @@ public class TownUI extends GameUI {
                     }
 
                     if (selected != null && !selected.isDirectory()) {
-                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, selected);
+                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected, selected);
                     } else {
                         fileDetails.clearActions();
                         fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
@@ -550,7 +551,7 @@ public class TownUI extends GameUI {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     FileHandle selected = history.get(fileList.getSelectedIndex());
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected, selected);
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected, selected);
                 }
 
             });
@@ -689,7 +690,7 @@ public class TownUI extends GameUI {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     Quest q = availableQuests.getSelected();
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Selected, q);
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Interface.Selected, q);
                 }
             });
         }
@@ -704,7 +705,7 @@ public class TownUI extends GameUI {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     Quest q = acceptedQuests.getSelected();
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Selected, q);
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Interface.Selected, q);
                 }
 
             });
@@ -812,7 +813,7 @@ public class TownUI extends GameUI {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected,
+                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected,
                                 formFocus.getFocusedIndex());
                         audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
                         return true;
@@ -838,7 +839,7 @@ public class TownUI extends GameUI {
                     formFocus.prev(true);
                 }
                 if (Input.ACCEPT.match(keycode)) {
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, GameUI.Messages.Selected,
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected,
                             formFocus.getFocusedIndex());
                 }
 
@@ -963,7 +964,7 @@ public class TownUI extends GameUI {
 
     @Override
     protected void triggerAction(int index) {
-        MessageDispatcher.getInstance().dispatchMessage(0, this, this, index);
+        MessageDispatcher.getInstance().dispatchMessage(0, this, this,  Messages.Interface.Button, index);
         menu.update();
         refreshButtons();
     }

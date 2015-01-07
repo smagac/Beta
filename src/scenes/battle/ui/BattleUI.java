@@ -4,34 +4,34 @@ import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
-import com.badlogic.gdx.ai.fsm.StateMachine;
-import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import core.DataDirs;
+import core.components.Identifier;
 import core.components.Renderable;
+import core.components.Stats;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.TsxTileSet;
 import scene2d.ui.extras.FocusGroup;
 import scenes.GameUI;
+import scenes.Messages;
 
 public class BattleUI extends GameUI
 {
@@ -72,7 +72,6 @@ public class BattleUI extends GameUI
      */
     Image playerDie;
     Image bossDie;
-    Label attack;
     
     @Inject public IBattleContainer battleService;
     @Inject public IPlayerContainer playerService;
@@ -82,6 +81,11 @@ public class BattleUI extends GameUI
 		super(manager);
 		menu = new DefaultStateMachine<BattleUI>(this);
 		this.environment = environment;
+	}
+	
+	@Override
+	public int[] listen() {
+	    return new int[]{Messages.Battle.VICTORY, Messages.Battle.DEFEAT};
 	}
 
 	@Override
@@ -172,14 +176,12 @@ public class BattleUI extends GameUI
 	private void makeAttackElements() {
 	    bossDie = new Image(skin, "d1");
 	    playerDie = new Image(skin, "d2");
-	    attack = new Label("", skin, "prompt");
 	    
 	    bossDie.setPosition(0, 0, Align.topRight);
 	    playerDie.setPosition(0, 0, Align.topRight);
 	    
 	    display.addActor(bossDie);
 	    display.addActor(playerDie);
-	    display.addActor(attack);
 	}
 	
 	/**
@@ -339,17 +341,12 @@ public class BattleUI extends GameUI
         if (playerPhase) {
             playerRoll++;
             hits = playerRoll - bossRoll;
-            attack.setText((hits > 0)?(hits > 1)?String.format("You land %d hits!", hits):"You attack for 1 hit":"Your attack is Blocked!");
         } else {
             hits = bossRoll - playerRoll;
-            attack.setText((hits > 0)?String.format("The boss strikes with all its might"):"Blocked!");
         }
-        attack.setColor(1, 1, 1, 0);
         
         bossDie.setPosition(getDisplayWidth(), boss.getY(Align.top), Align.topLeft);
         playerDie.setPosition(-playerDie.getWidth(), player.getY(Align.top), Align.bottomLeft);
-        attack.setPosition(getDisplayWidth()/2f, getDisplayHeight()/2f - 100f, Align.center);
-        attack.setAlignment(Align.center);
         
         fader.addAction(
             Actions.sequence(
@@ -373,42 +370,49 @@ public class BattleUI extends GameUI
                     playerDie
                 ),
                 Actions.delay(2f),
-                Actions.addAction(
-                    Actions.sequence(
-                        Actions.alpha(0f),
-                        Actions.parallel(
-                            Actions.moveBy(0, -30, .2f, Interpolation.sineOut),
-                            Actions.alpha(1, .3f)
-                        ),
-                        Actions.moveBy(0, 130, .3f, Interpolation.sineIn),
-                        Actions.delay(.3f),
-                        Actions.alpha(0f, .2f),
-                        Actions.delay(.2f),
-                        Actions.addAction(
-                            Actions.sequence(
-                                Actions.alpha(0f, .2f),
-                                Actions.run(new Runnable(){
+                Actions.alpha(0f, .2f),
+                Actions.run(new Runnable(){
 
-                                    @Override
-                                    public void run() {
-                                        if (playerPhase) {
-                                            player.addAction(Actions.sequence(playerAttackAnimation(), Actions.run(after)));
-                                        } else {
-                                            boss.addAction(Actions.sequence(bossAttackAnimation(), Actions.run(after)));
-                                        }
-                                    }
-                                    
-                                })
-                            ), fader
-                        )
-                    ), attack
-                )
+                    @Override
+                    public void run() {
+                        if (playerPhase) {
+                            player.addAction(Actions.sequence(playerAttackAnimation(), Actions.run(after)));
+                        } else {
+                            boss.addAction(Actions.sequence(bossAttackAnimation(), Actions.run(after)));
+                        }
+                    }
+                    
+                })
             )
         );
 	}
 	
 	protected void fight(boolean phase, int hits){
-	    //TODO deal damage to entities
+	    //deal damage to entities
+
+        Stats playerStats = battleService.getPlayer().getComponent(Stats.class);
+        Stats bossStats = battleService.getBoss().getComponent(Stats.class);
+        String damageMsg = "%s\n%d damage\n%d hits";
+        
+        Identifier playerID = battleService.getPlayer().getComponent(Identifier.class);
+        Identifier bossID = battleService.getBoss().getComponent(Identifier.class);
+        
+        int dmg;
+        float chance;
+        if (phase) {
+            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.TARGET, battleService.getBoss());
+            chance = MathUtils.random(.8f, 2f);
+            dmg = Math.max(0, (int) (chance * playerStats.getStrength()) - bossStats.getDefense());
+            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Notify, String.format(damageMsg, playerID.toString(), dmg, hits));    
+        } else {
+            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.TARGET, battleService.getPlayer());
+            chance = MathUtils.random(.8f, 1.25f);
+            dmg = Math.max(0, (int) (chance * bossStats.getStrength()) - playerStats.getDefense());
+            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Notify, String.format(damageMsg, bossID.toString(), dmg, hits));    
+        }
+        
+        MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.DAMAGE, dmg);
+        
 	}
 	
 	protected Action playerAttackAnimation() {
@@ -475,4 +479,57 @@ public class BattleUI extends GameUI
 	{
 	    return null;
 	}
+	
+	/**
+     * Adds a new notification bubble into the bottom left corner of the display
+     * 
+     * @param s
+     */
+	@Override
+    public void pushNotification(String msg) {
+        final Group notification = new Group();
+        String[] lines = msg.split("\n");
+        LabelStyle style = skin.get("promptsm", LabelStyle.class);
+        float delay = 0;
+        for (int i = lines.length-1, y = 10, x = 10; i >= 0; i--, y += style.font.getLineHeight(), x += 10){
+            Label line = new Label(lines[i], style);
+            line.setPosition(0, y, Align.bottomRight);
+            line.setColor(1, 1, 1, 0);
+            
+            line.addAction(
+                Actions.sequence(
+                    Actions.delay(delay),
+                    Actions.parallel(
+                        Actions.alpha(1f, .1f),
+                        Actions.moveToAligned(x, y, Align.bottomLeft, .1f)
+                    )
+                )
+            );
+            
+            notification.addActor(line);
+            
+            delay += .1f;
+        }
+        
+        delay += 1f;
+        
+        notification.addAction(
+            Actions.sequence(
+               Actions.delay(delay),
+               Actions.parallel(
+                   Actions.alpha(0f, .1f),
+                   Actions.moveBy(-30, 0f, .1f)
+               ),
+               Actions.run(new Runnable() {
+                
+                @Override
+                public void run() {
+                    notification.remove();
+                }
+            })
+            )
+        );
+        
+        display.addActor(notification);
+    }
 }

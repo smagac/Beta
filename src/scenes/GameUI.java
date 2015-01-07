@@ -72,7 +72,7 @@ public abstract class GameUI extends UI {
     private Label hpStats;
     private Label expStats;
 
-    private Table notificationStack;
+    protected Table notificationStack;
 
     @Inject
     public IPlayerContainer playerService;
@@ -283,7 +283,7 @@ public abstract class GameUI extends UI {
 
         act(0);
 
-        MessageDispatcher.getInstance().addListener(this, Messages.Notify);
+        MessageDispatcher.getInstance().addListener(this, Messages.Interface.Notify);
         MessageDispatcher.getInstance().addListener(this, TabbedPane.Messages.ChangeTabs);
 
     }
@@ -426,14 +426,20 @@ public abstract class GameUI extends UI {
         label.setBackground(skin.getDrawable("button_up"));
         notificationStack.add(label).expandX().fillX().row();
 
-        label.addAction(Actions.sequence(Actions.alpha(0), Actions.fadeIn(.3f), Actions.delay(5f),
-                Actions.fadeOut(.3f), Actions.run(new Runnable() {
+        label.addAction(
+            Actions.sequence(
+                Actions.alpha(0), 
+                Actions.fadeIn(.3f), 
+                Actions.delay(5f),
+                Actions.fadeOut(.3f), 
+                Actions.run(new Runnable() {
                     @Override
                     public void run() {
                         label.remove();
                     }
-                })));
-
+                })
+            )
+        );
     }
 
     protected void extendAct(float delta) {
@@ -446,7 +452,7 @@ public abstract class GameUI extends UI {
         timeStats.setText(time);
 
         // update stats
-        Stats s = playerService.getPlayer();
+        Stats s = playerService.getPlayer().getComponent(Stats.class);
         levelStats.setText(String.format(levelFormat, s.getLevel()));
         hpStats.setText(String.format(hpFormat, s.hp, s.maxhp));
         expStats.setText(String.format(expFormat, s.exp, s.nextExp));
@@ -505,15 +511,14 @@ public abstract class GameUI extends UI {
     @Override
     public final void dispose() {
         super.dispose();
-        // make sure this ui stops listening to notifications to unhook it from
-        // the system
-        MessageDispatcher.getInstance().removeListener(this, Messages.Notify);
+        // make sure this ui stops listening to notifications to unhook it from the system
+        MessageDispatcher.getInstance().removeListener(this, Messages.Interface.Notify);
         MessageDispatcher.getInstance().removeListener(this, TabbedPane.Messages.ChangeTabs);
     }
 
     @Override
     public boolean handleMessage(Telegram msg) {
-        if (msg.message == Messages.Notify) {
+        if (msg.message == Messages.Interface.Notify) {
             pushNotification((String) msg.extraInfo);
         }
         return menu.handleMessage(msg);
@@ -550,17 +555,5 @@ public abstract class GameUI extends UI {
     
     public final float getDisplayCenterY() {
         return display.getHeight() /2f;
-    }
-
-    public static class Messages {
-        // used to close the menu
-        public static final int Close = 0x0000;
-
-        // used to popup a notification
-        public static final int Notify = 0x1000;
-
-        // used when an item in a list is selected
-        public static final int Selected = 0x1001;
-
     }
 }

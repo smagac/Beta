@@ -5,6 +5,7 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.ScrollFocuser;
 import scenes.GameUI;
+import scenes.Messages;
 import scenes.UI;
 import scenes.dungeon.Direction;
 import scenes.dungeon.RenderSystem;
@@ -507,7 +508,7 @@ public class WanderUI extends GameUI {
                         return false;
                     }
 
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Close);
+                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Interface.Close);
                     return true;
                 }
             });
@@ -524,7 +525,7 @@ public class WanderUI extends GameUI {
                         return true;
                     }
                     if (Input.ACCEPT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, GameUI.Messages.Close);
+                        MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Interface.Close);
                         return true;
                     }
                     return false;
@@ -557,7 +558,7 @@ public class WanderUI extends GameUI {
                 if (menu.isInState(WanderState.Wander)) {
                     Direction to = Direction.valueOf(keycode);
                     if (to != null) {
-                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement, to);
+                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement, to);
                         return true;
                     }
                 }
@@ -567,7 +568,7 @@ public class WanderUI extends GameUI {
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
                 if (menu.isInState(WanderState.Wander)) {
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement);
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement);
                     return true;
                 }
                 return false;
@@ -580,7 +581,7 @@ public class WanderUI extends GameUI {
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 if (menu.isInState(WanderState.Wander)) {
                     Direction to = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement, to);
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement, to);
                     return true;
                 }
                 return false;
@@ -589,7 +590,7 @@ public class WanderUI extends GameUI {
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
                 if (menu.isInState(WanderState.Wander)) {
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, MenuMessage.Movement);
+                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement);
                 }
             }
         });

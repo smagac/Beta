@@ -1,11 +1,12 @@
 package scenes.battle.ui;
 
+import scenes.Messages;
+
 import com.badlogic.gdx.ai.fsm.State;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 public enum CombatStates implements State<BattleUI> {
     MAIN(){
@@ -56,20 +57,35 @@ public enum CombatStates implements State<BattleUI> {
              * First we roll the dice, then show the values 
              */
             int bossRoll = MathUtils.random(1, 3);
-            int playerRoll = MathUtils.random(1,3);
+            int playerRoll = MathUtils.random(1,3) + 1;
+            final int playerHits = Math.max(0, playerRoll - bossRoll);
             
             Runnable after = new Runnable() {
 
                 @Override
                 public void run() {
+                    entity.fight(true, playerHits);
+                    
                     int bossRoll = MathUtils.random(1, 3);
                     int playerRoll = MathUtils.random(1,3);
+                    final int bossHits = Math.max(0, Math.min(1, bossRoll - playerRoll));
                     
                     Runnable after = new Runnable(){
 
                         @Override
                         public void run() {
+                            entity.fight(false, bossHits);
                             entity.changeState(MAIN);
+
+                            entity.addAction(Actions.sequence(Actions.delay(2f), Actions.run(new Runnable(){
+
+                                @Override
+                                public void run() {
+                                    //advance the battle once both sides have attacked
+                                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
+                                }
+                                
+                            })));
                         }
                         
                     };

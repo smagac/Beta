@@ -8,6 +8,7 @@ import java.util.Scanner;
 import github.nhydock.ssm.SceneManager;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
+import scenes.Messages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.common.Tracker;
+import core.components.Stats;
 import core.datatypes.Craftable;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
@@ -66,24 +68,24 @@ enum TownState implements UIState {
          */
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
-            if (t.message == MenuMessage.Sleep) {
-                ui.changeState(Sleep);
+            if (t.message == Messages.Interface.Button) {
+                int button = (int)t.extraInfo;
+                
+                switch (button) {
+                    case Messages.Town.Sleep:
+                        ui.changeState(Sleep); break;
+                    case Messages.Town.Explore:
+                        ui.changeState(Explore); break;
+                    case Messages.Town.Craft:
+                        ui.changeState(Craft); break;
+                    case Messages.Town.Quest:
+                        ui.changeState(QuestMenu); break;
+                    case Messages.Town.Save:
+                        ui.changeState(Save); break;
+                    default:
+                        return false;
+                }
                 return true;
-            }
-            else if (t.message == MenuMessage.Explore) {
-                ui.changeState(Explore);
-                return true;
-            }
-            else if (t.message == MenuMessage.Craft) {
-                ui.changeState(Craft);
-                return true;
-            }
-            else if (t.message == MenuMessage.Quest) {
-                ui.changeState(QuestMenu);
-                return true;
-            }
-            else if (t.message == MenuMessage.Save) {
-                ui.changeState(Save);
             }
 
             return false;
@@ -195,7 +197,12 @@ enum TownState implements UIState {
 
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
-            if (t.message == MenuMessage.Make) {
+            if (t.message != Messages.Interface.Button) {
+                return false;
+            }
+            int button = (int)t.extraInfo;
+            
+            if (button == Messages.Town.Make) {
                 Craftable c;
                 if (ui.craftMenu.getOpenTabIndex() == 0) {
                     c = ui.craftList.getSelected();
@@ -284,11 +291,11 @@ enum TownState implements UIState {
                     return true;
                 }
             }
-            else if (t.message == MenuMessage.Refresh) {
+            else if (button == Messages.Town.Refresh) {
                 Craftable c = (Craftable) t.extraInfo;
                 refreshRequirements(c, ui);
             }
-            else if (t.message == GameUI.Messages.Close) {
+            else if (button == Messages.Town.Close) {
                 ui.changeState(Main);
             }
             return false;
@@ -316,51 +323,11 @@ enum TownState implements UIState {
 
         @Override
         public boolean onMessage(final TownUI ui, final Telegram t) {
-            if (t.message == MenuMessage.Explore || t.message == MenuMessage.Random) {
-                if (ui.playerService.getPlayer().hp <= 0) {
-                    ui.setMessage("You need to rest first!");
-                }
-                else {
-                    DungeonParams params;
-                    FileHandle f = null;
-                    // load selected file dungeon
-                    if (t.message == MenuMessage.Explore) {
-                        if (ui.exploreTabs.getChecked().getName().equals("history")) {
-                            f = TownUI.history.get(ui.fileList.getSelectedIndex());
-                            if (f != null && !f.isDirectory()) {
-                                params = DungeonParams.loadDataFromFile(f);
-                            } else {
-                                return false;
-                            }
-                        }
-                        else {
-                            f = ui.directoryList.get(ui.fileList.getSelectedIndex());
-                            if (f != null && !f.isDirectory()) {
-                                params = DungeonParams.loadDataFromFile(f);
-                                TownUI.history.add(f);
-                                TownUI.historyPaths.add(f.name());
-                            }
-                            else {
-                                return false;
-                            }
-                        }
-                    }
-                    // random dungeons
-                    else {
-                        params = DungeonParams.loadRandomDungeon();
-                        TownUI.directory = null;
-                    }
-                    scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
-                    dungeon.setDungeon(params, f);
-                    
-                    return true;
-                }
-            }
             /**
              * Updates the information in the right side file panel to reflect
              * the metadata of the specified file
              */
-            else if (t.message == GameUI.Messages.Selected) {
+            if (t.message == Messages.Interface.Selected) {
                 final FileHandle selected = (FileHandle) t.extraInfo;
 
                 ui.fileDetails.addAction(Actions.sequence(Actions.moveTo(ui.getDisplayWidth(), 0, .3f),
@@ -400,11 +367,57 @@ enum TownState implements UIState {
                         }), Actions.moveTo(ui.getDisplayWidth() - ui.fileDetails.getWidth(), 0, .3f)));
                 return true;
             }
-            else if (t.message == GameUI.Messages.Close) {
+            else if (t.message != Messages.Interface.Button) {
+                return false;
+            }
+            
+            int button = (int)t.extraInfo;
+            
+            if (button == Messages.Town.Explore || button == Messages.Town.Random) {
+                if (ui.playerService.getPlayer().getComponent(Stats.class).hp <= 0) {
+                    ui.setMessage("You need to rest first!");
+                }
+                else {
+                    DungeonParams params;
+                    FileHandle f = null;
+                    // load selected file dungeon
+                    if (button == Messages.Town.Explore) {
+                        if (ui.exploreTabs.getChecked().getName().equals("history")) {
+                            f = TownUI.history.get(ui.fileList.getSelectedIndex());
+                            if (f != null && !f.isDirectory()) {
+                                params = DungeonParams.loadDataFromFile(f);
+                            } else {
+                                return false;
+                            }
+                        }
+                        else {
+                            f = ui.directoryList.get(ui.fileList.getSelectedIndex());
+                            if (f != null && !f.isDirectory()) {
+                                params = DungeonParams.loadDataFromFile(f);
+                                TownUI.history.add(f);
+                                TownUI.historyPaths.add(f.name());
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    // random dungeons
+                    else {
+                        params = DungeonParams.loadRandomDungeon();
+                        TownUI.directory = null;
+                    }
+                    scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
+                    dungeon.setDungeon(params, f);
+                    
+                    return true;
+                }
+            }
+            else if (button == Messages.Town.Close) {
                 ui.changeState(Main);
                 return true;
             }
-            else if (t.message == MenuMessage.DailyDungeon) {
+            else if (button == Messages.Town.DailyDungeon) {
                 ui.changeState(NetworkLoad);
                 return true;
             }
@@ -619,12 +632,12 @@ enum TownState implements UIState {
 
         @Override
         public boolean onMessage(TownUI ui, Telegram telegram) {
-            if (telegram.message == GameUI.Messages.Selected) {
+            if (telegram.message == Messages.Interface.Selected) {
                 ui.playerService.save((Integer) telegram.extraInfo + 1);
                 ui.changeState(Main);
             }
             else {
-                ui.getManager().get(DataDirs.tick, Sound.class).play();
+                ui.audio.playSfx(ui.shared.getResource(DataDirs.tick, Sound.class));
                 ui.changeState(Main);
             }
             return true;
@@ -698,7 +711,7 @@ enum TownState implements UIState {
 
         @Override
         public boolean onMessage(TownUI entity, Telegram telegram) {
-            if (telegram.message == MenuMessage.CancelDownload) {
+            if (telegram.message == Messages.Town.CancelDownload) {
                 if (connection != null) {
                     Gdx.net.cancelHttpRequest(connection);
                 }
@@ -797,7 +810,7 @@ enum TownState implements UIState {
         public boolean onMessage(final TownUI ui, Telegram telegram) {
             // change which quest is selected
             // update the quest details pane on the side
-            if (telegram.message == GameUI.Messages.Selected) {
+            if (telegram.message == Messages.Interface.Selected) {
                 final Quest selected = (Quest) telegram.extraInfo;
 
                 ui.questDetails
@@ -815,7 +828,7 @@ enum TownState implements UIState {
 
             }
             // accept a new quest
-            else if (telegram.message == MenuMessage.Accept) {
+            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Town.Accept) {
                 Quest selected;
                 if (!completeView) {
                     selected = ui.availableQuests.getSelected();

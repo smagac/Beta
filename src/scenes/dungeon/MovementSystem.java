@@ -4,6 +4,7 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
+import scenes.Messages;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.ComponentMapper;
@@ -169,10 +170,10 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
         // if one of the actors is a boss, invoke a boss fight
         if (Groups.bossType.matches(opponent)) {
-            MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameState.Messages.FIGHT, opponent);
+            MessageDispatcher.getInstance().dispatchMessage(0, null, null, Messages.Dungeon.FIGHT, opponent);
             return;
         } else if (Groups.bossType.matches(actor)) {
-            MessageDispatcher.getInstance().dispatchMessage(0, null, null, GameState.Messages.FIGHT, actor);
+            MessageDispatcher.getInstance().dispatchMessage(0, null, null, Messages.Dungeon.FIGHT, actor);
             return;
         }
         

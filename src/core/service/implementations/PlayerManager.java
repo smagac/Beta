@@ -1,24 +1,33 @@
 package core.service.implementations;
 
+import github.nhydock.ssm.Inject;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 
+import core.DataDirs;
 import core.common.Tracker;
+import core.components.Groups;
+import core.components.Identifier;
+import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 import core.datatypes.StatModifier;
 import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.ISharedResources;
 
 public class PlayerManager implements IPlayerContainer {
     public static final int SaveSlots = 3;
@@ -29,13 +38,15 @@ public class PlayerManager implements IPlayerContainer {
     private float time;
     private int difficulty;
 
-    private Stats player;
+    private Entity player;
     private Inventory inventory;
     private QuestTracker quests;
     private String goddess;
     private String character;
 
     private boolean made;
+    
+    @Inject public ISharedResources shared;
 
     public PlayerManager() {
         for (int i = 1; i <= SaveSlots; i++) {
@@ -51,6 +62,8 @@ public class PlayerManager implements IPlayerContainer {
                 }
             }
         }
+        
+        player = new Entity();
     }
 
     @Override
@@ -64,7 +77,7 @@ public class PlayerManager implements IPlayerContainer {
     }
 
     @Override
-    public Stats getPlayer() {
+    public Entity getPlayer() {
         return player;
     }
 
@@ -82,7 +95,8 @@ public class PlayerManager implements IPlayerContainer {
 
     @Override
     public void recover() {
-        player.hp = player.maxhp;
+        Stats stats = player.getComponent(Stats.class);
+        stats.hp = stats.maxhp;
     }
 
     @Override
@@ -156,7 +170,7 @@ public class PlayerManager implements IPlayerContainer {
             DateFormat df = DateFormat.getDateInstance();
             json.writeValue("date", df.format(Calendar.getInstance().getTime()));
             json.writeValue("inventory", inventory, Inventory.class);
-            json.writeValue("stats", player, Stats.class);
+            json.writeValue("stats", player.getComponent(Stats.class), Stats.class);
             json.writeValue("tracker", Tracker.getInstance(), Tracker.class);
             json.writeValue("quests", quests, QuestTracker.class);
             json.writeObjectEnd();
@@ -181,8 +195,16 @@ public class PlayerManager implements IPlayerContainer {
         this.inventory.read(json, root.get("inventory"));
         this.time = root.getFloat("time");
         this.difficulty = root.getInt("difficulty");
-        this.player = new Stats();
-        this.player.read(json, root.get("stats"));
+        this.player = new Entity();
+        Stats stats = new Stats();
+        stats.read(json, root.get("stats"));
+        this.player.add(stats);
+        this.player.add(new Identifier("Adventurer", null, new String[0]));
+        Renderable r = new Renderable(this.character);
+        r.loadImage(shared.getResource("uiskin.json", Skin.class));
+        this.player.add(r);
+        this.player.add(new Groups.Player());
+        
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
         Tracker.getInstance().read(json, root.get("tracker"));
         made = true;
@@ -223,8 +245,11 @@ public class PlayerManager implements IPlayerContainer {
         this.difficulty = difficulty;
 
         // make a player
-        player = new Stats(new int[]{10, 5, 5, 10, 0}, new StatModifier[0]);
-
+        player = new Entity();
+        player.add(new Stats(new int[]{10, 5, 5, 10, 0}, new StatModifier[0]));
+        player.add(new Identifier("Adventurer", null, new String[0]));
+        player.add(new Groups.Player());
+        
         // make crafting requirements
         inventory = new Inventory(difficulty);
 
@@ -236,7 +261,11 @@ public class PlayerManager implements IPlayerContainer {
 
         character = (gender) ? "male" : "female";
         goddess = (gender) ? "goddess" : "god";
-
+        
+        Renderable r = new Renderable(character);
+        r.loadImage(shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
+        player.add(r);
+        
         made = true;
     }
 

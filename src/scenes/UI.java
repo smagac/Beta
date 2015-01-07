@@ -4,6 +4,7 @@ import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
@@ -50,6 +51,10 @@ public abstract class UI extends Stage implements Telegraph {
 
         load();
         ServiceManager.inject(this);
+        
+        for (int msg : listen()) {
+            MessageDispatcher.getInstance().addListener(this, msg);
+        }
     }
 
     /**
@@ -188,6 +193,9 @@ public abstract class UI extends Stage implements Telegraph {
     public void dispose() {
         super.dispose();
         ServiceManager.unhook(this);
+        for (int msg : listen()) {
+            MessageDispatcher.getInstance().removeListener(this, msg);
+        }
     }
 
     /**
@@ -215,5 +223,13 @@ public abstract class UI extends Stage implements Telegraph {
     public final void act(float delta) {
         update(delta);
         super.act(delta);
+    }
+    
+    /**
+     * Get the list of all message types this ui will listen for
+     * @return
+     */
+    protected int[] listen(){
+        return new int[0];
     }
 }
