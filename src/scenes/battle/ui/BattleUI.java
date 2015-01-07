@@ -397,17 +397,20 @@ public class BattleUI extends GameUI
         Identifier playerID = battleService.getPlayer().getComponent(Identifier.class);
         Identifier bossID = battleService.getBoss().getComponent(Identifier.class);
         
-        int dmg;
-        float chance;
+        int dmg = 0;
         if (phase) {
             MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.TARGET, battleService.getBoss());
-            chance = MathUtils.random(.8f, 2f);
-            dmg = Math.max(0, (int) (chance * playerStats.getStrength()) - bossStats.getDefense());
+            for (int i = 0; i < hits; i++) {
+                float chance = MathUtils.random(.8f, 2f);
+                dmg += Math.max(0, (int) (chance * playerStats.getStrength()) - bossStats.getDefense());
+            }
             MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Notify, String.format(damageMsg, playerID.toString(), dmg, hits));    
         } else {
             MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.TARGET, battleService.getPlayer());
-            chance = MathUtils.random(.8f, 1.25f);
-            dmg = Math.max(0, (int) (chance * bossStats.getStrength()) - playerStats.getDefense());
+            for (int i = 0; i < hits; i++) {
+                float chance = MathUtils.random(.8f, 1.25f);
+                dmg += Math.max(0, (int) (chance * bossStats.getStrength()) - playerStats.getDefense());
+            }
             MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Notify, String.format(damageMsg, bossID.toString(), dmg, hits));    
         }
         
