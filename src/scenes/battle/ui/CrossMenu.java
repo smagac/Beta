@@ -256,6 +256,9 @@ public class CrossMenu extends Group
 	                    if (telegram.extraInfo == entity.item) {
 	                        entity.sm.changeState(ITEM);
 	                    }
+	                    if (telegram.extraInfo == entity.defend) {
+	                        entity.ui.changeState(CombatStates.DEFEND);
+	                    }
 	                    return true;
 	                }
 	            }

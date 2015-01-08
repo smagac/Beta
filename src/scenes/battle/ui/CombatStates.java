@@ -1,11 +1,12 @@
 package scenes.battle.ui;
 
 import scenes.Messages;
+import scenes.battle.ui.CombatHandler.Combatant;
+import scenes.battle.ui.CombatHandler.Turn;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 public enum CombatStates implements State<BattleUI> {
@@ -43,12 +44,30 @@ public enum CombatStates implements State<BattleUI> {
             // TODO Auto-generated method stub
             return false;
         }
+
+        @Override
+        public void enter(BattleUI entity) {
+            // TODO Auto-generated method stub
+            
+        }
         
     },
     AUTO(){
         
         @Override
         public void enter(final BattleUI entity) {
+            final Runnable returnToState = new Runnable(){
+
+                @Override
+                public void run() {
+                    //advance the battle once both sides have attacked
+                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
+                    
+                    entity.changeState(MAIN);
+                }
+                
+            };
+            
             /*
              * Pretty much everything can be done as soon as we enter
              */
@@ -56,45 +75,53 @@ public enum CombatStates implements State<BattleUI> {
             /*
              * First we roll the dice, then show the values 
              */
-            int bossRoll = MathUtils.random(1, 3);
-            int playerRoll = MathUtils.random(1,3) + 1;
-            final int playerHits = Math.max(0, playerRoll - bossRoll);
+            final Turn t = entity.combat.fightRoll(Combatant.Player);
             
             Runnable after = new Runnable() {
 
                 @Override
                 public void run() {
-                    entity.fight(true, playerHits);
+                    entity.combat.fight(t);
                     
-                    int bossRoll = MathUtils.random(1, 3);
-                    int playerRoll = MathUtils.random(1,3);
-                    final int bossHits = Math.max(0, Math.min(1, bossRoll - playerRoll));
-                    
-                    Runnable after = new Runnable(){
-
-                        @Override
-                        public void run() {
-                            entity.fight(false, bossHits);
-                            entity.changeState(MAIN);
-
-                            entity.addAction(Actions.sequence(Actions.delay(2f), Actions.run(new Runnable(){
-
-                                @Override
-                                public void run() {
-                                    //advance the battle once both sides have attacked
-                                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
-                                }
-                                
-                            })));
-                        }
-                        
-                    };
-                    entity.playFightAnimation(false, playerRoll, bossRoll, after);
-                }
+                    if (entity.combat.isFoeStunned()) {
+                        entity.addAction(Actions.sequence(Actions.delay(2f), Actions.run(returnToState)));
+                    }
+                    else
+                    {
+                        entity.addAction(
+                            Actions.sequence(
+                                Actions.delay(1f), 
+                                Actions.run(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            final Turn t2 = entity.combat.fightRoll(Combatant.Enemy);
+                                            entity.playFightAnimation(t2, 
+                                                new Runnable() {
+            
+                                                    @Override
+                                                    public void run() {
+                                                        entity.combat.fight(t2);
                 
+                                                        entity.addAction(
+                                                            Actions.sequence(
+                                                                Actions.delay(2f),
+                                                                Actions.run(returnToState)
+                                                            )
+                                                        );
+                                                    }
+                                                }
+                                            );
+                                        }
+                                    }
+                                )
+                            )
+                        );
+                    }
+                }
             };
             
-            entity.playFightAnimation(true, playerRoll, bossRoll, after);
+            entity.playFightAnimation(t, after);
         }
         
         @Override
@@ -112,6 +139,12 @@ public enum CombatStates implements State<BattleUI> {
             // TODO Auto-generated method stub
             return false;
         }
+
+        @Override
+        public void enter(BattleUI entity) {
+            // TODO Auto-generated method stub
+            
+        }
         
     },
     MODIFY(){
@@ -121,14 +154,57 @@ public enum CombatStates implements State<BattleUI> {
             // TODO Auto-generated method stub
             return false;
         }
+
+        @Override
+        public void enter(BattleUI entity) {
+            // TODO Auto-generated method stub
+            
+        }
+        
+    },
+    DEFEND(){
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            return false;
+        }
+
+        @Override
+        public void enter(final BattleUI entity) {
+            final Turn t = entity.combat.defendRoll();
+            final Runnable returnToState = new Runnable(){
+
+                @Override
+                public void run() {
+                    //advance the battle once both sides have attacked
+                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
+                    
+                    entity.changeState(MAIN);
+                }
+                
+            };
+            
+            Runnable after = new Runnable() {
+
+                @Override
+                public void run() {
+                    entity.combat.defend(t);
+                    
+                    entity.addAction(
+                        Actions.sequence(
+                            Actions.delay(1f), 
+                            Actions.run(returnToState)
+                        )
+                    );
+                }
+                
+            };
+            
+            entity.playDefenseAnimation(t, after);
+        }
         
     };
     
-    @Override
-    public void enter(BattleUI entity) {
-        // TODO Auto-generated method stub
-        
-    }
     @Override
     public void update(BattleUI entity) {
         // TODO Auto-generated method stub
