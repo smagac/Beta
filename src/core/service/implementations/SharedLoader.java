@@ -25,11 +25,11 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.Home + "battle.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
         manager.load(DataDirs.Home + "dargon.png", Texture.class);
-        manager.load(DataDirs.accept, Sound.class);
-        manager.load(DataDirs.tick, Sound.class);
-        manager.load(DataDirs.hit, Sound.class);
-        manager.load(DataDirs.shimmer, Sound.class);
-        manager.load(DataDirs.dead, Sound.class);
+        
+        //load all small sound fx
+        for (String path : DataDirs.Sounds.allSounds) {
+            manager.load(path, Sound.class);
+        }
         
         //load tilesets
         for (String file : DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets))) {

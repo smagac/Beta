@@ -5,19 +5,26 @@ import java.util.Scanner;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 
-public class DataDirs {
+public final class DataDirs {
 
     public static final String Home = "data/";
     public static final String Audio = Home + "audio/";
     public static final String sfx = Audio + "fx/";
     public static final String GameData = Home + "game/";
 
-    public static final String tick = sfx + "tick.wav";
-    public static final String hit = sfx + "hit.wav";
-    public static final String shimmer = sfx + "shimmer.wav";
-    public static final String accept = sfx + "accept.wav";
-    public static final String dead = sfx + "dead.wav";
-
+    public static interface Sounds {
+        public static final String tick = sfx + "tick.wav";
+        public static final String hit = sfx + "hit.wav";
+        public static final String hit2 = sfx + "hit2.wav";
+        public static final String deflect = sfx + "deflect.wav";
+        public static final String shimmer = sfx + "shimmer.wav";
+        public static final String accept = sfx + "accept.wav";
+        public static final String dead = sfx + "dead.wav";
+        public static final String charge = sfx + "charge.wav";
+        
+        public static final String[] allSounds = {tick, hit, hit2, deflect, shimmer, accept, dead, charge};
+    }
+    
     public static final String Tilesets = Home + "tilesets/";
     public static final String Lore = Home + "lore/";
     

@@ -44,6 +44,12 @@ public class ServiceManager {
             throw (new NullPointerException("Service registered is not of type specified: " + cls.getCanonicalName()));
         }
     }
+    
+    public static <T extends Service> T getService(Class<T> cls) {
+        Service s = services.get(cls);
+        
+        return cls.cast(s);
+    }
 
     /**
      * Injects an object's fields with various requested services

@@ -193,7 +193,7 @@ public class NewUI extends UI {
 
                 @Override
                 public void run() {
-                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                     number.defaultLeftClick.run();
                 }
 
@@ -203,7 +203,7 @@ public class NewUI extends UI {
 
                 @Override
                 public void run() {
-                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                     number.defaultRightClick.run();
                 }
 
@@ -271,7 +271,7 @@ public class NewUI extends UI {
                         createFrame.clearListeners();
                         accept.clearListeners();
                         createFocus.clearListeners();
-                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         hidePointer();
                     }
 
@@ -436,7 +436,7 @@ public class NewUI extends UI {
             public boolean onMessage(final NewUI entity, Telegram telegram) {
                 final int index = telegram.message;
                 if (index == 0) {
-                    entity.audio.playSfx(entity.shared.getResource(DataDirs.accept, Sound.class));
+                    entity.audio.playSfx(entity.shared.getResource(DataDirs.Sounds.accept, Sound.class));
                     entity.slotFrame.addAction(Actions.sequence(Actions.sequence(Actions.run(new Runnable() {
                         @Override
                         public void run() {
@@ -457,11 +457,11 @@ public class NewUI extends UI {
                 }
                 else {
                     if (telegram.extraInfo == null) {
-                        entity.audio.playSfx(entity.shared.getResource(DataDirs.tick, Sound.class));
+                        entity.audio.playSfx(entity.shared.getResource(DataDirs.Sounds.tick, Sound.class));
                         return false;
                     }
 
-                    entity.audio.playSfx(entity.shared.getResource(DataDirs.accept, Sound.class));
+                    entity.audio.playSfx(entity.shared.getResource(DataDirs.Sounds.accept, Sound.class));
                     entity.slotFrame.addAction(Actions.sequence(Actions.sequence(Actions.run(new Runnable() {
                         @Override
                         public void run() {
@@ -626,7 +626,7 @@ public class NewUI extends UI {
 
                                         @Override
                                         public void run() {
-                                            entity.audio.playSfx(entity.shared.getResource(DataDirs.shimmer, Sound.class));
+                                            entity.audio.playSfx(entity.shared.getResource(DataDirs.Sounds.shimmer, Sound.class));
                                         }
 
                                     }), Actions.moveTo(entity.goddess.getX(), entity.getHeight() + 128f, .4f)))));

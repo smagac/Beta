@@ -637,7 +637,7 @@ enum TownState implements UIState {
                 ui.changeState(Main);
             }
             else {
-                ui.audio.playSfx(ui.shared.getResource(DataDirs.tick, Sound.class));
+                ui.audio.playSfx(ui.shared.getResource(DataDirs.Sounds.tick, Sound.class));
                 ui.changeState(Main);
             }
             return true;

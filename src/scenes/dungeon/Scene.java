@@ -240,7 +240,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         playerService.getInventory().abandon();
 
         Tracker.NumberValues.Times_Died.increment();
-        audio.playSfx(shared.getResource(DataDirs.dead, Sound.class));
+        audio.playSfx(shared.getResource(DataDirs.Sounds.dead, Sound.class));
     }
 
     protected void leave() {
@@ -281,7 +281,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         wanderUI.init();
         ui = wanderUI;
-        hitSound = shared.getResource(DataDirs.hit, Sound.class);
+        hitSound = shared.getResource(DataDirs.Sounds.hit, Sound.class);
         // ui.levelUp();
 
         DungeonParam param = new DungeonParam();

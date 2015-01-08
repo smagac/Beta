@@ -148,7 +148,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
                             MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Town.Explore);
-                            audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         }
                         return true;
                     }
@@ -170,7 +170,7 @@ public class TownUI extends GameUI {
 
                         if (menu.isInState(TownState.Main)) {
                             triggerAction(Messages.Town.Sleep);
-                            audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         }
                         return true;
                     }
@@ -190,7 +190,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
                             menu.changeState(TownState.Craft);
-                            audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                             refreshButtons();
                         }
                         return true;
@@ -247,7 +247,7 @@ public class TownUI extends GameUI {
 
                     // build requirements list
                     MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh, list.getSelected());
-                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                 }
             });
             p.addListener(new InputListener() {
@@ -288,7 +288,7 @@ public class TownUI extends GameUI {
                     float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                     p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
                     MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh, list.getSelected());
-                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                 }
             });
 
@@ -502,7 +502,7 @@ public class TownUI extends GameUI {
                         fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
                     }
 
-                    audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                 }
             });
             
@@ -583,7 +583,7 @@ public class TownUI extends GameUI {
                     if (selected == null) {
                         // go to parent directory
                         queueDir = directory.parent();
-                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                         return true;
                     }
                     if (selected.isDirectory()) {
@@ -815,7 +815,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
                         MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected,
                                 formFocus.getFocusedIndex());
-                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         return true;
                     }
                     return false;

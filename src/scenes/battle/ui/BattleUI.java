@@ -1,6 +1,8 @@
 package scenes.battle.ui;
 
+import github.nhydock.CollectionUtils;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
@@ -11,6 +13,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -29,9 +32,12 @@ import core.components.Stats;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.TsxTileSet;
+import scene2d.PlaySound;
 import scene2d.ui.extras.FocusGroup;
 import scenes.GameUI;
 import scenes.Messages;
+import scenes.battle.ui.CombatHandler.Combatant;
+import scenes.battle.ui.CombatHandler.Turn;
 
 public class BattleUI extends GameUI
 {
@@ -76,11 +82,14 @@ public class BattleUI extends GameUI
     @Inject public IBattleContainer battleService;
     @Inject public IPlayerContainer playerService;
     
+    CombatHandler combat;
+    
 	public BattleUI(AssetManager manager, TiledMapTileSet environment)
 	{
 		super(manager);
 		menu = new DefaultStateMachine<BattleUI>(this);
 		this.environment = environment;
+		combat = new CombatHandler();
 	}
 	
 	@Override
@@ -287,6 +296,7 @@ public class BattleUI extends GameUI
 	            Actions.alpha(1f),
 	            Actions.delay(4f),
 	            Actions.moveToAligned(200f, getDisplayHeight()/2f, Align.center, .2f, Interpolation.circleOut),
+	            Actions.run(PlaySound.create(DataDirs.Sounds.charge)),
                 Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
                 Actions.scaleTo(1.0f, 1.0f, .1f, Interpolation.circleOut),
                 Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
@@ -333,17 +343,74 @@ public class BattleUI extends GameUI
         );
 	}
 	
-	protected void playFightAnimation(final boolean playerPhase, int playerRoll, int bossRoll, final Runnable after) {
-	    bossDie.setDrawable(getSkin(), "d"+bossRoll);
-        playerDie.setDrawable(getSkin(), "d"+playerRoll);
-        int hits;
-                
-        if (playerPhase) {
-            playerRoll++;
-            hits = playerRoll - bossRoll;
-        } else {
-            hits = bossRoll - playerRoll;
-        }
+	protected void playFightAnimation(Turn turn, final Runnable after) {
+	    playRollAnimation(turn,
+            Actions.sequence(
+                (turn.phase == Combatant.Player) ? playerAttackAnimation() : bossAttackAnimation(),
+                Actions.run(after)
+            )
+        );
+	}
+	
+	protected Action hitAnimation(Actor target, final Sound sndfx) {
+	    target.clearActions();
+	    return Actions.addAction(
+                    Actions.sequence(
+                        Actions.run(PlaySound.create(sndfx)),
+                        Actions.alpha(0f, .1f),
+                        Actions.alpha(1f, .1f)
+                    ), 
+                    target
+                );
+	}
+	
+	private Action playerAttackAnimation() {
+	    player.clearActions();
+	    return Actions.addAction(Actions.sequence(
+                Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
+                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
+                hitAnimation(boss, shared.getResource(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2), Sound.class)),
+                Actions.delay(.2f)
+            ), player);
+	}
+	
+	private Action bossAttackAnimation() {
+	    boss.clear();
+	    return Actions.addAction(Actions.sequence(
+                Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
+                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
+                hitAnimation(player, shared.getResource(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2), Sound.class)),
+                Actions.delay(.2f)
+            ), boss);
+	}
+	
+	/**
+	 * Plays the defending animation sequence
+	 * @param t
+	 * @param after
+	 */
+	protected void playDefenseAnimation(final Turn t, Runnable after) {
+        // TODO Auto-generated method stub
+        playRollAnimation(t, 
+                Actions.sequence(
+                    ((t.hits < 0) ? 
+                        hitAnimation(player, shared.getResource(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2), Sound.class)) : 
+                        hitAnimation(boss, shared.getResource(DataDirs.Sounds.deflect, Sound.class))),
+                    Actions.delay(.2f),
+                    Actions.run(after)
+                )
+        );
+        
+        
+    }
+	
+	/**
+	 * Show a dice roll
+	 * @param turn
+	 */
+	private void playRollAnimation(Turn turn, Action after){
+	    bossDie.setDrawable(getSkin(), "d"+turn.bossRoll);
+        playerDie.setDrawable(getSkin(), "d"+turn.playerRoll);
         
         bossDie.setPosition(getDisplayWidth(), boss.getY(Align.top), Align.topLeft);
         playerDie.setPosition(-playerDie.getWidth(), player.getY(Align.top), Align.bottomLeft);
@@ -356,7 +423,7 @@ public class BattleUI extends GameUI
                 Actions.addAction(
                     Actions.sequence(
                         Actions.moveTo(getDisplayWidth()*.25f, bossDie.getY(), .3f, Interpolation.circleOut),
-                        Actions.moveBy(-20f, 0f, 1.4f),
+                        Actions.moveBy(-20f, 0f, 1f),
                         Actions.moveTo(-bossDie.getWidth(), bossDie.getY(), .2f, Interpolation.circleIn)
                     ), 
                     bossDie
@@ -364,104 +431,16 @@ public class BattleUI extends GameUI
                 Actions.addAction(
                     Actions.sequence(
                         Actions.moveToAligned(getDisplayWidth()*.75f, playerDie.getY(), Align.bottomRight, .3f, Interpolation.circleOut),
-                        Actions.moveBy(20f, 0f, 1.4f),
+                        Actions.moveBy(20f, 0f, 1f),
                         Actions.moveTo(getDisplayWidth(), playerDie.getY(), .2f, Interpolation.circleIn)
                     ), 
                     playerDie
                 ),
                 Actions.delay(2f),
                 Actions.alpha(0f, .2f),
-                Actions.run(new Runnable(){
-
-                    @Override
-                    public void run() {
-                        if (playerPhase) {
-                            player.addAction(Actions.sequence(playerAttackAnimation(), Actions.run(after)));
-                        } else {
-                            boss.addAction(Actions.sequence(bossAttackAnimation(), Actions.run(after)));
-                        }
-                    }
-                    
-                })
+                after
             )
         );
-	}
-	
-	protected void fight(boolean phase, int hits){
-	    //deal damage to entities
-
-        Stats playerStats = battleService.getPlayer().getComponent(Stats.class);
-        Stats bossStats = battleService.getBoss().getComponent(Stats.class);
-        String damageMsg = "%s\n%d damage\n%d hits";
-        
-        Identifier playerID = battleService.getPlayer().getComponent(Identifier.class);
-        Identifier bossID = battleService.getBoss().getComponent(Identifier.class);
-        
-        int dmg = 0;
-        if (phase) {
-            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.TARGET, battleService.getBoss());
-            for (int i = 0; i < hits; i++) {
-                float chance = MathUtils.random(.8f, 2f);
-                dmg += Math.max(0, (int) (chance * playerStats.getStrength()) - bossStats.getDefense());
-            }
-            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Notify, String.format(damageMsg, playerID.toString(), dmg, hits));    
-        } else {
-            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.TARGET, battleService.getPlayer());
-            for (int i = 0; i < hits; i++) {
-                float chance = MathUtils.random(.8f, 1.25f);
-                dmg += Math.max(0, (int) (chance * bossStats.getStrength()) - playerStats.getDefense());
-            }
-            MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Notify, String.format(damageMsg, bossID.toString(), dmg, hits));    
-        }
-        
-        MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.DAMAGE, dmg);
-        
-	}
-	
-	protected Action playerAttackAnimation() {
-	    return Actions.sequence(
-                Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
-                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
-                Actions.addAction(
-                    Actions.sequence(
-                        Actions.run(new Runnable(){
-
-                            @Override
-                            public void run() {
-                                audio.playSfx(shared.getResource(DataDirs.hit, Sound.class));
-                            }
-                            
-                        }),
-                        Actions.alpha(0f, .1f),
-                        Actions.alpha(1f, .1f)
-                    ), 
-                    boss
-                ),
-                Actions.delay(.2f)
-            );
-	}
-	
-	protected Action bossAttackAnimation() {
-	    return Actions.sequence(
-                Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
-                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
-                Actions.addAction(
-                    Actions.sequence(
-                        Actions.run(new Runnable(){
-
-                            @Override
-                            public void run() {
-                                audio.playSfx(shared.getResource(DataDirs.hit, Sound.class));
-                            }
-                            
-                        }),
-                        Actions.alpha(0f, .1f),
-                        Actions.alpha(1f, .1f)
-                    ), 
-                    player
-                ),
-                Actions.delay(.2f)
-            );
 	}
 	
 	
@@ -514,7 +493,7 @@ public class BattleUI extends GameUI
             delay += .1f;
         }
         
-        delay += 1f;
+        delay += 1.4f;
         
         notification.addAction(
             Actions.sequence(
@@ -535,4 +514,6 @@ public class BattleUI extends GameUI
         
         display.addActor(notification);
     }
+
+    
 }

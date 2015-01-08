@@ -101,9 +101,7 @@ public class AudioManager implements IAudioManager {
 
     @Override
     public void playSfx(Sound clip) {
-        if (clip != null) {
-            clip.play(getSFXVol());
-        }
+        clip.play(getSFXVol());
     }
 
     @Override

@@ -103,7 +103,7 @@ public class EndUI extends UI {
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        audio.playSfx(shared.getResource(DataDirs.shimmer, Sound.class), .4f);
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.shimmer, Sound.class), .4f);
                     }
                 }),
                 Actions.parallel(Actions.sizeTo(128f, 128f), Actions.repeat(3, Actions.rotateBy(360f, .2f)),
@@ -111,7 +111,7 @@ public class EndUI extends UI {
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        audio.playSfx(shared.getResource(DataDirs.hit, Sound.class), 1, .5f, 0);
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.hit, Sound.class), 1, .5f, 0);
                     }
                 }),
                 Actions.delay(1f),
@@ -252,7 +252,7 @@ public class EndUI extends UI {
                     @Override
                     public void run() {
                         done.clearListeners();
-                        audio.playSfx(shared.getResource(DataDirs.tick, Sound.class));
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                     }
 
                 }), Actions.alpha(0f, .5f), Actions.run(new Runnable() {
@@ -336,7 +336,7 @@ public class EndUI extends UI {
 
                             @Override
                             public void run() {
-                                audio.playSfx(shared.getResource(DataDirs.shimmer, Sound.class));
+                                audio.playSfx(shared.getResource(DataDirs.Sounds.shimmer, Sound.class));
                             }
 
                         }), Actions.moveTo(goddess.getX(), getHeight() + 128f, .4f)))));

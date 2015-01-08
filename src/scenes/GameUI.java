@@ -217,7 +217,7 @@ public abstract class GameUI extends UI {
                         return true;
                     }
                     if (Input.ACCEPT.match(keycode)) {
-                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         triggerAction(getIndex());
                         hidePointer();
                         return true;
@@ -345,7 +345,7 @@ public abstract class GameUI extends UI {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        audio.playSfx(shared.getResource(DataDirs.accept, Sound.class));
+                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         triggerAction(getIndex());
                     }
                     return false;
