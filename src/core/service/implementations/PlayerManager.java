@@ -201,7 +201,7 @@ public class PlayerManager implements IPlayerContainer {
         this.player.add(stats);
         this.player.add(new Identifier("Adventurer", null, new String[0]));
         Renderable r = new Renderable(this.character);
-        r.loadImage(shared.getResource("uiskin.json", Skin.class));
+        r.loadImage(shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
         this.player.add(r);
         this.player.add(new Groups.Player());
         
