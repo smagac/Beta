@@ -5,10 +5,13 @@ import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
@@ -121,6 +124,7 @@ public class BattleUI extends GameUI
 	    /*
          * Construct the background
          */
+	    /**
         {
             Image floor = new Image(new TiledDrawable(environment.getTile(TsxTileSet.FLOOR).getTextureRegion()));
             floor.setWidth(getDisplayWidth());
@@ -141,10 +145,18 @@ public class BattleUI extends GameUI
             display.addActor(none);
             display.addActor(wall);
         }
-        
+        */
+	    
+	    TextureRegion tex = new TextureRegion(new Texture(Gdx.files.internal("data/backgrounds/dungeon.png")));
+	    Image bg = new Image(new TiledDrawable(tex));
+	    bg.setWidth(getDisplayWidth());
+	    bg.setHeight(128f);
+	    bg.setPosition(0, getDisplayHeight(), Align.topLeft);
+	    display.addActor(bg);
+	    
         player = new Image(skin, playerService.getGender());
         player.setSize(64f, 64f);
-        player.setPosition(getDisplayWidth(), 24f, Align.bottom);
+        player.setPosition(getDisplayWidth(), 16f, Align.bottom);
         player.setOrigin(Align.center);
         player.addAction(
             Actions.sequence(
@@ -167,7 +179,7 @@ public class BattleUI extends GameUI
         boss = new Image(skin, sName);
         boss.setSize(192f, 192f);
         boss.setOrigin(Align.center);
-        boss.setPosition(0, getDisplayHeight()-64f, Align.top);
+        boss.setPosition(0, getDisplayHeight()-96f, Align.top);
         boss.addAction(Actions.moveBy(getDisplayWidth()/2f, 0f, 1f));
         
         display.addActor(player);
@@ -310,29 +322,30 @@ public class BattleUI extends GameUI
                 Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),
                 Actions.scaleTo(2.4f, 2.4f, .1f, Interpolation.circleOut),
                 Actions.scaleTo(3.0f, 3.0f, .1f, Interpolation.circleOut),    
-                Actions.delay(.7f),
+                Actions.delay(.5f),
                 Actions.addAction(Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight(), Align.top, .5f, Interpolation.circleOut), goddess),
                 Actions.parallel(
                     Actions.moveToAligned(getDisplayWidth()/2f, getDisplayHeight() - 96f, Align.bottom, .5f, Interpolation.circleOut),
                     Actions.scaleTo(.5f, .5f, .4f)
                 ),
-                Actions.delay(.4f),
+                Actions.delay(.3f),
                 Actions.moveBy(0f, -500f, .15f),
-                Actions.addAction(Actions.moveBy(0, getDisplayHeight(), .5f, Interpolation.circleOut), goddess),
-                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), fader),
-                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), cloudsPan1),
-                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .5f, Interpolation.circleOut), cloudsPan2),       
-                Actions.delay(2f),
+                Actions.addAction(Actions.moveBy(0, getDisplayHeight(), .3f, Interpolation.circleOut), goddess),
+                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .3f, Interpolation.circleOut), fader),
+                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .3f, Interpolation.circleOut), cloudsPan1),
+                Actions.addAction(Actions.moveTo(0, getDisplayHeight(), .3f, Interpolation.circleOut), cloudsPan2),       
+                Actions.delay(.4f),
                 Actions.addAction(
                     Actions.sequence(
-                        Actions.sizeTo(128f, 0f),
+                        Actions.sizeTo(192f, 0f),
+                        Actions.run(PlaySound.create(DataDirs.Sounds.blast)),
                         Actions.moveTo(boss.getX(Align.center)-64f, getDisplayHeight()),
                         Actions.parallel(
                             Actions.sizeBy(0, getDisplayHeight() - boss.getY(), .4f, Interpolation.circleOut),
                             Actions.moveBy(0, -(getDisplayHeight() - boss.getY()), .4f, Interpolation.circleOut)
                         ),
                         Actions.delay(.9f),
-                        Actions.sizeTo(128f, 0, .4f, Interpolation.circleOut),
+                        Actions.sizeTo(192f, 0, .4f, Interpolation.circleOut),
                         Actions.run(after)
                         
                     ), 
@@ -343,45 +356,59 @@ public class BattleUI extends GameUI
         );
 	}
 	
-	protected void playFightAnimation(Turn turn, final Runnable after) {
+	protected void playFightAnimation(final Turn turn, final Runnable after) {
 	    playRollAnimation(turn,
             Actions.sequence(
-                (turn.phase == Combatant.Player) ? playerAttackAnimation() : bossAttackAnimation(),
+                Actions.run(new Runnable(){
+
+                    @Override
+                    public void run() {
+                        if (turn.phase == Combatant.Player) {
+                            playerAttackAnimation();
+                        } else {
+                            bossAttackAnimation();
+                        }
+                    }
+                    
+                }),
+                Actions.delay(1f),
                 Actions.run(after)
             )
         );
 	}
 	
-	protected Action hitAnimation(Actor target, final Sound sndfx) {
-	    target.clearActions();
-	    return Actions.addAction(
-                    Actions.sequence(
-                        Actions.run(PlaySound.create(sndfx)),
-                        Actions.alpha(0f, .1f),
-                        Actions.alpha(1f, .1f)
-                    ), 
-                    target
+	protected Action hitAnimation(String fx) {
+	    return Actions.sequence(
+                    Actions.run(PlaySound.create(fx)),
+                    Actions.alpha(0f, .1f),
+                    Actions.alpha(1f, .1f)
                 );
 	}
 	
-	private Action playerAttackAnimation() {
-	    player.clearActions();
-	    return Actions.addAction(Actions.sequence(
+	private void playerAttackAnimation() {
+	    player.addAction(
+            Actions.sequence(
                 Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
-                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
-                hitAnimation(boss, shared.getResource(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2), Sound.class)),
-                Actions.delay(.2f)
-            ), player);
+                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn)
+        ));
+	    boss.addAction(
+            Actions.sequence(
+	            Actions.delay(.25f),
+	            hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2))
+        ));
 	}
 	
-	private Action bossAttackAnimation() {
-	    boss.clear();
-	    return Actions.addAction(Actions.sequence(
+	private void bossAttackAnimation() {
+	    boss.addAction(
+            Actions.sequence(
                 Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
-                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn),
-                hitAnimation(player, shared.getResource(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2), Sound.class)),
-                Actions.delay(.2f)
-            ), boss);
+                Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn)
+        ));
+        player.addAction(
+            Actions.sequence(
+                Actions.delay(.25f),
+                hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2))
+        ));
 	}
 	
 	/**
@@ -389,19 +416,21 @@ public class BattleUI extends GameUI
 	 * @param t
 	 * @param after
 	 */
-	protected void playDefenseAnimation(final Turn t, Runnable after) {
-        // TODO Auto-generated method stub
-        playRollAnimation(t, 
-                Actions.sequence(
-                    ((t.hits < 0) ? 
-                        hitAnimation(player, shared.getResource(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2), Sound.class)) : 
-                        hitAnimation(boss, shared.getResource(DataDirs.Sounds.deflect, Sound.class))),
-                    Actions.delay(.2f),
-                    Actions.run(after)
-                )
+	protected void playDefenseAnimation(final Turn t, final Runnable after) {
+	    playRollAnimation(t, 
+            Actions.run(new Runnable(){
+                @Override
+                public void run(){
+                    if (t.hits < 0) {
+                        player.addAction(hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2)));
+                    } else {
+                        boss.addAction(hitAnimation(DataDirs.Sounds.deflect));
+                    }
+                    
+                    addAction(Actions.sequence(Actions.delay(.2f), Actions.run(after)));
+                }
+            })
         );
-        
-        
     }
 	
 	/**
@@ -409,6 +438,10 @@ public class BattleUI extends GameUI
 	 * @param turn
 	 */
 	private void playRollAnimation(Turn turn, Action after){
+	    fader.clearActions();
+	    bossDie.clearActions();
+	    playerDie.clearActions();
+	    
 	    bossDie.setDrawable(getSkin(), "d"+turn.bossRoll);
         playerDie.setDrawable(getSkin(), "d"+turn.playerRoll);
         

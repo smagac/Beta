@@ -21,8 +21,9 @@ public final class DataDirs {
         public static final String accept = sfx + "accept.wav";
         public static final String dead = sfx + "dead.wav";
         public static final String charge = sfx + "charge.wav";
+        public static final String blast = sfx + "blast.wav";
         
-        public static final String[] allSounds = {tick, hit, hit2, deflect, shimmer, accept, dead, charge};
+        public static final String[] allSounds = {tick, hit, hit2, deflect, shimmer, accept, dead, charge, blast};
     }
     
     public static final String Tilesets = Home + "tilesets/";

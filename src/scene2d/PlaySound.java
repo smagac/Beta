@@ -17,14 +17,12 @@ import core.service.interfaces.ISharedResources;
  */
 public class PlaySound implements Runnable {
 
-    private static Pool<PlaySound> soundPool = Pools.get(PlaySound.class);
-    
     /**
      * Creates a new runnable that plays the input sound effect object
      * @param sfx
      */
     public static PlaySound create(Sound sfx) {
-        PlaySound play = soundPool.obtain();
+        PlaySound play = new PlaySound();
         play.setSfx(sfx);
         return play;
     }
@@ -36,7 +34,7 @@ public class PlaySound implements Runnable {
      */
     public static PlaySound create(String path) {
         Sound sfx = ServiceManager.getService(ISharedResources.class).getResource(path, Sound.class);
-        PlaySound play = soundPool.obtain();
+        PlaySound play = new PlaySound();
         play.setSfx(sfx);
         return play;
     }
@@ -58,6 +56,5 @@ public class PlaySound implements Runnable {
         audio.playSfx(sfx);
         audio = null;
         sfx = null;
-        soundPool.free(this);
     }
 }
