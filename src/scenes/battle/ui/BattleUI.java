@@ -6,6 +6,7 @@ import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.assets.AssetManager;
@@ -18,20 +19,25 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Item;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.TsxTileSet;
@@ -70,7 +76,8 @@ public class BattleUI extends GameUI
     /*
      * Sacrifice menu
      */
-    List<String> inventory;
+    List<Item> inventory;
+    ScrollPane itemPane;
     Label sacrificePrompt;
     Group sacrificePromptWindow;
     Group effectWindow;
@@ -209,7 +216,56 @@ public class BattleUI extends GameUI
 	 * Construct the view for sacrificing items
 	 */
 	private void makeSacrificeMenu(){
+	    inventory = new List<Item>(skin);
 	    
+	    ObjectMap<Item, Integer> items = playerService.getInventory().getLoot();
+	    inventory.setItems(items.keys().toArray());
+	    
+	    itemPane = new ScrollPane(inventory, skin);
+	    itemPane.setSize(280f, getDisplayHeight() - 80f);
+	    itemPane.setPosition(getDisplayWidth(), getDisplayHeight(), Align.topLeft);
+	    display.addActor(itemPane);
+	    
+	    
+	    sacrificePrompt = new Label("", skin, "promptsm");
+	    sacrificePrompt.setWidth(304f);
+	    sacrificePrompt.setPosition(48f, 64f);
+	    sacrificePrompt.setWrap(true);
+	    
+	    sacrificePromptWindow = makeWindow(skin, 400, 130, true);
+        sacrificePromptWindow.setColor(1,1,1,0);
+        sacrificePromptWindow.setPosition(40f, 200f);
+        sacrificePromptWindow.addActor(sacrificePrompt);
+	    
+	    display.addActor(sacrificePromptWindow);
+	    
+	    sacrificeButton = new TextButton("Sacrifice", skin);
+	    sacrificeButton.setSize(280f, 32f);
+	    sacrificeButton.setPosition(getDisplayWidth(), 20);
+	    sacrificeButton.addListener(
+            new InputListener(){
+                @Override
+                public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
+                    sacrificeButton.setChecked(true);
+                }
+                
+                @Override
+                public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor) {
+                    sacrificeButton.setChecked(false);
+                }
+                
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button ) {
+                    if (button == Buttons.LEFT) {
+	                    Item i = inventory.getSelected();
+	                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.MODIFY, i.descriptor());
+	                    return true;
+                    }
+                    return false;
+                }
+            }
+        );
+	    display.addActor(sacrificeButton);
 	}
 	
 	/**

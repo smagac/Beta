@@ -7,7 +7,9 @@ import scenes.battle.ui.CombatHandler.Turn;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 public enum CombatStates implements State<BattleUI> {
     MAIN(){
@@ -157,10 +159,21 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(BattleUI entity) {
-            // TODO Auto-generated method stub
-            
+            entity.sacrificePrompt.setText("By sacrificing an item, you can compound its modifier's effects onto the boss for a limited amount of time.");
+            entity.sacrificePromptWindow.addAction(
+                Actions.parallel(
+                    Actions.alpha(1f, .1f),
+                    Actions.moveTo(20, 220, .2f)
+                )
+            );
+            entity.itemPane.addAction(Actions.moveBy(-entity.itemPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.sacrificeButton.addAction(
+                    Actions.sequence(
+                        Actions.delay(.2f),
+                        Actions.moveToAligned(entity.getDisplayWidth() - 20, 20f, Align.bottomRight, .2f, Interpolation.circleOut)
+                    )
+            );
         }
-        
     },
     DEFEND(){
 
