@@ -45,19 +45,19 @@ public class TitleSequence extends UI {
             textGrid.pad(40f);
 
             Label text = new Label(
-                    "Sometimes you start a project, thinking it'd take you no time at all to finish it.  Then before you know it, it's drained your life away from you.\n\nWhat was once a one week venture has spanned months.",
+                    "This game is Shareware!\n\nThat means it's completely free to download and distribute.\n\nIf you'd like to be nice, you can donate and learn more at http://nhydock.github.io/Storymode",
                     skin);
             text.setWrap(true);
             text.setAlignment(Align.center);
             text.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(1f, 1f)));
             textGrid.add(text).expandX().fillX();
-            text = new Label("~Nick", skin);
+            text = new Label("~Thanks a bunch!", skin);
             text.setWrap(true);
             text.setAlignment(Align.right);
             text.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(3f), Actions.alpha(1f, 1f)));
             textGrid.row();
             textGrid.add(text).expandX().fillX().padRight(60f);
-            text = new Label("September 23, 2014", skin, "small");
+            text = new Label("Jan 8, 2014", skin, "small");
             text.setWrap(true);
             text.setAlignment(Align.right);
             text.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(3f), Actions.alpha(1f, 1f)));
@@ -119,14 +119,11 @@ public class TitleSequence extends UI {
             Group group = new Group();
             Image tools = new Image(skin.getDrawable("tools"));
             tools.setPosition(getWidth() / 2 - tools.getWidth() / 2, getHeight() / 2 - tools.getHeight() / 2);
-            Table table = new Table();
-            Label label = new Label("All music available on FreeMusicArchive.org", skin);
-            table.add(label).expandX().fillX();
-            table.row();
-
-            table.setPosition(getWidth() / 2 - table.getPrefWidth() / 2, table.getPrefHeight());
+            Label label = new Label("All music used is available permissive Creative Commons and Public Domain licensing.\nAll attribution can be found the readme", skin, "small");
+            label.setPosition(getWidth()/2f, 0, Align.bottom);
+            label.setAlignment(Align.center);
             group.addActor(tools);
-            group.addActor(table);
+            group.addActor(label);
             group.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(16f), Actions.alpha(1f, .75f),
                     Actions.delay(4f), Actions.alpha(0f, .75f)));
             addActor(group);
