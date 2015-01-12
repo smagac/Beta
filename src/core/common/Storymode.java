@@ -50,8 +50,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     @Override
     public void resize(int width, int height) {
-        colorMode.resize(width, height);
         super.resize(width, height);
+        colorMode.resize(width, height);
     }
 
     @Override
@@ -165,6 +165,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         if (loadScreen.isLoading()) {
             loadScreen.draw(delta);
         }
+        
+        BossListener.getInstance().run();
     }
 
     @Override

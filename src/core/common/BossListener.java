@@ -10,7 +10,7 @@ import core.Palette;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IGame;
 
-public class BossListener implements InputProcessor {
+public class BossListener {
 
     private static BossListener instance;
 
@@ -35,42 +35,42 @@ public class BossListener implements InputProcessor {
         return game;
     }
 
-    @Override
-    public boolean keyDown(int keycode) {
+    public boolean run() {
 
         // control hues
         Palette nextCol = null;
 
-        if (keycode == Keys.NUM_1) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_1)) {
             nextCol = Palette.Original;
         }
-        if (keycode == Keys.NUM_2) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_2)) {
             nextCol = Palette.Gameboy;
         }
-        if (keycode == Keys.NUM_3) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_3)) {
             nextCol = Palette.VirtualBoy;
         }
-        if (keycode == Keys.NUM_4) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_4)) {
             nextCol = Palette.Orange;
         }
-        if (keycode == Keys.NUM_5) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_5)) {
             nextCol = Palette.Tandy;
         }
-        if (keycode == Keys.NUM_6) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_6)) {
             nextCol = Palette.Sepia;
         }
-        if (keycode == Keys.NUM_7) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_7)) {
             nextCol = Palette.Vintage;
         }
-        if (keycode == Keys.NUM_8) {
+        if (Gdx.input.isKeyJustPressed(Keys.NUM_8)) {
             nextCol = Palette.Pen;
         }
 
-        if (keycode == Keys.MINUS) {
+        if (Gdx.input.isKeyJustPressed(Keys.MINUS)) {
             getColorService().darken();
             return true;
         }
-        if (keycode == Keys.EQUALS) {
+        if (Gdx.input.isKeyJustPressed(Keys.EQUALS) ||
+            Gdx.input.isKeyJustPressed(Keys.PLUS)) {
             getColorService().brighten();
             return true;
         }
@@ -80,74 +80,32 @@ public class BossListener implements InputProcessor {
             return true;
         }
 
-        if (keycode == Keys.F5) {
+        if (Gdx.input.isKeyJustPressed(Keys.F5)) {
             getGameService().softReset();
             return true;
         }
-        if (keycode == Keys.F6) {
+        if (Gdx.input.isKeyJustPressed(Keys.F6)) {
             getGameService().fastStart();
             return true;
         }
-        if (keycode == Keys.F7) {
+        if (Gdx.input.isKeyJustPressed(Keys.F7)) {
             if (getGameService().hasStarted()) {
                 SceneManager.switchToScene("lore");
                 return true;
             }
         }
-        if (keycode == Keys.F9) {
+        if (Gdx.input.isKeyJustPressed(Keys.F9)) {
             // EXIT LIKE A BITCH
             Gdx.app.exit();
             return true;
         }
-        if (keycode == Keys.F12) {
-            if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Keys.E)) {
+        if (Gdx.input.isKeyJustPressed(Keys.F12)) {
+            if (Gdx.input.isKeyJustPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyJustPressed(Keys.E)) {
                 getGameService().endGame();
                 return true;
             }
         }
 
-        return false;
-    }
-
-    @Override
-    public boolean keyTyped(char arg0) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean keyUp(int arg0) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int arg0, int arg1) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean scrolled(int arg0) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean touchDown(int arg0, int arg1, int arg2, int arg3) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int arg0, int arg1, int arg2) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int arg0, int arg1, int arg2, int arg3) {
-        // TODO Auto-generated method stub
         return false;
     }
 
