@@ -197,12 +197,7 @@ enum TownState implements UIState {
 
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
-            if (t.message != Messages.Interface.Button) {
-                return false;
-            }
-            int button = (int)t.extraInfo;
-            
-            if (button == Messages.Town.Make) {
+            if (t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Make) {
                 Craftable c;
                 if (ui.craftMenu.getOpenTabIndex() == 0) {
                     c = ui.craftList.getSelected();
@@ -291,11 +286,13 @@ enum TownState implements UIState {
                     return true;
                 }
             }
-            else if (button == Messages.Town.Refresh) {
+            else if (t.message == Messages.Interface.Selected) {
                 Craftable c = (Craftable) t.extraInfo;
                 refreshRequirements(c, ui);
             }
-            else if (button == Messages.Town.Close) {
+            else if (t.message == Messages.Interface.Close || 
+                     (t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Close)) {
+                
                 ui.changeState(Main);
             }
             return false;
@@ -365,6 +362,10 @@ enum TownState implements UIState {
                                 ui.fileDetailsPane.pack();
                             }
                         }), Actions.moveTo(ui.getDisplayWidth() - ui.fileDetails.getWidth(), 0, .3f)));
+                return true;
+            }
+            else if (t.message == Messages.Interface.Close) {
+                ui.changeState(Main);
                 return true;
             }
             else if (t.message != Messages.Interface.Button) {

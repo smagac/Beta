@@ -245,7 +245,7 @@ public class TownUI extends GameUI {
                     requirementList.clear();
 
                     // build requirements list
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh, list.getSelected());
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
                     audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                 }
             });
@@ -286,7 +286,7 @@ public class TownUI extends GameUI {
                 public void changed(ChangeEvent event, Actor actor) {
                     float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                     p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh, list.getSelected());
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
                     audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
                 }
             });
@@ -323,12 +323,10 @@ public class TownUI extends GameUI {
                 todayList.setSelectedIndex(0);
 
                 if (craftMenu.getOpenTabIndex() == 0) {
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh,
-                            craftList.getSelected());
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, craftList.getSelected());
                 }
                 else {
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Town.Refresh,
-                            todayList.getSelected());
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, todayList.getSelected());
                 }
             }
 
