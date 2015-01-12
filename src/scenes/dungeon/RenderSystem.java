@@ -49,7 +49,7 @@ import core.service.interfaces.IDungeonContainer;
 
 public class RenderSystem extends EntitySystem implements EntityListener {
 
-    public static final float MoveSpeed = .25f;
+    public static final float MoveSpeed = .15f;
 
     //SquidPony's FOV System
     private float[][] wallMap;

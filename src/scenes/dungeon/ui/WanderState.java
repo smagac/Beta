@@ -1,6 +1,7 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.SceneManager;
+import scene2d.InputDisabler;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.dungeon.Direction;
@@ -72,18 +73,38 @@ public enum WanderState implements UIState {
                     walkTimer = -1f;
                 }
                 else {
-                    entity.dungeonService.getEngine().getSystem(MovementSystem.class).movePlayer(direction);
+                    final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
+                    if (ms.movePlayer(direction)) {
+                        /*
+                         * Disable input when moving, move a full step, then let enemies move,
+                         * then restore the input.
+                         */
+                        entity.addAction(
+                            Actions.sequence(
+                                //Actions.run(InputDisabler.instance),
+                                Actions.delay(RenderSystem.MoveSpeed),
+                                Actions.run(new Runnable(){
+                                    @Override
+                                    public void run(){
+                                        ms.process();
+                                    }
+                                }),
+                                Actions.delay(RenderSystem.MoveSpeed)
+                                //Actions.run(InputDisabler.instance)
+                            )
+                        );
+                    }
                     walkTimer = 0f;
                 }
                 return true;
             }
-            else if (telegram.message == Messages.Dungeon.Assist) {
+            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Assist) {
                 entity.changeState(Assist);
                 return true;
             }
             else if (telegram.message == Quest.Actions.Notify) {
                 String notification = telegram.extraInfo.toString();
-                MessageDispatcher.getInstance().dispatchMessage(0, null, null, Messages.Interface.Notify, notification);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);
             }
             else if (telegram.message == Messages.Dungeon.Dead) {
                 entity.changeState(WanderState.Dead);
@@ -117,11 +138,11 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Dungeon.Heal) {
+            if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Heal) {
                 entity.changeState(Sacrifice_Heal);
                 return true;
             }
-            else if (telegram.message == Messages.Dungeon.Leave) {
+            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Leave) {
                 entity.changeState(Sacrifice_Leave);
                 return true;
             }
@@ -152,7 +173,7 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Dungeon.Sacrifice) {
+            if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
@@ -193,7 +214,7 @@ public enum WanderState implements UIState {
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
-            if (telegram.message == Messages.Dungeon.Sacrifice) {
+            if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
                 int fleeCost = entity.dungeonService.getProgress().depth;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, fleeCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
@@ -237,7 +258,8 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Interface.Close) {
+            if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
+                telegram.message == Messages.Interface.Close){
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
                 entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
@@ -276,7 +298,8 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(final WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Interface.Close) {
+            if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
+                telegram.message == Messages.Interface.Close) {
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
                 entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
@@ -379,7 +402,6 @@ public enum WanderState implements UIState {
             }
             return false;
         }
-
     };
 
     @Override

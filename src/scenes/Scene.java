@@ -41,7 +41,6 @@ public abstract class Scene<View extends UI> implements Screen {
     public Scene() {
         manager = new AssetManager();
         input = new InputMultiplexer();
-        input.addProcessor(BossListener.getInstance());
 
         ServiceManager.inject(this);
     }

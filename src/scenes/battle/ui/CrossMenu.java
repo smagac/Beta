@@ -1,5 +1,7 @@
 package scenes.battle.ui;
 
+import scene2d.InputDisabler;
+
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -245,6 +247,14 @@ public class CrossMenu extends Group
 	    MAIN(){
 	        @Override
 	        public void enter(CrossMenu entity) {
+	            entity.addAction(
+                    Actions.sequence(
+                        Actions.run(InputDisabler.instance),
+                        Actions.delay(1.2f),
+                        Actions.run(InputDisabler.instance)
+                    )
+                );
+	            
 	            entity.mainSet.select(entity.attack);
 	            entity.attack.addAction(
                     Actions.sequence(
@@ -312,6 +322,14 @@ public class CrossMenu extends Group
 	    ATTACK(){
 	        @Override
             public void enter(CrossMenu entity) {
+	            entity.addAction(
+                    Actions.sequence(
+                        Actions.run(InputDisabler.instance),
+                        Actions.delay(.7f),
+                        Actions.run(InputDisabler.instance)
+                    )
+                );
+                
 	            entity.item.addAction(
                     Actions.sequence(
                         Actions.parallel(
@@ -412,6 +430,14 @@ public class CrossMenu extends Group
 	    ITEM(){
 	        @Override
             public void enter(final CrossMenu entity) {
+	            entity.addAction(
+                    Actions.sequence(
+                        Actions.run(InputDisabler.instance),
+                        Actions.delay(.8f),
+                        Actions.run(InputDisabler.instance)
+                    )
+                );
+	            
 	            entity.attack.addAction(
                     Actions.sequence(
                         Actions.parallel(

@@ -34,9 +34,7 @@ public class Scene extends scenes.Scene<TitleSequence> {
         // fetch assets
         audio.setBgm(manager.get(DataDirs.Audio + "title.mp3", Music.class), false);
 
-        InputMultiplexer input = new InputMultiplexer();
         input.addProcessor(ui);
-        input.addProcessor(BossListener.getInstance());
         Gdx.input.setInputProcessor(input);
     }
 }

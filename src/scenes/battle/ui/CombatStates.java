@@ -1,5 +1,6 @@
 package scenes.battle.ui;
 
+import scene2d.InputDisabler;
 import scenes.Messages;
 import scenes.battle.ui.CombatHandler.Combatant;
 import scenes.battle.ui.CombatHandler.Turn;
@@ -64,7 +65,7 @@ public enum CombatStates implements State<BattleUI> {
                 public void run() {
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
-                    
+                    InputDisabler.swap();
                     entity.changeState(MAIN);
                 }
                 
@@ -73,6 +74,7 @@ public enum CombatStates implements State<BattleUI> {
             /*
              * Pretty much everything can be done as soon as we enter
              */
+            InputDisabler.swap();
             
             /*
              * First we roll the dice, then show the values 
@@ -184,6 +186,7 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(final BattleUI entity) {
+            InputDisabler.swap();
             final Turn t = entity.combat.defendRoll();
             final Runnable returnToState = new Runnable(){
 
@@ -191,7 +194,7 @@ public enum CombatStates implements State<BattleUI> {
                 public void run() {
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
-                    
+                    InputDisabler.swap();
                     entity.changeState(MAIN);
                 }
                 

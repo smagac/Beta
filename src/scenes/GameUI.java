@@ -282,10 +282,17 @@ public abstract class GameUI extends UI {
         hidePointer();
 
         act(0);
-
-        MessageDispatcher.getInstance().addListener(this, Messages.Interface.Notify);
-        MessageDispatcher.getInstance().addListener(this, TabbedPane.Messages.ChangeTabs);
-
+    }
+    
+    @Override
+    protected int[] listen(){
+        return new int[]{
+             Messages.Interface.Notify,
+             Messages.Interface.Selected,
+             Messages.Interface.Close,
+             Messages.Interface.Button,
+             TabbedPane.Messages.ChangeTabs
+        };
     }
 
     /**
@@ -310,8 +317,15 @@ public abstract class GameUI extends UI {
      * 
      * @param index
      */
-    protected abstract void triggerAction(int index);
-
+    protected void triggerAction(int index) {
+        if (index == -1) {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+        }
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, index);
+        menu.update();
+        refreshButtons();
+    }
+    
     protected abstract FocusGroup focusList();
 
     public abstract String[] defineButtons();
@@ -334,19 +348,20 @@ public abstract class GameUI extends UI {
 
         for (int i = 0; i < butt.length; i++) {
             final Button button = new TextButton(butt[i], skin);
+            final int index = i;
             button.setName(butt[i]);
             button.pad(4f, 10f, 4f, 10f);
             button.addListener(new InputListener() {
                 @Override
                 public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                    button.setChecked(true);
+                    setIndex(index);
                 }
 
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
                         audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
-                        triggerAction(getIndex());
+                        triggerAction(index);
                     }
                     return false;
                 }
@@ -506,14 +521,6 @@ public abstract class GameUI extends UI {
 
     public final Actor getButtonList() {
         return buttonList;
-    }
-
-    @Override
-    public final void dispose() {
-        super.dispose();
-        // make sure this ui stops listening to notifications to unhook it from the system
-        MessageDispatcher.getInstance().removeListener(this, Messages.Interface.Notify);
-        MessageDispatcher.getInstance().removeListener(this, TabbedPane.Messages.ChangeTabs);
     }
 
     @Override

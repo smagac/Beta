@@ -3,6 +3,7 @@ package scenes.dungeon.ui;
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
+import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.ScrollFocuser;
 import scenes.GameUI;
 import scenes.Messages;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -86,6 +88,8 @@ public class WanderUI extends GameUI {
     LabeledTicker<Integer> spdTicker;
     LabeledTicker<Integer> vitTicker;
     FocusGroup levelUpGroup;
+    
+    ParticleActor weather;
 
     // services
     @Inject public IPlayerContainer playerService;
@@ -508,7 +512,7 @@ public class WanderUI extends GameUI {
                         return false;
                     }
 
-                    MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Interface.Close);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
                     return true;
                 }
             });
@@ -525,7 +529,7 @@ public class WanderUI extends GameUI {
                         return true;
                     }
                     if (Input.ACCEPT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(0, ui, ui, Messages.Interface.Close);
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
                         return true;
                     }
                     return false;
@@ -608,13 +612,6 @@ public class WanderUI extends GameUI {
         if (dungeonService.getProgress().depth > 0) {
             menu.update();
         }
-    }
-
-    @Override
-    protected void triggerAction(int index) {
-        MessageDispatcher.getInstance().dispatchMessage(0f, this, this, index);
-        menu.update();
-        refreshButtons();
     }
 
     void refresh(Progress progress) {

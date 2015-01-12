@@ -147,7 +147,7 @@ public class TownUI extends GameUI {
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
-                            MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Town.Explore);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Explore);
                             audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         }
                         return true;
@@ -169,7 +169,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
 
                         if (menu.isInState(TownState.Main)) {
-                            triggerAction(Messages.Town.Sleep);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Sleep);
                             audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
                         }
                         return true;
@@ -189,9 +189,8 @@ public class TownUI extends GameUI {
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
-                            menu.changeState(TownState.Craft);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Craft);
                             audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
-                            refreshButtons();
                         }
                         return true;
                     }
@@ -960,13 +959,6 @@ public class TownUI extends GameUI {
         }
 
         menu.update();
-    }
-
-    @Override
-    protected void triggerAction(int index) {
-        MessageDispatcher.getInstance().dispatchMessage(0, this, this,  Messages.Interface.Button, index);
-        menu.update();
-        refreshButtons();
     }
 
     @Override

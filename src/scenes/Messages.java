@@ -48,20 +48,21 @@ public interface Messages {
      * DUNGEON
      */
     public static interface Dungeon {
-        public static final int Movement = -1;
-        public static final int Assist = 0;
-        public static final int Heal = 1;
-        public static final int Leave = 2;
+        public static final int Movement = -1; //move the player
+        public static final int Assist = 0; //open up assist menu
+        public static final int Close = 0;  //close a prompt when it is present
+        public static final int Heal = 1;   //select assistance to open heal menu
+        public static final int Leave = 2;  //select assistance to open escape menu
     
-        public static final int Sacrifice = 1;
+        public static final int Sacrifice = 1; //choose to sacrifice items
     
-        public static final int Dead = 0x1000;
-        public static final int Exit = 0x1001;
-        public static final int LevelUp = 0x1002;
-        public static final int Refresh = 0x1003;
+        public static final int Dead = 0x1000; //notification that we've died
+        public static final int Exit = 0x1001; //notification that we've escaped the dungeon
+        public static final int LevelUp = 0x1002; //notification that we've leveled up
+        public static final int Refresh = 0x1003; //notification to the HUD to say that we need to update its display
         
-        public static final int FIGHT = 0x1004;
-        public static final int KILLED = 0x1005;
+        public static final int FIGHT = 0x1004; //two entities are fighting
+        public static final int KILLED = 0x1005; //an entity has been destroyed in combat
     }
     
     /*

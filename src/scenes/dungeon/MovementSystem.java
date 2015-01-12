@@ -340,17 +340,27 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         }
 
         if (moveEntity(x, y, player)) {
-            // execute a turn
-            for (int i = 0; i < monsters.size; i++)
-            {
-                process(monsters.get(i));
-            }
             return true;
         }
 
         return false;
     }
+    
+    /**
+     * Tells all entities handled by this system to perform processing
+     */
+    public void process(){
+        // execute a turn
+        for (int i = 0; i < monsters.size; i++)
+        {
+            process(monsters.get(i));
+        }
+    }
 
+    /**
+     * Handles movement processing for a single entity
+     * @param e
+     */
     protected void process(Entity e) {
         Position m = positionMap.get(e);
         Position p = positionMap.get(player);
