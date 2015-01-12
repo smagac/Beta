@@ -12,6 +12,7 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Interpolation;
@@ -43,6 +44,8 @@ import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.TsxTileSet;
 import scene2d.PlaySound;
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ParticleActor;
+import scene2d.ui.extras.ParticleActor.ResetParticle;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.battle.ui.CombatHandler.Combatant;
@@ -94,12 +97,15 @@ public class BattleUI extends GameUI
     
     CombatHandler combat;
     
+    ParticleActor hitSplash;
+    
 	public BattleUI(AssetManager manager, TiledMapTileSet environment)
 	{
 		super(manager);
 		menu = new DefaultStateMachine<BattleUI>(this);
 		this.environment = environment;
 		combat = new CombatHandler();
+		
 	}
 	
 	@Override
@@ -210,6 +216,12 @@ public class BattleUI extends GameUI
 	    
 	    display.addActor(bossDie);
 	    display.addActor(playerDie);
+	    
+	    ParticleEffect pe = new ParticleEffect();
+	    pe.load(Gdx.files.internal(DataDirs.Particles + "splash.particle"), Gdx.files.internal(DataDirs.Home));
+	    hitSplash = new ParticleActor(pe);
+	    
+	    display.addActor(hitSplash);
 	}
 	
 	/**
@@ -433,15 +445,21 @@ public class BattleUI extends GameUI
         );
 	}
 	
+	protected Action hitAnimation(){
+	    return hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2));
+	}
+	
 	protected Action hitAnimation(String fx) {
 	    return Actions.sequence(
                     Actions.run(PlaySound.create(fx)),
                     Actions.alpha(0f, .1f),
+                    Actions.run(new ResetParticle(hitSplash)),
                     Actions.alpha(1f, .1f)
                 );
 	}
 	
 	private void playerAttackAnimation() {
+	    hitSplash.setPosition(boss.getX(Align.center), boss.getY(Align.center));
 	    player.addAction(
             Actions.sequence(
                 Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
@@ -450,12 +468,13 @@ public class BattleUI extends GameUI
 	    boss.addAction(
             Actions.sequence(
 	            Actions.delay(.25f),
-	            hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2))
+	            hitAnimation()
         ));
 	}
 	
 	private void bossAttackAnimation() {
-	    boss.addAction(
+	    hitSplash.setPosition(player.getX(Align.center), player.getY(Align.center));
+        boss.addAction(
             Actions.sequence(
                 Actions.scaleTo(-1f, 1f, .25f, Interpolation.sineIn),
                 Actions.scaleTo(1f, 1f, .25f, Interpolation.sineIn)
@@ -463,7 +482,7 @@ public class BattleUI extends GameUI
         player.addAction(
             Actions.sequence(
                 Actions.delay(.25f),
-                hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2))
+                hitAnimation()
         ));
 	}
 	
@@ -478,8 +497,12 @@ public class BattleUI extends GameUI
                 @Override
                 public void run(){
                     if (t.hits < 0) {
-                        player.addAction(hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2)));
+                        hitSplash.setPosition(player.getX(Align.center), player.getY(Align.center));
+                        
+                        player.addAction(hitAnimation());
                     } else {
+                        hitSplash.setPosition(boss.getX(Align.center), boss.getY(Align.center));
+                        
                         boss.addAction(hitAnimation(DataDirs.Sounds.deflect));
                     }
                     

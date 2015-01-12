@@ -24,6 +24,7 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "battle.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
+        manager.load(DataDirs.Home + "particle.png", Texture.class);
         manager.load(DataDirs.Home + "dargon.png", Texture.class);
         
         //load all small sound fx
@@ -42,9 +43,11 @@ public class SharedLoader implements ISharedResources {
         
         // skin is used in a lot of places so we add addition regions to it to make things easier
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
-        Texture dargon = manager.get(DataDirs.Home + "dargon.png");
         Texture fillTex = manager.get(DataDirs.Home + "fill.png", Texture.class);
         uiSkin.add("fill", new TextureRegion(fillTex), TextureRegion.class);
+        Texture particleTex = manager.get(DataDirs.Home + "particle.png", Texture.class);
+        uiSkin.add("particle", new TextureRegion(particleTex), TextureRegion.class);
+        Texture dargon = manager.get(DataDirs.Home + "dargon.png");
         uiSkin.add("dargon", dargon, Texture.class);
         TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
         uiSkin.addRegions(dungeonSprites);

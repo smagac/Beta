@@ -28,6 +28,7 @@ public final class DataDirs {
     
     public static final String Tilesets = Home + "tilesets/";
     public static final String Lore = Home + "lore/";
+    public static final String Particles = Home + "particles/";
     
     /**
      * Allows getting a specified list of children in an internal directory
