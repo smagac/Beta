@@ -90,7 +90,7 @@ public class BossListener {
             getGameService().fastStart();
             return true;
         }
-        if (getGameService().hasStarted()) {
+        if (getGameService().hasStarted() && getGameService().debug()) {
             if (Gdx.input.isKeyJustPressed(Keys.F7)) {
                 SceneManager.switchToScene("lore");
                 return true;

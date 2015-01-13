@@ -13,4 +13,6 @@ public interface IGame extends Service {
     public void endGame();
 
     public boolean hasStarted();
+    
+    public boolean debug();
 }

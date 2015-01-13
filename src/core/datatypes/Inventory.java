@@ -1,7 +1,10 @@
 package core.datatypes;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -11,12 +14,17 @@ import com.badlogic.gdx.utils.ObjectMap.Keys;
 import core.common.Tracker;
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.info.GatherInfo;
+import core.factories.AdjectiveFactory;
 import core.factories.CraftableFactory;
+import core.factories.ItemFactory;
+import core.service.interfaces.IGame;
 
 import com.badlogic.gdx.utils.Json.Serializable;
 
 public class Inventory implements Serializable {
 
+    
+    
     CraftableFactory cf;
     Array<Craftable> required;
     Array<Craftable> todaysCrafts;
@@ -52,22 +60,23 @@ public class Inventory implements Serializable {
         tmp = new ObjectMap<Item, Integer>();
         all = new ObjectMap<Item, Integer>();
 
-        // //debug add loot to test crafting
-        // for (int i = 0; i < 100; i++)
-        // {
-        // Item item = new Item(Item.items.random(),
-        // AdjectiveFactory.getAdjective());
-        // all.put(item, all.get(item, 0) + MathUtils.random(1, 20));
-        // }
-        //
-        // //debug add loot to be able to craft at least one item
-        // Craftable c = required.random();
-        // for (String s : c.getRequirements().keys())
-        // {
-        // all.put(new Item(s, AdjectiveFactory.getAdjective()),
-        // c.getRequirements().get(s) + MathUtils.random(1, 5));
-        // }
-        // loot.putAll(all);
+        if (ServiceManager.getService(IGame.class).debug()){
+             //debug add loot to test crafting
+             for (int i = 0; i < 100; i++)
+             {
+                 Item item = new Item(ItemFactory.randomType(), AdjectiveFactory.getAdjective());
+                 all.put(item, all.get(item, 0) + MathUtils.random(1, 20));
+             }
+            
+             //debug add loot to be able to craft at least one item
+             Craftable c = required.random();
+             for (String s : c.getRequirements().keys())
+             {
+                 all.put(new Item(s, AdjectiveFactory.getAdjective()),
+                 c.getRequirements().get(s) + MathUtils.random(1, 5));
+             }
+             loot.putAll(all);
+        }
     }
 
     /**
