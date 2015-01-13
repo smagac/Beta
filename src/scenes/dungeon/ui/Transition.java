@@ -28,6 +28,7 @@ import core.DataDirs;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.service.interfaces.IPlayerContainer;
+import scene2d.PlaySound;
 import scenes.UI;
 
 /**
@@ -89,6 +90,12 @@ public class Transition extends UI {
             delay += .1f;
         }
         
-        addAction(Actions.sequence(Actions.delay(delay + .3f),Actions.run(after)));
+        addAction(
+            Actions.sequence(
+                Actions.run(new PlaySound(DataDirs.Sounds.transition)), 
+                Actions.delay(delay + .3f),
+                Actions.run(after)
+            )
+        );
     }
 }
