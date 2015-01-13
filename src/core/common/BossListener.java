@@ -1,10 +1,12 @@
 package core.common;
 
+import scenes.Messages;
 import github.nhydock.ssm.SceneManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 
 import core.Palette;
 import core.service.interfaces.IColorMode;
@@ -88,10 +90,13 @@ public class BossListener {
             getGameService().fastStart();
             return true;
         }
-        if (Gdx.input.isKeyJustPressed(Keys.F7)) {
-            if (getGameService().hasStarted()) {
+        if (getGameService().hasStarted()) {
+            if (Gdx.input.isKeyJustPressed(Keys.F7)) {
                 SceneManager.switchToScene("lore");
                 return true;
+            }
+            if (Gdx.input.isKeyJustPressed(Keys.F2)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
             }
         }
         if (Gdx.input.isKeyJustPressed(Keys.F9)) {
