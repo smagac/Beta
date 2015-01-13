@@ -203,10 +203,12 @@ public class FocusGroup extends Actor {
             Gdx.app.log("FocusGroup", "not a valid actor");
             return;
         }
-        focus = a;
-        focusIndex = actors.indexOf(a, true);
-        ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
-        fire(changeEvent);
-        Pools.free(changeEvent);
+        if (focus != a) {
+            focus = a;
+            focusIndex = actors.indexOf(a, true);
+            ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
+            fire(changeEvent);
+            Pools.free(changeEvent);
+        }
     }
 }

@@ -60,13 +60,29 @@ public class CombatHandler implements Telegraph {
     }
     
     /**
+     * Roll for during the attack action if the player is performing a manual attack
+     * @param phase
+     * @return
+     */
+    public Turn manualFightRoll(Combatant phase) {
+        int eRoll = MathUtils.random(1, 6); 
+        int pRoll = MathUtils.random(1, 6);
+        
+        if (isFoeStunned()) {
+            eRoll = 1;
+        }
+        
+        return new Turn(eRoll, pRoll, phase);
+    }
+    
+    /**
      * Roll for during the attack action
      * @param phase
      * @return
      */
     public Turn fightRoll(Combatant phase){
         int eRoll = MathUtils.random(1, 3); 
-        int pRoll = MathUtils.random(1, 3) + 1;
+        int pRoll = MathUtils.random(1, 4);
         
         if (isFoeStunned()) {
             eRoll = 1;
@@ -139,6 +155,30 @@ public class CombatHandler implements Telegraph {
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DAMAGE, dmg);
     }
     
+    protected void fightManual(int playerHits, int bossHits) {
+        //deal damage to entities
+        int pdmg = calcDamage(new Turn(0, playerHits, Combatant.Player));
+        int bdmg = calcDamage(new Turn(bossHits, 0, Combatant.Enemy));
+        
+        String pid = battleService.getPlayer().getComponent(Identifier.class).toString();
+        String bid = battleService.getBoss().getComponent(Identifier.class).toString();
+        
+        String notification;
+        notification = String.format("%s\n%s\n%s\n%s",
+                    pid,
+                    (bossHits <= 0) ? "Blocked the attack" : pdmg + " damage\n" + bossHits + " hits",
+                    bid,
+                    (playerHits <= 0) ? "Blocked the attack" : bdmg + " damage\n" + playerHits + " hits"
+                );
+        
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);
+        
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, battleService.getPlayer());
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DAMAGE, bdmg);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, battleService.getBoss());
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DAMAGE, pdmg);
+    }
+    
     /**
      * Player defends
      * @return true if player successfully defended against an enemy attack
@@ -183,4 +223,5 @@ public class CombatHandler implements Telegraph {
         }
         return false;
     }
+
 }

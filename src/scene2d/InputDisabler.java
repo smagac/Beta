@@ -17,6 +17,10 @@ public class InputDisabler implements Runnable {
     public static void swap() {
         instance.run();
     }
+    public static void clear() {
+        instance.saved = null;
+    }
+    
     InputProcessor saved;
     
     @Override

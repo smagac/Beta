@@ -4,6 +4,7 @@ import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.TabbedPane;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -249,7 +250,9 @@ public abstract class GameUI extends UI {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
                 if (focusList() == null) {
-                    setFocus(buttonList);
+                    if (buttonList != null) {
+                        setFocus(buttonList);
+                    }
                     return false;
                 }
 
@@ -259,7 +262,6 @@ public abstract class GameUI extends UI {
                 }
 
                 if (Input.CANCEL.match(keycode)) {
-                    setFocus(buttonList);
                     triggerAction(-1);
                     hidePointer();
                     return true;
@@ -296,6 +298,8 @@ public abstract class GameUI extends UI {
         hidePointer();
 
         act(0);
+        
+        resetFocus();
     }
 
     /**
@@ -335,6 +339,13 @@ public abstract class GameUI extends UI {
 
     public final void refreshButtons() {
         setButtons(defineButtons());
+    }
+    
+    public final void resetFocus() {
+        if (focusList() != null) {
+            focusList().setFocus(focusList().getActors().first());
+            setFocus(focusList().getFocused());
+        }
     }
 
     private final void setButtons(final String... butt) {
@@ -518,6 +529,7 @@ public abstract class GameUI extends UI {
     }
 
     public final void setFocus(Actor a) {
+        Gdx.app.log("Focus", "Focus has changed to " + a);
         setKeyboardFocus(a);
         setScrollFocus(a);
     }

@@ -138,19 +138,19 @@ public class CrossMenu extends Group
 		        }
 		        
 		        if (Input.UP.match(keycode)) {
-		            MessageDispatcher.getInstance().dispatchMessage(0, null, sm, Messages.Select, set.peekPrev());
+		            MessageDispatcher.getInstance().dispatchMessage(null, sm, Messages.Select, set.peekPrev());
 		            return true;
 		        }
 		        if (Input.DOWN.match(keycode)) {
-		            MessageDispatcher.getInstance().dispatchMessage(0, null, sm, Messages.Select, set.peekNext());
+		            MessageDispatcher.getInstance().dispatchMessage(null, sm, Messages.Select, set.peekNext());
 		            return true;
 		        }
 		        if (Input.ACCEPT.match(keycode)) {
-		            MessageDispatcher.getInstance().dispatchMessage(0, null, sm, Messages.Next, set.get());
+		            MessageDispatcher.getInstance().dispatchMessage(null, sm, Messages.Next, set.get());
 		            return true;
 		        }
 		        if (Input.CANCEL.match(keycode)) {
-		            MessageDispatcher.getInstance().dispatchMessage(0, null, sm, Messages.Prev);
+		            MessageDispatcher.getInstance().dispatchMessage(null, sm, Messages.Prev);
                     return true;
                 }
 		        return false;
@@ -421,6 +421,10 @@ public class CrossMenu extends Group
                 }
                 if (telegram.message == Messages.Next && telegram.extraInfo == entity.attackAuto) {
                     entity.ui.changeState(CombatStates.AUTO);
+                    return true;
+                }
+                if (telegram.message == Messages.Next && telegram.extraInfo == entity.attackManual) {
+                    entity.ui.changeState(CombatStates.MANUAL);
                     return true;
                 }
                 

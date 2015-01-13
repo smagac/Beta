@@ -25,6 +25,7 @@ public enum CombatStates implements State<BattleUI> {
                     entity.mainmenu.show();
                 }
             }), entity.mainmenu));
+            entity.setFocus(entity.mainmenu);
         }
         
         @Override
@@ -49,9 +50,41 @@ public enum CombatStates implements State<BattleUI> {
         }
 
         @Override
-        public void enter(BattleUI entity) {
-            // TODO Auto-generated method stub
+        public void enter(final BattleUI entity) {
+            final Runnable returnToState = new Runnable(){
+
+                @Override
+                public void run() {
+                    //advance the battle once both sides have attacked
+                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
+                    entity.changeState(MAIN);
+                }
+                
+            };
             
+            /*
+             * Pretty much everything can be done as soon as we enter
+             */
+            InputDisabler.swap();
+            
+            /*
+             * First we roll the dice, then show the values 
+             */
+            final Turn t = entity.combat.manualFightRoll(Combatant.Player);
+            
+            Runnable after = new Runnable() {
+
+                @Override
+                public void run() {
+                    entity.setFocus(entity.timeline);
+                    InputDisabler.swap();
+                    
+                    entity.buildTimeline(t, returnToState);
+                }
+                
+            };
+            
+            entity.playRollAnimation(t, Actions.run(after));
         }
         
     },

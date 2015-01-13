@@ -1,110 +1,131 @@
 
 battle.png
-size: 1024,128
+size: 1024,256
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 attack
   rotate: false
-  xy: 720, 86
+  xy: 196, 218
   size: 96, 32
   orig: 96, 32
   offset: 0, 0
   index: -1
 auto
   rotate: false
-  xy: 818, 52
+  xy: 2, 20
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 blessing
   rotate: false
-  xy: 2, 20
-  size: 128, 32
-  orig: 128, 32
+  xy: 2, 218
+  size: 192, 32
+  orig: 192, 32
   offset: 0, 0
   index: -1
 clouds
   rotate: false
-  xy: 2, 54
+  xy: 2, 152
   size: 128, 64
   orig: 128, 64
   offset: 0, 0
   index: -1
 d1
   rotate: false
-  xy: 132, 22
+  xy: 2, 54
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d2
   rotate: false
-  xy: 230, 22
+  xy: 132, 120
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d3
   rotate: false
-  xy: 328, 22
+  xy: 230, 120
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d4
   rotate: false
-  xy: 426, 22
+  xy: 328, 120
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d5
   rotate: false
-  xy: 524, 22
+  xy: 426, 120
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d6
   rotate: false
-  xy: 622, 22
+  xy: 524, 154
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 defend
   rotate: false
-  xy: 720, 52
+  xy: 294, 218
   size: 96, 32
   orig: 96, 32
   offset: 0, 0
   index: -1
+dice
+  rotate: false
+  xy: 622, 154
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
 force
   rotate: false
-  xy: 916, 86
+  xy: 524, 120
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
+hitbox
+  rotate: false
+  xy: 720, 186
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+hittri
+  rotate: false
+  xy: 786, 186
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
 item
   rotate: false
-  xy: 818, 86
+  xy: 392, 218
   size: 96, 32
   orig: 96, 32
   offset: 0, 0
   index: -1
 manual
   rotate: false
-  xy: 884, 52
+  xy: 852, 218
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 meter_active
   rotate: false
-  xy: 950, 68
+  xy: 720, 168
   size: 32, 16
   orig: 32, 16
   offset: 0, 0
@@ -118,14 +139,14 @@ meter_inactive
   index: -1
 modify
   rotate: false
-  xy: 720, 18
+  xy: 590, 120
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 sacrifice
   rotate: false
-  xy: 982, 86
+  xy: 490, 218
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

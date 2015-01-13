@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import github.nhydock.ssm.SceneManager;
+import scene2d.InputDisabler;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 import scenes.Messages;
@@ -55,7 +56,7 @@ enum TownState implements UIState {
         public void enter(TownUI ui) {
             ui.restore();
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.resetFocus();
         }
 
         @Override
@@ -187,7 +188,7 @@ enum TownState implements UIState {
 
             ui.setMessage("Tink Tink");
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.resetFocus();
         }
 
         @Override
@@ -269,7 +270,7 @@ enum TownState implements UIState {
 
             ui.setMessage("Where to?");
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.resetFocus();
         }
 
         @Override
@@ -419,7 +420,7 @@ enum TownState implements UIState {
 
                             })));
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.setFocus(null);
         }
 
         @Override
@@ -451,7 +452,7 @@ enum TownState implements UIState {
             ui.restore();
 
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.resetFocus();
         }
 
         @Override
@@ -507,8 +508,8 @@ enum TownState implements UIState {
 
         @Override
         public void enter(TownUI ui) {
-            InputMultiplexer input = (InputMultiplexer) Gdx.input.getInputProcessor();
-            input.removeProcessor(ui);
+            InputDisabler.swap();
+            InputDisabler.clear();
 
             ui.restore();
             ui.getRoot().clearListeners();
@@ -581,13 +582,11 @@ enum TownState implements UIState {
 
                     })));
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.resetFocus();
         }
 
         @Override
         public void exit(TownUI ui) {
-            ui.setFocus(ui.getButtonList());
-            ui.hidePointer();
         }
 
         @Override
@@ -660,6 +659,7 @@ enum TownState implements UIState {
                     entity.changeState(Explore);
                 }
             });
+            entity.resetFocus();
         }
         
         @Override

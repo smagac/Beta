@@ -116,6 +116,7 @@ public class TownUI extends GameUI {
     Group saveWindow;
     Array<Table> saveSlots;
     FocusGroup formFocus;
+    FocusGroup defaultFocus;
 
     public TownUI(AssetManager manager) {
         super(manager);
@@ -617,6 +618,10 @@ public class TownUI extends GameUI {
                     l = recentFileList;
                 }
 
+                if (l.getItems().size <= 0) {
+                    return false;
+                }
+                
                 if (Input.DOWN.match(keycode)) {
                     l.setSelectedIndex(Math.min(l.getItems().size - 1, l.getSelectedIndex() + 1));
                 }
@@ -906,6 +911,9 @@ public class TownUI extends GameUI {
         setMessage("What're we doing next?");
 
         MessageDispatcher.getInstance().addListener(this, Quest.Actions.Expired);
+        
+        defaultFocus = new FocusGroup(buttonList);
+        defaultFocus.addListener(focusListener);
     }
 
     private void loadDir(FileHandle external) {
@@ -1028,6 +1036,6 @@ public class TownUI extends GameUI {
         else if (menu.isInState(TownState.QuestMenu)) {
             return questGroup;
         }
-        return null;
+        return defaultFocus;
     }
 }

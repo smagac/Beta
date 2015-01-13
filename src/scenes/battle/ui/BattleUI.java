@@ -1,5 +1,7 @@
 package scenes.battle.ui;
 
+import java.util.Iterator;
+
 import github.nhydock.CollectionUtils;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
@@ -32,10 +34,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
+import core.common.Input;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.components.Stats;
@@ -65,7 +69,6 @@ public class BattleUI extends GameUI
      * Main menu
      */
     CrossMenu mainmenu;
-    FocusGroup mainFocus;
     
     /*
      * Goddess animation
@@ -100,6 +103,10 @@ public class BattleUI extends GameUI
     
     ParticleActor hitSplash;
     
+    Timeline timeline;
+    FocusGroup manualFocus;
+    FocusGroup mainFocus;
+    
     @Override
     protected void listenTo(IntSet messages)
     {
@@ -127,10 +134,10 @@ public class BattleUI extends GameUI
 	    mainmenu = new CrossMenu(skin, this);
         mainmenu.setPosition(getDisplayWidth(), getDisplayHeight()/2f);
         
-        mainFocus = new FocusGroup(mainmenu);
-        
         display.addActor(mainmenu);
-        setFocus(mainmenu);
+        
+        mainFocus = new FocusGroup(mainmenu);
+        manualFocus = new FocusGroup(timeline);
 	}
 	
 	/**
@@ -225,6 +232,14 @@ public class BattleUI extends GameUI
 	    hitSplash = new ParticleActor(pe);
 	    
 	    display.addActor(hitSplash);
+	    
+	    timeline = new Timeline();
+	    timeline.setSize(getDisplayWidth() - 20f, getDisplayHeight() - 20f);
+	    timeline.setPosition(10f, 10f);
+	    
+	    display.addActor(timeline);
+	    
+	    
 	}
 	
 	/**
@@ -448,11 +463,11 @@ public class BattleUI extends GameUI
         );
 	}
 	
-	protected Action hitAnimation(){
+	private Action hitAnimation(){
 	    return hitAnimation(CollectionUtils.randomChoice(DataDirs.Sounds.hit, DataDirs.Sounds.hit2));
 	}
 	
-	protected Action hitAnimation(String fx) {
+	private Action hitAnimation(String fx) {
 	    return Actions.sequence(
                     Actions.run(new PlaySound(fx)),
                     Actions.alpha(0f, .1f),
@@ -461,7 +476,7 @@ public class BattleUI extends GameUI
                 );
 	}
 	
-	private void playerAttackAnimation() {
+	protected void playerAttackAnimation() {
 	    hitSplash.setPosition(boss.getX(Align.center), boss.getY(Align.center));
 	    player.addAction(
             Actions.sequence(
@@ -475,7 +490,7 @@ public class BattleUI extends GameUI
         ));
 	}
 	
-	private void bossAttackAnimation() {
+	protected void bossAttackAnimation() {
 	    hitSplash.setPosition(player.getX(Align.center), player.getY(Align.center));
         boss.addAction(
             Actions.sequence(
@@ -504,8 +519,6 @@ public class BattleUI extends GameUI
                         
                         player.addAction(hitAnimation());
                     } else {
-                        hitSplash.setPosition(boss.getX(Align.center), boss.getY(Align.center));
-                        
                         boss.addAction(hitAnimation(DataDirs.Sounds.deflect));
                     }
                     
@@ -519,7 +532,7 @@ public class BattleUI extends GameUI
 	 * Show a dice roll
 	 * @param turn
 	 */
-	private void playRollAnimation(Turn turn, Action after){
+	protected void playRollAnimation(Turn turn, Action after){
 	    fader.clearActions();
 	    bossDie.clearActions();
 	    playerDie.clearActions();
@@ -558,6 +571,43 @@ public class BattleUI extends GameUI
         );
 	}
 	
+	/**
+	 * 
+	 * @param t
+	 */
+	protected void buildTimeline(Turn turn, Runnable after)
+	{
+	    timeline.set(turn);
+	    
+	    fader.clearActions();
+	    fader.addAction(
+            Actions.sequence(
+                Actions.alpha(0f),
+                Actions.alpha(.8f, .2f),
+                Actions.run(new Runnable(){
+
+                    @Override
+                    public void run() {
+                        timeline.start();
+                    }
+                    
+                }),
+                Actions.delay(timeline.duration),
+                Actions.alpha(0f, .2f),
+                
+                Actions.run(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        combat.fightManual(timeline.playerHits, timeline.bossHits);
+                    }
+                }),
+                Actions.delay(1.5f),
+                Actions.run(after)
+            )
+        );
+	}
+	
 	
 	@Override
 	protected void triggerAction(int index)
@@ -568,7 +618,10 @@ public class BattleUI extends GameUI
 	@Override
 	protected FocusGroup focusList()
 	{
-		return mainFocus;
+	    if (menu.getCurrentState() == CombatStates.MANUAL) {
+	        return manualFocus;
+	    }
+	    return mainFocus;
 	}
 
 	@Override
@@ -630,5 +683,246 @@ public class BattleUI extends GameUI
         display.addActor(notification);
     }
 
-    
+	private static class HitBox {
+        /**
+         * Maximum amount of seconds between hits
+         */
+        private static final float HIT_DELAY_MAX = .7f;
+        /**
+         * Minimum amount of seconds between hits
+         */
+        private static final float HIT_DELAY_MIN = .3f;
+        
+        /**
+         * Hit window that you have for safely hitting a box
+         */
+        private static final float HIT_WINDOW = .2f;
+        
+        private static final float ANIM_DURATION = 1.0f;
+        
+        final Actor hit;
+	    final Actor holder;
+        
+        final float spawnTime;
+        final Combatant who;
+        final float when;
+        
+        HitBox(float s, Actor a, Actor b, Combatant c) {
+            hit = a;
+            holder = b;
+            spawnTime = s;
+            who = c;
+            when = spawnTime + 1.0f;
+        }
+        
+        boolean hit(float time){
+            return (time >= when - HIT_WINDOW && 
+                time <= when + HIT_WINDOW);
+        }
+    }
+
+	/**
+	 * timelines are used for manually attacking
+	 * @author nhydock
+	 *
+	 */
+    private class Timeline extends Group {
+        
+        HitBox head;
+        
+        Array<HitBox> hitpoints;
+        Iterator<HitBox> hitpointIter;
+        
+        float time;
+        float duration;
+        
+        /*
+         * Accumulated dealt hits by each side
+         */
+        int playerHits;
+        int bossHits;
+        
+        Timeline(){
+            super();
+            hitpoints = new Array<HitBox>();
+            
+            addListener(new InputListener(){
+                @Override
+                public boolean keyDown(InputEvent evt, int keycode) {
+                    if (head != null) {
+                        if (time < head.spawnTime){
+                            return false;
+                        }
+                        System.out.println("time: " + time);
+                        if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
+                            head.hit.clearActions();
+                            head.holder.clearActions();
+                            if (head.hit(time) && 
+                                ((Input.ACCEPT.match(keycode) && head.who == Combatant.Player) ||
+                                 (Input.CANCEL.match(keycode) && head.who == Combatant.Enemy))) {
+                                audio.playSfx(DataDirs.Sounds.accept);
+                                if (head.who == Combatant.Player) {
+                                    playerAttackAnimation();
+                                    playerHits++;
+                                } else {
+                                    player.addAction(hitAnimation(DataDirs.Sounds.deflect));
+                                }
+                                head.hit.setRotation(0);
+                                head.hit.setScale(1);
+                                head.hit.setColor(1,1,1,1);
+                            } else {
+                                audio.playSfx(DataDirs.Sounds.tick);
+                                if (head.who == Combatant.Enemy) {
+                                    bossAttackAnimation();
+                                    bossHits++;
+                                }
+                            }
+                            head.hit.addAction(
+                                Actions.sequence(
+                                    Actions.alpha(0f, .2f),
+                                    Actions.removeActor()
+                                )
+                            );
+                            head.holder.addAction(
+                                Actions.sequence(
+                                    Actions.parallel(
+                                        Actions.scaleTo(.4f, .4f, .2f),
+                                        Actions.alpha(0f, .2f)
+                                    ),
+                                    Actions.delay(.2f),
+                                    Actions.removeActor()
+                                )
+                            );
+                            if (hitpointIter.hasNext()) {
+                                head = hitpointIter.next();
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+        }
+        
+        public void set(Turn t) {
+            hitpoints.clear();
+            
+            playerHits = 0;
+            bossHits = 0;
+            
+            int eHits = t.bossRoll;
+            int pHits = t.playerRoll;
+            int total = eHits + pHits;
+            
+            float delay = 0;
+            duration = 0;
+            
+            while (total > 0) {
+                Combatant c;
+                if (eHits > 0) {
+                    if (pHits > 0) {
+                        c = MathUtils.randomBoolean() ? Combatant.Enemy : Combatant.Player;
+                    } else {
+                        c = Combatant.Enemy;
+                    }
+                } else {
+                    c = Combatant.Player;
+                }
+                
+                if (c == Combatant.Enemy) {
+                    eHits--;
+                } else {
+                    pHits--;
+                }
+                
+                
+                delay += MathUtils.random(HitBox.HIT_DELAY_MIN, HitBox.HIT_DELAY_MAX);
+                
+                Actor holder = new Image(skin, (c == Combatant.Player) ? "hitbox" : "hittri");
+                holder.setPosition(MathUtils.random(64f, getWidth() - 64f), MathUtils.random(64f, getHeight()-64f));
+                holder.setOrigin(Align.center);
+                holder.setScale(1f);
+                holder.setColor(1,1,1,0f);
+                addActor(holder);
+                 
+                
+                Actor hit = new Image(skin, (c == Combatant.Player) ? "hitbox" : "hittri");
+                hit.setPosition(holder.getX(), holder.getY());
+                hit.setOrigin(Align.center);
+                hit.setScale(10f);
+                hit.setColor(1,1,1,0f);
+                hit.setRotation(360f);
+                    
+                final HitBox hb = new HitBox(delay, hit, holder, c);
+                
+                hit.addAction(
+                    Actions.sequence(
+                        Actions.delay(hb.spawnTime),
+                        Actions.parallel(
+                            Actions.alpha(1f, HitBox.ANIM_DURATION * .5f),
+                            Actions.rotateTo(0, HitBox.ANIM_DURATION),
+                            Actions.scaleTo(1, 1, HitBox.ANIM_DURATION)
+                        ),
+                        Actions.delay(HitBox.ANIM_DURATION),
+                        Actions.alpha(0f, HitBox.HIT_WINDOW),
+                        Actions.run(new Runnable(){
+
+                            @Override
+                            public void run() {
+                                if (hb.who == Combatant.Enemy){
+                                    bossHits++;
+                                    bossAttackAnimation();
+                                }
+                            }
+                            
+                        }),
+                        Actions.removeActor()
+                    )
+                );
+                
+                holder.addAction(
+                    Actions.sequence(
+                        Actions.delay(hb.spawnTime),
+                        Actions.alpha(.5f, .15f),
+                        Actions.delay(HitBox.ANIM_DURATION),
+                        Actions.alpha(0f, HitBox.HIT_WINDOW),
+                        Actions.removeActor()
+                    )
+                );
+                
+                addActor(holder);
+                addActor(hit);
+                
+                hitpoints.add(hb);
+                
+                total--;
+                
+            }
+            
+            duration = hitpoints.peek().when + HitBox.HIT_WINDOW + .2f;
+            head = null;
+        }
+        
+        public void start() {
+            
+            hitpointIter = new Array.ArrayIterator<HitBox>(hitpoints);
+            head = hitpointIter.next();
+            time = 0;
+        }
+        
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+            if (head != null) {
+                this.time += delta;
+                if (this.time > head.when + HitBox.HIT_WINDOW) {
+                    if (hitpointIter.hasNext()) {
+                        head = hitpointIter.next();                    
+                    } else {
+                        head = null;
+                    }
+                }
+            }
+        }
+    }
 }

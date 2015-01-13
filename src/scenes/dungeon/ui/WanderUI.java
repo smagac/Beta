@@ -96,6 +96,7 @@ public class WanderUI extends GameUI {
     // services
     @Inject public IPlayerContainer playerService;
     @Inject public IDungeonContainer dungeonService;
+    private FocusGroup defaultGroup;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -606,6 +607,8 @@ public class WanderUI extends GameUI {
                 }
             }
         });
+        
+        defaultGroup = new FocusGroup(buttonList);
     }
 
     @Override
@@ -823,7 +826,7 @@ public class WanderUI extends GameUI {
         if (menu.isInState(WanderState.Sacrifice_Heal) || menu.isInState(WanderState.Sacrifice_Leave)) {
             return sacrificeGroup;
         }
-        return null;
+        return defaultGroup;
     }
 
     @Override
