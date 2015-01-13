@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import github.nhydock.CollectionUtils;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Entity;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
@@ -47,6 +49,7 @@ import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Item;
 import core.service.interfaces.IBattleContainer;
+import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.TsxTileSet;
 import scene2d.PlaySound;
@@ -651,6 +654,34 @@ public class BattleUI extends GameUI
 	protected void triggerAction(int index)
 	{
 	    //shouldn't happen since we don't use the default buttons in this scene
+	}
+	
+	@Override
+	public boolean handleMessage(Telegram msg) {
+	    if (msg.message == Messages.Battle.VICTORY) {
+	        //TODO show victory message
+	        
+	        //reward player with points
+	        Entity player = battleService.getPlayer();
+	        Entity boss = battleService.getBoss();
+	        
+	        Stats playerStats = player.getComponent(Stats.class);
+	        playerStats.exp += boss.getComponent(Stats.class).getExp();
+	        if (playerStats.canLevelUp()) {
+	            
+	        }
+	        
+	        //Victory should be followed up with going back to the dungeon
+	        // and removing the boss from the dungeon
+	        IDungeonContainer d = ServiceManager.getService(IDungeonContainer.class);
+	        d.getEngine().removeEntity(battleService.getBoss());
+	        SceneManager.switchToScene("dungeon");
+	        
+	    } else if (msg.message == Messages.Battle.DEFEAT){
+	        //TODO fade out screen and return home
+	        
+	    }
+	    return super.handleMessage(msg);
 	}
 
 	@Override

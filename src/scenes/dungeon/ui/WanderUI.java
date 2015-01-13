@@ -80,16 +80,6 @@ public class WanderUI extends GameUI {
     private ScrollPane lootPane;
     private ScrollPane sacrificePane;
     private FocusGroup sacrificeGroup;
-
-    // level up dialog
-    Group levelUpDialog;
-    int points;
-    private Label pointLabel;
-    LabeledTicker<Integer> strTicker;
-    LabeledTicker<Integer> defTicker;
-    LabeledTicker<Integer> spdTicker;
-    LabeledTicker<Integer> vitTicker;
-    FocusGroup levelUpGroup;
     
     ParticleActor weather;
 
@@ -433,135 +423,6 @@ public class WanderUI extends GameUI {
             goddessDialog.addAction(Actions.alpha(0f));
         }
 
-        // level up dialog
-        {
-
-            levelUpGroup = new FocusGroup();
-            levelUpGroup.setVisible(false);
-
-            levelUpDialog = UI.makeWindow(skin, 500, 480, true);
-            levelUpDialog.setPosition(getWidth() / 2 - levelUpDialog.getWidth() / 2, getHeight());
-            levelUpDialog.setVisible(false);
-
-            final Table window = new Table();
-            window.setFillParent(true);
-            window.center().top().pack();
-
-            Label prompt = new Label("You've Leveled Up!", skin, "prompt");
-            prompt.setAlignment(Align.center);
-            window.add(prompt).expandX().fillX().padBottom(20).colspan(3);
-            window.row();
-
-            pointLabel = new Label("Points 0", skin, "prompt");
-            pointLabel.setAlignment(Align.center);
-
-            @SuppressWarnings("rawtypes")
-            LabeledTicker[] tickers = new LabeledTicker[4];
-            tickers[0] = strTicker = new LabeledTicker<Integer>("Strength", new Integer[] { 0 }, skin);
-            tickers[1] = defTicker = new LabeledTicker<Integer>("Defense", new Integer[] { 0 }, skin);
-            tickers[2] = spdTicker = new LabeledTicker<Integer>("Speed", new Integer[] { 0 }, skin);
-            tickers[3] = vitTicker = new LabeledTicker<Integer>("Vitality", new Integer[] { 0 }, skin);
-            for (final LabeledTicker<Integer> ticker : tickers) {
-                ticker.setLeftAction(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        audio.playSfx(DataDirs.Sounds.tick);
-                        if (ticker.getValueIndex() > 0) {
-                            ticker.defaultLeftClick.run();
-                            setPoints(points + 1);
-                        }
-                    }
-
-                });
-                ticker.setRightAction(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        audio.playSfx(DataDirs.Sounds.tick);
-                        if (ticker.getValueIndex() < ticker.length() && points > 0) {
-                            ticker.defaultRightClick.run();
-                            setPoints(points - 1);
-                        }
-                    }
-
-                });
-
-                window.center();
-                window.add(ticker).expandX().fillX().pad(0, 50f, 10f, 50f).colspan(3);
-                window.row();
-
-                levelUpGroup.add(ticker);
-            }
-
-            window.add(pointLabel).expandX().fillX().colspan(3);
-            levelUpDialog.addActor(window);
-
-            final TextButton accept = new TextButton("START", skin);
-            accept.align(Align.center);
-            accept.setSize(80, 32);
-            accept.pad(5);
-            accept.setPosition(levelUpDialog.getWidth() / 2 - accept.getWidth() / 2, 10f);
-
-            accept.addListener(new InputListener() {
-                @Override
-                public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                    accept.setChecked(true);
-                }
-
-                @Override
-                public void exit(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                    accept.setChecked(false);
-                }
-
-                @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                    if (points > 0) {
-                        audio.playSfx(DataDirs.Sounds.accept);
-                        return false;
-                    }
-
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                    return true;
-                }
-            });
-            levelUpDialog.addActor(accept);
-            levelUpDialog.addListener(new InputListener() {
-                @Override
-                public boolean keyDown(InputEvent evt, int keycode) {
-                    if (Input.DOWN.match(keycode)) {
-                        levelUpGroup.next();
-                        return true;
-                    }
-                    if (Input.UP.match(keycode)) {
-                        levelUpGroup.prev();
-                        return true;
-                    }
-                    if (Input.ACCEPT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                        return true;
-                    }
-                    return false;
-                }
-            });
-            levelUpGroup.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    if (focusList() == null)
-                        return;
-
-                    Actor a = focusList().getFocused();
-                    setFocus(a);
-
-                    showPointer(a, Align.left, Align.center);
-                }
-            });
-
-            addActor(levelUpDialog);
-            addActor(levelUpGroup);
-
-            MessageDispatcher.getInstance().addListener(this, Quest.Actions.Notify);
-        }
 
         // key listener for moving the character by pressing the arrow keys or
         // WASD
@@ -820,9 +681,6 @@ public class WanderUI extends GameUI {
 
     @Override
     protected FocusGroup focusList() {
-        if (levelUpDialog.isVisible()) {
-            return levelUpGroup;
-        }
         if (menu.isInState(WanderState.Sacrifice_Heal) || menu.isInState(WanderState.Sacrifice_Leave)) {
             return sacrificeGroup;
         }
@@ -860,9 +718,5 @@ public class WanderUI extends GameUI {
         }
     }
 
-    protected void setPoints(int points) {
-        this.points = points;
-        this.pointLabel.setText(String.format("Points %d", points));
-    }
 
 }

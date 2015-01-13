@@ -115,9 +115,6 @@ public enum WanderState implements UIState {
             else if (telegram.message == Messages.Dungeon.Refresh) {
                 entity.refresh((Progress) telegram.extraInfo);
             }
-            else if (telegram.message == Messages.Dungeon.LevelUp) {
-                entity.changeState(WanderState.LevelUp);
-            }
             return false;
         }
 
@@ -313,95 +310,6 @@ public enum WanderState implements UIState {
             return false;
         }
 
-    },
-    LevelUp() {
-
-        private static final int POINTS_REWARDED = 5;
-
-        @Override
-        public void enter(WanderUI entity) {
-            entity.hideGoddess();
-            entity.levelUpGroup.setFocus(entity.levelUpGroup.getActors().first());
-
-            entity.setPoints(POINTS_REWARDED);
-
-            Stats s = entity.playerService.getPlayer().getComponent(Stats.class);
-            Integer[] str = new Integer[POINTS_REWARDED + 1];
-            Integer[] def = new Integer[POINTS_REWARDED + 1];
-            Integer[] spd = new Integer[POINTS_REWARDED + 1];
-            Integer[] vit = new Integer[POINTS_REWARDED + 1];
-            for (int i = 0; i < POINTS_REWARDED + 1; i++) {
-                str[i] = s.getStrength() + i;
-                def[i] = s.getDefense() + i;
-                spd[i] = s.getEvasion() + i;
-                vit[i] = s.getVitality() + i;
-            }
-            ;
-
-            entity.strTicker.changeValues(str);
-            entity.defTicker.changeValues(def);
-            entity.spdTicker.changeValues(spd);
-            entity.vitTicker.changeValues(vit);
-
-            entity.levelUpDialog.setVisible(true);
-            entity.levelUpGroup.setVisible(true);
-            entity.levelUpDialog.addAction(Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight() / 2
-                    - entity.levelUpDialog.getHeight() / 2, .3f));
-            entity.levelUpDialog.setTouchable(Touchable.enabled);
-
-            entity.setFocus(entity.levelUpDialog);
-        }
-
-        @Override
-        public void exit(final WanderUI entity) {
-            entity.levelUpDialog.addAction(Actions.sequence(Actions.run(new Runnable() {
-
-                @Override
-                public void run() {
-                    entity.changeState(WanderState.Wander);
-                    entity.hidePointer();
-                    entity.setFocus(null);
-                }
-
-            }), Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight(), .3f), Actions.run(new Runnable() {
-
-                @Override
-                public void run() {
-                    entity.levelUpDialog.setVisible(false);
-                }
-
-            })));
-            entity.levelUpDialog.setTouchable(Touchable.disabled);
-            entity.playerService.getPlayer().getComponent(Stats.class).levelUp(
-                    new int[] { entity.strTicker.getValue(), entity.defTicker.getValue(), entity.spdTicker.getValue(),
-                            entity.vitTicker.getValue() });
-            entity.strTicker.setValue(0);
-            entity.defTicker.setValue(0);
-            entity.spdTicker.setValue(0);
-            entity.vitTicker.setValue(0);
-            entity.points = 0;
-            entity.audio.playSfx(DataDirs.Sounds.accept);
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return null;
-        }
-
-        @Override
-        public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Interface.Close) {
-                if (entity.points > 0) {
-                    entity.audio.playSfx(DataDirs.Sounds.tick);
-                    return false;
-                }
-                else {
-                    entity.changeState(Wander);
-                    return true;
-                }
-            }
-            return false;
-        }
     };
 
     @Override
