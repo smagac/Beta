@@ -230,54 +230,13 @@ enum TownState implements UIState {
                     }
                     // show helpful tip after first item has been made!
                     else if (count == 0 && made) {
-                        int hint = MathUtils.random(3);
-                        String[] text = null;
-                        if (hint == 0) {
-                            text = new String[] {
-                                    "Hooray~  You crafted something for me!",
-                                    "For actually going through with all this and actually helping me, let me tell you a secret!",
-                                    "If you press any button between 0-9 you can change the color of the world!",
-                                    "And if you press + or - you can change the contrast of those colors~",
-                                    "You can do this at any point in time in the world of StoryMode, even during the intro scene!",
-                                    "Hope you have fun with this secret!  Goodbye~" };
-                        }
-                        else if (hint == 1) {
-                            text = new String[] {
-                                    "Hooray~  You crafted something for me!",
-                                    "For actually going through with all this and actually helping me, let me tell you a secret!",
-                                    "The great developer of your reality kind of forgot to remove debug keys from your world",
-                                    "Pressing F5 will soft reset your world back to the introduction sequence.",
-                                    "This can be helpful if your current difficulty is too hard or you want to start over to get a good score",
-                                    "You can do this at any point in time in the world of StoryMode!",
-                                    "Though I don't know why you'd want to use it before you've even really started the game.",
-                                    "Hope you have fun with this secret!  Goodbye~" };
-                        }
-                        else if (hint == 2) {
-                            text = new String[] {
-                                    "Hooray~  You crafted something for me!",
-                                    "For actually going through with all this and actually helping me, let me tell you a secret!",
-                                    "The great developer of your reality kind of forgot to remove debug keys from your world",
-                                    "Pressing F9 will immediately kill the application",
-                                    "He calls it \"The Boss Key\" and told me once it's a homage to DOS Games. Whatever that means.",
-                                    "You can do this at any point in time in the world of StoryMode!",
-                                    "Be warned as it's a bit dangerous to use!  Hopefully you won't accidentally bump the key at any point in time~",
-                                    "Hope you have fun with this secret!  Goodbye~" };
-                        }
-                        else {
-                            text = new String[] {
-                                    "Hooray~  You crafted something for me!",
-                                    "For actually going through with all this and actually helping me, let me tell you a secret!",
-                                    "The great developer of your reality kind of forgot to remove debug keys from your world",
-                                    "Pressing F6 will immediately throw you into a game session of level 3 difficulty.",
-                                    "It's great if you want to skip the cool cinematic and my blabbering mouth at the beginning of the game.",
-                                    "Though I don't know why you'd ever want to do that!",
-                                    "Like most other secrets, you can use this key at any point in the world of StoryMode!",
-                                    "Hope you have fun with this secret!  Goodbye~" };
-                        }
-
+                        Array<FileHandle> files = DataDirs.getChildrenHandles(Gdx.files.classpath(DataDirs.GameData + "hints/"));
+                        FileHandle file = files.random();
+                        String[] hint = file.readString().split("\n");
+                        
                         // modify telegram to include text
                         Object info = t.extraInfo;
-                        t.extraInfo = text;
+                        t.extraInfo = hint;
                         GoddessDialog.onMessage(ui, t);
                         t.extraInfo = info;
 

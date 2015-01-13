@@ -35,7 +35,7 @@ public final class DataDirs {
      * by reading a list of files in the directory from a text file.
      * @param directory - directory we want the children from.  
      *      Must have a "list" file inside it to read.
-     * @return an array of file handles
+     * @return an array of file paths as strings
      */
     public static Array<String> getChildren(FileHandle directory) {
         Array<String> files = new Array<String>();
@@ -44,6 +44,25 @@ public final class DataDirs {
             while (s.hasNextLine()) {
                 String file = s.nextLine().trim();
                 files.add(directory.child(file).path());
+            }
+        }
+        return files;
+    }
+    
+    /**
+     * Allows getting a specified list of children in an internal directory
+     * by reading a list of files in the directory from a text file.
+     * @param directory - directory we want the children from.  
+     *      Must have a "list" file inside it to read.
+     * @return an array of file handles
+     */
+    public static Array<FileHandle> getChildrenHandles(FileHandle directory) {
+        Array<FileHandle> files = new Array<FileHandle>();
+        FileHandle listFile = directory.child("list");
+        try (Scanner s = new Scanner(listFile.read())) {
+            while (s.hasNextLine()) {
+                String file = s.nextLine().trim();
+                files.add(directory.child(file));
             }
         }
         return files;
