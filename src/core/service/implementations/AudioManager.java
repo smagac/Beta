@@ -1,15 +1,23 @@
 package core.service.implementations;
 
+import github.nhydock.ssm.Inject;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import core.service.interfaces.IAudioManager;
+import core.service.interfaces.ISharedResources;
 
 public class AudioManager implements IAudioManager {
 
+    @Inject public ISharedResources shared;
+    
     // currently playing bgm
     private Music bgm;
     
@@ -127,5 +135,23 @@ public class AudioManager implements IAudioManager {
     @Override
     public void playSfx(Sound sound, float vol) {
         sound.play(vol * getSFXVol());
+    }
+
+    @Override
+    public void playSfx(String sound) {
+        Sound fx;
+        try {
+            fx = shared.getResource(sound, Sound.class);
+        } catch (GdxRuntimeException e) {
+            fx = Gdx.audio.newSound(Gdx.files.internal(sound));
+        }
+        playSfx(fx);
+    }
+
+    @Override
+    public void playSfx(FileHandle sound) {
+        Sound fx;
+        fx = Gdx.audio.newSound(sound);
+        playSfx(fx);
     }
 }

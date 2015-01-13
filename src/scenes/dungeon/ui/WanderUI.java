@@ -33,6 +33,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
@@ -94,7 +96,13 @@ public class WanderUI extends GameUI {
     // services
     @Inject public IPlayerContainer playerService;
     @Inject public IDungeonContainer dungeonService;
-
+    
+    @Override
+    protected void listenTo(IntSet messages) {
+        super.listenTo(messages);
+        messages.addAll(Messages.Dungeon.LevelUp);
+    }
+    
     public WanderUI(AssetManager manager) {
         super(manager);
 
@@ -457,7 +465,7 @@ public class WanderUI extends GameUI {
 
                     @Override
                     public void run() {
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.tick);
                         if (ticker.getValueIndex() > 0) {
                             ticker.defaultLeftClick.run();
                             setPoints(points + 1);
@@ -469,7 +477,7 @@ public class WanderUI extends GameUI {
 
                     @Override
                     public void run() {
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.tick);
                         if (ticker.getValueIndex() < ticker.length() && points > 0) {
                             ticker.defaultRightClick.run();
                             setPoints(points - 1);
@@ -508,7 +516,7 @@ public class WanderUI extends GameUI {
                 @Override
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     if (points > 0) {
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.accept);
                         return false;
                     }
 
@@ -853,4 +861,5 @@ public class WanderUI extends GameUI {
         this.points = points;
         this.pointLabel.setText(String.format("Points %d", points));
     }
+
 }

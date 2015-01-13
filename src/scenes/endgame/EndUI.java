@@ -252,7 +252,7 @@ public class EndUI extends UI {
                     @Override
                     public void run() {
                         done.clearListeners();
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.tick);
                     }
 
                 }), Actions.alpha(0f, .5f), Actions.run(new Runnable() {
@@ -336,7 +336,7 @@ public class EndUI extends UI {
 
                             @Override
                             public void run() {
-                                audio.playSfx(shared.getResource(DataDirs.Sounds.shimmer, Sound.class));
+                                audio.playSfx(DataDirs.Sounds.shimmer);
                             }
 
                         }), Actions.moveTo(goddess.getX(), getHeight() + 128f, .4f)))));

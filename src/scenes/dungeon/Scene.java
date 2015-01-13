@@ -8,14 +8,12 @@ import scenes.dungeon.ui.WanderUI;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -59,7 +57,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     public IBattleContainer battleService;
 
     private boolean descending;
-    protected Sound hitSound;
 
     private DungeonParams params;
     
@@ -240,7 +237,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         playerService.getInventory().abandon();
 
         Tracker.NumberValues.Times_Died.increment();
-        audio.playSfx(shared.getResource(DataDirs.Sounds.dead, Sound.class));
+        audio.playSfx(DataDirs.Sounds.dead);
     }
 
     protected void leave() {
@@ -281,7 +278,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         wanderUI.init();
         ui = wanderUI;
-        hitSound = shared.getResource(DataDirs.Sounds.hit, Sound.class);
         // ui.levelUp();
 
         DungeonParam param = new DungeonParam();
@@ -319,7 +315,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
      * Send a message to the UI that the player has leveled up
      */
     public void levelUp() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.LevelUp);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
     }
     
     /**

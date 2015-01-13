@@ -20,10 +20,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import core.DataDirs;
 import core.common.Storymode;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.ISharedResources;
@@ -40,11 +43,13 @@ public abstract class UI extends Stage implements Telegraph {
 
     @Inject public ISharedResources shared;
     @Inject public IAudioManager audio;
+
+    private IntSet messages;
     
     public UI(AssetManager manager) {
         super(viewport);
         this.manager = manager;
-        fill = new Image(new Texture(Gdx.files.internal("data/fill.png")));
+        fill = new Image(new Texture(Gdx.files.internal(DataDirs.Home + "fill.png")));
 
         fill.setFillParent(true);
         this.addActor(fill);
@@ -52,8 +57,32 @@ public abstract class UI extends Stage implements Telegraph {
         load();
         ServiceManager.inject(this);
         
-        for (int msg : listen()) {
-            MessageDispatcher.getInstance().addListener(this, msg);
+        messages = new IntSet();
+        listenTo(messages);
+        listen();
+    }
+    
+    protected void listenTo(IntSet messages){}
+    
+    /**
+     * Add this UI as a listener of all of its message types
+     */
+    private final void listen(){
+        IntSetIterator iter = messages.iterator();
+        iter.reset();
+        while (iter.hasNext) {
+            MessageDispatcher.getInstance().addListener(this, iter.next());
+        }
+    }
+    
+    /**
+     * Remove this UI as a listener to any of its messages
+     */
+    private final void deafen(){
+        IntSetIterator iter = messages.iterator();
+        iter.reset();
+        while (iter.hasNext) {
+            MessageDispatcher.getInstance().removeListener(this, iter.next());
         }
     }
 
@@ -193,9 +222,7 @@ public abstract class UI extends Stage implements Telegraph {
     public void dispose() {
         super.dispose();
         ServiceManager.unhook(this);
-        for (int msg : listen()) {
-            MessageDispatcher.getInstance().removeListener(this, msg);
-        }
+        deafen();
     }
 
     /**
@@ -223,13 +250,5 @@ public abstract class UI extends Stage implements Telegraph {
     public final void act(float delta) {
         update(delta);
         super.act(delta);
-    }
-    
-    /**
-     * Get the list of all message types this ui will listen for
-     * @return
-     */
-    protected int[] listen(){
-        return new int[0];
     }
 }

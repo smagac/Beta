@@ -380,7 +380,7 @@ public enum WanderState implements UIState {
             entity.spdTicker.setValue(0);
             entity.vitTicker.setValue(0);
             entity.points = 0;
-            entity.getManager().get(DataDirs.Sounds.accept, Sound.class).play();
+            entity.audio.playSfx(DataDirs.Sounds.accept);
         }
 
         @Override
@@ -392,7 +392,7 @@ public enum WanderState implements UIState {
         public boolean onMessage(WanderUI entity, Telegram telegram) {
             if (telegram.message == Messages.Interface.Close) {
                 if (entity.points > 0) {
-                    entity.getManager().get(DataDirs.Sounds.tick, Sound.class).play();
+                    entity.audio.playSfx(DataDirs.Sounds.tick);
                     return false;
                 }
                 else {

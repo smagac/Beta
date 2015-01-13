@@ -20,6 +20,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Array;
 
+import core.DataDirs;
 import core.common.Tracker;
 import core.components.Combat;
 import core.components.Identifier;
@@ -198,7 +199,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         RenderSystem rs = engine.getSystem(RenderSystem.class);
 
         if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
-            parentScene.hitSound.play();
+            parentScene.audio.playSfx(DataDirs.Sounds.hit);
             float chance = MathUtils.random(.8f, MULT);
             int dmg = Math.max(0, (int) (chance * aStats.getStrength()) - bStats.getDefense());
             bStats.hp = Math.max(0, bStats.hp - dmg);

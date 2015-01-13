@@ -30,6 +30,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.badlogic.gdx.utils.IntSet;
 
 import core.DataDirs;
 import core.common.Input;
@@ -78,6 +79,19 @@ public abstract class GameUI extends UI {
     public IPlayerContainer playerService;
 
     protected StateMachine menu;
+    
+    //prepare these beforehand
+    @Override
+    protected void listenTo(IntSet messages)
+    {
+        messages.addAll(
+            Messages.Interface.Notify, 
+            Messages.Interface.Selected, 
+            Messages.Interface.Close,   
+            Messages.Interface.Button,
+            TabbedPane.Messages.ChangeTabs
+        );
+    }
 
     public GameUI(AssetManager manager) {
         super(manager);
@@ -217,7 +231,7 @@ public abstract class GameUI extends UI {
                         return true;
                     }
                     if (Input.ACCEPT.match(keycode)) {
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.accept);
                         triggerAction(getIndex());
                         hidePointer();
                         return true;
@@ -282,17 +296,6 @@ public abstract class GameUI extends UI {
         hidePointer();
 
         act(0);
-    }
-    
-    @Override
-    protected int[] listen(){
-        return new int[]{
-             Messages.Interface.Notify,
-             Messages.Interface.Selected,
-             Messages.Interface.Close,
-             Messages.Interface.Button,
-             TabbedPane.Messages.ChangeTabs
-        };
     }
 
     /**
@@ -360,7 +363,7 @@ public abstract class GameUI extends UI {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.accept);
                         triggerAction(index);
                     }
                     return false;

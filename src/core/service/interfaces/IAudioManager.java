@@ -2,6 +2,7 @@ package core.service.interfaces;
 
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 
 import github.nhydock.ssm.Service;
 
@@ -101,4 +102,16 @@ public interface IAudioManager extends Service {
     public void playSfx(Sound sound, int vol, float pitch, int pan);
 
     public void playSfx(Sound sound, float vol);
+
+    /**
+     * Shorthand method, can be used to load and play a file at the same time
+     * @param sound
+     */
+    public void playSfx(String sound);
+    
+    /**
+     * Shorthand method, can be used to load and play a file at the same time
+     * @param sound
+     */
+    public void playSfx(FileHandle sound);
 }

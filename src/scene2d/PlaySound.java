@@ -3,9 +3,6 @@ package scene2d;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.ISharedResources;
@@ -17,14 +14,14 @@ import core.service.interfaces.ISharedResources;
  */
 public class PlaySound implements Runnable {
 
+    private Sound sfx;
+    
     /**
      * Creates a new runnable that plays the input sound effect object
      * @param sfx
      */
-    public static PlaySound create(Sound sfx) {
-        PlaySound play = new PlaySound();
-        play.setSfx(sfx);
-        return play;
+    public PlaySound(Sound fx){
+        sfx = fx;
     }
     
     /**
@@ -32,22 +29,8 @@ public class PlaySound implements Runnable {
      * Files specified this way are loaded using the system's Shared Resource manager
      * @param path
      */
-    public static PlaySound create(String path) {
-        Sound sfx = ServiceManager.getService(ISharedResources.class).getResource(path, Sound.class);
-        PlaySound play = new PlaySound();
-        play.setSfx(sfx);
-        return play;
-    }
-    
-
-    private Sound sfx;
-    
-    private PlaySound(){
-        
-    }
-    
-    private void setSfx(Sound sfx) {
-        this.sfx = sfx;
+    public PlaySound(String file) {
+        sfx = ServiceManager.getService(ISharedResources.class).getResource(file, Sound.class);
     }
     
     @Override

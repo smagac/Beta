@@ -32,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
@@ -99,7 +100,14 @@ public class BattleUI extends GameUI
     
     ParticleActor hitSplash;
     
-	public BattleUI(AssetManager manager, TiledMapTileSet environment)
+    @Override
+    protected void listenTo(IntSet messages)
+    {
+        super.listenTo(messages);
+        messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT);
+    }
+	
+    public BattleUI(AssetManager manager, TiledMapTileSet environment)
 	{
 		super(manager);
 		menu = new DefaultStateMachine<BattleUI>(this);
@@ -108,11 +116,6 @@ public class BattleUI extends GameUI
 		
 	}
 	
-	@Override
-	public int[] listen() {
-	    return new int[]{Messages.Battle.VICTORY, Messages.Battle.DEFEAT};
-	}
-
 	@Override
 	protected void extend()
 	{
@@ -376,7 +379,7 @@ public class BattleUI extends GameUI
 	            Actions.alpha(1f),
 	            Actions.delay(4f),
 	            Actions.moveToAligned(200f, getDisplayHeight()/2f, Align.center, .2f, Interpolation.circleOut),
-	            Actions.run(PlaySound.create(DataDirs.Sounds.charge)),
+	            Actions.run(new PlaySound(DataDirs.Sounds.charge)),
                 Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
                 Actions.scaleTo(1.0f, 1.0f, .1f, Interpolation.circleOut),
                 Actions.scaleTo(1.5f, 1.5f, .1f, Interpolation.circleOut),
@@ -406,7 +409,7 @@ public class BattleUI extends GameUI
                 Actions.addAction(
                     Actions.sequence(
                         Actions.sizeTo(192f, 0f),
-                        Actions.run(PlaySound.create(DataDirs.Sounds.blast)),
+                        Actions.run(new PlaySound(DataDirs.Sounds.blast)),
                         Actions.moveTo(boss.getX(Align.center)-64f, getDisplayHeight()),
                         Actions.parallel(
                             Actions.sizeBy(0, getDisplayHeight() - boss.getY(), .4f, Interpolation.circleOut),
@@ -451,7 +454,7 @@ public class BattleUI extends GameUI
 	
 	protected Action hitAnimation(String fx) {
 	    return Actions.sequence(
-                    Actions.run(PlaySound.create(fx)),
+                    Actions.run(new PlaySound(fx)),
                     Actions.alpha(0f, .1f),
                     Actions.run(new ResetParticle(hitSplash)),
                     Actions.alpha(1f, .1f)

@@ -148,7 +148,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Explore);
-                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                            audio.playSfx(DataDirs.Sounds.accept);
                         }
                         return true;
                     }
@@ -170,7 +170,7 @@ public class TownUI extends GameUI {
 
                         if (menu.isInState(TownState.Main)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Sleep);
-                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                            audio.playSfx(DataDirs.Sounds.accept);
                         }
                         return true;
                     }
@@ -190,7 +190,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
                         if (menu.isInState(TownState.Main)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Craft);
-                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                            audio.playSfx(DataDirs.Sounds.accept);
                         }
                         return true;
                     }
@@ -246,7 +246,7 @@ public class TownUI extends GameUI {
 
                     // build requirements list
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
-                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                    audio.playSfx(DataDirs.Sounds.tick);
                 }
             });
             p.addListener(new InputListener() {
@@ -287,7 +287,7 @@ public class TownUI extends GameUI {
                     float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
                     p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
-                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                    audio.playSfx(DataDirs.Sounds.tick);
                 }
             });
 
@@ -499,7 +499,7 @@ public class TownUI extends GameUI {
                         fileDetails.addAction(Actions.moveTo(display.getWidth(), 0, .3f));
                     }
 
-                    audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                    audio.playSfx(DataDirs.Sounds.tick);
                 }
             });
             
@@ -580,7 +580,7 @@ public class TownUI extends GameUI {
                     if (selected == null) {
                         // go to parent directory
                         queueDir = directory.parent();
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.tick, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.tick);
                         return true;
                     }
                     if (selected.isDirectory()) {
@@ -812,7 +812,7 @@ public class TownUI extends GameUI {
                     if (button == Buttons.LEFT) {
                         MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected,
                                 formFocus.getFocusedIndex());
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                        audio.playSfx(DataDirs.Sounds.accept);
                         return true;
                     }
                     return false;
