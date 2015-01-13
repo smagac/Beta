@@ -114,4 +114,8 @@ public interface IAudioManager extends Service {
      * @param sound
      */
     public void playSfx(FileHandle sound);
+
+    public void fadeOut();
+    
+    public void fadeIn();
 }

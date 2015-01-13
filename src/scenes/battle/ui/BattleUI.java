@@ -33,7 +33,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -106,6 +108,7 @@ public class BattleUI extends GameUI
     Timeline timeline;
     FocusGroup manualFocus;
     FocusGroup mainFocus;
+    FocusGroup itemFocus;
     
     @Override
     protected void listenTo(IntSet messages)
@@ -287,8 +290,7 @@ public class BattleUI extends GameUI
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button ) {
                     if (button == Buttons.LEFT) {
-	                    Item i = inventory.getSelected();
-	                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.MODIFY, i.descriptor());
+	                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Interface.Button);
 	                    return true;
                     }
                     return false;
@@ -296,6 +298,42 @@ public class BattleUI extends GameUI
             }
         );
 	    display.addActor(sacrificeButton);
+	    
+	    itemFocus = new FocusGroup(itemPane);
+	    itemPane.addListener(new InputListener(){
+	        @Override
+	        public boolean keyDown(InputEvent evt, int keycode) {
+	            if (Input.ACCEPT.match(keycode)) {
+	                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button);
+	                return true;
+	            }
+	            
+	            if (Input.CANCEL.match(keycode)) {
+	                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+	                return true;
+	            }
+	            
+	            if (Input.UP.match(keycode)) {
+	                inventory.setSelectedIndex(Math.max(0, inventory.getSelectedIndex()-1));
+	                return true;
+	            }
+	            
+	            if (Input.DOWN.match(keycode)) {
+                    inventory.setSelectedIndex(Math.min(inventory.getItems().size-1, inventory.getSelectedIndex()+1));
+                    return true;
+                }
+	            
+	            return false;
+	        }
+	    });
+	    inventory.addListener(new ChangeListener() {
+            
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // TODO update the modifier pane with info of the adjective associated with the item
+                String adj = inventory.getSelected().descriptor();
+            }
+        });
 	}
 	
 	/**
@@ -425,7 +463,7 @@ public class BattleUI extends GameUI
                     Actions.sequence(
                         Actions.sizeTo(192f, 0f),
                         Actions.run(new PlaySound(DataDirs.Sounds.blast)),
-                        Actions.moveTo(boss.getX(Align.center)-64f, getDisplayHeight()),
+                        Actions.moveTo(boss.getX(Align.center)-96f, getDisplayHeight()),
                         Actions.parallel(
                             Actions.sizeBy(0, getDisplayHeight() - boss.getY(), .4f, Interpolation.circleOut),
                             Actions.moveBy(0, -(getDisplayHeight() - boss.getY()), .4f, Interpolation.circleOut)
@@ -620,6 +658,9 @@ public class BattleUI extends GameUI
 	{
 	    if (menu.getCurrentState() == CombatStates.MANUAL) {
 	        return manualFocus;
+	    }
+	    if (menu.getCurrentState() == CombatStates.MODIFY) {
+	        return itemFocus;
 	    }
 	    return mainFocus;
 	}
@@ -863,7 +904,6 @@ public class BattleUI extends GameUI
                             Actions.rotateTo(0, HitBox.ANIM_DURATION),
                             Actions.scaleTo(1, 1, HitBox.ANIM_DURATION)
                         ),
-                        Actions.delay(HitBox.ANIM_DURATION),
                         Actions.alpha(0f, HitBox.HIT_WINDOW),
                         Actions.run(new Runnable(){
 

@@ -90,6 +90,7 @@ public class Transition extends UI {
             delay += .1f;
         }
         
+        audio.fadeOut();
         addAction(
             Actions.sequence(
                 Actions.run(new PlaySound(DataDirs.Sounds.transition)), 

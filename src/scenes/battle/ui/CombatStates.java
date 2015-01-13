@@ -169,26 +169,28 @@ public enum CombatStates implements State<BattleUI> {
         }
         
     },
-    FORCE(){
-
-        @Override
-        public boolean onMessage(BattleUI entity, Telegram telegram) {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        @Override
-        public void enter(BattleUI entity) {
-            // TODO Auto-generated method stub
-            
-        }
-        
-    },
     MODIFY(){
 
         @Override
-        public boolean onMessage(BattleUI entity, Telegram telegram) {
-            // TODO Auto-generated method stub
+        public boolean onMessage(final BattleUI entity, Telegram telegram) {
+            if (telegram.message == Messages.Interface.Close) {
+                entity.changeState(MAIN);
+                return true;
+            }
+            if (telegram.message == Messages.Interface.Button) {
+                exit(entity);
+                final String adj = entity.inventory.getSelected().descriptor();
+                entity.playSacrificeAnimation(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, entity.battleService.getBoss());
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.MODIFY, adj);
+                        entity.changeState(MAIN);
+                    }
+                });
+                return true;
+            }
             return false;
         }
 
@@ -205,7 +207,26 @@ public enum CombatStates implements State<BattleUI> {
             entity.sacrificeButton.addAction(
                     Actions.sequence(
                         Actions.delay(.2f),
-                        Actions.moveToAligned(entity.getDisplayWidth() - 20, 20f, Align.bottomRight, .2f, Interpolation.circleOut)
+                        Actions.moveToAligned(entity.getDisplayWidth(), 20f, Align.bottomRight, .2f, Interpolation.circleOut)
+                    )
+            );
+            
+            entity.resetFocus();
+        }
+        
+        @Override
+        public void exit(BattleUI entity) {
+            entity.sacrificePromptWindow.addAction(
+                Actions.parallel(
+                    Actions.alpha(0f, .1f),
+                    Actions.moveTo(20, 240, .2f)
+                )
+            );
+            entity.itemPane.addAction(Actions.moveBy(entity.itemPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.sacrificeButton.addAction(
+                    Actions.sequence(
+                        Actions.delay(.2f),
+                        Actions.moveToAligned(entity.getDisplayWidth(), 20f, Align.bottomLeft, .2f, Interpolation.circleOut)
                     )
             );
         }
@@ -226,7 +247,7 @@ public enum CombatStates implements State<BattleUI> {
                 @Override
                 public void run() {
                     //advance the battle once both sides have attacked
-                    MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.ADVANCE);
                     InputDisabler.swap();
                     entity.changeState(MAIN);
                 }

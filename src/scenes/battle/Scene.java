@@ -54,6 +54,7 @@ public class Scene extends scenes.Scene<BattleUI>
 	{
 	    ui.init();
 	    audio.playBgm(manager.get(bgm, Music.class));
+	    audio.fadeIn();
 	}
 
 	@Override

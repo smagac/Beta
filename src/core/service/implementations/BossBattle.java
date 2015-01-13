@@ -36,7 +36,6 @@ public class BossBattle implements IBattleContainer {
         //sets the target for the next effect
         if (msg.message == Messages.Battle.TARGET) {
             target = (Entity)msg.extraInfo;
-            System.out.println("target set to " + target);
             return true;
         }
         //damage an entity
@@ -49,11 +48,11 @@ public class BossBattle implements IBattleContainer {
             s.hp -= (Integer)msg.extraInfo;
             if (s.hp <= 0 && target == boss)
             {
-                MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.VICTORY);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.VICTORY);
             } 
             else if (s.hp <= 0 && target == player)
             {
-                MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.DEFEAT);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEFEAT);
             }
             target = null;
             return true;

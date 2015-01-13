@@ -165,6 +165,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.FIGHT);
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.KILLED);
+        wanderUI.dispose();
+        transition.dispose();
+        ui = null;
         super.dispose();
     }
     

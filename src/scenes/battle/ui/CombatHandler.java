@@ -122,8 +122,8 @@ public class CombatHandler implements Telegraph {
         Entity attacker = (turn.phase == Combatant.Player) ? battleService.getPlayer() : battleService.getBoss();
         
         int dmg = 0;
-        float attackerStr = statsMap.get(target).getStrength();
-        float targetDef = statsMap.get(attacker).getDefense();
+        float attackerStr = statsMap.get(attacker).getStrength();
+        float targetDef = statsMap.get(target).getDefense();
         float crit = (turn.phase == Combatant.Player)?2f:1.25f;
         for (int i = 0; i < turn.hits; i++) {
             float chance = MathUtils.random(0.8f, crit);
@@ -149,14 +149,14 @@ public class CombatHandler implements Telegraph {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, String.format("%s\nBlocked the attack", id));
             
         } else {
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, String.format("%s\n%d damage\n%d hits", id, dmg, turn.hits));
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, String.format("%s\nTakes %d damage\n%d hits", id, dmg, turn.hits));
                 
         }
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DAMAGE, dmg);
     }
     
     protected void fightManual(int playerHits, int bossHits) {
-        //deal damage to entities
+        //amount of damage each side deals
         int pdmg = calcDamage(new Turn(0, playerHits, Combatant.Player));
         int bdmg = calcDamage(new Turn(bossHits, 0, Combatant.Enemy));
         
@@ -164,11 +164,11 @@ public class CombatHandler implements Telegraph {
         String bid = battleService.getBoss().getComponent(Identifier.class).toString();
         
         String notification;
-        notification = String.format("%s\n%s\n%s\n%s",
+        notification = String.format("%s\n%s\n\n%s\n%s",
                     pid,
-                    (bossHits <= 0) ? "Blocked the attack" : pdmg + " damage\n" + bossHits + " hits",
+                    (bossHits <= 0) ? "Blocked the attack" : "Takes " + bdmg + " damage\n" + bossHits + " hits",
                     bid,
-                    (playerHits <= 0) ? "Blocked the attack" : bdmg + " damage\n" + playerHits + " hits"
+                    (playerHits <= 0) ? "Blocked the attack" : "Takes " + pdmg + " damage\n" + playerHits + " hits"
                 );
         
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);

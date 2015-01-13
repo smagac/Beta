@@ -9,6 +9,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import core.service.interfaces.IAudioManager;
@@ -31,6 +32,8 @@ public class AudioManager implements IAudioManager {
         bgmController.setColor(new Color(0,0,0,1));
         sfxController = new Actor();
         sfxController.setColor(new Color(0,0,0,1));
+        controller.addActor(bgmController);
+        controller.addActor(sfxController);
     }
     
     public void update(float delta) {
@@ -153,5 +156,15 @@ public class AudioManager implements IAudioManager {
         Sound fx;
         fx = Gdx.audio.newSound(sound);
         playSfx(fx);
+    }
+
+    @Override
+    public void fadeOut() {
+        bgmController.addAction(Actions.alpha(0f, .5f));
+    }
+
+    @Override
+    public void fadeIn() {
+        bgmController.addAction(Actions.alpha(1f, .5f));
     }
 }
