@@ -5,6 +5,7 @@ import scenes.UI;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -14,7 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
+import core.DataDirs;
 import core.common.Input;
 
 public class TitleSequence extends UI {
@@ -28,7 +31,7 @@ public class TitleSequence extends UI {
 
     @Override
     protected void load() {
-        manager.load("data/title.json", Skin.class);
+        manager.load(DataDirs.Home + "title.json", Skin.class);
     }
 
     @Override
@@ -36,8 +39,58 @@ public class TitleSequence extends UI {
         final TitleSequence ui = this;
 
         // create title sequence
-        final Skin skin = manager.get("data/title.json", Skin.class);
-
+        final Skin skin = manager.get(DataDirs.Home + "title.json", Skin.class);
+        final Skin uiskin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
+        
+      //clouds
+        {
+            
+            Image goddess = new Image(uiskin, "goddess");
+            goddess.setSize(32, 32);
+            goddess.setPosition(getWidth(), getHeight() - 96f);
+            goddess.setOrigin(Align.center);
+            addActor(goddess);
+            
+            Image cloudsPan1 = new Image(new TiledDrawable(uiskin.getRegion("clouds")));
+            Image cloudsPan2 = new Image(new TiledDrawable(uiskin.getRegion("clouds")));
+            cloudsPan1.setWidth(getWidth()*5);
+            cloudsPan2.setWidth(getWidth()*5);
+            
+            cloudsPan1.setPosition(0, 0, Align.topLeft);
+            cloudsPan2.setPosition(0, 0, Align.topLeft);
+            addActor(cloudsPan1);
+            addActor(cloudsPan2);
+            
+            cloudsPan1.addAction(
+                Actions.sequence(
+                    Actions.moveToAligned(getWidth(), 0, Align.topRight),
+                    Actions.delay(8f),
+                    Actions.parallel(
+                            Actions.moveBy(0, 140f, 3f),
+                            Actions.moveBy(getWidth()*5, 0, 50f)
+                    )
+            ));
+            
+            cloudsPan2.addAction(Actions.sequence(
+                    Actions.moveToAligned(getWidth(), 0, Align.topRight),
+                    Actions.delay(8f),
+                    Actions.parallel(
+                            Actions.moveBy(0, 80f, 3f),
+                            Actions.moveBy(getWidth()*5, 0, 40f)
+                    )
+            ));
+            
+            goddess.addAction(Actions.sequence(
+                    Actions.delay(20f),
+                    Actions.parallel(
+                            Actions.repeat(5, Actions.rotateBy(360, .4f)),
+                            Actions.moveBy(-getWidth() - 32, 0f, 2f)
+                    ),
+                    Actions.addAction(Actions.moveBy(0, getHeight(), 1f, Interpolation.sineIn), cloudsPan1),
+                    Actions.addAction(Actions.moveBy(0, getHeight(), 1f, Interpolation.sineIn), cloudsPan2)
+            ));
+        }
+        
         // initial text
         {
             Table textGrid = new Table();
@@ -120,7 +173,7 @@ public class TitleSequence extends UI {
             Image tools = new Image(skin.getDrawable("tools"));
             tools.setPosition(getWidth() / 2 - tools.getWidth() / 2, getHeight() / 2 - tools.getHeight() / 2);
             Label label = new Label("All music used is available permissive Creative Commons and Public Domain licensing.\nAll attribution can be found the readme", skin, "small");
-            label.setPosition(getWidth()/2f, 0, Align.bottom);
+            label.setPosition(getWidth()/2f, getHeight() / 2f - 80f, Align.top);
             label.setAlignment(Align.center);
             group.addActor(tools);
             group.addActor(label);
@@ -167,8 +220,13 @@ public class TitleSequence extends UI {
                     })));
 
             Image castle = new Image(skin.getRegion("castle"));
-            castle.addAction(Actions.sequence(Actions.moveTo(0f, getHeight() - castle.getHeight()), Actions.delay(24f),
-                    Actions.moveTo(getWidth() - castle.getWidth(), getHeight() - castle.getHeight(), 4f)));
+            castle.addAction(
+                Actions.sequence(
+                    Actions.moveToAligned(getWidth() - castle.getWidth(), 0f, Align.topLeft), 
+                    Actions.delay(24f),
+                    Actions.moveBy(0, getHeight(), 4f)
+                )
+            );
             Image lightning = new Image(skin.getRegion("lightning"));
             lightning.setPosition(getWidth() - castle.getWidth(), getHeight() - castle.getHeight());
             lightning.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(29f), Actions.alpha(1f, .1f),

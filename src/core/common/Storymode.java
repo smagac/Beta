@@ -178,6 +178,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     public void resume() {
         super.resume();
         resumed = true;
+        audioManager.playBgm();
+    }
+    
+    public void pause() {
+        super.pause();
+        audioManager.pauseBgm();
     }
     
     public BossListener getBossInput() {
