@@ -137,6 +137,14 @@ public class RenderSystem extends EntitySystem implements EntityListener {
                 shadows.add(image);
             }
         }
+        
+        if (player != null){
+            Position p = positionMap.get(player);
+            
+            fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
+            calcFov();
+        }
+        
     }
 
     @Override
@@ -150,8 +158,10 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         
         if (Groups.playerType.matches(e)) {
             player = e;
-            fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
-            calcFov();
+            if (wallMap != null){
+                fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
+                calcFov();
+            }
         }
 
         if (r.getActor() == null) {
