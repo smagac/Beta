@@ -1,16 +1,26 @@
 package scenes.battle.ui;
 
+import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
+import scene2d.PlayBGM;
 import scenes.Messages;
 import scenes.battle.ui.CombatHandler.Combatant;
 import scenes.battle.ui.CombatHandler.Turn;
 
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+
+import core.DataDirs;
+import core.components.Stats;
+import core.service.interfaces.IDungeonContainer;
 
 public enum CombatStates implements State<BattleUI> {
     MAIN(){
@@ -25,7 +35,7 @@ public enum CombatStates implements State<BattleUI> {
                     entity.mainmenu.show();
                 }
             }), entity.mainmenu));
-            entity.setFocus(entity.mainmenu);
+            entity.resetFocus();
         }
         
         @Override
@@ -55,6 +65,10 @@ public enum CombatStates implements State<BattleUI> {
 
                 @Override
                 public void run() {
+                    if (entity.getCurrentState() == VICTORY) {
+                        return;
+                    }
+                    
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
                     entity.changeState(MAIN);
@@ -96,6 +110,10 @@ public enum CombatStates implements State<BattleUI> {
 
                 @Override
                 public void run() {
+                    if (entity.getCurrentState() == VICTORY) {
+                        return;
+                    }
+                    
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
                     InputDisabler.swap();
@@ -271,6 +289,47 @@ public enum CombatStates implements State<BattleUI> {
             };
             
             entity.playDefenseAnimation(t, after);
+        }
+        
+    }, VICTORY(){
+
+        @Override
+        public void enter(final BattleUI entity) {
+            //TODO show victory message
+            entity.playVictoryAnimation();
+            
+            entity.addAction(
+                Actions.sequence(
+                    Actions.delay(8f),
+                    Actions.run(new PlayBGM(entity.getManager().get(DataDirs.Audio + "victory.mp3", Music.class))),
+                    Actions.delay(10f),
+                    Actions.run(new Runnable(){
+
+                        @Override
+                        public void run() {
+                            //reward player with points
+                            Entity player = entity.battleService.getPlayer();
+                            Entity boss = entity.battleService.getBoss();
+                            
+                            Stats playerStats = player.getComponent(Stats.class);
+                            playerStats.exp += 5;
+                            
+                            //Victory should be followed up with going back to the dungeon
+                            // and removing the boss from the dungeon
+                            IDungeonContainer d = ServiceManager.getService(IDungeonContainer.class);
+                            d.getEngine().removeEntity(boss);
+                            SceneManager.switchToScene("dungeon");
+                        }
+                        
+                    })
+                )
+            );
+        }
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
         }
         
     };

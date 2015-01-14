@@ -47,7 +47,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     protected Storymode() {}
     
     private boolean started;
-    private boolean prepared;
 
     @Override
     public void resize(int width, int height) {
@@ -93,8 +92,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         SceneManager.switchToScene("title");
 
         loadScreen.setLoadingMessage(null);
-        
-        prepared = true;
     }
 
     @Override
@@ -181,20 +178,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     public void resume() {
         super.resume();
         resumed = true;
-
-        if (prepared) {
-            audioManager.playBgm();
-        }
     }
-
-    @Override
-    public void pause() {
-        super.pause();
-        if (prepared) {
-            audioManager.pauseBgm();
-        }
-    }
-
+    
     public BossListener getBossInput() {
         return boss;
     }

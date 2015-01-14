@@ -35,6 +35,7 @@ public class Scene extends scenes.Scene<BattleUI>
 	    
         bgm = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "combat/")).random();
         manager.load(bgm, Music.class);
+        manager.load(DataDirs.Audio + "victory.mp3", Music.class);
         
         input.addProcessor(ui);
         Gdx.input.setInputProcessor(input);

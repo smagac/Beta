@@ -2,6 +2,7 @@ package scene2d.ui.extras;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 public class ParticleActor extends Actor {
@@ -17,10 +18,30 @@ public class ParticleActor extends Actor {
         public void run() {
             p.particle.reset();
             p.particle.start();
+            p.running = true;
+        }
+    }
+    
+    /**
+     * Allows stopping a particle actor whose effect runs continuously
+     * @author nhydock
+     *
+     */
+    public static class StopParticle implements Runnable {
+        private ParticleActor p;
+        
+        public StopParticle(ParticleActor p) {
+            this.p = p;
+        }
+        
+        @Override
+        public void run() {
+            p.particle.allowCompletion();
         }
     }
     
     ParticleEffect particle;
+    boolean running;
     
     public ParticleActor(ParticleEffect p) {
         particle = p;
@@ -37,19 +58,29 @@ public class ParticleActor extends Actor {
         particle = p;
         p.reset();
         p.start();
+        running = true;
+    }
+    
+    public void start() {
+        running = true;
+    }
+    
+    public void stop() {
+        running = false;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        if (particle != null)
+        if (particle != null && running) {
             particle.update(delta);
+        }
     }
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
 
-        if (particle != null && !particle.isComplete()) {
+        if (particle != null && !particle.isComplete() && running) {
             particle.draw(batch);
         }
         

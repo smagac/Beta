@@ -123,10 +123,10 @@ public abstract class GameUI extends UI {
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (actor != focus())
+                if (focus() == null)
                     return;
 
-                if (focus().getFocused() == buttonList) {
+                if (focus().getFocused() == buttonList || focus().getFocused() == null) {
                     hidePointer();
                 }
                 else {
@@ -297,12 +297,6 @@ public abstract class GameUI extends UI {
             }
         });
         
-        addAction(
-            Actions.sequence(
-                Actions.alpha(0f),
-                Actions.alpha(1f, .2f)
-            )
-        );
         calculateScissors(displayBounds, tmpBound);
 
         if (fader == null) {
@@ -320,6 +314,14 @@ public abstract class GameUI extends UI {
         act(0);
         
         resetFocus();
+        
+        addAction(
+            Actions.sequence(
+                Actions.alpha(0f),
+                Actions.alpha(1f, .5f)
+            )
+        );
+            
     }
     
 
@@ -439,18 +441,7 @@ public abstract class GameUI extends UI {
                 return false;
             }
         });
-        levelUpGroup.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (focus() == null)
-                    return;
-
-                Actor a = focus().getFocused();
-                setFocus(a);
-
-                showPointer(a, Align.left, Align.center);
-            }
-        });
+        levelUpGroup.addListener(focusListener);
 
         addActor(levelUpDialog);
         addActor(levelUpGroup);
@@ -686,7 +677,7 @@ public abstract class GameUI extends UI {
 
         b.setProjectionMatrix(getCamera().combined);
         b.begin();
-        fill.draw(b, 1.0f);
+        fill.draw(b, getRoot().getColor().a);
         b.end();
 
         ScissorStack.pushScissors(tmpBound);
@@ -715,7 +706,6 @@ public abstract class GameUI extends UI {
     }
 
     public final void setFocus(Actor a) {
-        Gdx.app.log("Focus", "Focus has changed to " + a);
         setKeyboardFocus(a);
         setScrollFocus(a);
     }
@@ -747,6 +737,14 @@ public abstract class GameUI extends UI {
     @SuppressWarnings("unchecked")
     public final void changeState(State state) {
         menu.changeState(state);
+    }
+    
+    /**
+     * Fetch the currently active state of the UI
+     * @return
+     */
+    public final State getCurrentState() {
+        return menu.getCurrentState();
     }
 
     /**
@@ -782,8 +780,6 @@ public abstract class GameUI extends UI {
         private static final int POINTS_REWARDED = 5;
 
         public static void enter(GameUI entity) {
-            entity.levelUpGroup.setFocus(entity.levelUpGroup.getActors().first());
-
             entity.setPoints(POINTS_REWARDED);
 
             Stats s = entity.playerService.getPlayer().getComponent(Stats.class);
@@ -810,20 +806,12 @@ public abstract class GameUI extends UI {
                     - entity.levelUpDialog.getHeight() / 2, .3f));
             entity.levelUpDialog.setTouchable(Touchable.enabled);
 
-            entity.setFocus(entity.levelUpDialog);
+            entity.resetFocus();
         }
 
         public static void exit(final GameUI entity) {
             entity.levelUpDialog.addAction(
                 Actions.sequence(
-                    Actions.run(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            entity.hidePointer();
-                        }
-        
-                    }), 
                     Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight(), .3f), 
                     Actions.run(new Runnable() {
 
@@ -846,6 +834,8 @@ public abstract class GameUI extends UI {
             entity.vitTicker.setValue(0);
             entity.points = 0;
             entity.audio.playSfx(DataDirs.Sounds.accept);
+            
+            entity.levelUpGroup.setFocus(null);
         }
         
         public static boolean onMessage(GameUI entity, Telegram telegram) {

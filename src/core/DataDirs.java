@@ -2,6 +2,7 @@ package core;
 
 import java.util.Scanner;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 
@@ -23,8 +24,9 @@ public final class DataDirs {
         public static final String charge = sfx + "charge.wav";
         public static final String blast = sfx + "blast.wav";
         public static final String transition = sfx + "transition.wav";
+        public static final String explode = sfx + "explode.wav";
         
-        public static final String[] allSounds = {tick, hit, hit2, deflect, shimmer, accept, dead, charge, blast, transition};
+        public static final String[] allSounds = {tick, hit, hit2, deflect, shimmer, accept, dead, charge, blast, transition, explode};
     }
     
     public static final String Tilesets = Home + "tilesets/";

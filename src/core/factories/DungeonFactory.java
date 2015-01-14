@@ -142,7 +142,7 @@ public class DungeonFactory {
             progress[0] = (int)((made / (float)depth) * 100);
         }
 
-        Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors);
+        Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, params.getTileset());
         MathUtils.random = oldRandom;
         return d;
     }

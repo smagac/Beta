@@ -2,7 +2,7 @@ package scene2d;
 
 import github.nhydock.ssm.ServiceManager;
 
-import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.audio.Music;
 
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.ISharedResources;
@@ -12,16 +12,16 @@ import core.service.interfaces.ISharedResources;
  * @author nhydock
  *
  */
-public class PlaySound implements Runnable {
+public class PlayBGM implements Runnable {
 
-    private Sound sfx;
+    private Music bgm;
     
     /**
      * Creates a new runnable that plays the input sound effect object
      * @param sfx
      */
-    public PlaySound(Sound fx){
-        sfx = fx;
+    public PlayBGM(Music m){
+        bgm = m;
     }
     
     /**
@@ -29,14 +29,14 @@ public class PlaySound implements Runnable {
      * Files specified this way are loaded using the system's Shared Resource manager
      * @param path
      */
-    public PlaySound(String file) {
-        sfx = ServiceManager.getService(ISharedResources.class).getResource(file, Sound.class);
+    public PlayBGM(String file) {
+        bgm = ServiceManager.getService(ISharedResources.class).getResource(file, Music.class);
     }
     
     @Override
     public void run() {
         IAudioManager audio = ServiceManager.getService(IAudioManager.class);
-        audio.playSfx(sfx);
+        audio.playBgm(bgm);
         audio = null;
     }
 }

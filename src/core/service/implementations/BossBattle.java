@@ -45,14 +45,14 @@ public class BossBattle implements IBattleContainer {
             }
             
             Stats s = target.getComponent(Stats.class);
-            s.hp -= (Integer)msg.extraInfo;
+            s.hp = Math.max(0, s.hp - (Integer)msg.extraInfo);
             if (s.hp <= 0 && target == boss)
             {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.VICTORY);
             } 
             else if (s.hp <= 0 && target == player)
             {
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEFEAT);
+                //MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEFEAT);
             }
             target = null;
             return true;

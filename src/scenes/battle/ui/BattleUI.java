@@ -107,6 +107,7 @@ public class BattleUI extends GameUI
     CombatHandler combat;
     
     ParticleActor hitSplash;
+    ParticleActor death;
     
     Timeline timeline;
     FocusGroup manualFocus;
@@ -126,7 +127,6 @@ public class BattleUI extends GameUI
 		menu = new DefaultStateMachine<BattleUI>(this);
 		this.environment = environment;
 		combat = new CombatHandler();
-		
 	}
 	
 	@Override
@@ -214,6 +214,19 @@ public class BattleUI extends GameUI
         display.addActor(player);
         display.addActor(boss);
         
+
+        ParticleEffect pe = new ParticleEffect();
+        pe.load(Gdx.files.internal(DataDirs.Particles + "splash.particle"), Gdx.files.internal(DataDirs.Home));
+        hitSplash = new ParticleActor(pe);
+        
+        display.addActor(hitSplash);
+
+        pe = new ParticleEffect();
+        pe.load(Gdx.files.internal(DataDirs.Particles + "fire.particle"), Gdx.files.internal(DataDirs.Home));
+        death = new ParticleActor(pe);
+        
+        display.addActor(death);  
+        
         fader = new Image(skin, "fill");
         fader.setSize(getDisplayWidth(), getDisplayHeight());
         fader.setPosition(-getDisplayWidth(), 0);
@@ -233,19 +246,12 @@ public class BattleUI extends GameUI
 	    display.addActor(bossDie);
 	    display.addActor(playerDie);
 	    
-	    ParticleEffect pe = new ParticleEffect();
-	    pe.load(Gdx.files.internal(DataDirs.Particles + "splash.particle"), Gdx.files.internal(DataDirs.Home));
-	    hitSplash = new ParticleActor(pe);
-	    
-	    display.addActor(hitSplash);
-	    
 	    timeline = new Timeline();
 	    timeline.setSize(getDisplayWidth() - 20f, getDisplayHeight() - 20f);
 	    timeline.setPosition(10f, 10f);
 	    
 	    display.addActor(timeline);
-	    
-	    
+	          
 	}
 	
 	/**
@@ -557,9 +563,9 @@ public class BattleUI extends GameUI
                 public void run(){
                     if (t.hits < 0) {
                         hitSplash.setPosition(player.getX(Align.center), player.getY(Align.center));
-                        
                         player.addAction(hitAnimation());
                     } else {
+                        hitSplash.setPosition(boss.getX(Align.center), boss.getY(Align.center));
                         boss.addAction(hitAnimation(DataDirs.Sounds.deflect));
                     }
                     
@@ -649,6 +655,38 @@ public class BattleUI extends GameUI
         );
 	}
 	
+	protected void playVictoryAnimation(){
+	    audio.fadeOut();
+	    death.setPosition(boss.getX(), boss.getY());
+	    death.addAction(
+            Actions.sequence(
+                Actions.run(new ParticleActor.ResetParticle(death)),
+                Actions.delay(6f),
+                Actions.run(new ParticleActor.StopParticle(death))
+            )
+        );
+	    boss.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                    Actions.repeat(30,
+                        Actions.sequence(
+                            Actions.moveBy(-10f, 0, .05f),
+                            Actions.moveBy(20f, 0, .1f),
+                            Actions.moveBy(-10f, 0, .05f)
+                        )
+                    ),
+                    Actions.repeat(30, 
+                        Actions.sequence(
+                            Actions.run(new PlaySound(DataDirs.Sounds.explode)),
+                            Actions.delay(.2f)
+                        )
+                    ),
+                    Actions.alpha(0f, 6f)
+                ),
+                Actions.removeActor()
+            )
+        );
+	}
 	
 	@Override
 	protected void triggerAction(int index)
@@ -659,23 +697,7 @@ public class BattleUI extends GameUI
 	@Override
 	public boolean handleMessage(Telegram msg) {
 	    if (msg.message == Messages.Battle.VICTORY) {
-	        //TODO show victory message
-	        
-	        //reward player with points
-	        Entity player = battleService.getPlayer();
-	        Entity boss = battleService.getBoss();
-	        
-	        Stats playerStats = player.getComponent(Stats.class);
-	        playerStats.exp += boss.getComponent(Stats.class).getExp();
-	        if (playerStats.canLevelUp()) {
-	            
-	        }
-	        
-	        //Victory should be followed up with going back to the dungeon
-	        // and removing the boss from the dungeon
-	        IDungeonContainer d = ServiceManager.getService(IDungeonContainer.class);
-	        d.getEngine().removeEntity(battleService.getBoss());
-	        SceneManager.switchToScene("dungeon");
+	        changeState(CombatStates.VICTORY);
 	        
 	    } else if (msg.message == Messages.Battle.DEFEAT){
 	        //TODO fade out screen and return home

@@ -206,8 +206,8 @@ public class DungeonParams {
         return buf.toString();
     }
 
-    public FileHandle getTileset() {
-        return Gdx.files.internal(DataDirs.Tilesets + type + ".tsx");
+    public String getTileset() {
+        return type;
     }
 
 }

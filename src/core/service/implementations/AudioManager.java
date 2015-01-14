@@ -26,6 +26,9 @@ public class AudioManager implements IAudioManager {
     Actor bgmController;
     Actor sfxController;
     
+    private float bgmVolScale = 1f;
+    private float sfxVolScale = 1f;
+    
     public AudioManager() {
         controller = new Stage();
         bgmController = new Actor();
@@ -36,11 +39,19 @@ public class AudioManager implements IAudioManager {
         controller.addActor(sfxController);
     }
     
+    private float getBgmVol() {
+        return bgmController.getColor().a * bgmVolScale;
+    }
+
+    private float getSFXVol() {
+        return sfxController.getColor().a * sfxVolScale;
+    }
+
     public void update(float delta) {
         controller.act(delta);
         
         if (bgm != null) {
-            bgm.setVolume(bgmController.getColor().a);
+            bgm.setVolume(getBgmVol());
         }
     }
     
@@ -66,6 +77,7 @@ public class AudioManager implements IAudioManager {
             this.bgm.stop();
             this.bgm = null;
         }
+        bgmController.addAction(Actions.alpha(1f));
         this.bgm = bgm;
         this.bgm.setLooping(loop);
     }
@@ -102,12 +114,12 @@ public class AudioManager implements IAudioManager {
 
     @Override
     public void setBgmVol(float vol) {
-        this.bgmController.getColor().a = vol;
+        bgmVolScale = vol;
     }
 
     @Override
     public void setSfxVol(float vol) {
-        sfxController.getColor().a = vol;
+        sfxVolScale = vol;
     }
 
     @Override
@@ -123,11 +135,10 @@ public class AudioManager implements IAudioManager {
     @Override
     public void clearBgm() {
         stopBgm();
-        this.bgm = null;
-    }
-
-    private float getSFXVol() {
-        return sfxController.getColor().a;
+        if (this.bgm != null) {
+            this.bgm.dispose();
+            this.bgm = null;
+        }
     }
 
     @Override
@@ -165,6 +176,7 @@ public class AudioManager implements IAudioManager {
 
     @Override
     public void fadeIn() {
+        bgmController.setColor(0,0,0,0);
         bgmController.addAction(Actions.alpha(1f, .5f));
     }
 }

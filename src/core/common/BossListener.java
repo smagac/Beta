@@ -97,18 +97,17 @@ public class BossListener {
             }
             if (Gdx.input.isKeyJustPressed(Keys.F2)) {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
+                return true;
+            }
+            if (Gdx.input.isKeyJustPressed(Keys.END)) {
+                getGameService().endGame();
+                return true;
             }
         }
         if (Gdx.input.isKeyJustPressed(Keys.F9)) {
             // EXIT LIKE A BITCH
             Gdx.app.exit();
             return true;
-        }
-        if (Gdx.input.isKeyJustPressed(Keys.F12)) {
-            if (Gdx.input.isKeyJustPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyJustPressed(Keys.E)) {
-                getGameService().endGame();
-                return true;
-            }
         }
 
         return false;

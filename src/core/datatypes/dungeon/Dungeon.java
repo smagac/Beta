@@ -18,7 +18,11 @@ public class Dungeon implements Serializable {
     IntMap<BossFloor> bossFloors = new IntMap<BossFloor>();
     int difficulty;
     FileType type;
+    String environment;
     int depth;
+    
+    TiledMapTileSet tileset;
+    TiledMap tilemap;
     
     boolean prepared;
 
@@ -35,12 +39,13 @@ public class Dungeon implements Serializable {
      *            - premade floors to register with the dungeon
      */
 
-    public Dungeon(FileType type, int d, Array<FloorData> data) {
+    public Dungeon(FileType type, int d, Array<FloorData> data, String environment) {
         this.type = type;
         this.floors = new Array<Floor>();
         this.difficulty = d;
         this.floorData = data;
         this.depth = data.size;
+        this.environment = environment;
         genBossFloors();
     }
     
@@ -68,6 +73,7 @@ public class Dungeon implements Serializable {
         json.writeValue("type", this.type.name());
         json.writeValue("difficulty", this.difficulty);
         json.writeValue("floors", this.floorData);
+        json.writeValue("environment", this.environment);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,6 +83,7 @@ public class Dungeon implements Serializable {
         this.difficulty = jsonData.getInt("difficulty");
         this.floorData = json.readValue(Array.class, jsonData.get("floors"));
         this.depth = floorData.size;
+        this.environment = jsonData.getString("environment");
         this.genBossFloors();
     }
 
@@ -87,10 +94,21 @@ public class Dungeon implements Serializable {
     public int size() {
         return depth;
     }
+    
+    public String getEnvironment() {
+        return environment;
+    }
+    
+    public TiledMapTileSet getTileset() {
+        return tileset;
+    }
 
     public TiledMap build(TiledMapTileSet tileset) {
-        TiledMap map = new TiledMap();
-        map.getTileSets().addTileSet(tileset);
+        if (prepared) {
+            return tilemap;
+        }
+        tilemap = new TiledMap();
+        tilemap.getTileSets().addTileSet(tileset);
 
         // build the tile layers
         floors = new Array<Floor>();
@@ -102,13 +120,15 @@ public class Dungeon implements Serializable {
                 data = floorData.get(i);
             }
             TiledMapTileLayer layer = data.paintLayer(tileset, 32, 32);
-            map.getLayers().add(layer);
+            tilemap.getLayers().add(layer);
             floors.add(new Floor(layer, data));
             data.dispose();
         }
         floorData.clear();
         floorData = null;
         
-        return map;
+        this.tileset = tileset;
+        prepared = true;
+        return tilemap;
     }
 }

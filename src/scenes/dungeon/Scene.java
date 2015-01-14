@@ -70,7 +70,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     /**
      * Identify that we're entering a boss battle, do not dispose of the dungeon
      */
-    private boolean fight;
+    private static boolean fight;
     
     public Scene() {
         super();
@@ -277,27 +277,23 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Override
     protected void init() {
-        tileset = new TsxTileSet(params.getTileset(), shared.getAssetManager());
-        
         wanderUI.init();
         ui = wanderUI;
-        // ui.levelUp();
-
-        DungeonParam param = new DungeonParam();
-        param.params = this.params;
         
-        if (dungeonService.getDungeon() != null)
-        {
-            param.generatedDungeon = dungeonService.getDungeon();
-            param.onLoad = new Runnable() {
+        if (fight){
+            fight = false;
 
-                @Override
-                public void run() {
-                    prepareMap();
-                }
-                
-            };
-        } else {
+            tileset = dungeonService.getDungeon().getTileset();
+            
+            RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
+            input.addProcessor(rs.getStage());
+        }
+        else {
+            tileset = new TsxTileSet(Gdx.files.internal(DataDirs.Tilesets + params.getTileset() + ".tsx"), shared.getAssetManager());
+
+            DungeonParam param = new DungeonParam();
+            param.params = this.params;
+            
             param.onLoad = new Runnable() {
 
                 @Override
@@ -308,9 +304,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
                 }
                 
             };
+            dungeonService.loadDungeon(param);  
         }
-        dungeonService.loadDungeon(param);  
-
+        
         Gdx.input.setInputProcessor(input);
     }
 
@@ -332,6 +328,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     @Override
     public boolean handleMessage(Telegram msg) {
         if (msg.message == Messages.Dungeon.FIGHT) {
+            fight = true;
             battleService.setBoss((Entity)msg.extraInfo);
             battleService.setPlayer(player);
             transition.init();
