@@ -1,5 +1,6 @@
 package scenes.dungeon;
 
+import scene2d.InputDisabler;
 import scenes.Messages;
 import scenes.UI;
 import scenes.dungeon.ui.Transition;
@@ -12,12 +13,15 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import core.DataDirs;
 import core.common.Tracker;
@@ -87,12 +91,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     public void setDungeon(DungeonParams params, FileHandle file) {
         this.params = params;
 
-        if (params.getType() == FileType.Audio && file != null) {
-            if (file.extension().matches("(mp3|ogg|wav)")) {
-                audio.setBgm(Gdx.audio.newMusic(file));
-            }
-        }
-
         Tracker.NumberValues.Files_Explored.increment();
         Tracker.StringValues.Favourite_File_Type.increment(params.getType().name());
 
@@ -142,14 +140,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         wanderUI = new WanderUI(manager);
         transition = new Transition(manager);
-        
-        if (!audio.hasBgm()) {
-            Array<String> files = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "dungeon/"));
-            String bgm = files.random();
-            audio.setBgm(Gdx.audio.newMusic(Gdx.files.internal(bgm)));
-        }
 
-        audio.playBgm();
         loaded = false;
         
         ui = wanderUI;
@@ -193,7 +184,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         descending = (depth > p.depth);
         
-        input.removeProcessor(wanderUI);
+        InputDisabler.swap();
         wanderUI.fadeOut(new Runnable(){
 
             @Override
@@ -205,7 +196,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
                     @Override
                     public void run() {
-                        input.addProcessor(wanderUI);
+                        InputDisabler.swap();
                         wanderUI.setMessage("You move onto floor " + depth + " of " + d.size());
                         
                         refresh();
@@ -274,6 +265,36 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     public void resize(int width, int height) {
         wanderUI.resize(width, height);
     }
+    
+    /**
+     * Sets the audio for the dungeon once everything's been loaded
+     */
+    private void setAudio() {
+
+        Dungeon d = dungeonService.getDungeon();
+        if (d.getType() == FileType.Audio && d.getFilename() != null) {
+            FileHandle src = d.getSrc();
+            if (src.extension().matches("(mp3|ogg|wav)")) {
+                try {
+                    Music music = Gdx.audio.newMusic(src);
+                    audio.setBgm(music);
+                } 
+                //in case the music can't actually be opened
+                catch (GdxRuntimeException e) {
+                    Gdx.app.log("Music", e.getMessage());
+                    Array<String> files = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "dungeon/"));
+                    String bgm = files.random();
+                    audio.setBgm(Gdx.audio.newMusic(Gdx.files.internal(bgm)));
+                }
+            }
+        } else { 
+            Array<String> files = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "dungeon/"));
+            String bgm = files.random();
+            audio.setBgm(Gdx.audio.newMusic(Gdx.files.internal(bgm)));
+        }
+        audio.fadeIn();
+        audio.playBgm();
+    }
 
     @Override
     protected void init() {
@@ -287,6 +308,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             
             RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
             input.addProcessor(rs.getStage());
+            
+            refresh();
+            setAudio();
         }
         else {
             tileset = new TsxTileSet(Gdx.files.internal(DataDirs.Tilesets + params.getTileset() + ".tsx"), shared.getAssetManager());
@@ -301,6 +325,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
                     prepareMap();
 
                     setFloor(1);
+                    
+                    setAudio();
                 }
                 
             };
@@ -308,6 +334,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         
         Gdx.input.setInputProcessor(input);
+        
     }
 
     /**

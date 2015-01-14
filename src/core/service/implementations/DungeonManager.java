@@ -83,7 +83,7 @@ public class DungeonManager implements IDungeonContainer {
     @Override
     public void loadFloor(final FloorParam params) {
         params.floor = dungeon.getFloor(params.depth);
-        params.type = dungeon.type();
+        params.type = dungeon.getType();
         params.difficulty = dungeon.getDifficulty();
         dungeonLoader.load("floor", ImmutableArray.class, params);
         

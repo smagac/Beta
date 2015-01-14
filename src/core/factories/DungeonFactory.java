@@ -115,7 +115,7 @@ public class DungeonFactory {
                 hashFile.file().deleteOnExit();
             }
             catch (IOException e) {
-                System.err.println("could not create cache file for " + params.getFileName());
+                System.err.println("could not create cache file for " + params.getFilename());
                 e.printStackTrace();
             }
         }
@@ -142,7 +142,7 @@ public class DungeonFactory {
             progress[0] = (int)((made / (float)depth) * 100);
         }
 
-        Dungeon d = new Dungeon(params.getType(), params.getDifficulty(), floors, params.getTileset());
+        Dungeon d = new Dungeon(params, floors);
         MathUtils.random = oldRandom;
         return d;
     }

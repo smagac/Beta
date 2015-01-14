@@ -63,7 +63,7 @@ public class DungeonParams {
      */
     private DungeonParams(FileHandle file, String hashName) {
         try {
-            this.ext = FileType.getType(file.name());
+            this.ext = FileType.getType(file.extension());
             this.difficulty = ext.difficulty(file.length());
 
             String tmpDir = System.getProperty("java.io.tmpdir");
@@ -81,6 +81,7 @@ public class DungeonParams {
             this.fileName = file.path();
         }
         catch (IOException e) {
+            System.err.println("Could not figure out hash from file");
             this.seed = -1;
             this.ext = FileType.Other;
             this.difficulty = 0;
@@ -104,7 +105,7 @@ public class DungeonParams {
         return this.difficulty;
     }
 
-    public String getFileName() {
+    public String getFilename() {
         return this.fileName;
     }
 

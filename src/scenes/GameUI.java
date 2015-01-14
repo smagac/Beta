@@ -1,6 +1,7 @@
 package scenes;
 
 import github.nhydock.ssm.Inject;
+import scene2d.InputDisabler;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.TabbedPane;
@@ -314,13 +315,6 @@ public abstract class GameUI extends UI {
         act(0);
         
         resetFocus();
-        
-        addAction(
-            Actions.sequence(
-                Actions.alpha(0f),
-                Actions.alpha(1f, .5f)
-            )
-        );
             
     }
     
@@ -677,7 +671,7 @@ public abstract class GameUI extends UI {
 
         b.setProjectionMatrix(getCamera().combined);
         b.begin();
-        fill.draw(b, getRoot().getColor().a);
+        fill.draw(b, 1.0f);
         b.end();
 
         ScissorStack.pushScissors(tmpBound);
@@ -779,7 +773,7 @@ public abstract class GameUI extends UI {
     private static class LevelUpState {
         private static final int POINTS_REWARDED = 5;
 
-        public static void enter(GameUI entity) {
+        public static void enter(final GameUI entity) {
             entity.setPoints(POINTS_REWARDED);
 
             Stats s = entity.playerService.getPlayer().getComponent(Stats.class);
@@ -800,16 +794,28 @@ public abstract class GameUI extends UI {
             entity.spdTicker.changeValues(spd);
             entity.vitTicker.changeValues(vit);
 
+            InputDisabler.swap();
             entity.levelUpDialog.setVisible(true);
             entity.levelUpGroup.setVisible(true);
-            entity.levelUpDialog.addAction(Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight() / 2
-                    - entity.levelUpDialog.getHeight() / 2, .3f));
-            entity.levelUpDialog.setTouchable(Touchable.enabled);
+            entity.levelUpDialog.addAction(
+                    Actions.sequence(
+                            Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight() / 2 - entity.levelUpDialog.getHeight() / 2, .3f),
+                    Actions.run(new Runnable() {
+                        @Override
+                        public void run() {
 
-            entity.resetFocus();
+                            entity.resetFocus();
+                            InputDisabler.swap();
+                        }
+                    })
+                )
+            );
+            entity.levelUpDialog.setTouchable(Touchable.enabled);
         }
 
         public static void exit(final GameUI entity) {
+            entity.hidePointer();
+            InputDisabler.swap();
             entity.levelUpDialog.addAction(
                 Actions.sequence(
                     Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight(), .3f), 
@@ -818,7 +824,9 @@ public abstract class GameUI extends UI {
                         @Override
                         public void run() {
                             entity.levelUpDialog.setVisible(false);
+                            entity.levelUpGroup.setFocus(null);
                             entity.resetFocus();
+                            InputDisabler.swap();
                         }
         
                     })
@@ -834,8 +842,6 @@ public abstract class GameUI extends UI {
             entity.vitTicker.setValue(0);
             entity.points = 0;
             entity.audio.playSfx(DataDirs.Sounds.accept);
-            
-            entity.levelUpGroup.setFocus(null);
         }
         
         public static boolean onMessage(GameUI entity, Telegram telegram) {

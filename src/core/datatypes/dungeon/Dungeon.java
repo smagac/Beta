@@ -1,5 +1,7 @@
 package core.datatypes.dungeon;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -19,6 +21,7 @@ public class Dungeon implements Serializable {
     int difficulty;
     FileType type;
     String environment;
+    String filename;
     int depth;
     
     TiledMapTileSet tileset;
@@ -39,13 +42,14 @@ public class Dungeon implements Serializable {
      *            - premade floors to register with the dungeon
      */
 
-    public Dungeon(FileType type, int d, Array<FloorData> data, String environment) {
-        this.type = type;
+    public Dungeon(DungeonParams params, Array<FloorData> data) {
+        this.type = params.getType();
         this.floors = new Array<Floor>();
-        this.difficulty = d;
+        this.difficulty = params.getDifficulty();
         this.floorData = data;
         this.depth = data.size;
-        this.environment = environment;
+        this.environment = params.getTileset();
+        this.filename = params.getFilename();
         genBossFloors();
     }
     
@@ -64,8 +68,16 @@ public class Dungeon implements Serializable {
         return difficulty;
     }
 
-    public FileType type() {
+    public FileType getType() {
         return type;
+    }
+    
+    public String getFilename(){
+        return filename;
+    }
+    
+    public FileHandle getSrc() {
+        return Gdx.files.absolute(filename);
     }
 
     @Override

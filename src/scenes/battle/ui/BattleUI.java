@@ -709,6 +709,8 @@ public class BattleUI extends GameUI
 	@Override
 	protected FocusGroup focusList()
 	{
+	    //all focusable things in this ui don't have the pointer on them
+	    hidePointer();
 	    if (menu.getCurrentState() == CombatStates.MANUAL) {
 	        return manualFocus;
 	    }
