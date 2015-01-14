@@ -64,18 +64,18 @@ public class TitleSequence extends UI {
             cloudsPan1.addAction(
                 Actions.sequence(
                     Actions.moveToAligned(getWidth(), 0, Align.topRight),
-                    Actions.delay(8f),
+                    Actions.delay(10f),
                     Actions.parallel(
-                            Actions.moveBy(0, 140f, 3f),
+                            Actions.moveBy(0, 140f, 3f, Interpolation.sineOut),
                             Actions.moveBy(getWidth()*5, 0, 50f)
                     )
             ));
             
             cloudsPan2.addAction(Actions.sequence(
                     Actions.moveToAligned(getWidth(), 0, Align.topRight),
-                    Actions.delay(8f),
+                    Actions.delay(10f),
                     Actions.parallel(
-                            Actions.moveBy(0, 80f, 3f),
+                            Actions.moveBy(0, 80f, 3f, Interpolation.sineOut),
                             Actions.moveBy(getWidth()*5, 0, 40f)
                     )
             ));
@@ -86,6 +86,7 @@ public class TitleSequence extends UI {
                             Actions.repeat(5, Actions.rotateBy(360, .4f)),
                             Actions.moveBy(-getWidth() - 32, 0f, 2f)
                     ),
+                    Actions.delay(1f),
                     Actions.addAction(Actions.moveBy(0, getHeight(), 1f, Interpolation.sineIn), cloudsPan1),
                     Actions.addAction(Actions.moveBy(0, getHeight(), 1f, Interpolation.sineIn), cloudsPan2)
             ));
@@ -105,12 +106,6 @@ public class TitleSequence extends UI {
             text.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(1f, 1f)));
             textGrid.add(text).expandX().fillX();
             text = new Label("~Thanks a bunch!", skin);
-            text.setWrap(true);
-            text.setAlignment(Align.right);
-            text.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(3f), Actions.alpha(1f, 1f)));
-            textGrid.row();
-            textGrid.add(text).expandX().fillX().padRight(60f);
-            text = new Label("Jan 8, 2014", skin, "small");
             text.setWrap(true);
             text.setAlignment(Align.right);
             text.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(3f), Actions.alpha(1f, 1f)));
@@ -172,7 +167,7 @@ public class TitleSequence extends UI {
             Group group = new Group();
             Image tools = new Image(skin.getDrawable("tools"));
             tools.setPosition(getWidth() / 2 - tools.getWidth() / 2, getHeight() / 2 - tools.getHeight() / 2);
-            Label label = new Label("All music used is available permissive Creative Commons and Public Domain licensing.\nAll attribution can be found the readme", skin, "small");
+            Label label = new Label("All music is licensed under Creative-Commons BY(-NC) or other permissive licenses.\nAll attribution can be found the readme", skin, "small");
             label.setPosition(getWidth()/2f, getHeight() / 2f - 80f, Align.top);
             label.setAlignment(Align.center);
             group.addActor(tools);
