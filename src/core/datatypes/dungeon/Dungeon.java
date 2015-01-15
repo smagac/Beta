@@ -134,7 +134,6 @@ public class Dungeon implements Serializable {
             TiledMapTileLayer layer = data.paintLayer(tileset, 32, 32);
             tilemap.getLayers().add(layer);
             floors.add(new Floor(layer, data));
-            data.dispose();
         }
         floorData.clear();
         floorData = null;

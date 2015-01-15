@@ -48,7 +48,9 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
 
     @Override
     public Dungeon loadSync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
-        return generatedDungeon;
+        Dungeon val = generatedDungeon;
+        generatedDungeon = null;
+        return val;
     }
 
     @Override

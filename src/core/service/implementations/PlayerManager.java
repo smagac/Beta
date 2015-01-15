@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
 
+import scenes.Messages;
+
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -21,6 +24,7 @@ import core.DataDirs;
 import core.common.Tracker;
 import core.components.Groups;
 import core.components.Identifier;
+import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Inventory;
@@ -36,6 +40,7 @@ public class PlayerManager implements IPlayerContainer {
 
     private static final String timeFormat = "%03d:%02d:%02d";
     private float time;
+    private int[] formattedTime = new int[3];
     private int difficulty;
 
     private Entity player;
@@ -100,16 +105,16 @@ public class PlayerManager implements IPlayerContainer {
     }
 
     @Override
-    public String getTimeElapsed() {
-        return formatTime(this.time);
+    public int[] getTimeElapsed() {
+        formattedTime[0] = (int) (time / 3600f);
+        formattedTime[1] = (int) (time / 60f) % 60;
+        formattedTime[2] = (int) (time % 60);
+        return formattedTime;
     }
-
-    public static String formatTime(float time) {
-        return String.format(timeFormat, (int) (time / 3600f), (int) (time / 60f) % 60, (int) (time % 60));
-    }
-
+    
     @Override
     public String getFullTime() {
+        
         return String.format("%d hours %d minutes and %d seconds", (int) (time / 3600f), (int) (time / 60f) % 60,
                 (int) (time % 60));
     }
@@ -134,7 +139,7 @@ public class PlayerManager implements IPlayerContainer {
             SaveSummary s = new SaveSummary();
             s.gender = jv.getString("gender");
             s.progress = jv.getInt("made") + "/" + jv.getInt("required");
-            s.time = formatTime(jv.getFloat("time"));
+            s.time = String.format(timeFormat, formattedTime[0], formattedTime[1], formattedTime[2]);
             s.date = jv.getString("date");
             s.diff = jv.getInt("difficulty");
             return s;
@@ -204,6 +209,7 @@ public class PlayerManager implements IPlayerContainer {
         r.loadImage(shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
         this.player.add(r);
         this.player.add(new Groups.Player());
+        this.player.add(new Position(0,0));
         
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
         Tracker.getInstance().read(json, root.get("tracker"));
@@ -249,6 +255,7 @@ public class PlayerManager implements IPlayerContainer {
         player.add(new Stats(new int[]{10, 5, 5, 10, 0}, new StatModifier[0]));
         player.add(new Identifier("Adventurer", null, new String[0]));
         player.add(new Groups.Player());
+        player.add(new Position(0,0));
         
         // make crafting requirements
         inventory = new Inventory(difficulty);

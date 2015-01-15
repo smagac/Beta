@@ -19,7 +19,7 @@ public interface IPlayerContainer extends Service {
 
     public void recover();
 
-    public String getTimeElapsed();
+    public int[] getTimeElapsed();
 
     public String getFullTime();
 

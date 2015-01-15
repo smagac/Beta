@@ -1,5 +1,6 @@
 package core.datatypes;
 
+import scenes.Messages;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
@@ -206,6 +207,7 @@ public class Inventory implements Serializable {
     }
 
     private void calcProgress() {
+        int p = progress;
         progress = 0;
         for (Craftable r : required) {
             Item i = null;
@@ -221,6 +223,9 @@ public class Inventory implements Serializable {
             if (i != null && all.get(i, 0) > 0) {
                 progress++;
             }
+        }
+        if (p != progress) {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Progress);
         }
     }
 

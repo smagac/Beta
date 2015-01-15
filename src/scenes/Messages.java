@@ -23,6 +23,15 @@ public interface Messages {
         public static final int Button = 0xfff3;
     }
     
+    public static interface Player {
+
+        public static final int Progress = 0xffe0;
+        
+        public static final int Stats = 0xffe1;
+        
+        public static final int Time = 0xffe2;
+    }
+    
     /*
      * TOWN (mainly just menu item index recognition)
      */

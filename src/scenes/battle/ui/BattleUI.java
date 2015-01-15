@@ -44,6 +44,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
 import core.common.Input;
+import core.components.Combat;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.components.Stats;
@@ -113,6 +114,7 @@ public class BattleUI extends GameUI
     FocusGroup manualFocus;
     FocusGroup mainFocus;
     FocusGroup itemFocus;
+    private Image bg;
     
     @Override
     protected void listenTo(IntSet messages)
@@ -177,7 +179,7 @@ public class BattleUI extends GameUI
         */
 	    
 	    TextureRegion tex = new TextureRegion(new Texture(Gdx.files.internal("data/backgrounds/dungeon.png")));
-	    Image bg = new Image(new TiledDrawable(tex));
+	    bg = new Image(new TiledDrawable(tex));
 	    bg.setWidth(getDisplayWidth());
 	    bg.setHeight(128f);
 	    bg.setPosition(0, getDisplayHeight(), Align.topLeft);
@@ -655,14 +657,57 @@ public class BattleUI extends GameUI
         );
 	}
 	
-	protected void playVictoryAnimation(){
+	/**
+	 * Show the animation that plays when you win.
+	 * Should show the rewards for winning as well
+	 * @param reward - bonus item rewarded for winning
+	 * @param amount - amount of bonus item rewarded
+	 */
+	protected void playVictoryAnimation(Item reward, int amount){
+	    Label congrats = new Label("Victory", skin, "prompt");
+        congrats.setFontScale(2f);
+        congrats.setPosition(getDisplayCenterX(), getDisplayCenterY() - 20f, Align.center);
+        congrats.setColor(1,1,1,0);
+        display.addActor(congrats);
+
+        String result;
+        Item bossReward = battleService.getBoss().getComponent(Combat.class).getDrop();
+        result = String.format("Obtained 1 %s\nBonus %d %s", bossReward.toString(), amount, reward.toString());
+        Label drops = new Label(result, skin, "prompt");
+        drops.setPosition(getDisplayCenterX(), getDisplayCenterY() - 40f, Align.center);
+        drops.setColor(1,1,1,0);
+        display.addActor(drops);
+        
 	    audio.fadeOut();
 	    death.setPosition(boss.getX(), boss.getY());
 	    death.addAction(
             Actions.sequence(
                 Actions.run(new ParticleActor.ResetParticle(death)),
                 Actions.delay(6f),
-                Actions.run(new ParticleActor.StopParticle(death))
+                Actions.run(new ParticleActor.StopParticle(death)),
+                Actions.delay(1f),
+                Actions.addAction(Actions.moveBy(0, 96f, 1f), bg),
+                Actions.addAction(Actions.moveBy(0, 200f, 2f), player),
+                Actions.addAction(
+                    Actions.sequence(
+                        Actions.moveBy(-20f, 0),
+                        Actions.delay(2f),
+                        Actions.parallel(
+                            Actions.alpha(1f, .3f),
+                            Actions.moveBy(20f, 0, .3f)
+                        )
+                    ), congrats
+                ),
+                Actions.addAction(
+                    Actions.sequence(
+                        Actions.moveBy(-20f, 0),
+                        Actions.delay(2.2f),
+                        Actions.parallel(
+                            Actions.alpha(1f, .3f),
+                            Actions.moveBy(20f, 0, .3f)
+                        )
+                    ), drops
+                )
             )
         );
 	    boss.addAction(
@@ -686,6 +731,8 @@ public class BattleUI extends GameUI
                 Actions.removeActor()
             )
         );
+	    
+	    
 	}
 	
 	@Override

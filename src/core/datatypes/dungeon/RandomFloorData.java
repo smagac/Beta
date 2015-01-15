@@ -148,12 +148,6 @@ public class RandomFloorData implements Serializable, FloorData {
     }
 
     @Override
-    public void dispose() {
-        rooms = null;
-        tiles = null;
-    }
-
-    @Override
     public int getRoomCount() {
         return rooms.size;
     }

@@ -15,11 +15,16 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 import core.DataDirs;
+import core.components.Combat;
 import core.components.Stats;
+import core.datatypes.Inventory;
+import core.datatypes.Item;
+import core.factories.AdjectiveFactory;
 import core.service.interfaces.IDungeonContainer;
 
 public enum CombatStates implements State<BattleUI> {
@@ -295,8 +300,14 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(final BattleUI entity) {
+            //pick a random required material and random amount between 1-5
+            String reward = entity.playerService.getInventory().getRequiredCrafts().random().getRequirementTypes().random();
+            String adjective = AdjectiveFactory.getAdjective();
+            
+            final Item item = new Item(reward, adjective);
+            final int amount = MathUtils.random(1, 5);
             //TODO show victory message
-            entity.playVictoryAnimation();
+            entity.playVictoryAnimation(item, amount);
             
             entity.addAction(
                 Actions.sequence(
@@ -313,6 +324,10 @@ public enum CombatStates implements State<BattleUI> {
                             
                             Stats playerStats = player.getComponent(Stats.class);
                             playerStats.exp += 5;
+                            
+                            Inventory inv = entity.playerService.getInventory();
+                            inv.pickup(boss.getComponent(Combat.class).getDrop());
+                            inv.pickup(item, amount);
                             
                             //Victory should be followed up with going back to the dungeon
                             // and removing the boss from the dungeon

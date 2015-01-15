@@ -82,10 +82,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         manager = new AssetManager();
 
         player = playerService.getPlayer();
-        player.add(new Position(0, 0));
-        
-        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.FIGHT);
-        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.KILLED);
     }
 
     public void setDungeon(DungeonParams params, FileHandle file) {
@@ -143,6 +139,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
         loaded = false;
         
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.FIGHT);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.KILLED);
+    
         ui = wanderUI;
         input.addProcessor(wanderUI);
     }
@@ -337,13 +336,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
     }
 
-    /**
-     * Send a message to the UI that the player has leveled up
-     */
-    public void levelUp() {
-        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
-    }
-    
     /**
      * Sends a text message to the currently active UI
      * @param msg

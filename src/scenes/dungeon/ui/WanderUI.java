@@ -91,7 +91,7 @@ public class WanderUI extends GameUI {
     @Override
     protected void listenTo(IntSet messages) {
         super.listenTo(messages);
-        messages.addAll(Messages.Dungeon.LevelUp);
+        messages.addAll(Messages.Dungeon.LevelUp, Messages.Dungeon.Movement);
     }
     
     public WanderUI(AssetManager manager) {
@@ -105,8 +105,6 @@ public class WanderUI extends GameUI {
     
     @Override
     protected void extend() {
-
-        final WanderUI ui = this;
 
         messageWindow.clear();
 
@@ -432,7 +430,7 @@ public class WanderUI extends GameUI {
                 if (menu.isInState(WanderState.Wander)) {
                     Direction to = Direction.valueOf(keycode);
                     if (to != null) {
-                        MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement, to);
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                         return true;
                     }
                 }
@@ -442,7 +440,7 @@ public class WanderUI extends GameUI {
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
                 if (menu.isInState(WanderState.Wander)) {
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
                     return true;
                 }
                 return false;
@@ -455,7 +453,7 @@ public class WanderUI extends GameUI {
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 if (menu.isInState(WanderState.Wander)) {
                     Direction to = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement, to);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                     return true;
                 }
                 return false;
@@ -464,7 +462,7 @@ public class WanderUI extends GameUI {
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
                 if (menu.isInState(WanderState.Wander)) {
-                    MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Dungeon.Movement);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
                 }
             }
         });

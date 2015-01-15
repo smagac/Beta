@@ -1,5 +1,7 @@
 package scenes;
 
+import java.nio.CharBuffer;
+
 import github.nhydock.ssm.Inject;
 import scene2d.InputDisabler;
 import scene2d.ui.extras.FocusGroup;
@@ -61,7 +63,6 @@ public abstract class GameUI extends UI {
     private static final String levelFormat = "Level %d";
     private static final String hpFormat = "HP: %3d/%3d";
     private static final String expFormat = "EXP: %3d/%3d";
-    private static final String timeFormat = "Time: %s";
 
     private Label craftingStats;
     private Label levelStats;
@@ -97,6 +98,9 @@ public abstract class GameUI extends UI {
 
     protected StateMachine menu;
     
+    private int seconds = 0;
+    private String time = "Time: %03d:%02d:%02d";
+    
     //prepare these beforehand
     @Override
     protected void listenTo(IntSet messages)
@@ -107,7 +111,11 @@ public abstract class GameUI extends UI {
             Messages.Interface.Close,   
             Messages.Interface.Button,
             TabbedPane.Messages.ChangeTabs,
-            Messages.Dungeon.LevelUp
+            Messages.Dungeon.LevelUp,
+            Messages.Player.Progress,
+            Messages.Player.Stats,
+            Messages.Player.Time,
+            Quest.Actions.Notify
         );
     }
 
@@ -155,11 +163,11 @@ public abstract class GameUI extends UI {
             Group window = makeWindow(skin, 384, 108);
             window.setPosition(96f, 16f);
 
-            craftingStats = new Label(String.format(statFormat, 0, 0), skin, "promptsm");
-            levelStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
-            hpStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
-            expStats = new Label(String.format(levelFormat, 99, 50, 90), skin, "promptsm");
-            timeStats = new Label(String.format(timeFormat, "000:00:00"), skin, "promptsm");
+            craftingStats = new Label(statFormat, skin, "promptsm");
+            levelStats = new Label(levelFormat, skin, "promptsm");
+            hpStats = new Label(hpFormat, skin, "promptsm");
+            expStats = new Label(expFormat, skin, "promptsm");
+            timeStats = new Label("Time: 000:00:00", skin, "promptsm");
 
             craftingStats.setPosition(40f, 54f);
             timeStats.setPosition(344f - timeStats.getPrefWidth(), 54f);
@@ -316,6 +324,9 @@ public abstract class GameUI extends UI {
         
         resetFocus();
             
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Progress);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Time);
     }
     
 
@@ -439,8 +450,6 @@ public abstract class GameUI extends UI {
 
         addActor(levelUpDialog);
         addActor(levelUpGroup);
-
-        MessageDispatcher.getInstance().addListener(this, Quest.Actions.Notify);
     }
 
     /**
@@ -648,18 +657,12 @@ public abstract class GameUI extends UI {
     @Override
     public final void update(float delta) {
         // update time
-        String time = String.format(timeFormat, playerService.getTimeElapsed());
-        timeStats.setText(time);
-
-        // update stats
-        Stats s = playerService.getPlayer().getComponent(Stats.class);
-        levelStats.setText(String.format(levelFormat, s.getLevel()));
-        hpStats.setText(String.format(hpFormat, s.hp, s.maxhp));
-        expStats.setText(String.format(expFormat, s.exp, s.nextExp));
-        // update progress
-        Inventory i = playerService.getInventory();
-        craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
-
+        int[] t = playerService.getTimeElapsed();
+        if (t[2] != seconds) {
+            timeStats.setText(String.format(time, t[0], t[1], t[2]));
+            seconds = t[2];
+        }
+        
         // update animations
         extendAct(delta);
         // display.act(delta);
@@ -715,6 +718,20 @@ public abstract class GameUI extends UI {
         }
         if (msg.message == Messages.Dungeon.LevelUp) {
             LevelUpState.enter(this);
+            return true;
+        }
+        if (msg.message == Messages.Player.Stats) {
+            // update stats
+            Stats s = playerService.getPlayer().getComponent(Stats.class);
+            levelStats.setText(String.format(levelFormat, s.getLevel()));
+            hpStats.setText(String.format(hpFormat, s.hp, s.maxhp));
+            expStats.setText(String.format(expFormat, s.exp, s.nextExp));
+            return true;
+        }
+        if (msg.message == Messages.Player.Progress) {
+            // update progress
+            Inventory i = playerService.getInventory();
+            craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
             return true;
         }
         if (levelUpDialog.isVisible()) {
@@ -842,6 +859,7 @@ public abstract class GameUI extends UI {
             entity.vitTicker.setValue(0);
             entity.points = 0;
             entity.audio.playSfx(DataDirs.Sounds.accept);
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
         }
         
         public static boolean onMessage(GameUI entity, Telegram telegram) {

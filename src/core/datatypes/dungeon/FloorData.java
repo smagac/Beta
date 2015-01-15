@@ -18,9 +18,7 @@ public interface FloorData {
     public int[][] getTiles();
 
     TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height);
-
-    void dispose();
-
+    
     public int[] getStart();
 
     public int[] getEnd();

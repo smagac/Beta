@@ -74,6 +74,7 @@ public class DungeonManager implements IDungeonContainer {
                 dungeonLoader.unload(fileName);
                 loader.setLoading(false);
             }
+            
         };
         dungeonLoader.load("dungeon", Dungeon.class, params);
         

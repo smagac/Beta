@@ -46,6 +46,9 @@ public class BossBattle implements IBattleContainer {
             
             Stats s = target.getComponent(Stats.class);
             s.hp = Math.max(0, s.hp - (Integer)msg.extraInfo);
+            if (target == player) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+            }
             if (s.hp <= 0 && target == boss)
             {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.VICTORY);

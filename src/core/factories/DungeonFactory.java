@@ -136,49 +136,23 @@ public class DungeonFactory {
         // final Thread[] makerThreads = new Thread[Math.min(Math.max(1,
         // depth/8), 4)];
 
-        for (int i = depth-1, made=1; i >= 0; i--, made++) {
-            Runnable run = new FloorMaker(params.getDifficulty(), i, floors);
-            run.run();
+        for (int d = depth-1, made=1; d >= 0; d--, made++) {
+            int difficulty = params.getDifficulty();
+            
+            FloorData floor;
+            int width = 50 + (5 * (d / 5));
+            int height = 50 + (5 * (d / 5));
+            floor = new RandomFloorData(difficulty, d + 1, width, height);
+
+            int roomCount = MathUtils.random(Math.max(5, ((3 * d) / 10) + d), Math.max(5, ((5 * d) / 10) + d));
+            PathMaker.run(floor, roomCount);
+            floors.set(d, floor);
+            
             progress[0] = (int)((made / (float)depth) * 100);
         }
 
         Dungeon d = new Dungeon(params, floors);
         MathUtils.random = oldRandom;
         return d;
-    }
-
-    /**
-     * Simple runnable for making a floor of a dungeon and updating a loader's
-     * progress
-     * 
-     * @author nhydock
-     *
-     */
-    private static class FloorMaker implements Runnable {
-
-        final int difficulty;
-        private int depth;
-        private int width;
-        private int height;
-        final Array<FloorData> dungeon;
-
-        private FloorMaker(int difficulty, int depth, Array<FloorData> dungeon) {
-            this.difficulty = difficulty;
-            this.dungeon = dungeon;
-            this.depth = depth;
-        }
-
-        @Override
-        public void run() {
-            FloorData floor;
-            width = 50 + (5 * (depth / 5));
-            height = 50 + (5 * (depth / 5));
-            floor = new RandomFloorData(difficulty, depth + 1, width, height);
-
-            int roomCount = MathUtils.random(Math.max(5, ((3 * depth) / 10) + depth),
-                    Math.max(5, ((5 * depth) / 10) + depth));
-            PathMaker.run(floor, roomCount);
-            dungeon.set(depth, floor);
-        }
     }
 }

@@ -421,6 +421,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
     public void removedFromEngine(Engine engine) {
         batch = null;
         camera = null;
+        
         mapRenderer.dispose();
         stage.dispose();
         stage = null;

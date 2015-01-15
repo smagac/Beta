@@ -234,6 +234,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 else {
                     msg = name + " attacked you for " + dmg + " damage";
                     rs.hit(opponent, "" + dmg);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                 }
             }
             parentScene.log(msg);
@@ -252,8 +253,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     parentScene.getItem(combat.getDrop());
                     
                     aStats.exp += bStats.exp;
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                     if (aStats.canLevelUp()) {
-                        parentScene.levelUp();
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
                     }
                     Tracker.NumberValues.Monsters_Killed.increment();
                     engine.removeEntity(opponent);
@@ -268,6 +270,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         dungeonService.getProgress().monstersKilled++;
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
+                    
                 }
             }
         }

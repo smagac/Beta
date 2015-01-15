@@ -84,7 +84,9 @@ public class AudioManager implements IAudioManager {
 
     @Override
     public void playBgm() {
-        bgm.play();
+        if (this.bgm != null) {
+            bgm.play();
+        }
     }
 
     @Override
