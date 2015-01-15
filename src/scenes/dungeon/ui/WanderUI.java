@@ -717,4 +717,62 @@ public class WanderUI extends GameUI {
     }
 
 
+    @Override
+    public boolean handleMessage(Telegram telegram) {
+        if (telegram.message == Messages.Dungeon.Notify) {
+            CombatNotify notification = (CombatNotify)telegram.extraInfo;
+            audio.playSfx(DataDirs.Sounds.hit);
+            int dmg = notification.dmg;
+            if (dmg == -1) {
+                if (notification.attacker == playerService.getPlayer()) {
+                    Identifier id = Identifier.Map.get(notification.opponent);
+                    String name = id.toString();
+                    setMessage(String.format("You attacked %s, but missed!", name));
+                }
+                else {
+                    Identifier id = Identifier.Map.get(notification.attacker);
+                    String name = id.toString();
+                    setMessage(String.format("%s attacked you, but missed!", name));
+                }
+            } else if (notification.attacker == playerService.getPlayer()) {
+                Identifier id = Identifier.Map.get(notification.opponent);
+                String name = id.toString();
+                if (dmg == 0) {
+                    setMessage(String.format("%s blocked your attack!", name));
+                }
+                else {
+                    if (notification.critical) {
+                        setMessage("CRITICAL HIT!");
+                    }
+                    setMessage(String.format("You attacked %s for %d damage", name, notification.dmg));
+                }
+            }
+            else {
+                Identifier id = Identifier.Map.get(notification.attacker);
+                String name = id.toString();
+                if (dmg == 0) {
+                    setMessage(String.format("You blocked %s's attack", name));
+                }
+                else {
+                    setMessage(String.format("%s attacked you for %d damage", name, dmg));
+                }
+            }
+            return true;
+        }
+        if (telegram.message == Messages.Dungeon.Dead && telegram.extraInfo != playerService.getPlayer()) {
+            Entity opponent = (Entity)telegram.extraInfo;
+            Combat combat = Combat.Map.get(opponent);
+            setMessage(combat.getDeathMessage(Identifier.Map.get(opponent).toString()));
+            
+            Item item = combat.getDrop();
+            playerService.getInventory().pickup(item);
+            MessageDispatcher.getInstance().dispatchMessage(0, null, playerService.getQuestTracker(), Quest.Actions.Gather,
+                    item.type());
+            
+            setMessage(String.format("Obtained %s", item.fullname()));
+            return true;
+        }
+        return super.handleMessage(telegram);
+    }
+    
 }

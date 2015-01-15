@@ -1,5 +1,7 @@
 package scenes.dungeon;
 
+import scenes.Messages;
+import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.ui.WanderUI;
 import squidpony.squidgrid.fov.FOVSolver;
 import squidpony.squidgrid.fov.RippleFOV;
@@ -11,6 +13,9 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -38,6 +43,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import core.components.Combat;
 import core.components.Identifier;
 import core.components.Groups;
 import core.components.Position;
@@ -47,7 +53,7 @@ import core.datatypes.dungeon.Floor;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
 
-public class RenderSystem extends EntitySystem implements EntityListener {
+public class RenderSystem extends EntitySystem implements EntityListener, Telegraph {
 
     public static final float MoveSpeed = .15f;
 
@@ -117,7 +123,6 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         //set shadow mapping
         Floor f = dungeonService.getDungeon().getFloor(depth);
         wallMap = f.getShadowMap();
-        System.out.println(depth + " : " + wallMap);
         fov = new float[wallMap.length][wallMap[0].length];
         
         shadowLayer.clear();
@@ -338,7 +343,7 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         return stage;
     }
 
-    private void showStats(Vector2 v, Vector2 v2, String name, String hp) {
+    void showStats(Vector2 v, Vector2 v2, String name, String hp) {
         if (statsVis && name.equals(enemyName.getText().toString())) {
             return;
         }
@@ -415,6 +420,8 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         for (Entity e : engine.getEntitiesFor(type)) {
             this.entityAdded(e);
         }
+        
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Notify);
     }
 
     @Override
@@ -426,9 +433,42 @@ public class RenderSystem extends EntitySystem implements EntityListener {
         stage.dispose();
         stage = null;
         mapRenderer = null;
+        
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Notify);
+        
     }
 
     public void resize(int width, int height) {
         this.stage.getViewport().update(width, height, true);
+    }
+
+    @Override
+    public boolean handleMessage(Telegram msg) {
+        if (msg.message == Messages.Dungeon.Notify) {
+            CombatNotify notification = (CombatNotify)msg.extraInfo;
+            int dmg = notification.dmg;
+            Entity attacker = notification.attacker;
+            Entity opponent = notification.opponent;
+            if (dmg == -1) {
+                hit(opponent, "Miss");
+            } 
+            else if (attacker == player) {
+                if (dmg == 0) {
+                    hit(opponent, "Block");
+                }
+                else {
+                    hit(opponent, String.valueOf(dmg));
+                }
+            }
+            else {
+                if (dmg == 0) {
+                    hit(opponent, "Block");
+                }
+                else {
+                    hit(opponent, String.valueOf(dmg));
+                }
+            }
+        }
+        return false;
     }
 }

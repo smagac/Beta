@@ -1,9 +1,11 @@
 package core.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.utils.Array;
 
 public class Identifier extends Component {
+    public static final ComponentMapper<Identifier> Map = ComponentMapper.getFor(Identifier.class);
 
     String adjective;
     String suffix;

@@ -1,9 +1,11 @@
 package core.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.math.Vector2;
 
 public class Position extends Component {
+    public static final ComponentMapper<Position> Map = ComponentMapper.getFor(Position.class);
 
     private float x, y;
     private boolean changed;

@@ -5,6 +5,7 @@ import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
 import scenes.Messages;
+import scenes.Messages.Dungeon.CombatNotify;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
@@ -14,14 +15,10 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Array;
 
-import core.DataDirs;
 import core.components.Combat;
 import core.components.Identifier;
 import core.components.Groups.*;
@@ -46,17 +43,13 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private boolean[][] collision;
     private int[] start, end;
 
-    ComponentMapper<Position> positionMap = ComponentMapper.getFor(Position.class);
-    ComponentMapper<Identifier> identityMap = ComponentMapper.getFor(Identifier.class);
     ComponentMapper<Monster> monsterMap = ComponentMapper.getFor(Monster.class);
-    ComponentMapper<Combat> combatMap = ComponentMapper.getFor(Combat.class);
     ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
     private Entity player;
     Array<Entity> monsters = new Array<Entity>();
 
     private Engine engine;
-    private scenes.dungeon.Scene parentScene;
     @Inject public IDungeonContainer dungeonService;
     
     public void setMap(Floor floorData) {
@@ -92,14 +85,14 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (monsters != null) {
             for (int i = 0; i < monsters.size; i++) {
                 Entity m = monsters.get(i);
-                Position p = positionMap.get(m);
+                Position p = Position.Map.get(m);
                 if ((p.getX() == x && p.getY() == y)) {
                     return m;
                 }
             }
         }
 
-        Position p = positionMap.get(player);
+        Position p = Position.Map.get(player);
         if (p.getX() == x && p.getY() == y) {
             return player;
         }
@@ -114,7 +107,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @param e
      */
     private boolean moveEntity(int x, int y, Entity e) {
-        Position p = positionMap.get(e);
+        Position p = Position.Map.get(e);
         boolean moved = false;
         if (!isWall(x, y)) {
             Entity foe = checkFoe(x, y, e);
@@ -125,7 +118,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     moved = true;
                 }
                 else {
-                    Combat c = combatMap.get(e);
+                    Combat c = Combat.Map.get(e);
                     if (foe == player && !c.isPassive()) {
                         fight(e, foe);
                         moved = true;
@@ -140,11 +133,11 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 if (e == player) {
                     // descend
                     if (x == (int) end[0] && y == (int) end[1]) {
-                        parentScene.setFloor(dungeonService.getProgress().nextFloor());
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Descend);
                     }
                     // ascend
                     else if (x == (int) start[0] && y == (int) start[1]) {
-                        parentScene.setFloor(dungeonService.getProgress().prevFloor());
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Ascend);
                     }
                 }
 
@@ -185,7 +178,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
         float shiftX, shiftY, x, y;
 
-        Position p = positionMap.get(actor);
+        Position p = Position.Map.get(actor);
         float scale = engine.getSystem(RenderSystem.class).getScale();
         x = p.getX() * scale;
         y = p.getY() * scale;
@@ -198,62 +191,37 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         Actions.moveTo(x + shiftX / 4f, y + shiftY / 4f, RenderSystem.MoveSpeed / 2f),
                         Actions.moveTo(x, y, RenderSystem.MoveSpeed / 2f)));
 
-        RenderSystem rs = engine.getSystem(RenderSystem.class);
-
+        //show ids
+        {
+            Identifier id = Identifier.Map.get(actor);
+            id.show();
+            id = Identifier.Map.get(opponent);
+            id.show();
+        }
+        
+        CombatNotify notification = new CombatNotify();
+        notification.attacker = actor;
+        notification.opponent = opponent;
+    
         if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
-            parentScene.audio.playSfx(DataDirs.Sounds.hit);
             float chance = MathUtils.random(.8f, MULT);
             int dmg = Math.max(0, (int) (chance * aStats.getStrength()) - bStats.getDefense());
             bStats.hp = Math.max(0, bStats.hp - dmg);
 
-            String msg = "";
+            notification.dmg = dmg;
             if (actor == player) {
-                Identifier id = identityMap.get(opponent);
-                String name = id.toString();
-                id.show();
-                if (dmg == 0) {
-                    msg = name + " blocked your attack!";
-                    rs.hit(opponent, "Block");
-                }
-                else {
-                    if (chance > MULT * .8f) {
-                        msg = "CRITICAL HIT!\n";
-                    }
-                    msg += "You attacked " + name + " for " + dmg + " damage";
-                    rs.hit(opponent, "" + dmg);
-                }
-                Combat combatProp = combatMap.get(opponent);
+                notification.critical = chance > MULT * .8f && dmg > 0;
+                Combat combatProp = Combat.Map.get(opponent);
                 combatProp.aggress();
             }
-            else {
-                Identifier id = identityMap.get(actor);
-                String name = id.toString();
-                id.show();
-                if (dmg == 0) {
-                    msg = "You blocked " + name + "'s attack";
-                    rs.hit(opponent, "Block");
-                }
-                else {
-                    msg = name + " attacked you for " + dmg + " damage";
-                    rs.hit(opponent, "" + dmg);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-                }
-            }
-            parentScene.log(msg);
-
+            
             if (bStats.hp <= 0) {
                 // player is dead
                 if (opponent == player) {
-                    parentScene.dead();
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, player);
                 }
                 // drop enemy item
                 else {
-                    Combat combat = combatMap.get(opponent);
-                    String cmsg = combat.getDeathMessage(identityMap.get(opponent).toString());
-                    
-                    parentScene.log(cmsg);
-                    parentScene.getItem(combat.getDrop());
-                    
                     aStats.exp += bStats.exp;
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                     if (aStats.canLevelUp()) {
@@ -262,7 +230,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
                     engine.removeEntity(opponent);
                    
-                    Identifier id = identityMap.get(opponent);
+                    Identifier id = Identifier.Map.get(opponent);
 
                     String name = id.toString();
                     if (name.endsWith(Monster.Loot)) {
@@ -277,22 +245,11 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             }
         }
         else {
-            if (actor == player) {
-                Identifier id = identityMap.get(opponent);
-                String name = id.toString();
-                id.show();
-                String msg = "You attacked " + name + ", but missed!";
-                parentScene.log(msg);
-            }
-            else {
-                Identifier id = identityMap.get(actor);
-                String name = id.toString();
-                id.show();
-                String msg = name + "attacked you, but missed!";
-                parentScene.log(msg);
-            }
-            rs.hit(opponent, "Miss");
+            notification.attacker = actor;
+            notification.opponent = opponent;
+            notification.dmg = -1;
         }
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
     }
 
     /**
@@ -301,7 +258,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @param entity 
      */
     public void moveToStart(Entity entity) {
-        Position p = positionMap.get(entity);
+        Position p = Position.Map.get(entity);
 
         p.move((int) start[0], (int) start[1]);
         p.update();
@@ -312,7 +269,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * previous level.  Primarily for the player, but can be used for anything.
      */
     public void moveToEnd(Entity entity) {
-        Position p = positionMap.get(entity);
+        Position p = Position.Map.get(entity);
 
         p.move((int) end[0], (int) end[1]);
         p.update();
@@ -329,7 +286,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (direction == null)
             return false;
 
-        Position playerPos = positionMap.get(player);
+        Position playerPos = Position.Map.get(player);
         int x = playerPos.getX();
         int y = playerPos.getY();
         if (direction == Up) {
@@ -368,15 +325,15 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @param e
      */
     protected void process(Entity e) {
-        Position m = positionMap.get(e);
-        Position p = positionMap.get(player);
+        Position m = Position.Map.get(e);
+        Position p = Position.Map.get(player);
 
         Stats s = statMap.get(e);
         if (s.hp <= 0) {
             return;
         }
 
-        Combat prop = combatMap.get(e);
+        Combat prop = Combat.Map.get(e);
 
         // only try moving once the character is in the same room as it
         // try to move towards the player when nearby
@@ -452,7 +409,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * Dereference as much as we can
      */
     public void dispose() {
-        parentScene = null;
         monsters = null;
         player = null;
     }
@@ -482,9 +438,5 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         } else if (Groups.playerType.matches(entity)) {
             player = null;
         }
-    }
-
-    public void setScene(Scene scene) {
-        parentScene = scene;
     }
 }

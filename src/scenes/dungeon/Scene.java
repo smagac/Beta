@@ -28,9 +28,7 @@ import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
-import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
-import core.datatypes.Item;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.implementations.ScoreTracker.StringValues;
@@ -124,7 +122,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         rs.setView(wanderUI, shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
         rs.setMap(map);
-        ms.setScene(this);
         
         input.addProcessor(rs.getStage());
     }
@@ -223,8 +220,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     }
     
     protected void dead() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.Dead);
-
         // lose all found items
         playerService.getInventory().abandon();
 
@@ -233,22 +228,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     }
 
     protected void leave() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.Exit);
-
         // merge loot into inventory
         playerService.getInventory().merge();
-    }
-
-    /**
-     * Add an item after a monster has dropped it
-     * 
-     * @param item
-     */
-    protected void getItem(Item item) {
-        playerService.getInventory().pickup(item);
-        MessageDispatcher.getInstance().dispatchMessage(0, null, playerService.getQuestTracker(), Quest.Actions.Gather,
-                item.type());
-        wanderUI.setMessage("Obtained " + item.fullname());
     }
     
     /**
@@ -335,14 +316,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
     }
 
-    /**
-     * Sends a text message to the currently active UI
-     * @param msg
-     */
-    public void log(String msg) {
-        wanderUI.setMessage(msg);
-    }
-
     @Override
     public boolean handleMessage(Telegram msg) {
         if (msg.message == Messages.Dungeon.FIGHT) {
@@ -361,6 +334,22 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             });
             ui = transition;
             Gdx.input.setInputProcessor(null);
+            return true;
+        }
+        if (msg.message == Messages.Dungeon.Dead && msg.extraInfo == playerService.getPlayer()) {
+            dead();
+            return true;
+        }
+        if (msg.message == Messages.Dungeon.Exit || msg.message == Messages.Dungeon.Leave) {
+            leave();
+            return true;
+        }
+        if (msg.message == Messages.Dungeon.Descend) {
+            setFloor(dungeonService.getProgress().nextFloor());
+            return true;
+        }
+        if (msg.message == Messages.Dungeon.Ascend){
+            setFloor(dungeonService.getProgress().prevFloor());
             return true;
         }
         return false;

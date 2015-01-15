@@ -1,5 +1,7 @@
 package scenes;
 
+import com.badlogic.ashley.core.Entity;
+
 import core.datatypes.Item;
 
 /**
@@ -85,6 +87,19 @@ public interface Messages {
         
         public static final int FIGHT = 0x1004; //two entities are fighting
         public static final int KILLED = 0x1005; //an entity has been destroyed in combat
+        
+        public static final int Descend = 0x1006;
+        public static final int Ascend = 0x1007;
+        
+        //different kind of notify, this goes in the bottom right box of the log instead of popups
+        public static final int Notify = 0x1008; 
+        
+        public static final class CombatNotify {
+            public Entity attacker;
+            public Entity opponent;
+            public int dmg;
+            public boolean critical;
+        }
     }
     
     /*
