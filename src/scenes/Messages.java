@@ -1,5 +1,7 @@
 package scenes;
 
+import core.datatypes.Item;
+
 /**
  * Collection of all UI messages that may be sent by the MessageDispatcher.
  * I know it's bad practice to put all constants in one file like this,
@@ -30,6 +32,18 @@ public interface Messages {
         public static final int Stats = 0xffe1;
         
         public static final int Time = 0xffe2;
+        
+        //send this message when a new item(s) has been added to the player's inventory
+        public static final int NewItem = 0xffe3;
+        
+        public static final int RemoveItem = 0xffe4;
+        
+        public static final int UpdateItem = 0xffe5;
+        
+        public static final class ItemMsg {
+            public Item item;
+            public int amount;
+        }
     }
     
     /*

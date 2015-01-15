@@ -14,6 +14,8 @@ public class Craftable extends Item {
 
     protected boolean canMake = false;
 
+    private String isReady;
+    
     public Craftable() {
     };
 
@@ -25,6 +27,8 @@ public class Craftable extends Item {
             int count = MathUtils.random(1, 5);
             requirements.put(part, count);
         }
+        
+        isReady = "*"+fullname;
     }
 
     public ObjectMap<String, Integer> getRequirements() {
@@ -37,7 +41,7 @@ public class Craftable extends Item {
 
     @Override
     public String toString() {
-        return ((canMake) ? "*" : "") + super.toString();
+        return ((canMake) ? isReady : fullname);
     }
 
     @Override
@@ -67,7 +71,7 @@ public class Craftable extends Item {
         }
         if (o instanceof Craftable) {
             Craftable c = (Craftable) o;
-            return fullname().equals(c.fullname());
+            return fullname.equals(c.fullname);
         }
         if (o instanceof Item) {
             Item i = (Item) o;
@@ -94,7 +98,9 @@ public class Craftable extends Item {
     public void read(Json json, JsonValue jsonData) {
         name = jsonData.getString("name");
         adj = jsonData.getString("adj");
-
+        fullname = String.format("%s%s", adj, name);
+        isReady = "*"+fullname;
+        
         JsonValue jv = jsonData.get("requirements");
         requirements.clear();
 

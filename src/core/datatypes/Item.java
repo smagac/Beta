@@ -8,6 +8,8 @@ public class Item implements Comparable<Item>, Serializable {
     String adj;
     String name;
 
+    String fullname;
+    
     /**
      * Used for JsonSerializable
      */
@@ -17,6 +19,8 @@ public class Item implements Comparable<Item>, Serializable {
     public Item(String name, String adj) {
         this.adj = adj;
         this.name = name;
+        
+        this.fullname = String.format("%s %s", adj, name);
     }
 
     @Override
@@ -30,7 +34,7 @@ public class Item implements Comparable<Item>, Serializable {
     }
 
     public String fullname() {
-        return String.format("%s %s", adj, name);
+        return fullname;
     }
 
     public String descriptor() {
@@ -43,7 +47,7 @@ public class Item implements Comparable<Item>, Serializable {
 
     @Override
     public String toString() {
-        return fullname();
+        return fullname;
     }
 
     @Override
@@ -77,7 +81,7 @@ public class Item implements Comparable<Item>, Serializable {
         }
         if (o instanceof Item) {
             Item i = (Item) o;
-            return fullname().equals(i.fullname());
+            return fullname.equals(i.fullname);
         }
         return false;
     }
@@ -92,5 +96,6 @@ public class Item implements Comparable<Item>, Serializable {
     public void read(Json json, JsonValue jsonData) {
         name = jsonData.getString("name");
         adj = jsonData.getString("adj");
+        fullname = String.format("%s %s", adj, name);
     }
 }

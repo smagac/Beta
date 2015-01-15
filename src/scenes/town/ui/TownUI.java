@@ -8,8 +8,10 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
+import scene2d.ui.extras.TableUtils;
 import scenes.GameUI;
 import scenes.Messages;
+import scenes.Messages.Player.ItemMsg;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -29,6 +31,8 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
@@ -38,11 +42,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectMap.Keys;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.common.Input;
 import core.datatypes.Craftable;
+import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
@@ -83,6 +91,8 @@ public class TownUI extends GameUI {
     Table craftSubmenu;
     Table lootSubmenu;
     TabbedPane craftMenu;
+    ObjectMap<Item, Array<Label>> lootRecords;
+    Array<Item> lootRows;
     List<Craftable> craftList;
     List<Craftable> todayList;
     ScrollPane lootPane;
@@ -118,6 +128,13 @@ public class TownUI extends GameUI {
     FocusGroup formFocus;
     FocusGroup defaultFocus;
 
+    @Override
+    protected void listenTo(IntSet messages)
+    {
+        super.listenTo(messages);
+        messages.addAll(Messages.Player.NewItem, Messages.Player.RemoveItem, Messages.Player.UpdateItem);
+    }
+    
     public TownUI(AssetManager manager) {
         super(manager);
 
@@ -385,6 +402,7 @@ public class TownUI extends GameUI {
         lootSubmenu.row();
 
         lootList = new Table();
+        
         lootPane = new ScrollPane(lootList, skin);
         lootPane.setHeight(display.getHeight() / 2);
         lootPane.setScrollingDisabled(true, false);
@@ -408,12 +426,86 @@ public class TownUI extends GameUI {
             }
         });
 
+        ObjectMap<Item, Integer> loot = playerService.getInventory().getLoot();
+        lootRecords = new ObjectMap<Item, Array<Label>>();
+        lootRows = new Array<Item>();
+        Keys<Item> keys = loot.keys();
+        if (loot.size == 0) {
+            lootList.center();
+            Label l = new Label("Looks like you don't have any loot!  You should go exploring", ui.getSkin());
+            l.setWrap(true);
+            l.setAlignment(Align.center);
+            lootList.add(l).expandX().fillX();
+        } else {
+            expandInventory();
+            
+            for (Item item : keys) {
+                addItem(item, loot.get(item));
+            }
+            
+        }
+        
         display.addActor(lootSubmenu);
 
         craftGroup = new FocusGroup(buttonList, lootPane, craftMenu);
         craftGroup.addListener(focusListener);
     }
 
+    /**
+     * Adds a new item row to the loot list
+     * @param item
+     * @param amount
+     */
+    private void addItem(Item item, int amount){
+        if (lootRows.size <= 0) {
+            expandInventory();
+        }
+        
+        Array<Label> row = new Array<Label>();
+        Label l = new Label(item.toString(), getSkin(), "smaller");
+        l.setAlignment(Align.left);
+        lootList.add(l).expandX().fillX();
+        Label i = new Label("" + amount, getSkin(), "smaller");
+        i.setAlignment(Align.right);
+        lootList.add(i).width(30f);
+        lootList.row();
+        row.add(l);
+        row.add(i);
+        lootRecords.put(item, row);
+        lootRows.add(item);
+        
+        lootList.pack();
+    }
+    
+    /**
+     * Modifies a single row in the loot list
+     * @param item
+     * @param amount
+     */
+    private void modifyItem(Item item, Integer amount) {
+        if (amount > 0) {
+            Array<Label> record = lootRecords.get(item);
+            record.get(1).setText(amount.toString());
+        } else {
+            int row = lootRows.indexOf(item, true);
+            TableUtils.removeTableRow(lootList, row, 2);
+            lootRows.removeIndex(row);
+            lootRecords.remove(item);
+        }
+    }
+    
+    /**
+     * Preps the loot list for holding items
+     */
+    protected void expandInventory() {
+        lootList.setWidth(lootPane.getWidth());
+        lootList.pad(10f);
+        lootList.clear();
+        lootList.top().left();
+
+        lootList.setTouchable(Touchable.disabled);
+    }
+    
     /**
      * create explore submenu layout
      */
@@ -972,6 +1064,21 @@ public class TownUI extends GameUI {
         // handle expiration of quests notification
         if (msg.message == Quest.Actions.Expired) {
             this.pushNotification("A quest has expired");
+            return true;
+        }
+        if (msg.message == Messages.Player.NewItem) {
+            ItemMsg item = (ItemMsg)msg.extraInfo;
+            addItem(item.item, item.amount);
+            return true;
+        }
+        if (msg.message == Messages.Player.UpdateItem) {
+            ItemMsg item = (ItemMsg)msg.extraInfo;
+            modifyItem(item.item, item.amount);
+            return true;
+        }
+        if (msg.message == Messages.Player.RemoveItem) {
+            Item item = (Item)msg.extraInfo;
+            modifyItem(item, 0);
             return true;
         }
         return super.handleMessage(msg);

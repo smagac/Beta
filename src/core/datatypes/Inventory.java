@@ -1,6 +1,7 @@
 package core.datatypes;
 
 import scenes.Messages;
+import scenes.Messages.Player.ItemMsg;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
@@ -181,9 +182,14 @@ public class Inventory implements Serializable {
                     if (amount == 0) {
                         Gdx.app.log("Crafting", "removing " + i);
                         all.remove(i);
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, i);
                     }
                     else {
                         all.put(i, amount);
+                        ItemMsg im = new ItemMsg();
+                        im.item = i;
+                        im.amount = amount;
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
                     }
 
                     if (have >= need) {
@@ -195,8 +201,9 @@ public class Inventory implements Serializable {
 
         // add the item to your loot
         Item crafted = new Item(c.name, c.adj);
-        all.put(crafted, all.get(crafted, 0) + 1);
-
+        pickup(crafted);
+        merge();
+        
         Tracker.NumberValues.Items_Crafted.increment();
 
         // count progress after making
@@ -259,11 +266,14 @@ public class Inventory implements Serializable {
         if (canSacrifice) {
             for (Item item : sacrifices.keys()) {
                 int total = sacrifices.get(item);
-                int tmpSub = Math.min(total, tmp.get(item, 0));
-                int lootSub = Math.min(total - tmpSub, loot.get(item, 0));
-
-                if (loot.containsKey(item)) {
-                    int count = loot.get(item, 0) - lootSub;
+                int tmpCount = tmp.get(item, 0);
+                int lootCount = loot.get(item, 0); 
+                int tmpSub = Math.min(total, tmpCount);
+                int lootSub = Math.min(total - tmpSub, lootCount);
+                int allCount = (tmpCount + lootCount) - (tmpSub + lootSub);
+                
+                if (lootSub > 0) {
+                    int count = lootCount - lootSub;
                     if (count == 0) {
                         loot.remove(item);
                     }
@@ -271,8 +281,8 @@ public class Inventory implements Serializable {
                         loot.put(item, count);
                     }
                 }
-                if (tmp.containsKey(item)) {
-                    int count = tmp.get(item, 0) - tmpSub;
+                if (tmpSub > 0) {
+                    int count = tmpCount - tmpSub;
                     if (count == 0) {
                         tmp.remove(item);
                     }
@@ -280,14 +290,13 @@ public class Inventory implements Serializable {
                         tmp.put(item, count);
                     }
                 }
-                if (all.containsKey(item)) {
-                    int count = all.get(item, 0) - (tmpSub + lootSub);
-                    if (count == 0) {
-                        all.remove(item);
-                    }
-                    else {
-                        all.put(item, count);
-                    }
+                if (allCount == 0) {
+                    all.remove(item);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, item);
+                }
+                else {
+                    all.put(item, allCount);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, item);
                 }
             }
         }
@@ -310,10 +319,22 @@ public class Inventory implements Serializable {
      * @param i
      */
     public void pickup(Item item, int i) {
-        tmp.put(item, tmp.get(item, 0) + i);
-        all.put(item, all.get(item, 0) + i);
+        int amount = tmp.get(item, 0);
+        int amount2 = all.get(item, 0);
+        tmp.put(item, amount + i);
+        all.put(item, amount2 + i);
         
         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Gather, new GatherInfo(item.fullname(), all.get(item)));
+        
+        ItemMsg im = new ItemMsg();
+        im.item = item;
+        im.amount = amount2 + i;
+        
+        if (amount == 0 && amount2 == 0) {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.NewItem, im);
+        } else {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
+        }
     }
 
     /**

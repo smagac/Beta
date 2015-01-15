@@ -13,6 +13,8 @@ public class Identifier extends Component {
     
     Array<String> modifiers;
 
+    private String fullname;
+    
     public Identifier(String base, String suffix, String... adjectives) {
         this.type = base;
         if (suffix == null)
@@ -28,11 +30,13 @@ public class Identifier extends Component {
         for (String adj : modifiers) {
             this.adjective += adj + " ";
         }
+        
+        fullname = String.format("%s%s%s", this.adjective, this.type, this.suffix);
     }
 
     @Override
     public String toString() {
-        return String.format("%s%s%s", this.adjective, this.type, this.suffix);
+        return fullname;
     }
 
     public String getType() {

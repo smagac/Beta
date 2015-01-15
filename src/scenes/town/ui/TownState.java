@@ -2,6 +2,7 @@ package scenes.town.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -21,6 +22,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -93,36 +95,8 @@ enum TownState implements UIState {
         }
     },
     Craft() {
-
+        
         private void populateLoot(TownUI ui) {
-            ui.lootList.clear();
-            ui.lootList.top().left();
-
-            ObjectMap<Item, Integer> loot = ui.playerService.getInventory().getLoot();
-            if (loot.keys().hasNext) {
-                ui.lootList.setWidth(ui.lootPane.getWidth());
-                ui.lootList.pad(10f);
-                for (Item item : loot.keys()) {
-                    Label l = new Label(item.toString(), ui.getSkin(), "smaller");
-                    l.setAlignment(Align.left);
-                    ui.lootList.add(l).expandX().fillX();
-                    Label i = new Label("" + loot.get(item), ui.getSkin(), "smaller");
-                    i.setAlignment(Align.right);
-                    ui.lootList.add(i).width(30f);
-                    ui.lootList.row();
-
-                }
-                ui.lootList.setTouchable(Touchable.disabled);
-            }
-            else {
-                ui.lootList.center();
-                Label l = new Label("Looks like you don't have any loot!  You should go exploring", ui.getSkin());
-                l.setWrap(true);
-                l.setAlignment(Align.center);
-                ui.lootList.add(l).expandX().fillX();
-            }
-            ui.lootList.pack();
-
             int index = 0;
             if (ui.craftMenu.getOpenTabIndex() == 0) {
                 index = ui.craftList.getSelectedIndex();
@@ -470,13 +444,7 @@ enum TownState implements UIState {
 
         @Override
         public void update(TownUI ui) {
-            if (dialog.hasNext()) {
-                ui.gMsg.setText(dialog.next());
-            }
-            else {
-                dialog = null;
-                ui.changeState(Main);
-            }
+            
         }
 
         @Override
@@ -491,11 +459,23 @@ enum TownState implements UIState {
 
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
+            
             if (t.extraInfo instanceof String[]) {
-                dialog = new Array<String>((String[]) t.extraInfo).iterator();
+                dialog = Arrays.asList((String[]) t.extraInfo).iterator();
                 ui.gMsg.setText(dialog.next());
                 return true;
             }
+            if (t.message == Messages.Interface.Button) {
+                if (dialog.hasNext()) {
+                    ui.gMsg.setText(dialog.next());
+                }
+                else {
+                    dialog = null;
+                    ui.changeState(Main);
+                }
+                return true;
+            }
+            
             return false;
         }
     },
