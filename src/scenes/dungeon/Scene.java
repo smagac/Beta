@@ -136,7 +136,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         loaded = false;
         
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.FIGHT);
-        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.KILLED);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.KILLED);        
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Ascend);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Descend);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Dead);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Leave);
     
         ui = wanderUI;
         input.addProcessor(wanderUI);
@@ -151,6 +155,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.FIGHT);
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.KILLED);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Ascend);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Descend);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Dead);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Leave);
+        
         wanderUI.dispose();
         transition.dispose();
         ui = null;

@@ -216,12 +216,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             }
             
             if (bStats.hp <= 0) {
-                // player is dead
-                if (opponent == player) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, player);
-                }
-                // drop enemy item
-                else {
+                // drop item if opponent killed was not a player
+                if (opponent != player){
                     aStats.exp += bStats.exp;
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                     if (aStats.canLevelUp()) {
@@ -229,7 +225,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     }
                     ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
                     engine.removeEntity(opponent);
-                   
+
                     Identifier id = Identifier.Map.get(opponent);
 
                     String name = id.toString();
@@ -240,8 +236,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         dungeonService.getProgress().monstersKilled++;
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
-                    
                 }
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
             }
         }
         else {
