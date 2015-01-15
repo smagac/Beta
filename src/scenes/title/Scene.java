@@ -31,9 +31,6 @@ public class Scene extends scenes.Scene<TitleSequence> {
     protected void init() {
         ui.init();
 
-        // fetch assets
-        audio.setBgm(manager.get(DataDirs.Audio + "title.mp3", Music.class), false);
-
         input.addProcessor(ui);
         Gdx.input.setInputProcessor(input);
     }

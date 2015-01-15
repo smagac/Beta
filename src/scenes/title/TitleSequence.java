@@ -1,10 +1,12 @@
 package scenes.title;
 
 import github.nhydock.ssm.SceneManager;
+import scene2d.PlayBGM;
 import scenes.UI;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -111,15 +113,14 @@ public class TitleSequence extends UI {
             text.addAction(Actions.sequence(Actions.alpha(0f), Actions.delay(3f), Actions.alpha(1f, 1f)));
             textGrid.row();
             textGrid.add(text).expandX().fillX().padRight(60f);
-            textGrid.addAction(Actions.sequence(Actions.alpha(1f), Actions.delay(8f), Actions.alpha(0f, 2f),
-                    Actions.run(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            parent.audio.playBgm();
-                        }
-
-                    })));
+            textGrid.addAction(
+                Actions.sequence(
+                    Actions.alpha(1f), 
+                    Actions.delay(8f), 
+                    Actions.alpha(0f, 2f),
+                    Actions.run(new PlayBGM(manager.get(DataDirs.Audio + "title.mp3", Music.class)))
+                )
+            );
             addActor(textGrid);
         }
 
