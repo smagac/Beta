@@ -32,7 +32,7 @@ import core.service.implementations.ScoreTracker.NumberValues;
  *
  */
 public enum WanderState implements UIState {
-    Wander() {
+    Wander("Request Assistance") {
 
         private float walkTimer = -1f;
         private final Vector2 mousePos = new Vector2();
@@ -120,13 +120,8 @@ public enum WanderState implements UIState {
             return false;
         }
 
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Request Assistance" };
-        }
-
     },
-    Assist() {
+    Assist("Return", "Heal Me", "Go Home") {
 
         @Override
         public void enter(WanderUI entity) {
@@ -149,13 +144,8 @@ public enum WanderState implements UIState {
             return false;
         }
 
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Return", "Heal Me", "Go Home" };
-        }
-
     },
-    Sacrifice_Heal() {
+    Sacrifice_Heal("I've changed my mind", "Sacrifice Your Loot") {
 
         @Override
         public void enter(WanderUI entity) {
@@ -163,11 +153,6 @@ public enum WanderState implements UIState {
             
             entity.showGoddess("So you'd like me to heal you?\nThat'll cost you " + healCost + " loot.");
             entity.showLoot();
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "I've changed my mind", "Sacrifice Your Loot" };
         }
 
         @Override
@@ -195,7 +180,7 @@ public enum WanderState implements UIState {
         }
 
     },
-    Sacrifice_Leave() {
+    Sacrifice_Leave("I've changed my mind", "Sacrifice Your Loot") {
 
         @Override
         public void enter(WanderUI entity) {
@@ -203,11 +188,6 @@ public enum WanderState implements UIState {
             entity.showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently "
                     + fleeCost + " floors deep.");
             entity.showLoot();
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "I've changed my mind", "Sacrifice Your Loot" };
         }
 
         @Override
@@ -236,7 +216,7 @@ public enum WanderState implements UIState {
     /**
      * Player is dead. drop loot and make fun of him
      */
-    Dead() {
+    Dead("Return Home") {
         @Override
         public void enter(WanderUI entity) {
             entity.hideGoddess();
@@ -249,12 +229,7 @@ public enum WanderState implements UIState {
             entity.refreshButtons();
             entity.setFocus(entity.getButtonList());
         }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Return Home" };
-        }
-
+        
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
             if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
@@ -274,7 +249,7 @@ public enum WanderState implements UIState {
     /**
      * Player strategically left. Don't drop loot but still make fun of him
      */
-    Exit() {
+    Exit( "Return Home" ) {
         @Override
         public void enter(WanderUI entity) {
             entity.hideGoddess();
@@ -288,11 +263,6 @@ public enum WanderState implements UIState {
 
             entity.refreshButtons();
             entity.setFocus(entity.getButtonList());
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Return Home" };
         }
 
         @Override
@@ -314,6 +284,17 @@ public enum WanderState implements UIState {
 
     };
 
+    private final String[] buttons;
+    
+    WanderState(String... buttons) {
+        this.buttons = buttons;
+    }
+    
+    @Override
+    public String[] defineButtons() {
+        return buttons;
+    }
+    
     @Override
     public void enter(WanderUI entity) {
     }

@@ -40,6 +40,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import core.DataDirs;
@@ -262,7 +263,7 @@ public class BattleUI extends GameUI
 	private void makeSacrificeMenu(){
 	    inventory = new List<Item>(skin);
 	    
-	    ObjectMap<Item, Integer> items = playerService.getInventory().getLoot();
+	    ObjectIntMap<Item> items = playerService.getInventory().getLoot();
 	    inventory.setItems(items.keys().toArray());
 	    
 	    itemPane = new ScrollPane(inventory, skin);

@@ -43,8 +43,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Keys;
+import com.badlogic.gdx.utils.ObjectIntMap.Keys;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
@@ -426,7 +427,7 @@ public class TownUI extends GameUI {
             }
         });
 
-        ObjectMap<Item, Integer> loot = playerService.getInventory().getLoot();
+        ObjectIntMap<Item> loot = playerService.getInventory().getLoot();
         lootRecords = new ObjectMap<Item, Array<Label>>();
         lootRows = new Array<Item>();
         Keys<Item> keys = loot.keys();
@@ -440,7 +441,7 @@ public class TownUI extends GameUI {
             expandInventory();
             
             for (Item item : keys) {
-                addItem(item, loot.get(item));
+                addItem(item, loot.get(item, 1));
             }
             
         }
@@ -465,7 +466,7 @@ public class TownUI extends GameUI {
         Label l = new Label(item.toString(), getSkin(), "smaller");
         l.setAlignment(Align.left);
         lootList.add(l).expandX().fillX();
-        Label i = new Label("" + amount, getSkin(), "smaller");
+        Label i = new Label(String.valueOf(amount), getSkin(), "smaller");
         i.setAlignment(Align.right);
         lootList.add(i).width(30f);
         lootList.row();

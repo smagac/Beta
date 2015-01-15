@@ -167,7 +167,7 @@ public final class ScoreTracker implements Serializable, Service {
         if (value.tag != null) {
             return String.format("%d %s", count, value.tag);
         }
-        return ""+count;
+        return String.valueOf(count);
     }
 
     public String max(StringValues value) {

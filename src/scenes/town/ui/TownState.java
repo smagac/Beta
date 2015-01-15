@@ -10,35 +10,28 @@ import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.ui.extras.TabbedPane;
-import scenes.GameUI;
 import scenes.Messages;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.components.Stats;
 import core.datatypes.Craftable;
 import core.datatypes.Inventory;
-import core.datatypes.Item;
 import core.datatypes.QuestTracker.Reward;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.quests.Quest;
@@ -54,18 +47,13 @@ import core.service.interfaces.IPlayerContainer.SaveSummary;
  *
  */
 enum TownState implements UIState {
-    Main() {
-
+    Main("Sleep", "Explore", "Craft", "Quest", "Save") {
+        
         @Override
         public void enter(TownUI ui) {
             ui.restore();
             ui.refreshButtons();
             ui.resetFocus();
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Sleep", "Explore", "Craft", "Quest", "Save" };
         }
 
         /**
@@ -96,7 +84,7 @@ enum TownState implements UIState {
             return false;
         }
     },
-    Craft() {
+    Craft("Cancel", "Make Item") {
         
         private void populateLoot(TownUI ui) {
             int index = 0;
@@ -127,12 +115,12 @@ enum TownState implements UIState {
             // build requirements list
             ui.requirementList.clear();
 
-            ObjectMap<String, Integer> items = c.getRequirements();
+            ObjectIntMap<String> items = c.getRequirements();
             for (String name : items.keys()) {
                 Label l = new Label(name, ui.getSkin(), "smallest");
                 l.setAlignment(Align.left);
                 ui.requirementList.add(l).expandX().fillX();
-                Label i = new Label(ui.playerService.getInventory().genericCount(name) + "/" + items.get(name),
+                Label i = new Label(ui.playerService.getInventory().genericCount(name) + "/" + items.get(name, 1),
                         ui.getSkin(), "smallest");
                 i.setAlignment(Align.right);
                 ui.requirementList.add(i).width(30f);
@@ -165,11 +153,6 @@ enum TownState implements UIState {
             ui.setMessage("Tink Tink");
             ui.refreshButtons();
             ui.resetFocus();
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Return", "Make Item" };
         }
 
         @Override
@@ -234,7 +217,7 @@ enum TownState implements UIState {
             return false;
         }
     },
-    Explore() {
+    Explore("Return", "Explore Dungeon", "Random Dungeon", "Daily Dungeon") {
 
         @Override
         public void enter(TownUI ui) {
@@ -247,11 +230,6 @@ enum TownState implements UIState {
             ui.setMessage("Where to?");
             ui.refreshButtons();
             ui.resetFocus();
-        }
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Return", "Explore Dungeon", "Random Dungeon", "Daily Dungeon" };
         }
 
         @Override
@@ -398,12 +376,7 @@ enum TownState implements UIState {
             ui.refreshButtons();
             ui.setFocus(null);
         }
-
-        @Override
-        public String[] defineButtons() {
-            return null;
-        }
-
+        
         @Override
         public boolean onMessage(TownUI ui, Telegram telegram) {
             return false;
@@ -413,8 +386,8 @@ enum TownState implements UIState {
         public void exit(TownUI ui) {
         }
     },
-    GoddessDialog() {
-
+    GoddessDialog("Continue") {
+        private String[] buttons2 = {"Good-bye!"};
         public Iterator<String> dialog;
 
         @Override
@@ -452,10 +425,10 @@ enum TownState implements UIState {
         @Override
         public String[] defineButtons() {
             if (dialog.hasNext()) {
-                return new String[] { "Continue" };
+                return buttons;
             }
             else {
-                return new String[] { "Good-bye" };
+                return buttons2;
             }
         }
 
@@ -484,11 +457,6 @@ enum TownState implements UIState {
     Over() {
 
         @Override
-        public String[] defineButtons() {
-            return null;
-        }
-
-        @Override
         public void enter(TownUI ui) {
             InputDisabler.swap();
             InputDisabler.clear();
@@ -515,12 +483,7 @@ enum TownState implements UIState {
             return false;
         }
     },
-    Save() {
-
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Cancel" };
-        }
+    Save("Cancel") {
 
         @Override
         public void enter(final TownUI ui) {
@@ -586,15 +549,10 @@ enum TownState implements UIState {
     },
     // State used for waiting on the connection to be made with the server
     // to pull down a dungeon hash
-    NetworkLoad() {
+    NetworkLoad("Cancel Download") {
         private final String DAILY_DUNGEON_SERVER = "http://storymode.nhydock.me/daily";
         Net.HttpRequest connection;
         String dungeonData;
-        
-        @Override
-        public String[] defineButtons() {
-            return new String[] { "Cancel Download" };
-        }
 
         @Override
         public void enter(final TownUI entity) {
@@ -662,17 +620,17 @@ enum TownState implements UIState {
         }
 
     },
-    QuestMenu() {
-
+    QuestMenu("Return", "Complete Quest") {
+        private String[] buttons2 = {"Return", "Accept Quest"};
         boolean completeView = false;
 
         @Override
         public String[] defineButtons() {
             if (completeView) {
-                return new String[] { "Return", "Complete Quest" };
+                return buttons;
             }
             else {
-                return new String[] { "Return", "Accept Quest" };
+                return buttons2;
             }
         }
 
@@ -826,6 +784,17 @@ enum TownState implements UIState {
 
     };
 
+    final String[] buttons;
+    
+    TownState(String... buttons) {
+        this.buttons = buttons;
+    }
+    
+    @Override
+    public String[] defineButtons() {
+        return buttons;
+    }
+    
     @Override
     public void exit(TownUI ui) {
     }

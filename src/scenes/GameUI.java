@@ -63,7 +63,8 @@ public abstract class GameUI extends UI {
     private static final String levelFormat = "Level %d";
     private static final String hpFormat = "HP: %3d/%3d";
     private static final String expFormat = "EXP: %3d/%3d";
-
+    private static final String time = "Time: %03d:%02d:%02d";
+    
     private Label craftingStats;
     private Label levelStats;
     private Label timeStats;
@@ -99,7 +100,6 @@ public abstract class GameUI extends UI {
     protected StateMachine menu;
     
     private int seconds = 0;
-    private String time = "Time: %03d:%02d:%02d";
     
     //prepare these beforehand
     @Override
@@ -329,7 +329,6 @@ public abstract class GameUI extends UI {
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Time);
     }
     
-
     private void setPoints(int points) {
         this.points = points;
         this.pointLabel.setText(String.format("Points %d", points));
@@ -659,7 +658,7 @@ public abstract class GameUI extends UI {
         // update time
         int[] t = playerService.getTimeElapsed();
         if (t[2] != seconds) {
-            //timeStats.setText(String.format(time, t[0], t[1], t[2]));
+            timeStats.setText(String.format(time, t[0], t[1], t[2]));
             seconds = t[2];
         }
         
@@ -715,6 +714,7 @@ public abstract class GameUI extends UI {
     public boolean handleMessage(Telegram msg) {
         if (msg.message == Messages.Interface.Notify) {
             pushNotification((String) msg.extraInfo);
+            return true;
         }
         if (msg.message == Messages.Dungeon.LevelUp) {
             LevelUpState.enter(this);

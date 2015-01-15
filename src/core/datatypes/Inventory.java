@@ -10,8 +10,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Keys;
+import com.badlogic.gdx.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectIntMap.Keys;
 
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.info.GatherInfo;
@@ -27,22 +27,22 @@ import com.badlogic.gdx.utils.Json.Serializable;
 public class Inventory implements Serializable {
     Array<Craftable> required;
     Array<Craftable> todaysCrafts;
-    ObjectMap<Item, Integer> loot;
-    ObjectMap<Item, Integer> tmp;
-    ObjectMap<Item, Integer> all;
+    ObjectIntMap<Item> loot;
+    ObjectIntMap<Item> tmp;
+    ObjectIntMap<Item> all;
 
     private int progress = 0;
 
     public Inventory() {
         required = new Array<Craftable>();
         todaysCrafts = new Array<Craftable>();
-        loot = new ObjectMap<Item, Integer>();
-        tmp = new ObjectMap<Item, Integer>();
-        all = new ObjectMap<Item, Integer>();
+        loot = new ObjectIntMap<Item>();
+        tmp = new ObjectIntMap<Item>();
+        all = new ObjectIntMap<Item>();
     }
 
     public Inventory(int difficulty) {
-        required = new Array<Craftable>();
+        this();
         do {
             Craftable c = CraftableFactory.createRandomCraftable();
             if (!required.contains(c, false)) {
@@ -52,10 +52,6 @@ public class Inventory implements Serializable {
         while (required.size < difficulty * 2);
 
         refreshCrafts();
-
-        loot = new ObjectMap<Item, Integer>();
-        tmp = new ObjectMap<Item, Integer>();
-        all = new ObjectMap<Item, Integer>();
 
         if (ServiceManager.getService(IGame.class).debug()){
              //debug add loot to test crafting
@@ -70,7 +66,7 @@ public class Inventory implements Serializable {
              for (String s : c.getRequirements().keys())
              {
                  all.put(new Item(s, AdjectiveFactory.getAdjective()),
-                 c.getRequirements().get(s) + MathUtils.random(1, 5));
+                 c.getRequirements().get(s, 1) + MathUtils.random(1, 5));
              }
              loot.putAll(all);
         }
@@ -119,16 +115,16 @@ public class Inventory implements Serializable {
     }
 
     public boolean canMake(Craftable c) {
-        ObjectMap<String, Integer> requirements = c.getRequirements();
+        ObjectIntMap<String> requirements = c.getRequirements();
         boolean make = true;
 
         for (String required : requirements.keys()) {
-            int need = requirements.get(required);
+            int need = requirements.get(required, 1);
             int have = 0;
 
             for (Item lootName : all.keys()) {
                 if (lootName.equals(required)) {
-                    Integer amount = all.get(lootName);
+                    Integer amount = all.get(lootName, 0);
 
                     have = have + amount;
 
@@ -152,20 +148,20 @@ public class Inventory implements Serializable {
      * @param c
      */
     public boolean makeItem(Craftable c) {
-        ObjectMap<String, Integer> requirements = c.getRequirements();
+        ObjectIntMap<String> requirements = c.getRequirements();
 
         if (!c.canMake) {
-            Gdx.app.log("Craft", "craftable not marked as having enough resources");
+            //Gdx.app.log("Craft", "craftable not marked as having enough resources");
             return false;
         }
 
         for (String required : requirements.keys()) {
-            int need = requirements.get(required);
+            int need = requirements.get(required, 1);
             int have = 0;
 
             for (Item i : all.keys()) {
                 if (i.equals(required)) {
-                    Integer amount = all.get(i);
+                    Integer amount = all.get(i, 0);
 
                     have = have + amount;
 
@@ -175,8 +171,8 @@ public class Inventory implements Serializable {
                     }
 
                     if (amount == 0) {
-                        Gdx.app.log("Crafting", "removing " + i);
-                        all.remove(i);
+                        //Gdx.app.log("Crafting", "removing " + i);
+                        all.remove(i, 0);
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, i);
                     }
                     else {
@@ -231,7 +227,7 @@ public class Inventory implements Serializable {
         }
     }
 
-    public ObjectMap<Item, Integer> getLoot() {
+    public ObjectIntMap<Item> getLoot() {
         return all;
     }
 
@@ -240,11 +236,11 @@ public class Inventory implements Serializable {
      * 
      * @param sacrifices
      */
-    public boolean sacrifice(ObjectMap<Item, Integer> sacrifices, int required) {
+    public boolean sacrifice(ObjectIntMap<Item> sacrifices, int required) {
         int pieces = 0;
         boolean canSacrifice = true;
         for (Item item : sacrifices.keys()) {
-            Integer i = sacrifices.get(item);
+            Integer i = sacrifices.get(item, 1);
             if (all.get(item, 0) < i) {
                 canSacrifice = false;
                 break;
@@ -260,7 +256,7 @@ public class Inventory implements Serializable {
 
         if (canSacrifice) {
             for (Item item : sacrifices.keys()) {
-                int total = sacrifices.get(item);
+                int total = sacrifices.get(item, 1);
                 int tmpCount = tmp.get(item, 0);
                 int lootCount = loot.get(item, 0); 
                 int tmpSub = Math.min(total, tmpCount);
@@ -270,7 +266,7 @@ public class Inventory implements Serializable {
                 if (lootSub > 0) {
                     int count = lootCount - lootSub;
                     if (count == 0) {
-                        loot.remove(item);
+                        loot.remove(item, 0);
                     }
                     else {
                         loot.put(item, count);
@@ -279,14 +275,14 @@ public class Inventory implements Serializable {
                 if (tmpSub > 0) {
                     int count = tmpCount - tmpSub;
                     if (count == 0) {
-                        tmp.remove(item);
+                        tmp.remove(item, 0);
                     }
                     else {
                         tmp.put(item, count);
                     }
                 }
                 if (allCount == 0) {
-                    all.remove(item);
+                    all.remove(item, 0);
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, item);
                 }
                 else {
@@ -319,7 +315,7 @@ public class Inventory implements Serializable {
         tmp.put(item, amount + i);
         all.put(item, amount2 + i);
         
-        MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Gather, new GatherInfo(item.fullname(), all.get(item)));
+        MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Gather, new GatherInfo(item.fullname(), amount2));
         
         ItemMsg im = new ItemMsg();
         im.item = item;
@@ -362,7 +358,7 @@ public class Inventory implements Serializable {
         int sum = 0;
         for (Item item : all.keys()) {
             if (item.equals(i)) {
-                int c = all.get(item);
+                int c = all.get(item, 0);
                 sum += c;
             }
         }
@@ -376,7 +372,7 @@ public class Inventory implements Serializable {
             json.writeObjectStart();
             json.writeValue("name", key.name);
             json.writeValue("adj", key.adj);
-            json.writeValue("count", all.get(key));
+            json.writeValue("count", all.get(key, 0));
             json.writeObjectEnd();
         }
         json.writeObjectEnd();

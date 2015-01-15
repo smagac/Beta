@@ -19,6 +19,8 @@ class Gather extends Quest {
     private String item;
     private int need;
     private int gathered;
+    
+    private String prompt;
 
     /**
      * Creates a new randomly generated item
@@ -26,6 +28,8 @@ class Gather extends Quest {
     public Gather() {
         this.need = MathUtils.random(3, 10);
         this.item = ItemFactory.randomNonCraftableType();
+        
+        prompt = String.format("Find %d %s", need, item);
     }
 
     @Override
@@ -67,7 +71,7 @@ class Gather extends Quest {
 
     @Override
     public String getObjectivePrompt() {
-        return String.format("Find %d %s", need, item);
+        return prompt;
     }
 
     @Override

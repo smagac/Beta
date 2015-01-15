@@ -18,12 +18,16 @@ class Hunt extends Quest {
     private int need;
     private int hunted;
 
+    private String prompt;
+    
     /**
      * Creates a new randomly generated hunt quest.
      */
     public Hunt() {
         this.need = MathUtils.random(3, 15);
         this.monster = MonsterFactory.randomSpecies();
+        
+        prompt = String.format("Hunt %d %s", need, monster);
     }
 
     @Override
@@ -64,7 +68,7 @@ class Hunt extends Quest {
 
     @Override
     public String getObjectivePrompt() {
-        return String.format("Hunt %d %s", need, monster);
+        return prompt;
     }
 
     @Override

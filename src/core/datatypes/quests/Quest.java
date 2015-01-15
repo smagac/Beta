@@ -203,7 +203,7 @@ public abstract class Quest implements Telegraph, Serializable {
             JsonValue locations = json.get("locations");
             String location = locations.getString(MathUtils.random(locations.size - 1));
 
-            String formatted = "" + location;
+            String formatted = new String(location);
 
             while (formatted.contains("%s")) {
                 formatted = formatted.replaceFirst("%s", AdjectiveFactory.getAdjective());

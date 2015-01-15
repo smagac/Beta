@@ -115,7 +115,7 @@ public class QuestTracker implements Telegraph, Serializable {
      */
     public Reward getReward(Craftable craft) {
         String name = craft.getRequirementTypes().random();
-        int rand = MathUtils.random(1, craft.getRequirements().get(name));
+        int rand = MathUtils.random(1, craft.getRequirements().get(name, 1));
 
         Item item = new Item(name, AdjectiveFactory.getAdjective());
 

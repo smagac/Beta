@@ -4,13 +4,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectIntMap;
 
 public class Craftable extends Item {
     /**
      * String - item type Integer - quantity required
      */
-    private ObjectMap<String, Integer> requirements = new ObjectMap<String, Integer>();
+    private ObjectIntMap<String> requirements = new ObjectIntMap<String>();
 
     protected boolean canMake = false;
 
@@ -31,7 +31,7 @@ public class Craftable extends Item {
         isReady = "*"+fullname;
     }
 
-    public ObjectMap<String, Integer> getRequirements() {
+    public ObjectIntMap<String> getRequirements() {
         return requirements;
     }
 
@@ -88,7 +88,7 @@ public class Craftable extends Item {
         json.writeObjectStart("requirements");
 
         for (String key : requirements.keys()) {
-            json.writeValue(key, requirements.get(key));
+            json.writeValue(key, requirements.get(key, 0));
         }
 
         json.writeObjectEnd();

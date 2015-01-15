@@ -2,20 +2,18 @@ package scenes.dungeon.ui;
 
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
-import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.ScrollFocuser;
 import scenes.GameUI;
 import scenes.Messages;
-import scenes.UI;
+import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.Direction;
 import scenes.dungeon.RenderSystem;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -33,14 +31,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
 
 import core.DataDirs;
 import core.common.Input;
+import core.components.Combat;
+import core.components.Identifier;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
@@ -49,6 +48,7 @@ import core.service.interfaces.IPlayerContainer;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 
 @SuppressWarnings("unchecked")
 public class WanderUI extends GameUI {
@@ -71,10 +71,10 @@ public class WanderUI extends GameUI {
     private Label gMsg;
     private Table itemSubmenu;
     private Table lootList;
-    private ObjectMap<Item, Integer> loot;
+    private ObjectIntMap<Item> loot;
     private ButtonGroup<Button> lootButtons;
     private Table sacrificeList;
-    ObjectMap<Item, Integer> sacrifices;
+    ObjectIntMap<Item> sacrifices;
     private ButtonGroup<Button> sacrificeButtons;
 
     private ScrollPane lootPane;
@@ -91,14 +91,20 @@ public class WanderUI extends GameUI {
     @Override
     protected void listenTo(IntSet messages) {
         super.listenTo(messages);
-        messages.addAll(Messages.Dungeon.LevelUp, Messages.Dungeon.Movement);
+        messages.addAll(
+            Messages.Dungeon.Movement, 
+            Messages.Dungeon.Notify, 
+            Messages.Dungeon.Dead,
+            Messages.Dungeon.Exit,
+            Messages.Dungeon.Leave
+        );
     }
     
     public WanderUI(AssetManager manager) {
         super(manager);
 
-        loot = new ObjectMap<Item, Integer>();
-        sacrifices = new ObjectMap<Item, Integer>();
+        loot = new ObjectIntMap<Item>();
+        sacrifices = new ObjectIntMap<Item>();
 
         menu = new DefaultStateMachine<WanderUI>(this, WanderState.Wander);
     }
@@ -246,7 +252,7 @@ public class WanderUI extends GameUI {
 
                         if (Input.ACCEPT.match(keycode)) {
                             Item item = (Item) lootButtons.getChecked().getUserObject();
-                            Integer k = loot.get(item);
+                            Integer k = loot.get(item, 0);
 
                             if (k - 1 >= 0) {
                                 sacrifices.put(item, sacrifices.get(item, 0) + 1);
@@ -315,13 +321,13 @@ public class WanderUI extends GameUI {
 
                         if (Input.ACCEPT.match(keycode)) {
                             Item item = (Item) sacrificeButtons.getChecked().getUserObject();
-                            Integer k = sacrifices.get(item);
+                            Integer k = sacrifices.get(item, 0);
 
                             if (k - 1 >= 0) {
                                 loot.put(item, loot.get(item, 0) + 1);
                                 sacrifices.put(item, k - 1);
                                 if (k - 1 == 0) {
-                                    sacrifices.remove(item);
+                                    sacrifices.remove(item, 0);
                                 }
                                 populateSacrifices();
                                 populateLoot();
@@ -516,7 +522,7 @@ public class WanderUI extends GameUI {
         itemSubmenu.clearActions();
 
         // make clone so we can work with it
-        this.loot = new ObjectMap<Item, Integer>(playerService.getInventory().getLoot());
+        this.loot = new ObjectIntMap<Item>(playerService.getInventory().getLoot());
 
         sacrifices.clear();
 
@@ -552,7 +558,7 @@ public class WanderUI extends GameUI {
                 l.setUserObject(item);
                 l.setDisabled(true);
                 lootList.add(l).width(190f);
-                Label i = new Label("" + loot.get(item), skin, "smaller");
+                Label i = new Label(String.valueOf(loot.get(item, 0)), skin, "smaller");
                 i.setAlignment(Align.right);
                 lootList.add(i).width(20f);
                 lootList.row();
@@ -561,7 +567,7 @@ public class WanderUI extends GameUI {
                     @Override
                     public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                         if (button == Buttons.LEFT) {
-                            Integer k = loot.get(item);
+                            Integer k = loot.get(item, 0);
 
                             if (k - 1 >= 0) {
                                 sacrifices.put(item, sacrifices.get(item, 0) + 1);
@@ -609,7 +615,7 @@ public class WanderUI extends GameUI {
                 l.setUserObject(item);
                 l.setDisabled(true);
                 sacrificeList.add(l).width(190f);
-                Label i = new Label("" + sacrifices.get(item), skin, "smaller");
+                Label i = new Label(String.valueOf(sacrifices.get(item, 0)), skin, "smaller");
                 i.setAlignment(Align.right);
                 sacrificeList.add(i).width(20f);
                 sacrificeList.row();
@@ -618,13 +624,13 @@ public class WanderUI extends GameUI {
                     @Override
                     public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                         if (button == Buttons.LEFT) {
-                            Integer k = sacrifices.get(item);
+                            Integer k = sacrifices.get(item, 0);
 
                             if (k - 1 >= 0) {
                                 loot.put(item, loot.get(item, 0) + 1);
                                 sacrifices.put(item, k - 1);
                                 if (k - 1 == 0) {
-                                    sacrifices.remove(item);
+                                    sacrifices.remove(item, 0);
                                 }
                                 populateSacrifices();
                                 populateLoot();
@@ -715,7 +721,6 @@ public class WanderUI extends GameUI {
             dungeonService.getEngine().getSystem(RenderSystem.class).resize(width, height);
         }
     }
-
 
     @Override
     public boolean handleMessage(Telegram telegram) {

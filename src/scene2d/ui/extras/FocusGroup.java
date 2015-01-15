@@ -200,7 +200,7 @@ public class FocusGroup extends Actor {
      */
     public void setFocus(Actor a) {
         if (!actors.contains(a, true)) {
-            Gdx.app.log("FocusGroup", "not a valid actor");
+            //Gdx.app.log("FocusGroup", "not a valid actor");
             return;
         }
         if (focus != a) {

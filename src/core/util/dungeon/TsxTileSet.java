@@ -127,7 +127,6 @@ public class TsxTileSet extends TiledMapTileSet {
         int cols = imageWidth / tilewidth;
 
         Array<Element> tileElements = element.getChildrenByName("tile");
-        System.out.println("found " + tileElements.size + " tiles ");
         for (Element tile : tileElements)
         {
             int id = tile.getIntAttribute("id");
