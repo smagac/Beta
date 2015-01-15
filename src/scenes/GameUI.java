@@ -659,7 +659,7 @@ public abstract class GameUI extends UI {
         // update time
         int[] t = playerService.getTimeElapsed();
         if (t[2] != seconds) {
-            timeStats.setText(String.format(time, t[0], t[1], t[2]));
+            //timeStats.setText(String.format(time, t[0], t[1], t[2]));
             seconds = t[2];
         }
         

@@ -14,20 +14,14 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import core.DataDirs;
-import core.common.Tracker;
-import core.components.Groups;
-import core.components.Position;
-import core.components.Renderable;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonLoader.DungeonParam;
 import core.datatypes.dungeon.Floor;
@@ -37,6 +31,9 @@ import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.service.implementations.ScoreTracker;
+import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.implementations.ScoreTracker.StringValues;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
@@ -59,6 +56,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     
     @Inject
     public IBattleContainer battleService;
+    
+    @Inject
+    public ScoreTracker tracker;
 
     private boolean descending;
 
@@ -87,12 +87,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     public void setDungeon(DungeonParams params, FileHandle file) {
         this.params = params;
 
-        Tracker.NumberValues.Files_Explored.increment();
-        Tracker.StringValues.Favourite_File_Type.increment(params.getType().name());
+        tracker.increment(NumberValues.Files_Explored);
+        tracker.increment(StringValues.Favourite_File_Type, params.getType().name());
 
         if (file != null) {
-            Tracker.NumberValues.Largest_File.set((int) Math.max(Tracker.NumberValues.Largest_File.value(),
-                    file.length() / 1000f));
+            tracker.set(NumberValues.Largest_File, (int) Math.max(tracker.get(NumberValues.Largest_File), file.length() / 1000f));
         }
     }
 
@@ -229,7 +228,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         // lose all found items
         playerService.getInventory().abandon();
 
-        Tracker.NumberValues.Times_Died.increment();
+        tracker.increment(NumberValues.Times_Died);
         audio.playSfx(DataDirs.Sounds.dead);
     }
 

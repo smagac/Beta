@@ -31,9 +31,9 @@ import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.common.Input;
-import core.common.Tracker;
-import core.common.Tracker.NumberValues;
-import core.common.Tracker.StringValues;
+import core.service.implementations.ScoreTracker;
+import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.implementations.ScoreTracker.StringValues;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IPlayerContainer;
 
@@ -53,6 +53,7 @@ public class EndUI extends UI {
 
     @Inject public IPlayerContainer player;
     @Inject public IAudioManager audio;
+    @Inject public ScoreTracker tracker;
 
     private Group stats;
 
@@ -188,12 +189,12 @@ public class EndUI extends UI {
             view.setFillParent(true);
             view.pad(32f);
 
-            Label score = new Label(String.format("Score: %09d", Tracker.score()), skin, "prompt2");
+            Label score = new Label(String.format("Score: %09d", tracker.score()), skin, "prompt2");
             score.setAlignment(Align.center);
             view.top();
             view.add(score).expandX().fillX();
             view.row();
-            Label rank = new Label(Tracker.rank(), skin);
+            Label rank = new Label(tracker.rank(), skin);
             rank.setAlignment(Align.center);
             view.add(rank).expandX().fillX();
             view.row();
@@ -202,9 +203,9 @@ public class EndUI extends UI {
             t.setFillParent(true);
             t.pad(16f).padTop(0).padBottom(32f);
             t.bottom();
-            for (NumberValues val : Tracker.NumberValues.values()) {
+            for (NumberValues val : ScoreTracker.NumberValues.values()) {
                 Label title = new Label(val.toString(), skin);
-                Label value = new Label(val.valString(), skin);
+                Label value = new Label(tracker.toString(val), skin);
 
                 title.setAlignment(Align.left);
                 value.setAlignment(Align.right);
@@ -216,9 +217,9 @@ public class EndUI extends UI {
             t.add().expandX().height(16f);
             t.row();
 
-            for (StringValues val : Tracker.StringValues.values()) {
+            for (StringValues val : ScoreTracker.StringValues.values()) {
                 Label title = new Label(val.toString(), skin);
-                Label value = new Label("" + val.max(), skin);
+                Label value = new Label("" + tracker.max(val), skin);
 
                 title.setAlignment(Align.left);
                 value.setAlignment(Align.right);

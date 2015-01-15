@@ -35,10 +35,7 @@ public class CraftableFactory {
         loaded = true;
     }
 
-    public CraftableFactory() {
-    }
-
-    public Craftable createRandomCraftable() {
+    public static Craftable createRandomCraftable() {
         String name = craftables.random();
         String adj = AdjectiveFactory.getAdjective();
         String[] parts = new String[MathUtils.random(1, 5)];

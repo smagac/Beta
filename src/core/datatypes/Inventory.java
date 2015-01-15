@@ -13,21 +13,18 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Keys;
 
-import core.common.Tracker;
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.info.GatherInfo;
 import core.factories.AdjectiveFactory;
 import core.factories.CraftableFactory;
 import core.factories.ItemFactory;
+import core.service.implementations.ScoreTracker;
+import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IGame;
 
 import com.badlogic.gdx.utils.Json.Serializable;
 
 public class Inventory implements Serializable {
-
-    
-    
-    CraftableFactory cf;
     Array<Craftable> required;
     Array<Craftable> todaysCrafts;
     ObjectMap<Item, Integer> loot;
@@ -37,7 +34,6 @@ public class Inventory implements Serializable {
     private int progress = 0;
 
     public Inventory() {
-        cf = new CraftableFactory();
         required = new Array<Craftable>();
         todaysCrafts = new Array<Craftable>();
         loot = new ObjectMap<Item, Integer>();
@@ -46,10 +42,9 @@ public class Inventory implements Serializable {
     }
 
     public Inventory(int difficulty) {
-        cf = new CraftableFactory();
         required = new Array<Craftable>();
         do {
-            Craftable c = cf.createRandomCraftable();
+            Craftable c = CraftableFactory.createRandomCraftable();
             if (!required.contains(c, false)) {
                 required.add(c);
             }
@@ -88,7 +83,7 @@ public class Inventory implements Serializable {
         todaysCrafts = new Array<Craftable>();
         todaysCrafts.clear();
         do {
-            Craftable c = cf.createRandomCraftable();
+            Craftable c = CraftableFactory.createRandomCraftable();
             if (!todaysCrafts.contains(c, false)) {
                 todaysCrafts.add(c);
             }
@@ -204,7 +199,7 @@ public class Inventory implements Serializable {
         pickup(crafted);
         merge();
         
-        Tracker.NumberValues.Items_Crafted.increment();
+        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Items_Crafted);
 
         // count progress after making
         calcProgress();

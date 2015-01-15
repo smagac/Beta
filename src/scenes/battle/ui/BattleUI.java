@@ -668,14 +668,16 @@ public class BattleUI extends GameUI
         congrats.setFontScale(2f);
         congrats.setPosition(getDisplayCenterX(), getDisplayCenterY() - 20f, Align.center);
         congrats.setColor(1,1,1,0);
+        congrats.setAlignment(Align.center);
         display.addActor(congrats);
 
         String result;
         Item bossReward = battleService.getBoss().getComponent(Combat.class).getDrop();
         result = String.format("Obtained 1 %s\nBonus %d %s", bossReward.toString(), amount, reward.toString());
         Label drops = new Label(result, skin, "prompt");
-        drops.setPosition(getDisplayCenterX(), getDisplayCenterY() - 40f, Align.center);
+        drops.setPosition(getDisplayCenterX(), getDisplayCenterY() - 70f, Align.center);
         drops.setColor(1,1,1,0);
+        drops.setAlignment(Align.center);
         display.addActor(drops);
         
 	    audio.fadeOut();
@@ -686,25 +688,25 @@ public class BattleUI extends GameUI
                 Actions.delay(6f),
                 Actions.run(new ParticleActor.StopParticle(death)),
                 Actions.delay(1f),
-                Actions.addAction(Actions.moveBy(0, 96f, 1f), bg),
-                Actions.addAction(Actions.moveBy(0, 200f, 2f), player),
+                Actions.addAction(Actions.moveBy(0, 128f, 1f), bg),
+                Actions.addAction(Actions.moveBy(0, 210f, 2f), player),
                 Actions.addAction(
                     Actions.sequence(
-                        Actions.moveBy(-20f, 0),
+                        Actions.moveBy(0f, 20f),
                         Actions.delay(2f),
                         Actions.parallel(
                             Actions.alpha(1f, .3f),
-                            Actions.moveBy(20f, 0, .3f)
+                            Actions.moveBy(0f, -20, .3f)
                         )
                     ), congrats
                 ),
                 Actions.addAction(
                     Actions.sequence(
-                        Actions.moveBy(-20f, 0),
-                        Actions.delay(2.2f),
+                        Actions.moveBy(0f, 20f),
+                        Actions.delay(3f),
                         Actions.parallel(
                             Actions.alpha(1f, .3f),
-                            Actions.moveBy(20f, 0, .3f)
+                            Actions.moveBy(0f, -20f, .3f)
                         )
                     ), drops
                 )

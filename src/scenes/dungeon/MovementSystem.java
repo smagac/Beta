@@ -6,6 +6,7 @@ import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
 import scenes.Messages;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
@@ -21,7 +22,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Array;
 
 import core.DataDirs;
-import core.common.Tracker;
 import core.components.Combat;
 import core.components.Identifier;
 import core.components.Groups.*;
@@ -31,6 +31,8 @@ import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
+import core.service.implementations.ScoreTracker;
+import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IDungeonContainer;
 
 /**
@@ -257,7 +259,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     if (aStats.canLevelUp()) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
                     }
-                    Tracker.NumberValues.Monsters_Killed.increment();
+                    ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
                     engine.removeEntity(opponent);
                    
                     Identifier id = identityMap.get(opponent);

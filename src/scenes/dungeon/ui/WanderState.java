@@ -1,6 +1,7 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scenes.GameUI;
 import scenes.Messages;
@@ -18,10 +19,11 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.DataDirs;
-import core.common.Tracker;
 import core.components.Stats;
 import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
+import core.service.implementations.ScoreTracker;
+import core.service.implementations.ScoreTracker.NumberValues;
 
 /**
  * Handles state based ui menu logic and switching
@@ -175,7 +177,7 @@ public enum WanderState implements UIState {
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
-                        Tracker.NumberValues.Loot_Sacrificed.increment();
+                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed);
                     }
                     entity.playerService.recover();
                     entity.dungeonService.getProgress().healed = healCost;
@@ -215,7 +217,7 @@ public enum WanderState implements UIState {
                 int fleeCost = entity.dungeonService.getProgress().depth;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, fleeCost)) {
                     for (int i = 0; i < entity.sacrifices.size; i++) {
-                        Tracker.NumberValues.Loot_Sacrificed.increment();
+                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed);
                     }
                     entity.changeState(Exit);
                     return true;

@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
@@ -34,7 +35,6 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
-import core.common.Tracker;
 import core.components.Stats;
 import core.datatypes.Craftable;
 import core.datatypes.Inventory;
@@ -43,6 +43,8 @@ import core.datatypes.QuestTracker.Reward;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.quests.Quest;
 import core.datatypes.FileType;
+import core.service.implementations.ScoreTracker;
+import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
 
 /**
@@ -182,7 +184,7 @@ enum TownState implements UIState {
                 }
 
                 if (c != null) {
-                    int count = Tracker.NumberValues.Items_Crafted.value();
+                    int count = ServiceManager.getService(ScoreTracker.class).get(NumberValues.Items_Crafted);
                     boolean made = ui.playerService.getInventory().makeItem(c);
                     ui.setMessage((made) ? "Crafted an item!" : "Not enough materials");
                     populateLoot(ui);

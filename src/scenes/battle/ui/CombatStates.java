@@ -296,7 +296,8 @@ public enum CombatStates implements State<BattleUI> {
             entity.playDefenseAnimation(t, after);
         }
         
-    }, VICTORY(){
+    }, 
+    VICTORY(){
 
         @Override
         public void enter(final BattleUI entity) {
@@ -311,7 +312,7 @@ public enum CombatStates implements State<BattleUI> {
             
             entity.addAction(
                 Actions.sequence(
-                    Actions.delay(8f),
+                    Actions.delay(10f),
                     Actions.run(new PlayBGM(entity.getManager().get(DataDirs.Audio + "victory.mp3", Music.class))),
                     Actions.delay(10f),
                     Actions.run(new Runnable(){

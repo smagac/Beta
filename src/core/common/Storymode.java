@@ -16,6 +16,7 @@ import core.service.implementations.DungeonManager;
 import core.service.implementations.LoadScreen;
 import core.service.implementations.PlayerManager;
 import core.service.implementations.SharedLoader;
+import core.service.implementations.ScoreTracker;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IColorMode;
@@ -43,7 +44,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     private AudioManager audioManager;
     private LoadScreen loadScreen;
     private ColorManager colorMode;
-
+    private ScoreTracker tracker;
+    
     protected Storymode() {}
     
     private boolean started;
@@ -69,6 +71,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IColorMode.class, colorMode);
         loadScreen = new LoadScreen();
         ServiceManager.register(ILoader.class, loadScreen);
+        tracker = new ScoreTracker();
+        ServiceManager.register(ScoreTracker.class, tracker);
         
         audioManager = new AudioManager();
         ServiceManager.register(IAudioManager.class, audioManager);
@@ -98,7 +102,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     public void startGame(int difficulty, boolean gender) {
         playerManager.init(difficulty, gender);
         dungeonManager.clear();
-        Tracker.reset();
+        tracker.reset();
         TownUI.clearHistory();
         started = true;
     }

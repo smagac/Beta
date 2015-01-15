@@ -7,11 +7,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-import scenes.Messages;
-
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -21,7 +18,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 
 import core.DataDirs;
-import core.common.Tracker;
 import core.components.Groups;
 import core.components.Identifier;
 import core.components.Position;
@@ -30,6 +26,7 @@ import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 import core.datatypes.StatModifier;
+import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 
@@ -52,6 +49,7 @@ public class PlayerManager implements IPlayerContainer {
     private boolean made;
     
     @Inject public ISharedResources shared;
+    @Inject public ScoreTracker tracker;
 
     public PlayerManager() {
         for (int i = 1; i <= SaveSlots; i++) {
@@ -92,7 +90,7 @@ public class PlayerManager implements IPlayerContainer {
     @Override
     public void rest() {
         recover();
-        Tracker.NumberValues.Times_Slept.increment();
+        tracker.increment(NumberValues.Times_Slept);
 
         // new quests each day
         getInventory().refreshCrafts();
@@ -176,7 +174,7 @@ public class PlayerManager implements IPlayerContainer {
             json.writeValue("date", df.format(Calendar.getInstance().getTime()));
             json.writeValue("inventory", inventory, Inventory.class);
             json.writeValue("stats", player.getComponent(Stats.class), Stats.class);
-            json.writeValue("tracker", Tracker.getInstance(), Tracker.class);
+            json.writeValue("tracker", tracker, ScoreTracker.class);
             json.writeValue("quests", quests, QuestTracker.class);
             json.writeObjectEnd();
             js.close();
@@ -212,7 +210,7 @@ public class PlayerManager implements IPlayerContainer {
         this.player.add(new Position(0,0));
         
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
-        Tracker.getInstance().read(json, root.get("tracker"));
+        tracker.read(json, root.get("tracker"));
         made = true;
     }
 
@@ -233,7 +231,7 @@ public class PlayerManager implements IPlayerContainer {
         else if (OS.contains("MAC"))
             h = Gdx.files.absolute(System.getProperty("user.home") + "/Library/Application Support/StoryMode");
         else
-            h = Gdx.files.absolute(System.getProperty("user.home") + "/.config/StoryMode");
+            h = Gdx.files.absolute(System.getProperty("user.home") + "/.local/share/StoryMode");
 
         if (!h.exists()) {
             h.mkdirs();
