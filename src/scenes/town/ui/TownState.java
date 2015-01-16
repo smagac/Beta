@@ -576,7 +576,7 @@ enum TownState implements UIState {
                        while (scanner.hasNextLine()) {
                            output += scanner.nextLine();
                        }
-                       System.out.println(output);
+                       Gdx.app.log("Daily Dungeon", output);
                        dungeonData = output;
        
                        scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
@@ -591,11 +591,13 @@ enum TownState implements UIState {
                 
                 @Override
                 public void failed(Throwable t) {
+                    Gdx.app.log("Daily Dungeon", "Could not establish a connection/failed to download dungeon");
                     entity.changeState(Explore);
                 }
                 
                 @Override
                 public void cancelled() {
+                    Gdx.app.log("Daily Dungeon", "Download cancelled");
                     entity.changeState(Explore);
                 }
             });

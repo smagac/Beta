@@ -113,7 +113,6 @@ public class LoreUI extends UI {
                     @Override
                     public void run() {
                         ready = true;
-                        System.out.println("time to go");
                     }
                     
                 })

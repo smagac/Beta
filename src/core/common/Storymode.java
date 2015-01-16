@@ -40,7 +40,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     private IPlayerContainer playerManager;
     private IDungeonContainer dungeonManager;
-    private IBattleContainer battleManager;
     private AudioManager audioManager;
     private LoadScreen loadScreen;
     private ColorManager colorMode;
@@ -80,8 +79,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IPlayerContainer.class, playerManager);
         dungeonManager = new DungeonManager();
         ServiceManager.register(IDungeonContainer.class, dungeonManager);
-        battleManager = new BossBattle();
-        ServiceManager.register(IBattleContainer.class, battleManager);
         
         boss = new BossListener(colorMode, this);
         
@@ -91,7 +88,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         SceneManager.register("newgame", scenes.newgame.Scene.class);
         SceneManager.register("endgame", scenes.endgame.Scene.class);
         SceneManager.register("lore", scenes.lore.Scene.class);
-        SceneManager.register("battle", scenes.battle.Scene.class);
 
         SceneManager.switchToScene("title");
 

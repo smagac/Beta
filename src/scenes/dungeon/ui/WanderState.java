@@ -108,14 +108,11 @@ public enum WanderState implements UIState {
                 String notification = telegram.extraInfo.toString();
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);
             }
-            else if (telegram.message == Messages.Dungeon.Dead) {
+            else if (telegram.message == Messages.Dungeon.Dead && telegram.extraInfo == entity.playerService.getPlayer()) {
                 entity.changeState(WanderState.Dead);
             }
             else if (telegram.message == Messages.Dungeon.Exit) {
                 entity.changeState(WanderState.Exit);
-            }
-            else if (telegram.message == Messages.Dungeon.Refresh) {
-                entity.refresh((Progress) telegram.extraInfo);
             }
             return false;
         }

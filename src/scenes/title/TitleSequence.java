@@ -168,7 +168,7 @@ public class TitleSequence extends UI {
             Group group = new Group();
             Image tools = new Image(skin.getDrawable("tools"));
             tools.setPosition(getWidth() / 2 - tools.getWidth() / 2, getHeight() / 2 - tools.getHeight() / 2);
-            Label label = new Label("All music is licensed under Creative-Commons BY(-NC) or other permissive licenses.\nAll attribution can be found the readme", skin, "small");
+            Label label = new Label("All music is licensed under Creative-Commons BY(-NC) or other permissive licenses.\nAll attribution can be found in the README", skin, "small");
             label.setPosition(getWidth()/2f, getHeight() / 2f - 80f, Align.top);
             label.setAlignment(Align.center);
             group.addActor(tools);

@@ -142,6 +142,8 @@ public class Stats extends Component implements Serializable {
         maxhp = stats[3] * 2;
         exp = 0;
         nextExp = level * 10;
+        
+        hp = maxhp;
     }
 
     public void addModifier(StatModifier mod) {

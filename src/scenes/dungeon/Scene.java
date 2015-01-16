@@ -29,6 +29,7 @@ import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
 import core.datatypes.FileType;
+import core.service.implementations.BossBattle;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.implementations.ScoreTracker.StringValues;
@@ -51,9 +52,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     
     @Inject
     public IDungeonContainer dungeonService;
-    
-    @Inject
-    public IBattleContainer battleService;
     
     @Inject
     public ScoreTracker tracker;
@@ -141,7 +139,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Descend);
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Dead);
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Leave);
-    
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Exit);
+        
         ui = wanderUI;
         input.addProcessor(wanderUI);
     }
@@ -159,6 +158,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Descend);
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Dead);
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Leave);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Exit);
         
         wanderUI.dispose();
         transition.dispose();
@@ -172,10 +172,10 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         final Engine e = dungeonService.getEngine();
         
         if (!p.hasPrevFloor(depth)){
-            leave();
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
             return;
         } else if (!p.hasNextFloor(depth)) {
-            leave();
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
             return;
         }
         
@@ -203,8 +203,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
                         InputDisabler.swap();
                         wanderUI.setMessage("You move onto floor " + depth + " of " + d.size());
                         
-                        refresh();
-                    
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
+                        
                         e.getSystem(MovementSystem.class).setMap(d.getFloor(depth));
                         e.getSystem(RenderSystem.class).setFloor(depth);
                         
@@ -239,14 +239,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     protected void leave() {
         // merge loot into inventory
         playerService.getInventory().merge();
-    }
-    
-    /**
-     * Refreshes the HUD at the top of the screen to display the proper current
-     * progress of the dungeon
-     */
-    protected void refresh() {
-        MessageDispatcher.getInstance().dispatchMessage(0, null, ui, Messages.Dungeon.Refresh, dungeonService.getProgress());
     }
     
     @Override
@@ -297,7 +289,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
             input.addProcessor(rs.getStage());
             
-            refresh();
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
+            
             setAudio();
         }
         else {
@@ -326,17 +319,18 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     }
 
     @Override
-    public boolean handleMessage(Telegram msg) {
+    public boolean handleMessage(final Telegram msg) {
         if (msg.message == Messages.Dungeon.FIGHT) {
+            final Entity boss = (Entity)msg.extraInfo;
+            final scenes.battle.Scene scene = new scenes.battle.Scene(boss);
+            
             fight = true;
-            battleService.setBoss((Entity)msg.extraInfo);
-            battleService.setPlayer(player);
             transition.init();
             transition.playAnimation(new Runnable(){
 
                 @Override
                 public void run() {
-                    scenes.battle.Scene scene = (scenes.battle.Scene)SceneManager.switchToScene("battle");
+                    SceneManager.switchToScene(scene);
                     scene.setEnvironment(tileset);
                 }
 
@@ -349,7 +343,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             dead();
             return true;
         }
-        if (msg.message == Messages.Dungeon.Exit || msg.message == Messages.Dungeon.Leave) {
+        if (msg.message == Messages.Dungeon.Exit) {
             leave();
             return true;
         }

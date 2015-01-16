@@ -96,7 +96,8 @@ public class WanderUI extends GameUI {
             Messages.Dungeon.Notify, 
             Messages.Dungeon.Dead,
             Messages.Dungeon.Exit,
-            Messages.Dungeon.Leave
+            Messages.Dungeon.Leave,
+            Messages.Dungeon.Refresh
         );
     }
     
@@ -157,7 +158,7 @@ public class WanderUI extends GameUI {
             display.addActor(table);
         }
 
-        fader = new Image(skin.getRegion("fader"));
+        fader = new Image(skin.getRegion("wfill"));
         fader.setScaling(Scaling.fill);
         fader.setPosition(0, 0);
 
@@ -489,7 +490,11 @@ public class WanderUI extends GameUI {
             menu.update();
         }
     }
-
+    
+    /**
+     * Refreshes the HUD at the top of the screen to display the proper current
+     * progress of the dungeon
+     */
     void refresh(Progress progress) {
         floorLabel.setText(String.format("Floor %d/%d", progress.depth, progress.floors));
         lootLabel.setText(String.format("%d", progress.totalLootFound));
@@ -777,6 +782,11 @@ public class WanderUI extends GameUI {
             setMessage(String.format("Obtained %s", item.fullname()));
             return true;
         }
+        if (telegram.message == Messages.Dungeon.Refresh) {
+            refresh((Progress) telegram.extraInfo);
+            return true;
+        }
+        
         return super.handleMessage(telegram);
     }
     

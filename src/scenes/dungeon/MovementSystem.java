@@ -213,6 +213,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 notification.critical = chance > MULT * .8f && dmg > 0;
                 Combat combatProp = Combat.Map.get(opponent);
                 combatProp.aggress();
+            } else {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
             }
             
             if (bStats.hp <= 0) {
@@ -236,6 +238,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         dungeonService.getProgress().monstersKilled++;
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
+                    
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
                 }
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
             }

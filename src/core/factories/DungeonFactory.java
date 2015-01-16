@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -115,7 +116,7 @@ public class DungeonFactory {
                 hashFile.file().deleteOnExit();
             }
             catch (IOException e) {
-                System.err.println("could not create cache file for " + params.getFilename());
+                Gdx.app.log("DungeonFactory", "could not create cache file for " + params.getFilename());
                 e.printStackTrace();
             }
         }

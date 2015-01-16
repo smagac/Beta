@@ -31,11 +31,18 @@ public class ServiceManager {
             Service s = services.remove(cls);
             if (s != null) {
                 s.onUnregister();
+                unhook(s);
             }
             return;
         }
         
         if (cls.isAssignableFrom(service.getClass())) {
+            Service s = services.remove(cls);
+            if (s != null) {
+                s.onUnregister();
+                unhook(s);
+            }
+            
             inject(service);
             services.put(cls, service);
             service.onRegister();

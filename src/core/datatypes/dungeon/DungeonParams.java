@@ -81,7 +81,7 @@ public class DungeonParams {
             this.fileName = file.path();
         }
         catch (IOException e) {
-            System.err.println("Could not figure out hash from file");
+            Gdx.app.log("DungeonParams", "Could not figure out hash from file");
             this.seed = -1;
             this.ext = FileType.Other;
             this.difficulty = 0;

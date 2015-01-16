@@ -1,5 +1,7 @@
 package core.datatypes.dungeon;
 
+import java.util.Random;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -57,9 +59,10 @@ public class Dungeon implements Serializable {
      * pick out which floors are floors where a boss appears
      */
     private void genBossFloors() {
+        Random random = new Random(); //use a fresh random generator to insure a different trip each time
         this.bossFloors.put(0, new BossFloor(difficulty, 0));
         for (int i = 0, set = 1; i < 1 + (size() / 10); i++, set += 10) {
-            int floor = MathUtils.random(1, 10) + set;
+            int floor = (random.nextInt(9) + 1) + set;
             this.bossFloors.put(floor, new BossFloor(difficulty, floor));
         }
     }
