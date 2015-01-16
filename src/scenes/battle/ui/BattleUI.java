@@ -60,6 +60,7 @@ import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.ParticleActor.ResetParticle;
 import scenes.GameUI;
 import scenes.Messages;
+import scenes.Messages.Battle.VictoryResults;
 import scenes.battle.ui.CombatHandler.Combatant;
 import scenes.battle.ui.CombatHandler.Turn;
 
@@ -116,12 +117,13 @@ public class BattleUI extends GameUI
     FocusGroup mainFocus;
     FocusGroup itemFocus;
     private Image bg;
+    private Image hpBar;
     
     @Override
     protected void listenTo(IntSet messages)
     {
         super.listenTo(messages);
-        messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT);
+        messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT, Messages.Battle.Stats);
     }
 	
     public BattleUI(AssetManager manager, TiledMapTileSet environment)
@@ -139,6 +141,7 @@ public class BattleUI extends GameUI
 	    makeSacrificeMenu();
 	    makeSacrificeScene();
 	    makeAttackElements();
+	    makeBossStats();
         
 	    mainmenu = new CrossMenu(skin, this);
         mainmenu.setPosition(getDisplayWidth(), getDisplayHeight()/2f);
@@ -150,6 +153,28 @@ public class BattleUI extends GameUI
 	}
 	
 	/**
+	 * Make the boss stat display for the bottom right of the screen
+	 */
+	private void makeBossStats() {
+        messageWindow.clear();
+
+        //add the wrap around graphic
+        Image decor = new Image(skin, "enemystats");
+        messageWindow.addActor(decor);
+        
+        //add hp bar
+        hpBar = new Image(skin, "wfill");
+        hpBar.setPosition(34, 10);
+        hpBar.setSize(258, 6);
+        messageWindow.addActor(hpBar);
+        
+        //add name
+        Label name = new Label(battleService.getBoss().getComponent(Identifier.class).toString(), skin, "promptsm");
+        name.setPosition(5, 24);
+        messageWindow.addActor(name);
+    }
+
+    /**
 	 * Constructs the primary view of the battle (player, boss, and background)
 	 */
 	private void makeField(){
@@ -664,7 +689,7 @@ public class BattleUI extends GameUI
 	 * @param reward - bonus item rewarded for winning
 	 * @param amount - amount of bonus item rewarded
 	 */
-	protected void playVictoryAnimation(Item reward, int amount){
+	protected void playVictoryAnimation(VictoryResults results){
 	    Label congrats = new Label("Victory", skin, "prompt");
         congrats.setFontScale(2f);
         congrats.setPosition(getDisplayCenterX(), getDisplayCenterY() - 20f, Align.center);
@@ -673,8 +698,7 @@ public class BattleUI extends GameUI
         display.addActor(congrats);
 
         String result;
-        Item bossReward = battleService.getBoss().getComponent(Combat.class).getDrop();
-        result = String.format("Obtained 1 %s\nBonus %d %s", bossReward.toString(), amount, reward.toString());
+        result = String.format("Obtained 1 %s\nBonus %d %s", results.reward, results.bonusCount, results.bonus);
         Label drops = new Label(result, skin, "prompt");
         drops.setPosition(getDisplayCenterX(), getDisplayCenterY() - 70f, Align.center);
         drops.setColor(1,1,1,0);
@@ -749,9 +773,29 @@ public class BattleUI extends GameUI
 	    if (msg.message == Messages.Battle.VICTORY) {
 	        changeState(CombatStates.VICTORY);
 	        
+	        VictoryResults results = (VictoryResults)msg.extraInfo;
+	        
+	        //TODO show victory message
+            playVictoryAnimation(results);
+            return true;
 	    } else if (msg.message == Messages.Battle.DEFEAT){
 	        //TODO fade out screen and return home
+	        return true;
+	    } else if (msg.message == Messages.Battle.Stats) {
+	        Stats s = battleService.getBoss().getComponent(Stats.class);
+	        int hp = s.hp;
+	        int mhp = s.maxhp;
 	        
+	        //update enemy stats
+	        hpBar.clearActions();
+	        hpBar.addAction(
+                Actions.sequence(
+                    Actions.alpha(0f, .1f),
+                    Actions.alpha(1f, .1f),
+                    Actions.sizeTo(((float)hp /(float)mhp) * 258f, 6f, .5f, Interpolation.sine)
+                )
+            );
+	        return true;
 	    }
 	    return super.handleMessage(msg);
 	}
@@ -899,7 +943,6 @@ public class BattleUI extends GameUI
                         if (time < head.spawnTime){
                             return false;
                         }
-                        System.out.println("time: " + time);
                         if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
                             head.hit.clearActions();
                             head.holder.clearActions();

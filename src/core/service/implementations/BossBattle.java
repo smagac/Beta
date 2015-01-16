@@ -1,20 +1,31 @@
 package core.service.implementations;
 
+import github.nhydock.ssm.Inject;
 import scenes.Messages;
+import scenes.Messages.Battle.VictoryResults;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
+import core.components.Combat;
 import core.components.Identifier;
 import core.components.Stats;
+import core.datatypes.Inventory;
+import core.datatypes.Item;
 import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
 import core.service.interfaces.IBattleContainer;
+import core.service.interfaces.IDungeonContainer;
+import core.service.interfaces.IPlayerContainer;
 
 public class BossBattle implements IBattleContainer {
 
+    @Inject public IDungeonContainer dungeonService;
+    @Inject public IPlayerContainer playerService;
+    
     private Entity boss;
     private Entity player;
     
@@ -49,9 +60,33 @@ public class BossBattle implements IBattleContainer {
             if (target == player) {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
             }
+            else {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.Stats);
+            }
             if (s.hp <= 0 && target == boss)
             {
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.VICTORY);
+                VictoryResults results = new VictoryResults();
+                
+                //pick a random required material and random amount between 1-5
+                Inventory inv = playerService.getInventory();
+                String reward = inv.getRequiredCrafts().random().getRequirementTypes().random();
+                String adjective = AdjectiveFactory.getAdjective();
+                
+                results.reward = boss.getComponent(Combat.class).getDrop();
+                results.bonus = new Item(reward, adjective);
+                results.bonusCount = MathUtils.random(1, 5); 
+                
+                Stats playerStats = player.getComponent(Stats.class);
+                playerStats.exp += 5;
+                
+                inv.pickup(results.reward);
+                inv.pickup(results.bonus, results.bonusCount);
+                
+                dungeonService.getEngine().removeEntity(boss);
+                dungeonService.getProgress().monstersKilled++;
+                
+
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.VICTORY, results);
             } 
             else if (s.hp <= 0 && target == player)
             {
@@ -162,6 +197,8 @@ public class BossBattle implements IBattleContainer {
         MessageDispatcher.getInstance().addListener(this, Messages.Battle.TARGET);
         MessageDispatcher.getInstance().addListener(this, Messages.Battle.DAMAGE);
         MessageDispatcher.getInstance().addListener(this, Messages.Battle.MODIFY);
+        
+        player = playerService.getPlayer();
     }
 
     @Override
@@ -170,6 +207,8 @@ public class BossBattle implements IBattleContainer {
         MessageDispatcher.getInstance().removeListener(this, Messages.Battle.TARGET);
         MessageDispatcher.getInstance().removeListener(this, Messages.Battle.DAMAGE);
         MessageDispatcher.getInstance().removeListener(this, Messages.Battle.MODIFY);
+        
+        player = null;
     }
 
     @Override

@@ -24,6 +24,7 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.Home + "dungeon.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "battle.atlas", TextureAtlas.class);
         manager.load(DataDirs.Home + "fill.png", Texture.class);
+        manager.load(DataDirs.Home + "wfill.png", Texture.class);
         manager.load(DataDirs.Home + "particle.png", Texture.class);
         manager.load(DataDirs.Home + "dargon.png", Texture.class);
         
@@ -45,6 +46,8 @@ public class SharedLoader implements ISharedResources {
         Skin uiSkin = manager.get(DataDirs.Home + "uiskin.json");
         Texture fillTex = manager.get(DataDirs.Home + "fill.png", Texture.class);
         uiSkin.add("fill", new TextureRegion(fillTex), TextureRegion.class);
+        Texture wfillTex = manager.get(DataDirs.Home + "wfill.png", Texture.class);
+        uiSkin.add("wfill", new TextureRegion(wfillTex), TextureRegion.class);
         Texture particleTex = manager.get(DataDirs.Home + "particle.png", Texture.class);
         uiSkin.add("particle", new TextureRegion(particleTex), TextureRegion.class);
         Texture dargon = manager.get(DataDirs.Home + "dargon.png");

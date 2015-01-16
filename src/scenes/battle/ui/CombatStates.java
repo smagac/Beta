@@ -301,15 +301,6 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(final BattleUI entity) {
-            //pick a random required material and random amount between 1-5
-            String reward = entity.playerService.getInventory().getRequiredCrafts().random().getRequirementTypes().random();
-            String adjective = AdjectiveFactory.getAdjective();
-            
-            final Item item = new Item(reward, adjective);
-            final int amount = MathUtils.random(1, 5);
-            //TODO show victory message
-            entity.playVictoryAnimation(item, amount);
-            
             entity.addAction(
                 Actions.sequence(
                     Actions.delay(10f),
@@ -319,21 +310,6 @@ public enum CombatStates implements State<BattleUI> {
 
                         @Override
                         public void run() {
-                            //reward player with points
-                            Entity player = entity.battleService.getPlayer();
-                            Entity boss = entity.battleService.getBoss();
-                            
-                            Stats playerStats = player.getComponent(Stats.class);
-                            playerStats.exp += 5;
-                            
-                            Inventory inv = entity.playerService.getInventory();
-                            inv.pickup(boss.getComponent(Combat.class).getDrop());
-                            inv.pickup(item, amount);
-                            
-                            //Victory should be followed up with going back to the dungeon
-                            // and removing the boss from the dungeon
-                            IDungeonContainer d = ServiceManager.getService(IDungeonContainer.class);
-                            d.getEngine().removeEntity(boss);
                             SceneManager.switchToScene("dungeon");
                         }
                         

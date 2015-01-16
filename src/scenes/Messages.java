@@ -131,5 +131,16 @@ public interface Messages {
     
         public static final int VICTORY = 0x2007;
         public static final int DEFEAT = 0x2008;
+        
+        /**
+         * Update the enemy's stat display
+         */
+        public static final int Stats = 0x2009;
+        
+        public static final class VictoryResults {
+            public Item reward;
+            public Item bonus;
+            public int bonusCount;
+        }
     }
 }

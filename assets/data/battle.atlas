@@ -6,147 +6,154 @@ filter: Nearest,Nearest
 repeat: none
 attack
   rotate: false
-  xy: 196, 218
+  xy: 196, 166
   size: 96, 32
   orig: 96, 32
   offset: 0, 0
   index: -1
 auto
   rotate: false
-  xy: 2, 20
+  xy: 901, 143
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 blessing
   rotate: false
-  xy: 2, 218
+  xy: 2, 166
   size: 192, 32
   orig: 192, 32
   offset: 0, 0
   index: -1
 clouds
   rotate: false
-  xy: 2, 152
+  xy: 2, 100
   size: 128, 64
   orig: 128, 64
   offset: 0, 0
   index: -1
 d1
   rotate: false
-  xy: 2, 54
+  xy: 2, 2
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d2
   rotate: false
-  xy: 132, 120
+  xy: 313, 145
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d3
   rotate: false
-  xy: 230, 120
+  xy: 411, 145
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d4
   rotate: false
-  xy: 328, 120
+  xy: 509, 145
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d5
   rotate: false
-  xy: 426, 120
+  xy: 607, 145
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 d6
   rotate: false
-  xy: 524, 154
+  xy: 705, 145
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 defend
   rotate: false
-  xy: 294, 218
+  xy: 132, 132
   size: 96, 32
   orig: 96, 32
   offset: 0, 0
   index: -1
 dice
   rotate: false
-  xy: 622, 154
+  xy: 803, 145
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
+enemystats
+  rotate: false
+  xy: 2, 200
+  size: 309, 41
+  orig: 309, 41
+  offset: 0, 0
+  index: -1
 force
   rotate: false
-  xy: 524, 120
+  xy: 296, 111
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 hitbox
   rotate: false
-  xy: 720, 186
+  xy: 901, 177
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 hittri
   rotate: false
-  xy: 786, 186
+  xy: 230, 100
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 item
   rotate: false
-  xy: 392, 218
+  xy: 132, 98
   size: 96, 32
   orig: 96, 32
   offset: 0, 0
   index: -1
 manual
   rotate: false
-  xy: 852, 218
+  xy: 362, 111
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 meter_active
   rotate: false
-  xy: 720, 168
+  xy: 494, 127
   size: 32, 16
   orig: 32, 16
   offset: 0, 0
   index: -1
 meter_inactive
   rotate: false
-  xy: 2, 2
+  xy: 967, 191
   size: 32, 16
   orig: 32, 16
   offset: 0, 0
   index: -1
 modify
   rotate: false
-  xy: 590, 120
+  xy: 428, 111
   size: 64, 32
   orig: 64, 32
   offset: 0, 0
   index: -1
 sacrifice
   rotate: false
-  xy: 490, 218
+  xy: 967, 209
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
