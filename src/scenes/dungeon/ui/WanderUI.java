@@ -1,6 +1,7 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.Inject;
+import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.ScrollFocuser;
@@ -80,6 +81,8 @@ public class WanderUI extends GameUI {
     private ScrollPane lootPane;
     private ScrollPane sacrificePane;
     private FocusGroup sacrificeGroup;
+    private ScrollOnChange lootPaneScroller;
+    private ScrollOnChange sacrificePaneScroller;
     
     ParticleActor weather;
 
@@ -408,6 +411,9 @@ public class WanderUI extends GameUI {
             lootButtons = new ButtonGroup<Button>();
             sacrificeButtons = new ButtonGroup<Button>();
 
+            lootPaneScroller = new ScrollOnChange(lootPane);
+            sacrificePaneScroller = new ScrollOnChange(sacrificePane);
+            
             goddess = new Image(skin.getRegion(playerService.getWorship()));
             goddess.setSize(128f, 128f);
             goddess.setScaling(Scaling.stretch);
@@ -580,21 +586,13 @@ public class WanderUI extends GameUI {
                                 populateSacrifices();
                                 populateLoot();
                             }
+                            l.setChecked(true);
                             return true;
                         }
                         return false;
                     }
-
-                    @Override
-                    public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                        l.setChecked(true);
-                    }
-
-                    @Override
-                    public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor) {
-                        l.setChecked(false);
-                    }
                 });
+                l.addListener(lootPaneScroller);
             }
         }
         else {
@@ -640,21 +638,13 @@ public class WanderUI extends GameUI {
                                 populateSacrifices();
                                 populateLoot();
                             }
+                            l.setChecked(true);
                             return true;
                         }
                         return false;
                     }
-
-                    @Override
-                    public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                        l.setChecked(true);
-                    }
-
-                    @Override
-                    public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor) {
-                        l.setChecked(false);
-                    }
                 });
+                l.addListener(sacrificePaneScroller);
             }
         }
         else {

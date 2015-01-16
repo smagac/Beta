@@ -19,4 +19,11 @@ public class TableUtils {
             table.removeActor(children.get(children.size - 1));
         }
    }
+    
+   public static Actor getActorFromRow(Table table, int row, final int COLUMNS, int column) {
+       SnapshotArray<Actor> children = table.getChildren();
+       children.ordered = false;
+       
+       return children.get((row * COLUMNS) + column);
+   }
 }

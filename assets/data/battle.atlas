@@ -95,7 +95,7 @@ enemystats
   orig: 309, 41
   offset: 0, 0
   index: -1
-force
+heal
   rotate: false
   xy: 296, 111
   size: 64, 32

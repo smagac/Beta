@@ -24,6 +24,7 @@ import core.components.Combat;
 import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
+import core.datatypes.dungeon.Progress;
 import core.factories.AdjectiveFactory;
 import core.service.interfaces.IDungeonContainer;
 
@@ -31,8 +32,8 @@ public enum CombatStates implements State<BattleUI> {
     MAIN(){
         @Override
         public void enter(final BattleUI entity) {
-            entity.boss.addAction(Actions.moveBy(-80f, 0f, .3f));
-            entity.player.addAction(Actions.moveBy(80f, 0f, .3f));
+            entity.boss.addAction(Actions.moveTo(entity.getDisplayCenterX()-entity.boss.getWidth()/2f, entity.boss.getY(), .3f));
+            entity.player.addAction(Actions.moveTo(entity.getDisplayCenterX()-entity.player.getWidth()/2f, entity.player.getY(), .3f));
             entity.player.addAction(Actions.addAction(Actions.run(new Runnable() {
                 
                 @Override
@@ -46,8 +47,8 @@ public enum CombatStates implements State<BattleUI> {
         @Override
         public void exit(final BattleUI entity) {
             entity.mainmenu.hide();
-            entity.boss.addAction(Actions.moveBy(80f, 0f, .3f));
-            entity.player.addAction(Actions.moveBy(-80f, 0f, .3f));
+            entity.boss.addAction(Actions.moveTo(entity.getDisplayCenterX()-150, entity.boss.getY(), .3f));
+            entity.player.addAction(Actions.moveTo(entity.getDisplayCenterX()+90, entity.player.getY(), .3f));
         }
 
         @Override
@@ -203,10 +204,12 @@ public enum CombatStates implements State<BattleUI> {
             if (telegram.message == Messages.Interface.Button) {
                 exit(entity);
                 final String adj = entity.inventory.getSelected().descriptor();
-                entity.playSacrificeAnimation(new Runnable() {
+                InputDisabler.swap();
+                entity.playSacrificeAnimation(entity.boss, new Runnable() {
                     
                     @Override
                     public void run() {
+                        InputDisabler.swap();
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, entity.battleService.getBoss());
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.MODIFY, adj);
                         entity.changeState(MAIN);
@@ -246,6 +249,78 @@ public enum CombatStates implements State<BattleUI> {
                 )
             );
             entity.itemPane.addAction(Actions.moveBy(entity.itemPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.sacrificeButton.addAction(
+                    Actions.sequence(
+                        Actions.delay(.2f),
+                        Actions.moveToAligned(entity.getDisplayWidth(), 20f, Align.bottomLeft, .2f, Interpolation.circleOut)
+                    )
+            );
+        }
+    },
+    Heal() {
+        @Override
+        public boolean onMessage(final BattleUI entity, Telegram telegram) {
+            if (telegram.message == Messages.Interface.Close) {
+                entity.resetSacrifices();
+                entity.changeState(MAIN);
+                return true;
+            }
+            if (telegram.message == Messages.Interface.Button) {
+                exit(entity);
+                InputDisabler.swap();
+                entity.playSacrificeAnimation(entity.player, new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        InputDisabler.swap();
+                        Stats s = entity.battleService.getPlayer().getComponent(Stats.class);
+                        s.hp = s.maxhp;
+                        Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
+                        progress.healed++;
+                        entity.clearSacrifices();
+                        entity.changeState(MAIN);
+                    }
+                });
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void enter(BattleUI entity) {
+            String prompt = "By sacrificing %s, you can heal yourself in your time of need.";
+            Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
+            int cost = progress.healed + 1;
+            entity.sacrificePrompt.setText(String.format(prompt, cost == 1 ? "an item" : String.format("%d items", cost)));
+            entity.sacrificePromptWindow.addAction(
+                Actions.parallel(
+                    Actions.alpha(1f, .1f),
+                    Actions.moveTo(20, 220, .2f)
+                )
+            );
+            entity.lootPane.addAction(Actions.moveBy(-entity.lootPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.sacrificePane.addAction(Actions.moveTo(20, entity.sacrificePane.getY(), .2f, Interpolation.circleOut));
+            
+            entity.sacrificeButton.addAction(
+                    Actions.sequence(
+                        Actions.delay(.2f),
+                        Actions.moveToAligned(entity.getDisplayWidth(), 20f, Align.bottomRight, .2f, Interpolation.circleOut)
+                    )
+            );
+            
+            entity.resetFocus();
+        }
+        
+        @Override
+        public void exit(BattleUI entity) {
+            entity.sacrificePromptWindow.addAction(
+                Actions.parallel(
+                    Actions.alpha(0f, .1f),
+                    Actions.moveTo(20, 240, .2f)
+                )
+            );
+            entity.lootPane.addAction(Actions.moveBy(entity.lootPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.sacrificePane.addAction(Actions.moveTo(-entity.sacrificePane.getWidth(), entity.sacrificePane.getY(), .2f, Interpolation.circleOut));
             entity.sacrificeButton.addAction(
                     Actions.sequence(
                         Actions.delay(.2f),

@@ -45,9 +45,16 @@ public class CrossMenu extends Group
     ListPointer<Actor> attackSet;
     
 	Image item;
+	Image itemModify;
+    Image itemHeal;
+    
 	Image defend;
 	
     private StateMachine<CrossMenu> sm;
+
+    private Array<Actor> itemMenu;
+
+    private ListPointer<Actor> itemSet;
 	
 	/**
 	 * Generate the cross menu
@@ -63,6 +70,8 @@ public class CrossMenu extends Group
 		mainSet = new ListPointer<Actor>(main, true);
 		attackMenu = new Array<Actor>();
         attackSet = new ListPointer<Actor>(attackMenu, true);
+        itemMenu = new Array<Actor>();
+        itemSet = new ListPointer<Actor>(itemMenu, true);
         
 		attack = new Image(skin, "attack");
 		defend = new Image(skin, "defend");
@@ -100,6 +109,20 @@ public class CrossMenu extends Group
             addActor(a);
         }
         
+        itemModify = new Image(skin, "modify");
+        itemHeal = new Image(skin, "heal");
+        itemMenu.add(itemModify);
+        itemMenu.add(itemHeal);
+        for (int i = 0, y = 16; i < itemMenu.size; i++, y -= 32) {
+            Actor a = itemMenu.get(i);
+            a.setOrigin(Align.left);
+            a.setScale(1f);
+            a.setPosition(0, y, Align.bottomLeft);
+            a.addAction(Actions.alpha(0f));
+            a.addListener(new ButtonInput(a, this));
+            addActor(a);
+        }
+        
         setSize(ui.getDisplayWidth(), ui.getDisplayHeight());
 		act(1f);
 		
@@ -110,6 +133,9 @@ public class CrossMenu extends Group
 		        ListPointer<Actor> set = mainSet;
 		        if (sm.getCurrentState() == MenuState.ATTACK) {
 		            set = attackSet;
+		        }
+		        if (sm.getCurrentState() == MenuState.ITEM) {
+		            set = itemSet;
 		        }
 		        
 		        if (Input.UP.match(keycode)) {
@@ -181,6 +207,25 @@ public class CrossMenu extends Group
                 )
             )
         );
+        
+        itemModify.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                    Actions.moveToAligned(0, itemModify.getY(), Align.bottomLeft, .2f),
+                    Actions.alpha(0f, .1f)
+                )
+            )
+        );
+    
+        itemHeal.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                    Actions.moveToAligned(0, itemHeal.getY(), Align.bottomLeft, .2f),
+                    Actions.alpha(0f, .1f)
+                )
+            )
+        );
+        
         defend.addAction(
             Actions.sequence(
                 Actions.delay(.2f),
@@ -227,7 +272,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.delay(.8f),
                         Actions.parallel(
-                            Actions.moveTo(-32f, entity.item.getY(), .3f, Interpolation.circleOut),
+                            Actions.moveTo(-32f, 0, .3f, Interpolation.circleOut),
                             Actions.alpha(1f, .2f)
                         )
                     )
@@ -265,7 +310,7 @@ public class CrossMenu extends Group
 	                        entity.sm.changeState(ATTACK);
 	                    }
 	                    if (telegram.extraInfo == entity.item) {
-	                        entity.ui.changeState(CombatStates.MODIFY);;
+	                        entity.sm.changeState(ITEM);;
 	                    }
 	                    if (telegram.extraInfo == entity.defend) {
 	                        entity.ui.changeState(CombatStates.DEFEND);
@@ -387,7 +432,135 @@ public class CrossMenu extends Group
                 
                 return false;
             }
-	    };
+	    },
+	    ITEM(){
+            @Override
+            public void enter(CrossMenu entity) {
+                entity.addAction(
+                    Actions.sequence(
+                        Actions.run(InputDisabler.instance),
+                        Actions.delay(.7f),
+                        Actions.run(InputDisabler.instance)
+                    )
+                );
+                
+                entity.attack.addAction(
+                    Actions.sequence(
+                        Actions.parallel(
+                            Actions.moveTo(0f, entity.attack.getY(), .3f, Interpolation.circleOut),
+                            Actions.alpha(0f, .2f)
+                        )
+                    )
+                );
+                
+                entity.item.addAction(
+                    Actions.sequence(
+                        Actions.parallel(
+                            Actions.moveTo(-entity.item.getWidth(), 48f, .3f, Interpolation.circleOut)
+                        )
+                    )
+                );
+                
+                entity.defend.addAction(
+                    Actions.sequence(
+                        Actions.delay(.1f),
+                        Actions.parallel(
+                            Actions.moveTo(0f, entity.defend.getY(), .3f, Interpolation.circleOut),
+                            Actions.alpha(0f, .2f)
+                        )
+                    )
+                );
+                
+                entity.itemModify.addAction(
+                    Actions.sequence(
+                        Actions.delay(.3f),
+                        Actions.parallel(
+                            Actions.moveTo(-entity.itemModify.getWidth() - 16, entity.itemModify.getY(), .3f, Interpolation.circleOut),
+                            Actions.alpha(1f, .2f)
+                        )
+                    )
+                );
+                
+                entity.itemHeal.addAction(
+                    Actions.sequence(
+                        Actions.delay(.4f),
+                        Actions.parallel(
+                            Actions.moveTo(-entity.itemHeal.getWidth(), entity.itemHeal.getY(), .3f, Interpolation.circleOut),
+                            Actions.alpha(1f, .2f)
+                        )
+                    )
+                );
+                
+                entity.itemSet.select(entity.itemModify);
+            }
+            
+            @Override
+            public void exit(CrossMenu entity) { 
+                entity.item.addAction(
+                    Actions.sequence(
+                        Actions.parallel(
+                            Actions.moveTo(0f, 0f, .3f, Interpolation.circleOut)
+                        )
+                    )
+                );
+            
+                entity.itemModify.addAction(
+                    Actions.sequence(
+                        Actions.delay(0f),
+                        Actions.parallel(
+                            Actions.moveTo(0, entity.itemModify.getY(), .3f, Interpolation.circleOut),
+                            Actions.alpha(0f, .2f)
+                        )
+                    )
+                );
+                
+                entity.itemHeal.addAction(
+                    Actions.sequence(
+                        Actions.delay(.1f),
+                        Actions.parallel(
+                            Actions.moveTo(0, entity.itemHeal.getY(), .3f, Interpolation.circleOut),
+                            Actions.alpha(0f, .2f)
+                        )
+                    )
+                );
+            }
+
+            @Override
+            public boolean onMessage(CrossMenu entity, Telegram telegram) {
+                if (telegram.message == Messages.Prev ||
+                    (telegram.message == Messages.Next && telegram.extraInfo == entity.attack)) {
+                    entity.sm.changeState(MAIN);
+                    return true;
+                }
+                if (telegram.message == Messages.Select) {
+                    if (telegram.extraInfo == entity.itemModify ||
+                        telegram.extraInfo == entity.itemHeal) {
+                        Actor old = entity.itemSet.get();
+                        if (old != telegram.extraInfo) {
+                            old.addAction(Actions.moveTo(-old.getWidth(), old.getY(), .2f, Interpolation.circleOut));
+                        }
+                        Actor selected = entity.itemSet.select((Actor)telegram.extraInfo);
+                        selected.addAction(Actions.moveTo(-(old.getWidth() + 16), selected.getY(), .2f, Interpolation.circleOut));
+                        return true;
+                    }
+                    if (telegram.extraInfo == entity.item) {
+                        Actor old = entity.itemSet.get();
+                        old.addAction(Actions.moveTo(-old.getWidth(), old.getY(), .2f, Interpolation.circleOut));
+                        return true;
+                    }
+                }
+                if (telegram.message == Messages.Next && telegram.extraInfo == entity.itemModify) {
+                    entity.ui.changeState(CombatStates.MODIFY);
+                    return true;
+                }
+                if (telegram.message == Messages.Next && telegram.extraInfo == entity.itemHeal) {
+                    entity.ui.changeState(CombatStates.Heal);
+                    return true;
+                }
+                
+                return false;
+            }
+        };
         
 
         @Override
