@@ -96,6 +96,7 @@ public class BattleUI extends GameUI
     Image cloudsPan1;
     Image cloudsPan2;
     Image blessingLight;
+    Group sacrificeAnimation;
     
     /*
      * Sacrifice menu
@@ -147,6 +148,7 @@ public class BattleUI extends GameUI
     FocusGroup itemFocus;
     private Image bg;
     private Image hpBar;
+    private Group attackGroup;
     
     @Override
     protected void listenTo(IntSet messages)
@@ -167,6 +169,14 @@ public class BattleUI extends GameUI
 	protected void extend()
 	{
 	    makeField();
+	    
+	    
+        fader = new Image(skin, "fill");
+        fader.setSize(getDisplayWidth(), getDisplayHeight());
+        fader.setPosition(-getDisplayWidth(), 0);
+        display.addActor(fader);
+        fader.setTouchable(Touchable.disabled);
+	    
 	    makeSacrificeMenu();
 	    makeHealSacrificeMenu();
 	    makeSacrificeScene();
@@ -294,12 +304,14 @@ public class BattleUI extends GameUI
                 }
 
                 if (Input.ACCEPT.match(keycode)) {
-                    Item item = (Item) sacrificeButtons.getChecked().getUserObject();
-                    swapItem(item, false);
+                    Button button = sacrificeButtons.getChecked();
+                    if (button != null) {
+                        Item item = (Item) sacrificeButtons.getChecked().getUserObject();
+                        swapItem(item, false);
+                    }
                     return true;
                 }
-
-                if (Input.DOWN.match(keycode)) {
+                else if (Input.DOWN.match(keycode)) {
                     if (sacrificeButtons.getChecked() == null) {
                         Button next = sacrificeButtons.getButtons().first();
                         if (next != null) {
@@ -319,7 +331,7 @@ public class BattleUI extends GameUI
                     }
                     return true;
                 }
-                if (Input.UP.match(keycode)) {
+                else if (Input.UP.match(keycode)) {
                     if (sacrificeButtons.getChecked() == null) {
                         Button next = sacrificeButtons.getButtons().first();
                         if (next != null) {
@@ -489,7 +501,9 @@ public class BattleUI extends GameUI
             sacrificeButtons.setChecked(item.fullname());
             sacrificeButtons.remove(sacrificeButtons.getChecked());
             //remove row
-            TableUtils.removeTableRow(sacrificeList, sacrificeRows.indexOf(item, true), 2);
+            int index = sacrificeRows.indexOf(item, true);
+            TableUtils.removeTableRow(sacrificeList, index, 2);
+            sacrificeRows.removeIndex(index);
         }
         else 
         {
@@ -497,6 +511,8 @@ public class BattleUI extends GameUI
             int index = sacrificeRows.indexOf(item, true);
             Label label = (Label)TableUtils.getActorFromRow(sacrificeList, index, 2, 1);
             label.setText(String.valueOf(amount));
+            
+            sacrifices.put(item, amount);
         }
     }   
     
@@ -623,32 +639,29 @@ public class BattleUI extends GameUI
         death = new ParticleActor(pe);
         
         display.addActor(death);  
-        
-        fader = new Image(skin, "fill");
-        fader.setSize(getDisplayWidth(), getDisplayHeight());
-        fader.setPosition(-getDisplayWidth(), 0);
-        display.addActor(fader);
-	}
+    }
 
 	/**
 	 * Constructs the elements required for the attack phase of the battle
 	 */
 	private void makeAttackElements() {
+	    attackGroup = new Group();
 	    bossDie = new Image(skin, "d1");
 	    playerDie = new Image(skin, "d2");
 	    
 	    bossDie.setPosition(0, 0, Align.topRight);
 	    playerDie.setPosition(0, 0, Align.topRight);
 	    
-	    display.addActor(bossDie);
-	    display.addActor(playerDie);
+	    attackGroup.addActor(bossDie);
+	    attackGroup.addActor(playerDie);
 	    
 	    timeline = new Timeline();
 	    timeline.setSize(getDisplayWidth() - 20f, getDisplayHeight() - 20f);
 	    timeline.setPosition(10f, 10f);
 	    
-	    display.addActor(timeline);
-	          
+	    attackGroup.addActor(timeline);
+	    attackGroup.setTouchable(Touchable.disabled);
+	    display.addActor(attackGroup);
 	}
 	
 	/**
@@ -746,6 +759,7 @@ public class BattleUI extends GameUI
 	 * Construct the elements needed for the sacrifice animation
 	 */
 	private void makeSacrificeScene(){
+	    sacrificeAnimation = new Group();
 	    
 	    cloudsPan1 = new Image(new TiledDrawable(skin.getRegion("clouds")));
 	    cloudsPan2 = new Image(new TiledDrawable(skin.getRegion("clouds")));
@@ -754,24 +768,27 @@ public class BattleUI extends GameUI
         
         cloudsPan1.setPosition(0, 0, Align.topLeft);
         cloudsPan2.setPosition(0, 0, Align.topLeft);
-        display.addActor(cloudsPan1);
-        display.addActor(cloudsPan2);
+        sacrificeAnimation.addActor(cloudsPan1);
+        sacrificeAnimation.addActor(cloudsPan2);
 	    
 	    goddess = new Image(skin, playerService.getWorship());
 	    goddess.setSize(128, 128);
 	    goddess.setPosition(-256f, -256f);
 	    goddess.setOrigin(Align.center);
-	    display.addActor(goddess);
+	    sacrificeAnimation.addActor(goddess);
 	    
 	    glow = new Image(skin, "sacrifice");
 	    glow.setSize(64f, 64f);
 	    glow.setPosition(-64, -64);
 	    glow.setOrigin(Align.center);
-	    display.addActor(glow);
+	    sacrificeAnimation.addActor(glow);
 	    
 	    blessingLight = new Image(new TiledDrawable(skin.getRegion("blessing")));
 	    blessingLight.setSize(128f, 0f);
 	    display.addActorBefore(boss, blessingLight);
+	    
+	    sacrificeAnimation.setTouchable(Touchable.disabled);
+	    display.addActor(sacrificeAnimation);
 	}
 	
 	/**
