@@ -8,6 +8,8 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import core.service.implementations.ScoreTracker.NumberValues;
+
 public final class ScoreTracker implements Serializable, Service {
     
     ObjectIntMap<NumberValues> numeric;
@@ -296,4 +298,23 @@ public final class ScoreTracker implements Serializable, Service {
         // TODO Auto-generated method stub
         
     }
+
+    public void increment(NumberValues key, int val) {
+        numeric.put(key, numeric.get(key, 0) + val);
+    }
+    
+    public void decrement(NumberValues key, int val) {
+        numeric.put(key, Math.max(0, numeric.get(key, 0) - val));
+    }
+    
+    public void increment(StringValues key, String val, int amount) {
+        ObjectIntMap<String> index = strings.get(key);
+        index.put(val, index.get(val, 0) + amount);
+    }
+    
+    public void decrement(StringValues key, String val, int amount) {
+        ObjectIntMap<String> index = strings.get(key);
+        index.put(val, Math.max(0, index.get(val, 0) - amount));
+    }
+    
 }

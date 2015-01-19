@@ -74,6 +74,9 @@ public enum CombatStates implements State<BattleUI> {
                     if (entity.getCurrentState() == VICTORY) {
                         return;
                     }
+                    if (entity.getCurrentState() == DEAD) {
+                        return;
+                    }
                     
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
@@ -119,6 +122,10 @@ public enum CombatStates implements State<BattleUI> {
                     if (entity.getCurrentState() == VICTORY) {
                         return;
                     }
+                    if (entity.getCurrentState() == DEAD) {
+                        return;
+                    }
+                    
                     
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
@@ -203,6 +210,7 @@ public enum CombatStates implements State<BattleUI> {
             }
             if (telegram.message == Messages.Interface.Button) {
                 exit(entity);
+                entity.sacrifices.put(entity.selectedItem, 1);
                 final String adj = entity.selectedItem.descriptor();
                 InputDisabler.swap();
                 entity.playSacrificeAnimation(entity.boss, new Runnable() {
@@ -210,8 +218,10 @@ public enum CombatStates implements State<BattleUI> {
                     @Override
                     public void run() {
                         InputDisabler.swap();
+                        entity.playerService.getInventory().sacrifice(entity.sacrifices, 1);
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, entity.battleService.getBoss());
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.MODIFY, adj);
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.ADVANCE);
                         entity.changeState(MAIN);
                     }
                 });
@@ -291,22 +301,28 @@ public enum CombatStates implements State<BattleUI> {
                 return true;
             }
             if (telegram.message == Messages.Interface.Button) {
-                exit(entity);
-                InputDisabler.swap();
-                entity.playSacrificeAnimation(entity.player, new Runnable() {
-                    
-                    @Override
-                    public void run() {
-                        InputDisabler.swap();
-                        Stats s = entity.battleService.getPlayer().getComponent(Stats.class);
-                        s.hp = s.maxhp;
-                        Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
-                        progress.healed++;
-                        entity.clearSacrifices();
-                        entity.changeState(MAIN);
-                    }
-                });
-                return true;
+                Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
+                int cost = progress.healed + 1;
+                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, cost)){
+                    exit(entity);
+                    InputDisabler.swap();
+                    entity.playSacrificeAnimation(entity.player, new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            InputDisabler.swap();
+                            entity.playerService.recover();
+                            Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
+                            progress.healed++;
+                            entity.clearSacrifices();
+                            entity.changeState(MAIN);
+                        }
+                    });
+                    return true;
+                } else {
+                    entity.pushNotification("Not enough items have been selected to sacrifices");
+                }
+                return false;
             }
             return false;
         }
@@ -394,6 +410,9 @@ public enum CombatStates implements State<BattleUI> {
                 @Override
                 public void run() {
                     entity.combat.defend(t);
+                    if (entity.getCurrentState() == DEAD) {
+                        return;
+                    }
                     
                     entity.addAction(
                         Actions.sequence(
@@ -418,6 +437,8 @@ public enum CombatStates implements State<BattleUI> {
                     Actions.delay(10f),
                     Actions.run(new PlayBGM(entity.getManager().get(DataDirs.Audio + "victory.mp3", Music.class))),
                     Actions.delay(10f),
+                    Actions.run(PlayBGM.fadeOut),
+                    Actions.alpha(0f, 1f),
                     Actions.run(new Runnable(){
 
                         @Override
@@ -428,6 +449,41 @@ public enum CombatStates implements State<BattleUI> {
                     })
                 )
             );
+        }
+
+        @Override
+        public boolean onMessage(BattleUI entity, Telegram telegram) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        
+    },
+    DEAD(){
+
+        @Override
+        public void enter(BattleUI entity) {
+            InputDisabler.swap();
+            entity.audio.fadeOut();
+            entity.fader.addAction(Actions.alpha(1f, .5f));
+            entity.dialog.addAction(
+                Actions.sequence(
+                    Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY() + 10, Align.center),
+                    Actions.delay(2f),
+                    Actions.parallel(
+                        Actions.moveBy(0, -10, .4f),
+                        Actions.alpha(1f, .4f)
+                    ),
+                    Actions.delay(3f),
+                    Actions.run(new Runnable(){
+                        @Override
+                        public void run() {
+                            InputDisabler.clear();
+                            SceneManager.switchToScene("town");
+                        };
+                    })
+                )       
+            );
+            
         }
 
         @Override

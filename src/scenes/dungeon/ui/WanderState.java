@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.DataDirs;
 import core.components.Stats;
+import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.service.implementations.ScoreTracker;
@@ -158,8 +159,8 @@ public enum WanderState implements UIState {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
-                    for (int i = 0; i < entity.sacrifices.size; i++) {
-                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed);
+                    for (Item i : entity.sacrifices.keys()) {
+                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed, entity.sacrifices.get(i, 0));
                     }
                     entity.playerService.recover();
                     entity.dungeonService.getProgress().healed = healCost;
@@ -193,9 +194,6 @@ public enum WanderState implements UIState {
             if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
                 int fleeCost = entity.dungeonService.getProgress().depth;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, fleeCost)) {
-                    for (int i = 0; i < entity.sacrifices.size; i++) {
-                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed);
-                    }
                     entity.changeState(Exit);
                     return true;
                 }

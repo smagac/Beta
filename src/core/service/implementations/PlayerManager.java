@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
 
+import scenes.Messages;
+
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -100,6 +103,7 @@ public class PlayerManager implements IPlayerContainer {
     public void recover() {
         Stats stats = player.getComponent(Stats.class);
         stats.hp = stats.maxhp;
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
     }
 
     @Override

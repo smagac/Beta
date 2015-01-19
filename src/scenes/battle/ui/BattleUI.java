@@ -121,7 +121,7 @@ public class BattleUI extends GameUI
     private ObjectIntMap<Item> loot;
     ButtonGroup<Button> lootButtons;
     private Table sacrificeList;
-    private ObjectIntMap<Item> sacrifices;
+    ObjectIntMap<Item> sacrifices;
     private ButtonGroup<Button> sacrificeButtons;
     private Array<Item> lootRows;
     private Array<Item> sacrificeRows;
@@ -209,12 +209,14 @@ public class BattleUI extends GameUI
     private Image bg;
     private Image hpBar;
     private Group attackGroup;
+
+    Group dialog;
     
     @Override
     protected void listenTo(IntSet messages)
     {
         super.listenTo(messages);
-        messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT, Messages.Battle.Stats);
+        messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT, Messages.Battle.Stats, Messages.Battle.DEBUFF);
     }
 	
     public BattleUI(AssetManager manager, TiledMapTileSet environment)
@@ -230,7 +232,6 @@ public class BattleUI extends GameUI
 	{
 	    makeField();
 	    
-	    
         fader = new Image(skin, "fill");
         fader.setSize(getDisplayWidth(), getDisplayHeight());
         fader.setPosition(-getDisplayWidth(), 0);
@@ -242,6 +243,7 @@ public class BattleUI extends GameUI
 	    makeSacrificeScene();
 	    makeAttackElements();
 	    makeBossStats();
+        makeDead();
         
 	    mainmenu = new CrossMenu(skin, this);
         mainmenu.setPosition(getDisplayWidth(), getDisplayHeight()/2f);
@@ -321,6 +323,22 @@ public class BattleUI extends GameUI
         });
 	}
 	
+    private void makeDead() {
+        dialog = makeWindow(skin, 400, 250, true);
+        Label message = new Label("You are dead.\n\nYou have dropped all your new loot.\nSucks to be you.", skin, "promptsm");
+        message.setWrap(true);
+        message.setAlignment(Align.center);
+        message.setPosition(40f, 40f);
+        message.setWidth(320f);
+        message.setHeight(170f);
+        dialog.addActor(message);
+        dialog.setColor(1,1,1,0);
+        dialog.setTouchable(Touchable.disabled);
+
+        display.addActor(dialog);
+
+    }
+
     private void makeHealSacrificeMenu() {
         // loot List and buttons
         lootList = new Table();
@@ -1211,6 +1229,7 @@ public class BattleUI extends GameUI
             playVictoryAnimation(results);
             return true;
 	    } else if (msg.message == Messages.Battle.DEFEAT){
+	        changeState(CombatStates.DEAD);
 	        //TODO fade out screen and return home
 	        return true;
 	    } else if (msg.message == Messages.Battle.Stats) {
@@ -1227,6 +1246,10 @@ public class BattleUI extends GameUI
                     Actions.sizeTo(((float)hp /(float)mhp) * 258f, 6f, .5f, Interpolation.sine)
                 )
             );
+	        return true;
+	    } else if (msg.message == Messages.Battle.DEBUFF) {
+	        String adj = (String)msg.extraInfo;
+	        pushNotification(String.format("The effects of %s have worn off", adj));
 	        return true;
 	    }
 	    return super.handleMessage(msg);

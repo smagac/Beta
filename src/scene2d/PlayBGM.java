@@ -14,6 +14,13 @@ import core.service.interfaces.ISharedResources;
  */
 public class PlayBGM implements Runnable {
 
+    public static final Runnable fadeOut = new Runnable(){
+        @Override
+        public void run() {
+            ServiceManager.getService(IAudioManager.class).fadeOut();
+        };
+    };
+    
     private Music bgm;
     
     /**

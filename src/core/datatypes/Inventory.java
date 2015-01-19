@@ -4,7 +4,6 @@ import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
 import github.nhydock.ssm.ServiceManager;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -87,22 +86,24 @@ public class Inventory implements Serializable {
         while (todaysCrafts.size < 5);
     }
 
+    /**
+     * Updates the list of Crafts to be aware of if they can be made right now or not
+     */
     public void refreshRequirements() {
-        getTodaysCrafts();
-        getRequiredCrafts();
-    }
-
-    public Array<Craftable> getTodaysCrafts() {
         for (Craftable c : todaysCrafts) {
             c.canMake = canMake(c);
         }
+        
+        for (Craftable c : required) {
+            c.canMake = canMake(c);
+        }
+    }
+
+    public Array<Craftable> getTodaysCrafts() {
         return todaysCrafts;
     }
 
     public Array<Craftable> getRequiredCrafts() {
-        for (Craftable c : required) {
-            c.canMake = canMake(c);
-        }
         return required;
     }
 
@@ -290,8 +291,13 @@ public class Inventory implements Serializable {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, item);
                 }
             }
+            
+            for (Item i : sacrifices.keys()) {
+                ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed, sacrifices.get(i, 0));
+            }
+            
         }
-
+        
         return canSacrifice;
     }
 

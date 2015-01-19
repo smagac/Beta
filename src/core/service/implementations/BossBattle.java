@@ -90,7 +90,7 @@ public class BossBattle implements IBattleContainer {
             } 
             else if (s.hp <= 0 && target == player)
             {
-                //MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEFEAT);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEFEAT);
             }
             target = null;
             return true;
@@ -107,6 +107,8 @@ public class BossBattle implements IBattleContainer {
             Effect e = new Effect(target, adj);
             e.apply();
             effectWatch.add(e);
+            
+            target = null;
             return true;
         }
         //advance to the next turn
@@ -176,6 +178,7 @@ public class BossBattle implements IBattleContainer {
         private void expire() {
             target.getComponent(Identifier.class).removeModifier(adjective);
             target.getComponent(Stats.class).removeModifier(mod);
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEBUFF, adjective);
         }
         
         public String getAdjective() {
