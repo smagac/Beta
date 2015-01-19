@@ -67,7 +67,8 @@ public class WanderUI extends GameUI {
     // variables for sacrifice menu
     Group dialog;
     Image goddess;
-
+    Image fader;
+    
     private Group goddessDialog;
     private Label gMsg;
     private Table itemSubmenu;

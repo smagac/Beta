@@ -468,7 +468,7 @@ enum TownState implements UIState {
                             Actions.delay(3f),
                             Actions.forever(Actions.sequence(Actions.moveTo(5, 0, .1f, Interpolation.bounce),
                                     Actions.moveTo(-5, 0, .1f, Interpolation.bounce)))));
-            ui.getFader().addAction(
+            ui.fader.addAction(
                     Actions.sequence(Actions.delay(3f), Actions.alpha(1f, 5f), Actions.run(new Runnable() {
 
                         @Override
@@ -556,57 +556,72 @@ enum TownState implements UIState {
 
         @Override
         public void enter(final TownUI entity) {
+            entity.downloadWindow.clearActions();
             entity.downloadWindow.addAction(
-                   Actions.moveTo(entity.getDisplayWidth() / 2 - entity.downloadWindow.getWidth()/2f, 
-                                  entity.getDisplayHeight() / 2f - entity.downloadWindow.getHeight()/2f,
-                                  .3f, Interpolation.circleOut)
+                   Actions.sequence(
+                       Actions.moveTo(
+                           entity.getDisplayCenterX() - entity.downloadWindow.getWidth()/2f, 
+                           entity.getDisplayCenterY() - entity.downloadWindow.getHeight()/2f, 
+                           .5f, Interpolation.circleOut),
+                       Actions.run(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            connection = new Net.HttpRequest(Net.HttpMethods.GET);
+                            connection.setUrl(DAILY_DUNGEON_SERVER);
+                            connection.setTimeOut(5000);
+                            Gdx.net.sendHttpRequest(connection, new Net.HttpResponseListener() {
+                                
+                                @Override
+                                public void handleHttpResponse(HttpResponse httpResponse) {
+                                   try (InputStream content = httpResponse.getResultAsStream();
+                                        Scanner scanner = new Scanner(content))
+                                   {
+                                       String output = "";
+                                       while (scanner.hasNextLine()) {
+                                           output += scanner.nextLine();
+                                       }
+                                       Gdx.app.log("Daily Dungeon", output);
+                                       dungeonData = output;
+                       
+                                       scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
+                                       DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
+                                       dungeon.setDungeon(params, null);
+                                   }
+                                   catch (IOException e) {
+                                       e.printStackTrace();
+                                       entity.changeState(Explore);
+                                   }  
+                                }
+                                
+                                @Override
+                                public void failed(Throwable t) {
+                                    Gdx.app.log("Daily Dungeon", "Could not establish a connection/failed to download dungeon");
+                                    entity.changeState(Explore);
+                                    entity.setMessage("Could not establish a connection");
+                                }
+                                
+                                @Override
+                                public void cancelled() {
+                                    Gdx.app.log("Daily Dungeon", "Download cancelled");
+                                    entity.changeState(Explore);
+                                    entity.setMessage("Download cancelled");
+                                }
+                            });
+                        }
+                    })
+                )
             );
             
-            connection = new Net.HttpRequest(Net.HttpMethods.GET);
-            connection.setUrl(DAILY_DUNGEON_SERVER);
-            connection.setTimeOut(5000);
-            Gdx.net.sendHttpRequest(connection, new Net.HttpResponseListener() {
-                
-                @Override
-                public void handleHttpResponse(HttpResponse httpResponse) {
-                   try (InputStream content = httpResponse.getResultAsStream();
-                        Scanner scanner = new Scanner(content))
-                   {
-                       String output = "";
-                       while (scanner.hasNextLine()) {
-                           output += scanner.nextLine();
-                       }
-                       Gdx.app.log("Daily Dungeon", output);
-                       dungeonData = output;
-       
-                       scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
-                       DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
-                       dungeon.setDungeon(params, null);
-                   }
-                   catch (IOException e) {
-                       e.printStackTrace();
-                       entity.changeState(Explore);
-                   }  
-                }
-                
-                @Override
-                public void failed(Throwable t) {
-                    Gdx.app.log("Daily Dungeon", "Could not establish a connection/failed to download dungeon");
-                    entity.changeState(Explore);
-                }
-                
-                @Override
-                public void cancelled() {
-                    Gdx.app.log("Daily Dungeon", "Download cancelled");
-                    entity.changeState(Explore);
-                }
-            });
+            
             entity.resetFocus();
         }
         
         @Override
         public void exit(TownUI entity) {
-            entity.downloadWindow.addAction(Actions.moveTo(entity.getDisplayCenterX() - entity.downloadWindow.getWidth() / 2,
+            entity.downloadWindow.clearActions();
+            entity.downloadWindow.addAction(
+                    Actions.moveTo(entity.getDisplayCenterX() - entity.downloadWindow.getWidth() / 2,
                     entity.getDisplayHeight(), .2f, Interpolation.circleOut));
             
         }

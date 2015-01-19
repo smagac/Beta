@@ -44,22 +44,16 @@ public abstract class Scene<View extends UI> implements Screen {
     protected boolean loaded;
     protected InputMultiplexer input;
 
-    protected Image fader;
-    
     public Scene() {
         manager = new AssetManager();
         input = new InputMultiplexer();
 
         ServiceManager.inject(this);
-        fader = new Image(ServiceManager.getService(ISharedResources.class).getResource(DataDirs.Home + "fill.png", Texture.class));
-        fader.setColor(1,1,1,1);
-        fader.addAction(Actions.alpha(0f, .3f));
     }
 
     @Override
     public void resize(int width, int height) {
         ui.resize(width, height);
-        fader.setSize(width, height);
     }
 
     @Override
@@ -81,11 +75,6 @@ public abstract class Scene<View extends UI> implements Screen {
         ui.act(delta);
 
         extend(delta);
-        
-        fader.act(delta);
-        ui.getBatch().begin();
-        fader.draw(ui.getBatch(), 1.0f);
-        ui.getBatch().end();
     }
 
     /**

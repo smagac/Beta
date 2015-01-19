@@ -36,7 +36,6 @@ public abstract class UI extends Stage implements Telegraph {
     public static final Viewport viewport = new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]);
     
     protected Skin skin;
-    protected Image fader;
     protected AssetManager manager;
     protected Image pointer;
     protected final Image fill;
@@ -98,10 +97,6 @@ public abstract class UI extends Stage implements Telegraph {
 
     public static Group makeWindow(Skin skin, int width, int height) {
         return makeWindow(skin, width, height, false);
-    }
-
-    public final Image getFader() {
-        return fader;
     }
 
     /**

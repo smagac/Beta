@@ -33,6 +33,7 @@ public class LoreUI extends UI {
     Scene parent;
 	@Inject public IPlayerContainer player;
 	
+	private Image fader;
 	
 	//here's the table that holds all of the lore
 	// we're going to pan it up accross the screen

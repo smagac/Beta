@@ -20,9 +20,9 @@ import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -31,8 +31,6 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
@@ -116,7 +114,10 @@ public class TownUI extends GameUI {
     Image goddess;
     Group goddessDialog;
     Label gMsg;
+    Image miniGoddess;
 
+    Image fader;
+    
     private boolean changeDir;
     private ButtonGroup<Button> craftTabs;
     private FileHandle queueDir;
@@ -965,7 +966,7 @@ public class TownUI extends GameUI {
         spinner.setAlign(Align.center);
         spinner.setPosition(window.getX(Align.center), 60f, Align.center);
 
-        window.setPosition(display.getWidth() / 2f - window.getWidth() / 2f, display.getHeight());
+        window.setPosition(getDisplayCenterX() - window.getWidth() / 2f, display.getHeight());
         window.addActor(table);
         window.addActor(spinner);
 
@@ -997,12 +998,39 @@ public class TownUI extends GameUI {
         display.addActor(goddess);
         display.addActor(goddessDialog);
 
-        goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight() / 2 - 64f));
+        goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight() / 2f - 64f));
         goddessDialog.addAction(Actions.alpha(0f));
         goddessDialog.setVisible(false);
 
         setMessage("What're we doing next?");
+        
+        miniGoddess = new Image(skin.getRegion(playerService.getWorship()));
+        miniGoddess.setSize(32f, 32f);
+        miniGoddess.setScaling(Scaling.stretch);
+        miniGoddess.setPosition(messageWindow.getWidth() - 16f, messageWindow.getHeight() / 2f, Align.right);
+        miniGoddess.setOrigin(Align.center);
+        miniGoddess.addAction(
+            Actions.forever(
+                Actions.sequence(
+                    Actions.moveBy(0, 3f, .5f), 
+                    Actions.moveBy(0, -6f, 1f), 
+                    Actions.moveBy(0, 3f, .5f),
+                    Actions.run(new Runnable(){
 
+                        @Override
+                        public void run() {
+                            boolean flip = MathUtils.randomBoolean(.1f);
+                            if (flip) {
+                                miniGoddess.addAction(Actions.rotateBy(-360f, 1f));
+                            }
+                        }
+                        
+                    })
+                )
+            )
+        );
+        messageWindow.addActor(miniGoddess);
+        
         MessageDispatcher.getInstance().addListener(this, Quest.Actions.Expired);
         
         defaultFocus = new FocusGroup(buttonList);

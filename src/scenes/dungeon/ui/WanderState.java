@@ -221,7 +221,7 @@ public enum WanderState implements UIState {
             entity.dialog.clearListeners();
             entity.dialog.setVisible(true);
             entity.dialog.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(1f, .5f)));
-            entity.getFader().addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
+            entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
 
             entity.refreshButtons();
             entity.setFocus(entity.getButtonList());
@@ -232,7 +232,7 @@ public enum WanderState implements UIState {
             if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
                 telegram.message == Messages.Interface.Close){
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
-                entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
+                entity.fader.addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
                     public void run() {
                         SceneManager.switchToScene("town");
@@ -256,7 +256,7 @@ public enum WanderState implements UIState {
 
             entity.dialog.setVisible(true);
             entity.dialog.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(1f, .5f)));
-            entity.getFader().addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
+            entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
 
             entity.refreshButtons();
             entity.setFocus(entity.getButtonList());
@@ -267,7 +267,7 @@ public enum WanderState implements UIState {
             if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
                 telegram.message == Messages.Interface.Close) {
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
-                entity.getFader().addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
+                entity.fader.addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
                     @Override
                     public void run() {
                         SceneManager.switchToScene("town");

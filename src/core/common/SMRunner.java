@@ -35,12 +35,12 @@ public class SMRunner {
             else if (arg.equals("-bgmvol")) {
                 String val = args[++i];
                 float vol = Float.parseFloat(val);
-                app.setBgmVol(vol);
+                Storymode.InternalVolume[0] = vol;
             }
             else if (arg.equals("-sfxvol")) {
                 String val = args[++i];
                 float vol = Float.parseFloat(val);
-                app.setSfxVol(vol);
+                Storymode.InternalVolume[1] = vol;
             }
         }
 

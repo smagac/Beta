@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.GL20;
 import core.DLC;
 import core.factories.AllFactories;
 import core.service.implementations.AudioManager;
-import core.service.implementations.BossBattle;
 import core.service.implementations.ColorManager;
 import core.service.implementations.DungeonManager;
 import core.service.implementations.LoadScreen;
@@ -18,7 +17,6 @@ import core.service.implementations.PlayerManager;
 import core.service.implementations.SharedLoader;
 import core.service.implementations.ScoreTracker;
 import core.service.interfaces.IAudioManager;
-import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IGame;
@@ -31,7 +29,8 @@ import github.nhydock.ssm.ServiceManager;
 public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     public static final int[] InternalRes = { 960, 540 };
-
+    protected static float[] InternalVolume = {1.0f, 1.0f};
+    
     private boolean resumed;
 
     private Screen queued;
@@ -74,6 +73,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(ScoreTracker.class, tracker);
         
         audioManager = new AudioManager();
+        audioManager.setBgmVol(InternalVolume[0]);
+        audioManager.setSfxVol(InternalVolume[1]);
         ServiceManager.register(IAudioManager.class, audioManager);
         playerManager = new PlayerManager();
         ServiceManager.register(IPlayerContainer.class, playerManager);
@@ -181,6 +182,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         audioManager.playBgm();
     }
     
+    @Override
     public void pause() {
         super.pause();
         audioManager.pauseBgm();
@@ -206,14 +208,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     @Override
     public void onUnregister() {
         // Do nothing
-    }
-
-    public void setBgmVol(float vol) {
-        audioManager.setBgmVol(vol);
-    }
-
-    public void setSfxVol(float vol) {
-        audioManager.setSfxVol(vol);
     }
 
     @Override

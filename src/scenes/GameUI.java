@@ -3,6 +3,7 @@ package scenes;
 import java.nio.CharBuffer;
 
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -46,6 +48,7 @@ import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
+import core.service.interfaces.ISharedResources;
 
 /**
  * Base UI for adventuring in the town </p> Please don't ask about all the pixel
@@ -100,6 +103,9 @@ public abstract class GameUI extends UI {
     protected StateMachine menu;
     
     private int seconds = 0;
+    
+    private Image fsFader;
+    private Label message;
     
     //prepare these beforehand
     @Override
@@ -204,6 +210,9 @@ public abstract class GameUI extends UI {
             window.addActor(messageWindow);
 
             addActor(window);
+            
+            message = new Label("", skin, "promptsm");
+            messageWindow.addActor(message);
         }
 
         // window frame
@@ -308,14 +317,6 @@ public abstract class GameUI extends UI {
         
         calculateScissors(displayBounds, tmpBound);
 
-        if (fader == null) {
-            fader = new Image(skin.getDrawable("fader"));
-            fader.setFillParent(true);
-            fader.addAction(Actions.alpha(0f));
-            fader.setTouchable(Touchable.disabled);
-            addActor(fader);
-        }
-
         pointer = new Image(skin.getDrawable("pointer"));
         addActor(pointer);
         hidePointer();
@@ -323,7 +324,14 @@ public abstract class GameUI extends UI {
         act(0);
         
         resetFocus();
-            
+
+        fsFader = new Image(shared.getResource(DataDirs.Home + "fill.png", Texture.class));
+        fsFader.setColor(1,1,1,1);
+        fsFader.addAction(Actions.alpha(0f, .6f));
+        fsFader.setSize(getWidth(), getHeight());
+        fsFader.setTouchable(Touchable.disabled);
+        addActor(fsFader);
+                    
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Progress);
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Time);
@@ -609,14 +617,8 @@ public abstract class GameUI extends UI {
      * Sets the message in the bottom right corner
      */
     public void setMessage(String s) {
-        messageWindow.clear();
-
-        Label message = new Label("", skin, "promptsm");
         message.setPosition(8f, 12f);
-
         message.setText(s);
-
-        messageWindow.addActor(message);
     }
 
     /**

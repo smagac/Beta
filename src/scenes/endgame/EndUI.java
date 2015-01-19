@@ -46,7 +46,8 @@ public class EndUI extends UI {
     private Image goddess;
     private Image you;
     private Image bg;
-
+    private Image fader;
+    
     private boolean over;
 
     Scene parent;
