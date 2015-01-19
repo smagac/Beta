@@ -9,6 +9,8 @@ import java.util.Scanner;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
+import scene2d.PlayBGM;
+import scene2d.PlaySound;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
 
@@ -463,19 +465,35 @@ enum TownState implements UIState {
 
             ui.restore();
             ui.getRoot().clearListeners();
-            ui.getRoot().addAction(
-                    Actions.sequence(
-                            Actions.delay(3f),
-                            Actions.forever(Actions.sequence(Actions.moveTo(5, 0, .1f, Interpolation.bounce),
-                                    Actions.moveTo(-5, 0, .1f, Interpolation.bounce)))));
+            ui.addAction(
+                Actions.sequence(
+                    Actions.run(PlayBGM.fadeOut),
+                    Actions.delay(3f),
+                    Actions.parallel(
+                        Actions.forever(
+                            Actions.sequence(
+                                Actions.moveTo(5, 0, .1f, Interpolation.bounce),
+                                Actions.moveTo(-5, 0, .1f, Interpolation.bounce)
+                            )
+                        ),
+                        Actions.forever(Actions.sequence(Actions.run(new PlaySound(DataDirs.Sounds.explode)), Actions.delay(.2f)))
+                    )
+                )
+            );
             ui.fader.addAction(
-                    Actions.sequence(Actions.delay(3f), Actions.alpha(1f, 5f), Actions.run(new Runnable() {
+                Actions.sequence(
+                    Actions.delay(2f), 
+                    Actions.alpha(1f, 5f), 
+                    Actions.run(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            SceneManager.switchToScene("endgame");
+                            @Override
+                            public void run() {
+                                SceneManager.switchToScene("endgame");
+                            }
                         }
-                    })));
+                    )
+                )
+            );
         }
 
         @Override

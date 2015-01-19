@@ -1035,6 +1035,12 @@ public class TownUI extends GameUI {
         
         defaultFocus = new FocusGroup(buttonList);
         defaultFocus.addListener(focusListener);
+        
+        fader = new Image(skin, "wfill");
+        fader.setColor(1, 1, 1, 0);
+        fader.setSize(getWidth(), getHeight());
+        fader.setTouchable(Touchable.disabled);
+        addActor(fader);
     }
 
     private void loadDir(FileHandle external) {
