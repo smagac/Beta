@@ -15,6 +15,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -872,5 +873,14 @@ public abstract class GameUI extends UI {
             }
             return false;
         }
+    }
+    
+    public final void fadeOut(){
+        fsFader.clearActions();
+        fsFader.addAction(Actions.alpha(1f, 1f));
+    }
+    
+    public final Action fadeOutAction(){
+        return Actions.addAction(Actions.alpha(1f, 1f), fsFader);
     }
 }

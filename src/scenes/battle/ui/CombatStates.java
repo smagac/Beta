@@ -438,7 +438,7 @@ public enum CombatStates implements State<BattleUI> {
                     Actions.run(new PlayBGM(entity.getManager().get(DataDirs.Audio + "victory.mp3", Music.class))),
                     Actions.delay(10f),
                     Actions.run(PlayBGM.fadeOut),
-                    Actions.alpha(0f, 1f),
+                    entity.fadeOutAction(),
                     Actions.run(new Runnable(){
 
                         @Override
@@ -461,19 +461,27 @@ public enum CombatStates implements State<BattleUI> {
     DEAD(){
 
         @Override
-        public void enter(BattleUI entity) {
+        public void enter(final BattleUI entity) {
             InputDisabler.swap();
-            entity.audio.fadeOut();
             entity.fader.addAction(Actions.alpha(1f, .5f));
             entity.dialog.addAction(
                 Actions.sequence(
+                        
+                    Actions.delay(1f),
                     Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY() + 10, Align.center),
                     Actions.delay(2f),
                     Actions.parallel(
                         Actions.moveBy(0, -10, .4f),
                         Actions.alpha(1f, .4f)
-                    ),
-                    Actions.delay(3f),
+                    )
+                )       
+            );
+            entity.addAction(
+                Actions.sequence(
+                    Actions.run(PlayBGM.fadeOut),
+                    Actions.delay(6f),
+                    entity.fadeOutAction(),
+                    Actions.delay(1f),
                     Actions.run(new Runnable(){
                         @Override
                         public void run() {
@@ -481,9 +489,8 @@ public enum CombatStates implements State<BattleUI> {
                             SceneManager.switchToScene("town");
                         };
                     })
-                )       
+                )
             );
-            
         }
 
         @Override
