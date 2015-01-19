@@ -1,5 +1,6 @@
 package scenes.battle.ui;
 
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
 import core.common.Input;
+import core.service.interfaces.IPlayerContainer;
 import core.util.ListPointer;
 
 /**
@@ -81,7 +83,7 @@ public class CrossMenu extends Group
 		defend.setName("defend");
 		
 		main.add(attack);
-		if (ui.inventory.getItems().size > 0) {
+		if (ServiceManager.getService(IPlayerContainer.class).getInventory().getLoot().size > 0) {
 	        main.add(item);
 		}
 		main.add(defend);
@@ -257,7 +259,6 @@ public class CrossMenu extends Group
                     )
                 );
 	            
-	            entity.mainSet.select(entity.attack);
 	            entity.attack.addAction(
                     Actions.sequence(
                         Actions.delay(.7f),
@@ -288,7 +289,8 @@ public class CrossMenu extends Group
                     )
                 );
 	            
-	            
+	            entity.mainSet.select(entity.attack);
+                
 	        }
 	        
 	        @Override

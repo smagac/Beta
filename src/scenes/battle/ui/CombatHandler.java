@@ -208,6 +208,7 @@ public class CombatHandler implements Telegraph {
             id = battleService.getPlayer().getComponent(Identifier.class).toString();
             int dmg = calcDamage(new Turn(3, 1, Combatant.Enemy));
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, battleService.getPlayer());
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DAMAGE, dmg);
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, String.format("%s's guard was penetrated!\n%d damage\n2 hits", id, dmg));
         }
     }

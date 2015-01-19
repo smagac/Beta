@@ -1,24 +1,17 @@
 package scenes;
 
-import java.nio.CharBuffer;
-
 import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.TabbedPane;
-import scenes.dungeon.ui.WanderState;
-import scenes.dungeon.ui.WanderUI;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
@@ -39,7 +32,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.IntSet;
 
 import core.DataDirs;
@@ -48,7 +40,6 @@ import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
-import core.service.interfaces.ISharedResources;
 
 /**
  * Base UI for adventuring in the town </p> Please don't ask about all the pixel
@@ -80,7 +71,30 @@ public abstract class GameUI extends UI {
 
     protected final HorizontalGroup buttonList;
     private ButtonGroup<Button> buttons;
-    protected final ChangeListener focusListener;
+    protected final ChangeListener focusListener = new ChangeListener() {
+
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+            if (focus() == null)
+                return;
+
+            Actor focused = focus().getFocused();
+            if (focused == buttonList || focused instanceof Button || focused == null) {
+                hidePointer();
+                if (focused instanceof Button) {
+                    ((Button)focused).setChecked(true);
+                } else if (focused == buttonList) {
+                    buttons.getButtons().get(0).setChecked(true);
+                }
+            }
+            else {
+                showPointer(focus().getFocused(), Align.left, Align.top);
+            }
+
+            setFocus(focus().getFocused());
+        }
+
+    };
 
     private Label hpStats;
     private Label expStats;
@@ -133,25 +147,6 @@ public abstract class GameUI extends UI {
 
         tmpBound = new Rectangle();
         displayBounds = new Rectangle();
-
-        focusListener = new ChangeListener() {
-
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (focus() == null)
-                    return;
-
-                if (focus().getFocused() == buttonList || focus().getFocused() == null) {
-                    hidePointer();
-                }
-                else {
-                    showPointer(focus().getFocused(), Align.left, Align.top);
-                }
-
-                setFocus(focus().getFocused());
-            }
-
-        };
     }
 
     @Override

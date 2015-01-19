@@ -203,7 +203,7 @@ public enum CombatStates implements State<BattleUI> {
             }
             if (telegram.message == Messages.Interface.Button) {
                 exit(entity);
-                final String adj = entity.inventory.getSelected().descriptor();
+                final String adj = entity.selectedItem.descriptor();
                 InputDisabler.swap();
                 entity.playSacrificeAnimation(entity.boss, new Runnable() {
                     
@@ -222,14 +222,20 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(BattleUI entity) {
+            entity.lootPane.clearActions();
+            entity.sacrificePane.clearActions();
+            entity.sacrificeButton.clearActions();
+            entity.sacrificePromptWindow.clearActions();
             entity.sacrificePrompt.setText("By sacrificing an item, you can compound its modifier's effects onto the boss for a limited amount of time.");
+            entity.lootButtons.uncheckAll();
+            entity.lootButtons.getButtons().get(0).setChecked(true);
             entity.sacrificePromptWindow.addAction(
                 Actions.parallel(
                     Actions.alpha(1f, .1f),
                     Actions.moveTo(20, 220, .2f)
                 )
             );
-            entity.itemPane.addAction(Actions.moveBy(-entity.itemPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.lootPane.addAction(Actions.moveBy(-entity.lootPane.getWidth(), 0, .2f, Interpolation.circleOut));
             entity.sacrificeButton.addAction(
                     Actions.sequence(
                         Actions.delay(.2f),
@@ -237,24 +243,43 @@ public enum CombatStates implements State<BattleUI> {
                     )
             );
             
+            entity.itemStatPane.addAction(
+                Actions.sequence(
+                    Actions.delay(.4f),
+                    Actions.moveTo(40,40,.2f,Interpolation.circleOut)
+                )
+            );
+                    
+            
             entity.resetFocus();
         }
         
         @Override
         public void exit(BattleUI entity) {
+            entity.lootPane.clearActions();
+            entity.sacrificePane.clearActions();
+            entity.sacrificeButton.clearActions();
+            entity.sacrificePromptWindow.clearActions();
             entity.sacrificePromptWindow.addAction(
                 Actions.parallel(
                     Actions.alpha(0f, .1f),
                     Actions.moveTo(20, 240, .2f)
                 )
             );
-            entity.itemPane.addAction(Actions.moveBy(entity.itemPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.lootPane.addAction(Actions.moveTo(entity.getDisplayWidth(), entity.lootPane.getY(), .2f, Interpolation.circleOut));
             entity.sacrificeButton.addAction(
                     Actions.sequence(
                         Actions.delay(.2f),
                         Actions.moveToAligned(entity.getDisplayWidth(), 20f, Align.bottomLeft, .2f, Interpolation.circleOut)
                     )
             );
+            
+            entity.itemStatPane.addAction(
+                    Actions.sequence(
+                        Actions.delay(.2f),
+                        Actions.moveTo(-entity.itemStatPane.getWidth(),40,.2f,Interpolation.circleOut)
+                    )
+                );
         }
     },
     Heal() {
@@ -288,6 +313,13 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(BattleUI entity) {
+            entity.lootPane.clearActions();
+            entity.sacrificePane.clearActions();
+            entity.sacrificeButton.clearActions();
+            entity.sacrificePromptWindow.clearActions();
+            entity.lootButtons.uncheckAll();
+            entity.lootButtons.getButtons().get(0).setChecked(true);
+            
             String prompt = "By sacrificing %s, you can heal yourself in your time of need.";
             Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
             int cost = progress.healed + 1;
@@ -313,13 +345,18 @@ public enum CombatStates implements State<BattleUI> {
         
         @Override
         public void exit(BattleUI entity) {
+            entity.lootPane.clearActions();
+            entity.sacrificePane.clearActions();
+            entity.sacrificeButton.clearActions();
+            entity.sacrificePromptWindow.clearActions();
+            
             entity.sacrificePromptWindow.addAction(
                 Actions.parallel(
                     Actions.alpha(0f, .1f),
                     Actions.moveTo(20, 240, .2f)
                 )
             );
-            entity.lootPane.addAction(Actions.moveBy(entity.lootPane.getWidth(), 0, .2f, Interpolation.circleOut));
+            entity.lootPane.addAction(Actions.moveTo(entity.getDisplayWidth(), entity.lootPane.getY(), .2f, Interpolation.circleOut));
             entity.sacrificePane.addAction(Actions.moveTo(-entity.sacrificePane.getWidth(), entity.sacrificePane.getY(), .2f, Interpolation.circleOut));
             entity.sacrificeButton.addAction(
                     Actions.sequence(
