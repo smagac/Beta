@@ -232,11 +232,6 @@ public class BattleUI extends GameUI
         lootPane.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                if (Input.LEFT.match(keycode)) {
-                    sacrificeGroup.setFocus(sacrificePane);
-                    return true;
-                }
-
                 if (loot.size <= 0) {
                     return false;
                 }
@@ -246,8 +241,7 @@ public class BattleUI extends GameUI
                     swapItem(item, true);
                     return true;
                 }
-
-                if (Input.DOWN.match(keycode)) {
+                else if (Input.DOWN.match(keycode)) {
                     if (lootButtons.getChecked() == null) {
                         Button next = lootButtons.getButtons().first();
                         if (next != null) {
@@ -267,7 +261,7 @@ public class BattleUI extends GameUI
                     }
                     return true;
                 }
-                if (Input.UP.match(keycode)) {
+                else if (Input.UP.match(keycode)) {
                     if (lootButtons.getChecked() == null) {
                         Button next = lootButtons.getButtons().first();
                         if (next != null) {
@@ -286,7 +280,22 @@ public class BattleUI extends GameUI
                     }
                     return true;
                 }
-
+                else if (Input.RIGHT.match(keycode)) {
+                    int next = lootButtons.getCheckedIndex() + 10;
+                    Array<Button> buttons = lootButtons.getButtons();
+                    Button toCheck = buttons.get(Math.min(next, buttons.size - 1));
+                    String name = toCheck.getName();
+                    lootButtons.setChecked(name);
+                    return true;
+                }
+                else if (Input.LEFT.match(keycode)) {
+                    int next = lootButtons.getCheckedIndex() - 10;
+                    Array<Button> buttons = lootButtons.getButtons();
+                    Button toCheck = buttons.get(Math.max(next, 0));
+                    String name = toCheck.getName();
+                    lootButtons.setChecked(name);
+                    return true;
+                }
                 return false;
             }
         });
@@ -294,10 +303,6 @@ public class BattleUI extends GameUI
         sacrificePane.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                if (Input.RIGHT.match(keycode)) {
-                    sacrificeGroup.setFocus(lootPane);
-                    return true;
-                }
 
                 if (sacrifices.size <= 0) {
                     return false;
@@ -349,7 +354,22 @@ public class BattleUI extends GameUI
                         }
                     }
                     return true;
+                } else if (Input.RIGHT.match(keycode)) {
+                    int next = sacrificeButtons.getCheckedIndex() + 10;
+                    Array<Button> buttons = sacrificeButtons.getButtons();
+                    Button toCheck = buttons.get(Math.min(next, buttons.size-1));
+                    String name = toCheck.getName();
+                    sacrificeButtons.setChecked(name);
+                    return true;
+                } else if (Input.LEFT.match(keycode)) {
+                    int next = sacrificeButtons.getCheckedIndex() - 10;
+                    Array<Button> buttons = sacrificeButtons.getButtons();
+                    Button toCheck = buttons.get(Math.max(next, 0));
+                    String name = toCheck.getName();
+                    sacrificeButtons.setChecked(name);
+                    return true;
                 }
+
 
                 return false;
             }
@@ -397,7 +417,11 @@ public class BattleUI extends GameUI
             @Override
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 if (button == Buttons.LEFT) {
-                    swapItem(item, true);
+                    if (l.isChecked()) {
+                        swapItem(item, true);
+                    } else {
+                        l.setChecked(true);
+                    }
                     return true;
                 }
                 return false;
@@ -406,6 +430,8 @@ public class BattleUI extends GameUI
         l.addListener(lootPaneScroller);
         
         lootList.pack();
+        
+        loot.put(item, amount);
     }
     
     void resetSacrifices(){
@@ -435,24 +461,16 @@ public class BattleUI extends GameUI
         int k = loot.get(item, 0);
         int s = sacrifices.get(item, 0);
         
-        boolean modified = false;
         if (sacrifice) {
             if (k-1 >= 0) {
                 modifyItem(item, --k);
                 modifySacrifice(item, ++s);
-                modified = true;
             }
         } else {
             if (s-1 >= 0) {
                 modifyItem(item, ++k);
                 modifySacrifice(item, --s);
-                modified = true;
             }
-        }
-        
-        if (modified) {
-            loot.put(item, k);
-            sacrifices.put(item, s);
         }
     }
     
@@ -482,7 +500,11 @@ public class BattleUI extends GameUI
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        swapItem(item, false);
+                        if (l.isChecked()) {
+                            swapItem(item, false);
+                        } else {
+                            l.setChecked(true);
+                        }
                         return true;
                     }
                     return false;
@@ -530,10 +552,14 @@ public class BattleUI extends GameUI
             int index = lootRows.indexOf(item, true);
             Label label = (Label)TableUtils.getActorFromRow(lootList, index, 2, 1);
             label.setText(String.valueOf(amount));
+            loot.put(item, amount);
         } else {
             int row = lootRows.indexOf(item, true);
             TableUtils.removeTableRow(lootList, row, 2);
             lootRows.removeIndex(row);
+            lootButtons.setChecked(item.fullname());
+            lootButtons.remove(lootButtons.getChecked());
+            loot.remove(item, 0);
         }
     }
     
