@@ -60,7 +60,7 @@ public class Dungeon implements Serializable {
      */
     private void genBossFloors() {
         Random random = new Random(); //use a fresh random generator to insure a different trip each time
-        this.bossFloors.put(0, new BossFloor(difficulty, 0));
+        //this.bossFloors.put(0, new BossFloor(difficulty, 0));
         for (int i = 0, set = 1; i < 1 + (size() / 10); i++, set += 10) {
             int floor = (random.nextInt(9) + 1) + set;
             this.bossFloors.put(floor, new BossFloor(difficulty, floor));

@@ -42,7 +42,8 @@ public class DungeonParams {
         this.cached = false;
         this.hashFile = null;
         this.fileName = null;
-        this.type = "snow";
+        this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
+        this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length()-4);
     }
 
     private DungeonParams(long seed, FileType ext, int difficulty) {
@@ -52,7 +53,8 @@ public class DungeonParams {
         this.cached = false;
         this.hashFile = null;
         this.fileName = null;
-        this.type = "dungeon";
+        this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
+        this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length()-4);
     }
 
     /**
@@ -65,7 +67,9 @@ public class DungeonParams {
         try {
             this.ext = FileType.getType(file.extension());
             this.difficulty = ext.difficulty(file.length());
-
+            this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
+            this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length()-4);
+        
             String tmpDir = System.getProperty("java.io.tmpdir");
             this.hashFile = Gdx.files.absolute(tmpDir + "/storymode/" + hashName + ".tmp");
             if (this.hashFile.exists()) {

@@ -72,7 +72,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     /**
      * Identify that we're entering a boss battle, do not dispose of the dungeon
      */
-    private static boolean fight;
+    public static boolean fight;
     
     public Scene() {
         super();

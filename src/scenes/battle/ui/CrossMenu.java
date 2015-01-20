@@ -52,7 +52,7 @@ public class CrossMenu extends Group
     
 	Image defend;
 	
-    private StateMachine<CrossMenu> sm;
+    StateMachine<CrossMenu> sm;
 
     private Array<Actor> itemMenu;
 
@@ -241,7 +241,7 @@ public class CrossMenu extends Group
 	    setTouchable(Touchable.disabled);
 	}
 	
-	private static interface Messages {
+	static interface Messages {
 	    static final int Select = 0x0001;
 	    static final int Next   = 0x0002;
 	    static final int Prev   = 0x0003;

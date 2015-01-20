@@ -2,6 +2,7 @@ package scenes.battle.ui;
 
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
+import scene2d.GotoScene;
 import scene2d.InputDisabler;
 import scene2d.PlayBGM;
 import scenes.Messages;
@@ -439,14 +440,8 @@ public enum CombatStates implements State<BattleUI> {
                     Actions.delay(10f),
                     Actions.run(PlayBGM.fadeOut),
                     entity.fadeOutAction(),
-                    Actions.run(new Runnable(){
-
-                        @Override
-                        public void run() {
-                            SceneManager.switchToScene("dungeon");
-                        }
-                        
-                    })
+                    Actions.delay(1.3f),
+                    Actions.run(new GotoScene("dungeon"))
                 )
             );
         }
@@ -463,11 +458,17 @@ public enum CombatStates implements State<BattleUI> {
         @Override
         public void enter(final BattleUI entity) {
             InputDisabler.swap();
-            entity.fader.addAction(Actions.alpha(1f, .5f));
+            entity.fader.addAction(
+                Actions.sequence(
+                    Actions.delay(1f),
+                    Actions.alpha(1f, .5f)
+                )
+            );
+                
             entity.dialog.addAction(
                 Actions.sequence(
                     Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY() + 10, Align.center),
-                    Actions.delay(.8f),
+                    Actions.delay(2f),
                     Actions.parallel(
                         Actions.moveBy(0, -10, .4f),
                         Actions.alpha(1f, .4f)
@@ -477,17 +478,10 @@ public enum CombatStates implements State<BattleUI> {
             entity.addAction(
                 Actions.sequence(
                     Actions.run(PlayBGM.fadeOut),
-                    Actions.delay(5f),
+                    Actions.delay(7f),
                     entity.fadeOutAction(),
                     Actions.delay(1f),
-                    Actions.run(new Runnable(){
-                        @Override
-                        public void run() {
-                            InputDisabler.clear();
-                            SceneManager.switchToScene("town");
-                            ServiceManager.getService(IDungeonContainer.class).clear();
-                        };
-                    })
+                    Actions.run(new GotoScene("town"))
                 )
             );
         }

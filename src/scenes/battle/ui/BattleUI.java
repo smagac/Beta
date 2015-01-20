@@ -4,8 +4,6 @@ import java.util.Iterator;
 
 import github.nhydock.CollectionUtils;
 import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.SceneManager;
-import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
@@ -14,7 +12,6 @@ import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -32,25 +29,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Keys;
 
 import core.DataDirs;
 import core.common.Input;
-import core.components.Combat;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.components.Stats;
@@ -58,11 +50,8 @@ import core.datatypes.Item;
 import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
 import core.service.interfaces.IBattleContainer;
-import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
-import core.util.dungeon.TsxTileSet;
 import scene2d.ChangeText;
-import scene2d.InputDisabler;
 import scene2d.PlaySound;
 import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.FocusGroup;
@@ -232,16 +221,17 @@ public class BattleUI extends GameUI
 	{
 	    makeField();
 	    
+
         fader = new Image(skin, "fill");
         fader.setSize(getDisplayWidth(), getDisplayHeight());
         fader.setPosition(-getDisplayWidth(), 0);
-        display.addActor(fader);
         fader.setTouchable(Touchable.disabled);
-	    
-	    makeSacrificeMenu();
+        display.addActor(fader);
+        
+        makeAttackElements();
+        makeSacrificeMenu();
 	    makeHealSacrificeMenu();
 	    makeSacrificeScene();
-	    makeAttackElements();
 	    makeBossStats();
         makeDead();
         
@@ -477,7 +467,7 @@ public class BattleUI extends GameUI
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 
                 if (button == Buttons.LEFT) {
-                    if (l.isChecked() && menu.getCurrentState() == CombatStates.MODIFY) {
+                    if (l.isChecked() && menu.getCurrentState() == CombatStates.Heal) {
                         swapItem(item, true);
                     } else {
                         l.setChecked(true);
@@ -745,8 +735,8 @@ public class BattleUI extends GameUI
 	    timeline = new Timeline();
 	    timeline.setSize(getDisplayWidth() - 20f, getDisplayHeight() - 20f);
 	    timeline.setPosition(10f, 10f);
+	    display.addActor(timeline);
 	    
-	    attackGroup.addActor(timeline);
 	    attackGroup.setTouchable(Touchable.disabled);
 	    display.addActor(attackGroup);
 	}
@@ -1215,7 +1205,12 @@ public class BattleUI extends GameUI
 	@Override
 	protected void triggerAction(int index)
 	{
-	    //shouldn't happen since we don't use the default buttons in this scene
+	    if (index == -1) {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+            //for the cross menu
+            MessageDispatcher.getInstance().dispatchMessage(null, mainmenu.sm, CrossMenu.Messages.Prev);
+            
+        }
 	}
 	
 	@Override
@@ -1331,7 +1326,7 @@ public class BattleUI extends GameUI
         display.addActor(notification);
     }
 
-	private static class HitBox {
+	private class HitBox {
         /**
          * Maximum amount of seconds between hits
          */
@@ -1367,6 +1362,47 @@ public class BattleUI extends GameUI
             return (time >= when - HIT_WINDOW && 
                 time <= when + HIT_WINDOW);
         }
+        
+        void success(){
+            audio.playSfx(DataDirs.Sounds.accept);
+            if (who == Combatant.Player) {
+                playerAttackAnimation();
+            } else {
+                player.addAction(hitAnimation(DataDirs.Sounds.deflect));
+            }
+            hit.setRotation(0);
+            hit.setScale(1);
+            hit.setColor(1,1,1,1);
+        }
+        
+        void fail(){
+            audio.playSfx(DataDirs.Sounds.tick);
+            if (who == Combatant.Enemy) {
+                bossAttackAnimation();
+            }
+        }
+        
+        void end(){
+            hit.clearActions();
+            holder.clearActions();
+            
+            hit.addAction(
+                Actions.sequence(
+                    Actions.alpha(0f, .2f),
+                    Actions.removeActor()
+                )
+            );
+            holder.addAction(
+                Actions.sequence(
+                    Actions.parallel(
+                        Actions.scaleTo(.4f, .4f, .2f),
+                        Actions.alpha(0f, .2f)
+                    ),
+                    Actions.delay(.2f),
+                    Actions.removeActor()
+                )
+            );
+        }
     }
 
 	/**
@@ -1390,11 +1426,43 @@ public class BattleUI extends GameUI
         int playerHits;
         int bossHits;
         
+        InputListener touchBox = new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if (time < head.spawnTime){
+                    return false;
+                }
+                
+                //ignore when the head isn't clicked
+                if (event.getTarget() != head.holder) {
+                    return false;
+                }
+                
+                if (head.hit(time)) {
+                    head.success();
+                    if (head.who == Combatant.Player){
+                        playerHits++;
+                    }
+                } else {
+                    head.fail();
+                    if (head.who == Combatant.Enemy) {
+                        bossHits++;
+                    }
+                }
+                head.end();
+                if (hitpointIter.hasNext()) {
+                    head = hitpointIter.next();
+                }
+                return true;
+            }
+        };
+        
         Timeline(){
             super();
             hitpoints = new Array<HitBox>();
             
             addListener(new InputListener(){
+                
                 @Override
                 public boolean keyDown(InputEvent evt, int keycode) {
                     if (head != null) {
@@ -1402,44 +1470,20 @@ public class BattleUI extends GameUI
                             return false;
                         }
                         if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
-                            head.hit.clearActions();
-                            head.holder.clearActions();
                             if (head.hit(time) && 
                                 ((Input.ACCEPT.match(keycode) && head.who == Combatant.Player) ||
                                  (Input.CANCEL.match(keycode) && head.who == Combatant.Enemy))) {
-                                audio.playSfx(DataDirs.Sounds.accept);
-                                if (head.who == Combatant.Player) {
-                                    playerAttackAnimation();
+                                head.success();
+                                if (head.who == Combatant.Player){
                                     playerHits++;
-                                } else {
-                                    player.addAction(hitAnimation(DataDirs.Sounds.deflect));
                                 }
-                                head.hit.setRotation(0);
-                                head.hit.setScale(1);
-                                head.hit.setColor(1,1,1,1);
                             } else {
-                                audio.playSfx(DataDirs.Sounds.tick);
+                                head.fail();
                                 if (head.who == Combatant.Enemy) {
-                                    bossAttackAnimation();
                                     bossHits++;
                                 }
                             }
-                            head.hit.addAction(
-                                Actions.sequence(
-                                    Actions.alpha(0f, .2f),
-                                    Actions.removeActor()
-                                )
-                            );
-                            head.holder.addAction(
-                                Actions.sequence(
-                                    Actions.parallel(
-                                        Actions.scaleTo(.4f, .4f, .2f),
-                                        Actions.alpha(0f, .2f)
-                                    ),
-                                    Actions.delay(.2f),
-                                    Actions.removeActor()
-                                )
-                            );
+                            head.end();
                             if (hitpointIter.hasNext()) {
                                 head = hitpointIter.next();
                             }
@@ -1499,7 +1543,7 @@ public class BattleUI extends GameUI
                 hit.setScale(10f);
                 hit.setColor(1,1,1,0f);
                 hit.setRotation(360f);
-                    
+                hit.setTouchable(Touchable.disabled);
                 final HitBox hb = new HitBox(delay, hit, holder, c);
                 
                 hit.addAction(
@@ -1535,6 +1579,7 @@ public class BattleUI extends GameUI
                         Actions.removeActor()
                     )
                 );
+                holder.addListener(touchBox);
                 
                 addActor(holder);
                 addActor(hit);

@@ -2,6 +2,7 @@ package scenes.dungeon.ui;
 
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
+import scene2d.GotoScene;
 import scene2d.InputDisabler;
 import scenes.GameUI;
 import scenes.Messages;
@@ -230,12 +231,12 @@ public enum WanderState implements UIState {
             if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
                 telegram.message == Messages.Interface.Close){
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
-                entity.fader.addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
-                    @Override
-                    public void run() {
-                        SceneManager.switchToScene("town");
-                    }
-                })));
+                entity.fader.addAction(
+                    Actions.sequence(
+                        Actions.alpha(1f, 2f), 
+                        Actions.run(new GotoScene("town"))
+                    )
+                );
                 return true;
             }
             return false;
@@ -265,13 +266,12 @@ public enum WanderState implements UIState {
             if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
                 telegram.message == Messages.Interface.Close) {
                 entity.dialog.addAction(Actions.alpha(0f, 1f));
-                entity.fader.addAction(Actions.sequence(Actions.alpha(1f, 2f), Actions.run(new Runnable() {
-                    @Override
-                    public void run() {
-                        SceneManager.switchToScene("town");
-                        entity.dungeonService.clear();
-                    }
-                })));
+                entity.fader.addAction(
+                    Actions.sequence(
+                        Actions.alpha(1f, 2f), 
+                        Actions.run(new GotoScene("town"))
+                    )
+                );
                 return true;
             }
             return false;
