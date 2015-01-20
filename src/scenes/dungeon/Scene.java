@@ -331,6 +331,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             final scenes.battle.Scene scene = new scenes.battle.Scene(boss);
             
             fight = true;
+            ui.draw();
             transition.init();
             transition.playAnimation(new Runnable(){
 
