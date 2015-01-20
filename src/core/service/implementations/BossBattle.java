@@ -75,17 +75,11 @@ public class BossBattle implements IBattleContainer {
                 results.reward = boss.getComponent(Combat.class).getDrop();
                 results.bonus = new Item(reward, adjective);
                 results.bonusCount = MathUtils.random(1, 5); 
-                
-                Stats playerStats = player.getComponent(Stats.class);
-                playerStats.exp += 5;
-                
-                inv.pickup(results.reward);
-                inv.pickup(results.bonus, results.bonusCount);
+                results.exp = 5;
                 
                 dungeonService.getEngine().removeEntity(boss);
                 dungeonService.getProgress().monstersKilled++;
                 
-
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.VICTORY, results);
             } 
             else if (s.hp <= 0 && target == player)
@@ -107,6 +101,7 @@ public class BossBattle implements IBattleContainer {
             Effect e = new Effect(target, adj);
             e.apply();
             effectWatch.add(e);
+            MessageDispatcher.getInstance().dispatchMessage(this, Messages.Battle.Stats);
             
             target = null;
             return true;
@@ -116,7 +111,6 @@ public class BossBattle implements IBattleContainer {
             for (Effect e : effectWatch) {
                 e.advance();
             }
-            MessageDispatcher.getInstance().dispatchMessage(this, Messages.Battle.MODIFY_UPDATE, effectWatch);
             return true;
         }
         return false;
@@ -179,6 +173,7 @@ public class BossBattle implements IBattleContainer {
             target.getComponent(Identifier.class).removeModifier(adjective);
             target.getComponent(Stats.class).removeModifier(mod);
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.DEBUFF, adjective);
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.Stats);
         }
         
         public String getAdjective() {

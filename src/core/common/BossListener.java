@@ -1,5 +1,6 @@
 package core.common;
 
+import scene2d.InputDisabler;
 import scenes.Messages;
 import github.nhydock.ssm.SceneManager;
 
@@ -84,23 +85,28 @@ public class BossListener {
 
         if (Gdx.input.isKeyJustPressed(Keys.F5)) {
             getGameService().softReset();
+            InputDisabler.clear();
             return true;
         }
         if (Gdx.input.isKeyJustPressed(Keys.F6)) {
             getGameService().fastStart();
+            InputDisabler.clear();
             return true;
         }
         if (getGameService().hasStarted() && getGameService().debug()) {
             if (Gdx.input.isKeyJustPressed(Keys.F7)) {
                 SceneManager.switchToScene("lore");
+                InputDisabler.clear();
                 return true;
             }
             if (Gdx.input.isKeyJustPressed(Keys.F2)) {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
+                InputDisabler.clear();
                 return true;
             }
             if (Gdx.input.isKeyJustPressed(Keys.END)) {
                 getGameService().endGame();
+                InputDisabler.clear();
                 return true;
             }
         }

@@ -46,6 +46,7 @@ import core.common.Input;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
@@ -155,6 +156,7 @@ public class BattleUI extends GameUI
                     )
                 )
             );
+            float[] mStats = {sm.hp, sm.str, sm.def, sm.spd};
             for (int i = 1, n = 0; i <= 4; i++, n++) {
                 l = itemStatLabels.get(i);
                 l.clearActions();
@@ -164,7 +166,7 @@ public class BattleUI extends GameUI
                         Actions.parallel(
                             Actions.alpha(0f, .2f)
                         ),
-                        Actions.run(new ChangeText(l, String.format(stats[n], (int)(sm.hp*100)-100))),
+                        Actions.run(new ChangeText(l, String.format(stats[n], (int)(mStats[n]*100)-100))),
                         Actions.delay(.05f + (n * .05f)),
                         Actions.parallel(
                             Actions.alpha(1f, .2f)
@@ -197,6 +199,7 @@ public class BattleUI extends GameUI
     FocusGroup itemFocus;
     private Image bg;
     private Image hpBar;
+    private Label bossName;
     private Group attackGroup;
 
     Group dialog;
@@ -631,9 +634,12 @@ public class BattleUI extends GameUI
         messageWindow.addActor(hpBar);
         
         //add name
-        Label name = new Label(battleService.getBoss().getComponent(Identifier.class).toString(), skin, "promptsm");
-        name.setPosition(5, 24);
-        messageWindow.addActor(name);
+        bossName = new Label(battleService.getBoss().getComponent(Identifier.class).toString(), skin, "promptsm");
+        bossName.setPosition(5, 24);
+        bossName.setWrap(false);
+        bossName.setEllipsis(true);
+        bossName.setWidth(messageWindow.getWidth() - 30f);
+        messageWindow.addActor(bossName);
     }
 
     /**
@@ -1199,31 +1205,30 @@ public class BattleUI extends GameUI
             )
         );
 	    
-	    
-	}
-	
-	@Override
-	protected void triggerAction(int index)
-	{
-	    if (index == -1) {
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-            //for the cross menu
-            MessageDispatcher.getInstance().dispatchMessage(null, mainmenu.sm, CrossMenu.Messages.Prev);
-            
-        }
 	}
 	
 	@Override
 	public boolean handleMessage(Telegram msg) {
 	    if (msg.message == Messages.Battle.VICTORY) {
+	        if (menu.getCurrentState() == CombatStates.DEAD) {
+	            return false;
+	        }
 	        changeState(CombatStates.VICTORY);
 	        
 	        VictoryResults results = (VictoryResults)msg.extraInfo;
-	        
+
+            Stats playerStats = playerService.getPlayer().getComponent(Stats.class);
+            playerStats.exp += 5;
+            
+            Inventory inv = playerService.getInventory();
+            inv.pickup(results.reward);
+            inv.pickup(results.bonus, results.bonusCount);
+            
 	        //TODO show victory message
             playVictoryAnimation(results);
             return true;
 	    } else if (msg.message == Messages.Battle.DEFEAT){
+	        getRoot().clearActions();
 	        changeState(CombatStates.DEAD);
 	        //TODO fade out screen and return home
 	        return true;
@@ -1241,6 +1246,9 @@ public class BattleUI extends GameUI
                     Actions.sizeTo(((float)hp /(float)mhp) * 258f, 6f, .5f, Interpolation.sine)
                 )
             );
+	        Identifier id = Identifier.Map.get(battleService.getBoss());
+	        bossName.setText(id.toString());
+	        
 	        return true;
 	    } else if (msg.message == Messages.Battle.DEBUFF) {
 	        String adj = (String)msg.extraInfo;

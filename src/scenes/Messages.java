@@ -142,6 +142,7 @@ public interface Messages {
             public Item reward;
             public Item bonus;
             public int bonusCount;
+            public int exp;
         }
     }
 }

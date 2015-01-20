@@ -54,7 +54,10 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public boolean onMessage(final BattleUI entity, Telegram telegram) {
-            // TODO Auto-generated method stub
+            if (telegram.message == Messages.Interface.Close){
+                MessageDispatcher.getInstance().dispatchMessage(null, entity.mainmenu.sm, CrossMenu.Messages.Prev);
+                return true;
+            }
             return false;
         }
     },
@@ -144,13 +147,22 @@ public enum CombatStates implements State<BattleUI> {
             /*
              * First we roll the dice, then show the values 
              */
-            final Turn t = entity.combat.fightRoll(Combatant.Player);
+            Stats pS = entity.battleService.getPlayer().getComponent(Stats.class);
+            Stats bS = entity.battleService.getBoss().getComponent(Stats.class);
+            
+            final Combatant first = (pS.getSpeed() >= bS.getSpeed()) ? Combatant.Player : Combatant.Enemy;
+            final Turn t = entity.combat.fightRoll(first);
             
             Runnable after = new Runnable() {
 
                 @Override
                 public void run() {
                     entity.combat.fight(t);
+                    
+                    //if we switched to victory or defeat, ignore the next turn
+                    if (entity.getCurrentState() != AUTO) {
+                        return;
+                    }
                     
                     if (entity.combat.isFoeStunned()) {
                         entity.addAction(Actions.sequence(Actions.delay(2f), Actions.run(returnToState)));
@@ -164,7 +176,7 @@ public enum CombatStates implements State<BattleUI> {
                                     new Runnable() {
                                         @Override
                                         public void run() {
-                                            final Turn t2 = entity.combat.fightRoll(Combatant.Enemy);
+                                            final Turn t2 = entity.combat.fightRoll((first == Combatant.Player)?Combatant.Enemy : Combatant.Player);
                                             entity.playFightAnimation(t2, 
                                                 new Runnable() {
             
