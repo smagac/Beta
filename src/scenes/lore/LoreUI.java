@@ -1,6 +1,8 @@
 package scenes.lore;
 
 import github.nhydock.ssm.Inject;
+import scene2d.GotoScene;
+import scene2d.PlayBGM;
 import scenes.UI;
 
 import com.badlogic.gdx.Gdx;
@@ -171,21 +173,22 @@ public class LoreUI extends UI {
 	public void update(float delta) { 
 	    if (ready)
 	    {
-            scrollY += lore.getStyle().font.getLineHeight() * scrollRate * delta;
-            if (scrollY > view.y + lore.getPrefHeight() + lore.getStyle().font.getLineHeight()) {
-                fader.addAction(Actions.sequence(
-                    Actions.alpha(1f, 2f),
-                    Actions.run(new Runnable() {
-                        
-                        @Override
-                        public void run() {
-                            done = true;
-                        }
-                    })        
-                ));
+	        if (scrollY > view.y + lore.getPrefHeight() + lore.getStyle().font.getLineHeight()) {
+                fader.addAction(
+                    Actions.sequence(
+                        Actions.run(PlayBGM.fadeOut),
+                        Actions.alpha(1f, 2f),
+                        Actions.run(new GotoScene("town"))      
+                    )
+                );
                 ready = false;
+                done = true;
             }
-	    } else if (!done) {
+	        else {
+	            scrollY += lore.getStyle().font.getLineHeight() * scrollRate * delta;
+	        }
+	    } 
+	    else if (!done) {
 	        scrollY = view.y - view.height - (lore.getStyle().font.getLineHeight() * NORMAL);
 	    }
 	    lore.setPosition(view.x, scrollY, Align.topLeft);
@@ -210,8 +213,4 @@ public class LoreUI extends UI {
 	public boolean handleMessage(Telegram msg) {
 		return sm.handleMessage(msg);
 	}
-
-    public boolean isDone() {
-        return done;
-    }
 }

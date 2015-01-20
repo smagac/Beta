@@ -1,10 +1,13 @@
 package scenes.lore;
 
+import scene2d.GotoScene;
+import scene2d.PlayBGM;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.SceneManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.DataDirs;
 import core.service.interfaces.IGame;
@@ -17,12 +20,6 @@ public class Scene extends scenes.Scene<LoreUI> {
 	
 	@Override
 	public void extend(float delta) {
-		if (ui.isDone())
-		{
-			SceneManager.switchToScene("town");
-			return;
-		}
-		
 		ui.draw();
 	}
 	
