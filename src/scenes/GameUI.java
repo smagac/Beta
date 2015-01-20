@@ -323,7 +323,7 @@ public abstract class GameUI extends UI {
 
         fsFader = new Image(shared.getResource(DataDirs.Home + "fill.png", Texture.class));
         fsFader.setColor(1,1,1,1);
-        fsFader.addAction(Actions.alpha(0f, .6f));
+        fsFader.addAction(Actions.alpha(0f, .4f));
         fsFader.setSize(getWidth(), getHeight());
         fsFader.setTouchable(Touchable.disabled);
         addActor(fsFader);
