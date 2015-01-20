@@ -1,9 +1,9 @@
 package core.service.interfaces;
 
+import github.nhydock.ssm.Service;
+
 import com.badlogic.ashley.core.Entity;
 
-import github.nhydock.ssm.Service;
-import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 

@@ -1,14 +1,15 @@
 package scenes.battle;
 
+import github.nhydock.ssm.ServiceManager;
+import scenes.battle.ui.BattleUI;
+
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 
-import github.nhydock.ssm.ServiceManager;
 import core.DataDirs;
 import core.service.implementations.BossBattle;
 import core.service.interfaces.IBattleContainer;
-import scenes.battle.ui.BattleUI;
 
 public class Scene extends scenes.Scene<BattleUI>
 {

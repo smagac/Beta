@@ -1,10 +1,25 @@
 package scenes.battle.ui;
 
-import java.util.Iterator;
-
 import github.nhydock.CollectionUtils;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
+
+import java.util.Iterator;
+
+import scene2d.runnables.ChangeText;
+import scene2d.runnables.PlaySound;
+import scene2d.ui.ScrollOnChange;
+import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ParticleActor;
+import scene2d.ui.extras.ParticleActor.ResetParticle;
+import scene2d.ui.extras.ScrollFocuser;
+import scene2d.ui.extras.TabbedPane;
+import scene2d.ui.extras.TableUtils;
+import scenes.GameUI;
+import scenes.Messages;
+import scenes.Messages.Battle.VictoryResults;
+import scenes.battle.ui.CombatHandler.Combatant;
+import scenes.battle.ui.CombatHandler.Turn;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
@@ -16,7 +31,6 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -30,10 +44,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -55,20 +69,6 @@ import core.factories.AdjectiveFactory;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
-import scene2d.runnables.ChangeText;
-import scene2d.runnables.PlaySound;
-import scene2d.ui.ScrollOnChange;
-import scene2d.ui.extras.FocusGroup;
-import scene2d.ui.extras.ParticleActor;
-import scene2d.ui.extras.ScrollFocuser;
-import scene2d.ui.extras.TabbedPane;
-import scene2d.ui.extras.TableUtils;
-import scene2d.ui.extras.ParticleActor.ResetParticle;
-import scenes.GameUI;
-import scenes.Messages;
-import scenes.Messages.Battle.VictoryResults;
-import scenes.battle.ui.CombatHandler.Combatant;
-import scenes.battle.ui.CombatHandler.Turn;
 
 public class BattleUI extends GameUI
 {

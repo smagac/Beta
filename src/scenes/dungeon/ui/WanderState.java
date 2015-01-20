@@ -1,10 +1,7 @@
 package scenes.dungeon.ui;
 
-import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
-import scenes.GameUI;
 import scenes.Messages;
 import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;
@@ -14,15 +11,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
-import core.DataDirs;
-import core.components.Stats;
 import core.datatypes.Item;
-import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;

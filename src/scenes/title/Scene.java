@@ -1,11 +1,9 @@
 package scenes.title;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 
 import core.DataDirs;
-import core.common.BossListener;
 
 public class Scene extends scenes.Scene<TitleSequence> {
 

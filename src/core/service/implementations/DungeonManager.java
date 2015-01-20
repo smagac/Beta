@@ -10,18 +10,17 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 
-import core.components.Identifier;
 import core.components.Groups.Monster;
-import core.datatypes.dungeon.DungeonLoader.DungeonParam;
+import core.components.Identifier;
 import core.datatypes.dungeon.Dungeon;
-import core.datatypes.dungeon.FloorLoader;
 import core.datatypes.dungeon.DungeonLoader;
-import core.datatypes.dungeon.Progress;
+import core.datatypes.dungeon.DungeonLoader.DungeonParam;
+import core.datatypes.dungeon.FloorLoader;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
+import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.ILoader;
 
@@ -61,6 +60,7 @@ public class DungeonManager implements IDungeonContainer {
     public void loadDungeon(final DungeonParam params) {
         params.loadedCallback = new AssetLoaderParameters.LoadedCallback() {
 
+            @SuppressWarnings({ "rawtypes", "unchecked" })
             @Override
             public void finishedLoading(AssetManager assetManager, String fileName, Class type) {
                 dungeon = (Dungeon) dungeonLoader.get(fileName, type);
@@ -90,6 +90,7 @@ public class DungeonManager implements IDungeonContainer {
         
         params.loadedCallback = new AssetLoaderParameters.LoadedCallback() {
 
+            @SuppressWarnings("rawtypes")
             @Override
             public void finishedLoading(AssetManager assetManager, String fileName, Class type) {
                 progress.depth = params.depth;
@@ -101,6 +102,7 @@ public class DungeonManager implements IDungeonContainer {
                 // setup progress
                 engine.removeAllEntities();
                 
+                @SuppressWarnings("unchecked")
                 ImmutableArray<Entity> monsters = (ImmutableArray<Entity>) assetManager.get(fileName, type);
                 for (Entity entity : monsters) {
                     Identifier id = entity.getComponent(Identifier.class);

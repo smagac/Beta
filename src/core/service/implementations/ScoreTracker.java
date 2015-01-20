@@ -8,8 +8,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import core.service.implementations.ScoreTracker.NumberValues;
-
 public final class ScoreTracker implements Serializable, Service {
     
     ObjectIntMap<NumberValues> numeric;

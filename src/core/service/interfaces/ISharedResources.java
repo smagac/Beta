@@ -1,8 +1,8 @@
 package core.service.interfaces;
 
-import com.badlogic.gdx.assets.AssetManager;
-
 import github.nhydock.ssm.Service;
+
+import com.badlogic.gdx.assets.AssetManager;
 
 public interface ISharedResources extends Service {
 

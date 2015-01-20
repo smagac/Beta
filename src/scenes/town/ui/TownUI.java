@@ -42,8 +42,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Keys;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
@@ -144,8 +144,6 @@ public class TownUI extends GameUI {
     }
 
     private void makeMain() {
-        final TownUI ui = this;
-
         // explore icon
         {
             exploreImg = new Group();

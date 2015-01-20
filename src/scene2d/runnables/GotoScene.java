@@ -1,7 +1,7 @@
 package scene2d.runnables;
 
-import scenes.Scene;
 import github.nhydock.ssm.SceneManager;
+import scenes.Scene;
 
 public class GotoScene implements Runnable {
 

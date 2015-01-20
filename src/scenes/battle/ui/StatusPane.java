@@ -1,7 +1,7 @@
 package scenes.battle.ui;
 
-import scenes.Messages;
 import github.nhydock.ssm.Inject;
+import scenes.Messages;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ai.msg.Telegram;

@@ -1,13 +1,9 @@
 package scenes.lore;
 
-import scene2d.runnables.GotoScene;
-import scene2d.runnables.PlayBGM;
 import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.SceneManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.DataDirs;
 import core.service.interfaces.IGame;

@@ -1,5 +1,7 @@
 package core.common;
 
+import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
 import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
@@ -14,8 +16,8 @@ import core.service.implementations.ColorManager;
 import core.service.implementations.DungeonManager;
 import core.service.implementations.LoadScreen;
 import core.service.implementations.PlayerManager;
-import core.service.implementations.SharedLoader;
 import core.service.implementations.ScoreTracker;
+import core.service.implementations.SharedLoader;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
@@ -23,8 +25,6 @@ import core.service.interfaces.IGame;
 import core.service.interfaces.ILoader;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
-import github.nhydock.ssm.SceneManager;
-import github.nhydock.ssm.ServiceManager;
 
 public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
@@ -217,7 +217,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     @Override
     public boolean debug() {
-        return true;
+        return false;
     }
 
 }

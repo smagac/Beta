@@ -4,10 +4,10 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
-import scenes.Messages;
-import scenes.Messages.Dungeon.CombatNotify;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
+import scenes.Messages;
+import scenes.Messages.Dungeon.CombatNotify;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
@@ -20,9 +20,9 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Array;
 
 import core.components.Combat;
-import core.components.Identifier;
-import core.components.Groups.*;
 import core.components.Groups;
+import core.components.Groups.Monster;
+import core.components.Identifier;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;

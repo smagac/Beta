@@ -1,5 +1,7 @@
 package scenes.battle.ui;
 
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
 
 import com.badlogic.ashley.core.ComponentMapper;
@@ -12,8 +14,6 @@ import com.badlogic.gdx.math.MathUtils;
 import core.components.Identifier;
 import core.components.Stats;
 import core.service.interfaces.IBattleContainer;
-import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 
 public class CombatHandler implements Telegraph {
 

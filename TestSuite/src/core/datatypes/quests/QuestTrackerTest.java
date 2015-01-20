@@ -97,12 +97,11 @@ public class QuestTrackerTest {
 	public void testGettingReward() {
 		QuestTracker qt = new QuestTracker();
 		
-		CraftableFactory cf = new CraftableFactory();
-		Craftable c = cf.createRandomCraftable();
+		Craftable c = CraftableFactory.createRandomCraftable();
 		Reward reward = qt.getReward(c);
 		
 		assertTrue(c.getRequirementTypes().contains(reward.item.type(), false));
-		assertTrue(reward.count <= c.getRequirements().get(reward.item.type()));
+		assertTrue(reward.count <= c.getRequirements().get(reward.item.type(), 0));
 		assertTrue(reward.count >= 1);
 		
 	}

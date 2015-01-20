@@ -1,15 +1,13 @@
 package scenes.town;
 
-import scenes.town.ui.TownUI;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
+import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 
 import core.DataDirs;
-import core.common.BossListener;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 

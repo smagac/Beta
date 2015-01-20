@@ -1,13 +1,14 @@
 package core.datatypes;
 
+import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
-import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Keys;
@@ -20,8 +21,6 @@ import core.factories.ItemFactory;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IGame;
-
-import com.badlogic.gdx.utils.Json.Serializable;
 
 public class Inventory implements Serializable {
     Array<Craftable> required;

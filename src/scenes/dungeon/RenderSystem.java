@@ -1,11 +1,11 @@
 package scenes.dungeon;
 
+import github.nhydock.ssm.Inject;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.ui.WanderUI;
 import squidpony.squidgrid.fov.FOVSolver;
 import squidpony.squidgrid.fov.RippleFOV;
-import github.nhydock.ssm.Inject;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
@@ -43,9 +43,8 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import core.components.Combat;
-import core.components.Identifier;
 import core.components.Groups;
+import core.components.Identifier;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;

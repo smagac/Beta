@@ -6,17 +6,10 @@ import github.nhydock.ssm.ServiceManager;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
-import core.DataDirs;
-import core.common.BossListener;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.ILoader;
-import core.service.interfaces.ISharedResources;
 
 /**
  * Generic scene class with injectable service support and provided assumed ui

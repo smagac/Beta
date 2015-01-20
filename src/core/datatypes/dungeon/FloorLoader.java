@@ -12,7 +12,6 @@ import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.FileType;
 import core.factories.FloorFactory;
-import core.service.interfaces.IDungeonContainer;
 
 /**
  * Loader for entire floors as assets. Makes artemis worlds!
@@ -20,6 +19,7 @@ import core.service.interfaces.IDungeonContainer;
  * @author nhydock
  *
  */
+@SuppressWarnings("rawtypes")
 public class FloorLoader extends AsynchronousAssetLoader<ImmutableArray, FloorLoader.FloorParam> {
 
     public FloorLoader(FileHandleResolver resolver) {
@@ -39,7 +39,6 @@ public class FloorLoader extends AsynchronousAssetLoader<ImmutableArray, FloorLo
         return data;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, FloorLoader.FloorParam param) {
         return null;

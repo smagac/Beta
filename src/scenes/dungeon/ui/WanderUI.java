@@ -14,6 +14,9 @@ import scenes.dungeon.RenderSystem;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -46,10 +49,6 @@ import core.datatypes.dungeon.Progress;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
-
-import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
-import com.badlogic.gdx.ai.msg.MessageDispatcher;
-import com.badlogic.gdx.ai.msg.Telegram;
 
 @SuppressWarnings("unchecked")
 public class WanderUI extends GameUI {

@@ -1,12 +1,11 @@
 package core.common;
 
+import github.nhydock.ssm.SceneManager;
 import scene2d.InputDisabler;
 import scenes.Messages;
-import github.nhydock.ssm.SceneManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 
 import core.Palette;

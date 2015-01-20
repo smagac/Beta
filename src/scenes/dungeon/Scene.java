@@ -1,5 +1,7 @@
 package scenes.dungeon;
 
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
 import scenes.Messages;
@@ -25,13 +27,13 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import core.DataDirs;
+import core.datatypes.FileType;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonLoader.DungeonParam;
-import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.DungeonParams;
+import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
-import core.datatypes.FileType;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.implementations.ScoreTracker.StringValues;
@@ -39,8 +41,6 @@ import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 import core.util.dungeon.TsxTileSet;
-import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 
 public class Scene extends scenes.Scene<UI> implements Telegraph {
 

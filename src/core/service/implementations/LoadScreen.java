@@ -1,5 +1,6 @@
 package core.service.implementations;
 
+import static core.common.Storymode.InternalRes;
 import github.nhydock.ssm.Inject;
 
 import com.badlogic.gdx.Gdx;
@@ -7,9 +8,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Scaling;
@@ -20,7 +19,6 @@ import core.DataDirs;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.ILoader;
 import core.service.interfaces.ISharedResources;
-import static core.common.Storymode.InternalRes;
 
 public class LoadScreen implements ILoader {
 

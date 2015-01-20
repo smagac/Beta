@@ -2,20 +2,11 @@ package core.factories;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.utils.ImmutableArray;
-import com.badlogic.gdx.assets.AssetDescriptor;
-import com.badlogic.gdx.assets.AssetLoaderParameters;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader;
-import com.badlogic.gdx.assets.loaders.FileHandleResolver;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
-import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
-import core.service.interfaces.IDungeonContainer;
 
 public class FloorFactory {
     

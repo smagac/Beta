@@ -1,13 +1,14 @@
 package scenes.town.ui;
 
+import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
 
-import github.nhydock.ssm.SceneManager;
-import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.runnables.PlayBGM;
 import scene2d.runnables.PlaySound;
@@ -33,11 +34,11 @@ import com.badlogic.gdx.utils.Scaling;
 import core.DataDirs;
 import core.components.Stats;
 import core.datatypes.Craftable;
+import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker.Reward;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.quests.Quest;
-import core.datatypes.FileType;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
