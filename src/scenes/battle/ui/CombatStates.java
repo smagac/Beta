@@ -466,10 +466,8 @@ public enum CombatStates implements State<BattleUI> {
             entity.fader.addAction(Actions.alpha(1f, .5f));
             entity.dialog.addAction(
                 Actions.sequence(
-                        
-                    Actions.delay(1f),
                     Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY() + 10, Align.center),
-                    Actions.delay(2f),
+                    Actions.delay(.8f),
                     Actions.parallel(
                         Actions.moveBy(0, -10, .4f),
                         Actions.alpha(1f, .4f)
@@ -479,7 +477,7 @@ public enum CombatStates implements State<BattleUI> {
             entity.addAction(
                 Actions.sequence(
                     Actions.run(PlayBGM.fadeOut),
-                    Actions.delay(6f),
+                    Actions.delay(5f),
                     entity.fadeOutAction(),
                     Actions.delay(1f),
                     Actions.run(new Runnable(){
@@ -487,6 +485,7 @@ public enum CombatStates implements State<BattleUI> {
                         public void run() {
                             InputDisabler.clear();
                             SceneManager.switchToScene("town");
+                            ServiceManager.getService(IDungeonContainer.class).clear();
                         };
                     })
                 )

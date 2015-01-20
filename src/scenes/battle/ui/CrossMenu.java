@@ -315,7 +315,11 @@ public class CrossMenu extends Group
 	                        entity.sm.changeState(ITEM);;
 	                    }
 	                    if (telegram.extraInfo == entity.defend) {
-	                        entity.ui.changeState(CombatStates.DEFEND);
+	                        if (entity.ui.combat.isFoeStunned()) {
+	                            entity.ui.pushNotification("Foe is stunned, no reason to defend");
+	                        } else {
+	                            entity.ui.changeState(CombatStates.DEFEND);
+	                        }
 	                    }
 	                    return true;
 	                }
@@ -500,9 +504,9 @@ public class CrossMenu extends Group
             public void exit(CrossMenu entity) { 
                 entity.item.addAction(
                     Actions.sequence(
-                        Actions.parallel(
-                            Actions.moveTo(0f, 0f, .3f, Interpolation.circleOut)
-                        )
+                        Actions.delay(.3f),
+                        Actions.moveTo(0f, entity.item.getY(), .3f, Interpolation.circleOut),
+                        Actions.moveTo(0f, 0f)
                     )
                 );
             
