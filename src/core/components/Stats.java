@@ -64,16 +64,16 @@ public class Stats extends Component implements Serializable {
         if (mods.size == 0)
             return;
         
-        float maxhpBonus = 0;
-        float strengthBonus = 0;
-        float defenseBonus = 0;
-        float speedBonus = 0;
+        float maxhpBonus = 1;
+        float strengthBonus = 1;
+        float defenseBonus = 1;
+        float speedBonus = 1;
         
         for (StatModifier mod : mods) {
-            maxhpBonus += mod.hp;
-            strengthBonus += mod.str;
-            defenseBonus += mod.def;
-            speedBonus += mod.spd;
+            maxhpBonus *= mod.hp;
+            strengthBonus *= mod.str;
+            defenseBonus *= mod.def;
+            speedBonus *= mod.spd;
         }
         
         //do not allow negative hp
@@ -86,7 +86,7 @@ public class Stats extends Component implements Serializable {
         if (fresh) {
             hp = maxhp;
         } else {
-            hp = (int)Math.max(hp * maxhpBonus, 1);
+            hp = (int)Math.min(hp, maxhp);
         }
     }
 
