@@ -17,6 +17,8 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -175,7 +177,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
             return;
         } else if (!p.hasNextFloor(depth)) {
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
+            if (MathUtils.randomBoolean(depth / 30f)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Proceed);
+            } else {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);    
+            }
             return;
         }
         
@@ -346,6 +352,26 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         if (msg.message == Messages.Dungeon.Exit) {
             leave();
             return true;
+        }
+        if (msg.message == Messages.Dungeon.Proceed) {
+            InputDisabler.swap();
+            InputDisabler.clear();
+            wanderUI.addAction(
+                Actions.sequence(
+                    wanderUI.fadeOutAction(),
+                    Actions.run(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            // merge loot into inventory
+                            playerService.getInventory().merge();
+                        
+                            SceneManager.switchToScene("lore");
+                        }
+                        
+                    })
+                )
+            );
         }
         if (msg.message == Messages.Dungeon.Descend) {
             setFloor(dungeonService.getProgress().nextFloor());

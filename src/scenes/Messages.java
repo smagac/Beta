@@ -84,6 +84,7 @@ public interface Messages {
         public static final int Exit = 0x1001; //notification that we've escaped the dungeon
         public static final int LevelUp = 0x1002; //notification that we've leveled up
         public static final int Refresh = 0x1003; //notification to the HUD to say that we need to update its display
+        public static final int Proceed = 0x1009; //we've escaped the dungeon by going as deep as we can go
         
         public static final int FIGHT = 0x1004; //two entities are fighting
         public static final int KILLED = 0x1005; //an entity has been destroyed in combat
