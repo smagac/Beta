@@ -116,6 +116,26 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
         scale = 32f * mapRenderer.getUnitScale();
     }
+    
+    private void updateFOV(){
+        Position p = positionMap.get(player);
+        
+        fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
+        for (int x = 0, i = 0; x < fov.length; x++) {
+            for (int y = 0; y < fov.length; y++, i++) {
+                Actor a = shadows.get(i);
+                a.clearActions();
+                a.addAction(Actions.alpha(1.0f-fov[x][y]));
+                //block hover over enemies when they're in the shadows
+                if (fov[x][y] <= .5f) {
+                    a.setTouchable(Touchable.enabled);
+                } 
+                else {
+                    a.setTouchable(Touchable.disabled);
+                }
+            }
+        }
+    }
 
     public void setFloor(int depth) {
         this.layers[0] = depth - 1;
@@ -144,10 +164,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         }
         
         if (player != null){
-            Position p = positionMap.get(player);
-            
-            fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
-            calcFov();
+            updateFOV();
         }
         
     }
@@ -164,8 +181,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         if (Groups.playerType.matches(e)) {
             player = e;
             if (wallMap != null){
-                fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
-                calcFov();
+                updateFOV();
             }
         }
 
@@ -186,19 +202,18 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                     if (id.hidden())
                         return;
 
-                    v1.set(0, 0);
+                    v1.set(sprite.getWidth()/2f, 0);
                     v2.set(0, sprite.getHeight() + 6);
 
                     Vector2 hv = sprite.localToStageCoordinates(v1);
-                    Vector2 hv2 = sprite.localToStageCoordinates(v2);
 
                     // Gdx.app.log("[Input]", id.toString() +
                     // " has been hovered over. " + v.x + "," + v.y);
                     if (s.hidden) {
-                        showStats(hv, hv2, id.toString(), "HP: ??? / ???");
+                        showStats(hv, v2, id.toString(), "HP: ??? / ???");
                     }
                     else {
-                        showStats(hv, hv2, id.toString(), String.format("HP: %3d / %3d", s.hp, s.maxhp));
+                        showStats(hv, v2, id.toString(), String.format("HP: %3d / %3d", s.hp, s.maxhp));
                     }
                 }
 
@@ -218,44 +233,27 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
         // adjust position to be aligned with tiles
         if (p.changed()) {
+            r.getActor().clearActions();
             r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale, MoveSpeed));
             p.update();
             //update fov on move
             if (e == player) {
-                fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
-                calcFov();
+                updateFOV();
             }
         }
     }
     
-    private void calcFov() {
-        for (int x = 0, i = 0; x < fov.length; x++) {
-            for (int y = 0; y < fov.length; y++, i++) {
-                Actor a = shadows.get(i);
-                a.addAction(Actions.alpha(1.0f-fov[x][y]));
-                if (fov[x][y] < .5f) {
-                    a.setTouchable(Touchable.disabled);
-                } 
-                //block hover over enemies when they're in the shadows
-                else {
-                    a.setTouchable(Touchable.enabled);
-                }
-            }
-        }
-    }
-
     @Override
     public void update(float delta) {
         for (Actor r : removeQueue) {
             entityLayer.removeActor(r);
             r.clear();
         }
-
+        removeQueue.clear();
+        
         for (Actor a : addQueue) {
             entityLayer.addActor(a);
         }
-
-        removeQueue.clear();
         addQueue.clear();
 
         if (!invisible) {
@@ -283,11 +281,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         }
 
         stage.draw();
-
-        batch.begin();
-        stats.draw(batch, stats.getColor().a);
-        damageNumbers.draw(batch, damageNumbers.getColor().a);
-        batch.end();
+        
         batch.setColor(1f, 1f, 1f, 1f);
     }
 
@@ -303,6 +297,16 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
         uiSkin = skin;
 
+        entityLayer = new Group();
+        shadowLayer = new Group();
+        damageNumbers = new Group();
+        entityLayer.setTouchable(Touchable.childrenOnly);
+        shadowLayer.setTouchable(Touchable.childrenOnly);
+        damageNumbers.setTouchable(Touchable.disabled);
+        stage.addActor(entityLayer);
+        stage.addActor(shadowLayer);
+        stage.addActor(damageNumbers);
+        
         // enemy stats
         {
             stats = new Table();
@@ -316,23 +320,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             stats.add(enemyName).expandX().fillX().align(Align.center);
             stats.row();
             stats.add(enemyHP).expandX().fillX().align(Align.center);
-            stats.addAction(Actions.alpha(0f));
+            stats.setColor(1, 1, 1, 0);
             stats.setBackground(skin.getDrawable("button_up"));
-            stats.setVisible(false);
+            stats.setTouchable(Touchable.disabled);
             stage.addActor(stats);
         }
 
-        // dmg popups
-        {
-            damageNumbers = new Group();
-            damageNumbers.setVisible(false);
-            stage.addActor(damageNumbers);
-        }
-        
-        entityLayer = new Group();
-        shadowLayer = new Group();
-        stage.addActor(entityLayer);
-        stage.addActor(shadowLayer);
     }
 
     protected float getScale() {
@@ -357,9 +350,18 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
         stats.setWidth(width);
 
-        stats.addAction(Actions.sequence(
-                Actions.parallel(Actions.alpha(0f), Actions.moveTo(v.x - (stats.getPrefWidth() / 2f), v.y)),
-                Actions.parallel(Actions.alpha(1f, .2f), Actions.moveTo(v2.x - (stats.getPrefWidth() / 2f), v2.y, .2f))));
+        stats.setColor(1, 1, 1, 0);
+        stats.setPosition(v.x, v.y, Align.bottom);
+        stats.clearActions();
+        stats.addAction(
+            Actions.sequence(
+                Actions.moveToAligned(v.x, v.y, Align.bottom),
+                Actions.parallel(
+                    Actions.alpha(1f, .2f),
+                    Actions.moveBy(v2.x, v2.y, .2f)
+                )
+            )
+        );
     }
 
     /**
@@ -377,16 +379,14 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
         final Label popup = new Label(dmg, uiSkin, "dmg");
         popup.setPosition(x - (popup.getPrefWidth() * .5f), y - (popup.getPrefHeight()));
-        popup.addAction(Actions.sequence(Actions.alpha(0f),
+        popup.addAction(
+            Actions.sequence(
+                Actions.alpha(0f),
                 Actions.parallel(Actions.fadeIn(.2f), Actions.moveBy(0, scale, .3f, Interpolation.sineOut)),
-                Actions.fadeOut(.2f), Actions.run(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        popup.remove();
-                    }
-
-                })));
+                Actions.fadeOut(.2f), 
+                Actions.removeActor()
+            )
+        );
 
         damageNumbers.addActor(popup);
     }
