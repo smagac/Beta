@@ -9,8 +9,8 @@ import java.util.Scanner;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
-import scene2d.PlayBGM;
-import scene2d.PlaySound;
+import scene2d.runnables.PlayBGM;
+import scene2d.runnables.PlaySound;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
 

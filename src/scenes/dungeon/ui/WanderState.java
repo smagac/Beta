@@ -2,8 +2,8 @@ package scenes.dungeon.ui;
 
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.GotoScene;
 import scene2d.InputDisabler;
+import scene2d.runnables.GotoScene;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.dungeon.Direction;

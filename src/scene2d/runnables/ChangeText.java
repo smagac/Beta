@@ -1,4 +1,4 @@
-package scene2d;
+package scene2d.runnables;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 

@@ -1,7 +1,7 @@
 package scenes.lore;
 
-import scene2d.GotoScene;
-import scene2d.PlayBGM;
+import scene2d.runnables.GotoScene;
+import scene2d.runnables.PlayBGM;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.SceneManager;
 

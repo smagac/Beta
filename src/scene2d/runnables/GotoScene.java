@@ -1,4 +1,4 @@
-package scene2d;
+package scene2d.runnables;
 
 import scenes.Scene;
 import github.nhydock.ssm.SceneManager;

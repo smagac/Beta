@@ -2,7 +2,7 @@ package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
-import scene2d.SendMessage;
+import scene2d.runnables.SendMessage;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;

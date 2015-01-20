@@ -1,7 +1,7 @@
 package scenes.title;
 
 import github.nhydock.ssm.SceneManager;
-import scene2d.PlayBGM;
+import scene2d.runnables.PlayBGM;
 import scenes.UI;
 
 import com.badlogic.gdx.Input.Buttons;

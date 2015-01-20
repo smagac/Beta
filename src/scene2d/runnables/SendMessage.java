@@ -1,4 +1,4 @@
-package scene2d;
+package scene2d.runnables;
 
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegraph;

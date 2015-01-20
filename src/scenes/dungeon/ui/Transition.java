@@ -28,7 +28,7 @@ import core.DataDirs;
 import core.components.Identifier;
 import core.components.Renderable;
 import core.service.interfaces.IPlayerContainer;
-import scene2d.PlaySound;
+import scene2d.runnables.PlaySound;
 import scenes.UI;
 
 /**

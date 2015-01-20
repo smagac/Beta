@@ -1,8 +1,8 @@
 package scenes.lore;
 
 import github.nhydock.ssm.Inject;
-import scene2d.GotoScene;
-import scene2d.PlayBGM;
+import scene2d.runnables.GotoScene;
+import scene2d.runnables.PlayBGM;
 import scenes.UI;
 
 import com.badlogic.gdx.Gdx;

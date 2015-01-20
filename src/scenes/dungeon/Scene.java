@@ -1,7 +1,7 @@
 package scenes.dungeon;
 
-import scene2d.GotoScene;
 import scene2d.InputDisabler;
+import scene2d.runnables.GotoScene;
 import scenes.Messages;
 import scenes.UI;
 import scenes.dungeon.ui.Transition;

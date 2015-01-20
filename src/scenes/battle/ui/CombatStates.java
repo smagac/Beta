@@ -1,9 +1,9 @@
 package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
-import scene2d.GotoScene;
 import scene2d.InputDisabler;
-import scene2d.PlayBGM;
+import scene2d.runnables.GotoScene;
+import scene2d.runnables.PlayBGM;
 import scenes.Messages;
 import scenes.battle.ui.CombatHandler.Combatant;
 import scenes.battle.ui.CombatHandler.Turn;
