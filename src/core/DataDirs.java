@@ -2,7 +2,6 @@ package core;
 
 import java.util.Scanner;
 
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 
@@ -32,6 +31,7 @@ public final class DataDirs {
     public static final String Tilesets = Home + "tilesets/";
     public static final String Lore = Home + "lore/";
     public static final String Particles = Home + "particles/";
+    public static final String Backgrounds = Home + "backgrounds/";
     
     /**
      * Allows getting a specified list of children in an internal directory

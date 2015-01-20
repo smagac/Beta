@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import github.nhydock.CollectionUtils;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
@@ -49,8 +50,10 @@ import core.components.Stats;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;
+import core.datatypes.dungeon.Dungeon;
 import core.factories.AdjectiveFactory;
 import core.service.interfaces.IBattleContainer;
+import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import scene2d.ChangeText;
 import scene2d.PlaySound;
@@ -76,7 +79,7 @@ public class BattleUI extends GameUI
      */
     Image player;
     Image boss;
-    TiledMapTileSet environment;
+    private Image bg;
     
     /*
      * Main menu
@@ -197,7 +200,6 @@ public class BattleUI extends GameUI
     FocusGroup manualFocus;
     FocusGroup mainFocus;
     FocusGroup itemFocus;
-    private Image bg;
     private Image hpBar;
     private Label bossName;
     private Group attackGroup;
@@ -211,11 +213,10 @@ public class BattleUI extends GameUI
         messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT, Messages.Battle.Stats, Messages.Battle.DEBUFF);
     }
 	
-    public BattleUI(AssetManager manager, TiledMapTileSet environment)
+    public BattleUI(AssetManager manager)
 	{
 		super(manager);
 		menu = new DefaultStateMachine<BattleUI>(this);
-		this.environment = environment;
 		combat = new CombatHandler();
 	}
 	
@@ -671,8 +672,9 @@ public class BattleUI extends GameUI
             display.addActor(wall);
         }
         */
-	    
-	    TextureRegion tex = new TextureRegion(new Texture(Gdx.files.internal("data/backgrounds/dungeon.png")));
+	    Dungeon dungeon = ServiceManager.getService(IDungeonContainer.class).getDungeon();
+	    String type = dungeon.getEnvironment();
+	    TextureRegion tex = new TextureRegion(new Texture(Gdx.files.internal(DataDirs.Backgrounds + type + ".png")));
 	    bg = new Image(new TiledDrawable(tex));
 	    bg.setWidth(getDisplayWidth());
 	    bg.setHeight(128f);

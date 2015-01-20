@@ -1,5 +1,6 @@
 package scenes.dungeon;
 
+import scene2d.GotoScene;
 import scene2d.InputDisabler;
 import scenes.Messages;
 import scenes.UI;
@@ -31,17 +32,14 @@ import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
 import core.datatypes.FileType;
-import core.service.implementations.BossBattle;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.implementations.ScoreTracker.StringValues;
-import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 import core.util.dungeon.TsxTileSet;
 import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
 public class Scene extends scenes.Scene<UI> implements Telegraph {
@@ -333,15 +331,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             fight = true;
             ui.draw();
             transition.init();
-            transition.playAnimation(new Runnable(){
-
-                @Override
-                public void run() {
-                    SceneManager.switchToScene(scene);
-                    scene.setEnvironment(tileset);
-                }
-
-            });
+            transition.playAnimation(new GotoScene(scene));
             ui = transition;
             Gdx.input.setInputProcessor(null);
             return true;
@@ -357,20 +347,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         if (msg.message == Messages.Dungeon.Proceed) {
             InputDisabler.swap();
             InputDisabler.clear();
+            leave();
             wanderUI.addAction(
                 Actions.sequence(
                     wanderUI.fadeOutAction(),
-                    Actions.run(new Runnable() {
-                        
-                        @Override
-                        public void run() {
-                            // merge loot into inventory
-                            playerService.getInventory().merge();
-                        
-                            SceneManager.switchToScene("lore");
-                        }
-                        
-                    })
+                    Actions.run(new GotoScene("lore"))
                 )
             );
         }
