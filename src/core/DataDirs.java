@@ -10,7 +10,7 @@ public final class DataDirs {
     public static final String Home = "data/";
     public static final String Audio = Home + "audio/";
     public static final String sfx = Audio + "fx/";
-    public static final String GameData = Home + "game/";
+    public static final String GameData = Home + "content/";
 
     public static interface Sounds {
         public static final String tick = sfx + "tick.wav";
@@ -29,7 +29,7 @@ public final class DataDirs {
     }
     
     public static final String Tilesets = Home + "tilesets/";
-    public static final String Lore = Home + "lore/";
+    public static final String Lore = GameData + "lore/";
     public static final String Particles = Home + "particles/";
     public static final String Backgrounds = Home + "backgrounds/";
     

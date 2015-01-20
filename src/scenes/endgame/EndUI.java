@@ -65,12 +65,12 @@ public class EndUI extends UI {
 
     @Override
     protected void load() {
-        manager.load("data/end.json", Skin.class);
+        manager.load(DataDirs.Home + "end.json", Skin.class);
     }
 
     @Override
     public void init() {
-        skin = manager.get("data/end.json", Skin.class);
+        skin = manager.get(DataDirs.Home + "end.json", Skin.class);
 
         Array<String> data = new Array<String>();
         Scanner s = new Scanner(Gdx.files.classpath(DataDirs.GameData + "end.txt").read());
