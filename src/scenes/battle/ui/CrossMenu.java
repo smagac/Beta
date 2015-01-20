@@ -2,6 +2,7 @@ package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
+import scene2d.SendMessage;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
@@ -166,7 +167,7 @@ public class CrossMenu extends Group
 	 */
 	public void show(){
 	    setTouchable(Touchable.enabled);
-        sm.changeState(MenuState.MAIN);
+	    sm.changeState(MenuState.MAIN);
     }
 	
 	/**
@@ -255,6 +256,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.run(InputDisabler.instance),
                         Actions.delay(1.2f),
+                        Actions.run(new SendMessage(entity.sm, Messages.Select, entity.attack)),
                         Actions.run(InputDisabler.instance)
                     )
                 );
@@ -263,7 +265,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.delay(.7f),
                         Actions.parallel(
-                            Actions.moveTo(-96f, entity.attack.getY(), .3f, Interpolation.circleOut),
+                            Actions.moveTo(-32f, entity.attack.getY(), .3f, Interpolation.circleOut),
                             Actions.alpha(1f, .2f)
                         )
                     )
@@ -288,9 +290,6 @@ public class CrossMenu extends Group
                         )
                     )
                 );
-	            
-	            entity.mainSet.select(entity.attack);
-                
 	        }
 	        
 	        @Override
@@ -300,8 +299,10 @@ public class CrossMenu extends Group
 	                    telegram.extraInfo == entity.defend ||
 	                    telegram.extraInfo == entity.item) {
 	                    Actor old = entity.mainSet.get();
+	                    old.clearActions();
 	                    old.addAction(Actions.moveTo(-32f, old.getY(), .2f, Interpolation.circleOut));
 	                    Actor selected = entity.mainSet.select((Actor)telegram.extraInfo);
+	                    selected.clearActions();
 	                    selected.addAction(Actions.moveTo(-96f, selected.getY(), .2f, Interpolation.circleOut));
 	                }
 	                return true;
@@ -334,6 +335,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.run(InputDisabler.instance),
                         Actions.delay(.7f),
+                        Actions.run(new SendMessage(entity.sm, Messages.Select, entity.attackAuto)),
                         Actions.run(InputDisabler.instance)
                     )
                 );
@@ -376,8 +378,6 @@ public class CrossMenu extends Group
                         )
                     )
                 );
-                
-                entity.attackSet.select(entity.attackAuto);
             }
 	        
 	        @Override
@@ -446,6 +446,7 @@ public class CrossMenu extends Group
                     Actions.sequence(
                         Actions.run(InputDisabler.instance),
                         Actions.delay(.7f),
+                        Actions.run(new SendMessage(entity.sm, Messages.Select, entity.itemModify)),
                         Actions.run(InputDisabler.instance)
                     )
                 );
@@ -496,8 +497,6 @@ public class CrossMenu extends Group
                         )
                     )
                 );
-                
-                entity.itemSet.select(entity.itemModify);
             }
             
             @Override

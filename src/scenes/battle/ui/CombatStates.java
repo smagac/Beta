@@ -1,6 +1,5 @@
 package scenes.battle.ui;
 
-import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 import scene2d.GotoScene;
 import scene2d.InputDisabler;
@@ -9,24 +8,17 @@ import scenes.Messages;
 import scenes.battle.ui.CombatHandler.Combatant;
 import scenes.battle.ui.CombatHandler.Turn;
 
-import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 import core.DataDirs;
-import core.components.Combat;
 import core.components.Stats;
-import core.datatypes.Inventory;
-import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
-import core.factories.AdjectiveFactory;
 import core.service.interfaces.IDungeonContainer;
 
 public enum CombatStates implements State<BattleUI> {
