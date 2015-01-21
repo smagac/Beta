@@ -192,7 +192,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         descending = (depth > p.depth);
         
-        InputDisabler.swap();
         wanderUI.fadeOut(new Runnable(){
 
             @Override
@@ -204,7 +203,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
                     @Override
                     public void run() {
-                        InputDisabler.swap();
                         wanderUI.setMessage("You move onto floor " + depth + " of " + d.size());
                         
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
