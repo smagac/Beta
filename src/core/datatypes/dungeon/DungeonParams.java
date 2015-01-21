@@ -3,12 +3,11 @@ package core.datatypes.dungeon;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
-
-import net.jpountz.xxhash.XXHash64;
-import net.jpountz.xxhash.XXHashFactory;
+import java.util.UUID;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -166,9 +165,10 @@ public class DungeonParams {
         FileInputStream is = new FileInputStream(f);
         is.read(data);
         is.close();
-        XXHash64 hasher = XXHashFactory.nativeInstance().hash64();
-
-        return hasher.hash(data, 0, data.length, 0L);
+        UUID hash = java.util.UUID.nameUUIDFromBytes(data);
+        String clean = hash.toString().replace("-", "").substring(0, 16);
+        Gdx.app.log("UUID", clean);
+        return new BigInteger(clean, 16).longValue();
     }
 
     /**
