@@ -49,28 +49,65 @@ In addition to questing, there's also a list of daily craftables that you can us
 
 # Credits / Attribution
 
-Graphics, Programming, Project Lead
+##Graphics, Programming, Project Lead
     Nicholas Hydock
 
-Ideas, Suggestions, Emotional Support, and Bros4Lyfe
+
+##Ideas, Suggestions, Emotional Support, and Bros4Lyfe
     Patrick Flanagan
     Matthew Hydock
     Andrew Hoffman
 
-Title Theme
-    Anamanaguchi - Helix Nebula
+##Sound Attribution
+
+All music is licensed under Creative-Commons BY(-NC) or other permissive licenses.
 
 Town Music
-    Monroeville Music Center - B002
-
+	Monroeville Music Center - B002
+	Jahzzar - Take Me Higher
+Title Theme
+	Anamanaguchi - Helix Nebula
 Story Music
-    Eric Skiff - All of Us
+	Eric Skiff - All of Us
+Lore
+	Jahzzar - Self Portrait
+Dungeon
+	pip - hannibaugh
+	Aaron Krogh - 294 - Leviathan (Battle Loop)
+	Benjamin Briggs - Benji Needs A Lawyer
+Boss Fights
+	(Victory) Aaron Krogh - 223 Groovy BGM (Loop)
+	Aaron Krogh - 306 Boss Battle 2 (Loop)
 
-Dungeoning
+Sounds used from freesound.org
+	timgorml
+		8-bit hurt1
+		8-bit coin
+		8-bit shimmer
+		8-bit bump
+	deathbygeko
+		boss fight
+	hgavin
+		Whoosh.wav
+
+Also featuring sounds recorded from Sonic & Knuckles
+	
+Previously Featured Music
+    fb - cueball
     Decktonic - Fair Game
     Sycamore Drive - Kicks
     Revolution Void - Telluric Undercurrent
-    Benjamin Briggs - Benji Needs A Lawyer (http://benbriggs.net/track/benji-needs-a-lawyer)
     
+## FOSS Libraries Used
 
-All Music Available on FreeMusicArchive.org unless otherwises stated
+LibGDX - core engine of the game
+http://libgdx.badlogicgames.com/
+
+Ashley - an entity system, used in dungeoning
+https://github.com/libgdx/ashley
+
+SquidLib - FOV calculations
+https://github.com/SquidPony/SquidLib
+
+roguelikelib - dungeon generation algorithm
+http://sourceforge.net/projects/roguelikelib/
