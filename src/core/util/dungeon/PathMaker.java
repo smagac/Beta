@@ -68,7 +68,7 @@ public class PathMaker {
 
             Array<int[]> locations = findAllOpenAreas(board, width, height);
             if (locations.size > 0) {
-                int[] where = locations.random();
+                int[] where = locations.get(random.nextInt(locations.size));
                 Room r = new Room(where[0], where[1], width, height);
                 rooms.add(r);
                 for (int x = r.left(); x <= r.right(); x++) {
