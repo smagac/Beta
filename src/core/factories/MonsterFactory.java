@@ -232,8 +232,22 @@ public class MonsterFactory {
             Entity monster = create(t, lootMaker.createItem(), floor.depth, false);
             monster.add(new Monster());
 
+            Position p = new Position(0, 0);
+            int[] xy = null;
+            do {
+                xy = floor.getOpenTile();
+                for (Entity e : entities) {
+                    Position ep = e.getComponent(Position.class);
+                    if (ep.getX() == xy[0] && ep.getY() == xy[1]) {
+                        xy = null;
+                        break;
+                    }
+                }
+            } while (xy == null);
+            p.move(xy[0], xy[1]);
+            
             // add its position into a random room
-            monster.add(new Position(floor.getOpenTile()));
+            monster.add(p);
 
             entities.add(monster);
         }

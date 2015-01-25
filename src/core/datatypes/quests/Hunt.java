@@ -25,7 +25,11 @@ class Hunt extends Quest {
      */
     public Hunt() {
         this.need = MathUtils.random(3, 15);
-        this.monster = MonsterFactory.randomSpecies();
+        
+        do {
+            monster = MonsterFactory.randomSpecies();
+        } 
+        while (monster.equals("treasure chest"));
         
         prompt = String.format("Hunt %d %s", need, monster);
     }
