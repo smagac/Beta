@@ -286,6 +286,10 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (direction == null)
             return false;
 
+        if (player == null) {
+            return false;
+        }
+        
         Position playerPos = Position.Map.get(player);
         int x = playerPos.getX();
         int y = playerPos.getY();

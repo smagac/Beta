@@ -603,6 +603,8 @@ public class TownUI extends GameUI {
                @Override
                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                    int listIndex = fileList.getSelectedIndex();
+                   if (listIndex == -1)
+                       return false;
                    
                    if (lastIndex == listIndex) {
                        FileHandle selected = directoryList.get(listIndex);

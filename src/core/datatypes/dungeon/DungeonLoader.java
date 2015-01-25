@@ -28,6 +28,7 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
 
     @Override
     public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
+        progress[0] = 0;
         // check if we just need to rebuild a dungeon
         if (param.generatedDungeon == null)
         {

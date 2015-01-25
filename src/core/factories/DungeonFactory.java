@@ -187,7 +187,7 @@ public class DungeonFactory {
                 int d;
                 long seed;
                 synchronized (depth) {
-                    if (depth[0] < floors.size) {
+                    if (depth[0] >= floors.size) {
                         break;
                     }
                     Gdx.app.log("Dungeon Generation", "Floor : " + depth[0]);

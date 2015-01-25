@@ -35,6 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
@@ -71,8 +72,9 @@ public class WanderUI extends GameUI {
     private Group goddessDialog;
     private Label gMsg;
     private Table itemSubmenu;
-    private Table lootList;
-    private ObjectIntMap<Item> loot;
+    Table lootList;
+    ObjectIntMap<Item> loot;
+    Array<Item> lootRows;
     private ButtonGroup<Button> lootButtons;
     private Table sacrificeList;
     ObjectIntMap<Item> sacrifices;
@@ -556,7 +558,7 @@ public class WanderUI extends GameUI {
         sacrificePane.pack();
     }
 
-    private void populateLoot() {
+    void populateLoot() {
         lootList.clear();
         lootList.top().left();
         lootButtons.getAllChecked().clear();
@@ -766,8 +768,6 @@ public class WanderUI extends GameUI {
             
             Item item = combat.getDrop();
             playerService.getInventory().pickup(item);
-            MessageDispatcher.getInstance().dispatchMessage(0, null, playerService.getQuestTracker(), Quest.Actions.Gather,
-                    item.type());
             
             setMessage(String.format("Obtained %s", item.fullname()));
             return true;

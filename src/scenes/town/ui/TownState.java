@@ -301,7 +301,11 @@ enum TownState implements UIState {
                     // load selected file dungeon
                     if (button == Messages.Town.Explore) {
                         if (ui.exploreTabs.getChecked().getName().equals("history")) {
-                            f = TownUI.history.get(ui.fileList.getSelectedIndex());
+                            int index = ui.fileList.getSelectedIndex();
+                            if (index == 0) {
+                                return false;
+                            }
+                            f = TownUI.history.get(index);
                             if (f != null && !f.isDirectory()) {
                                 params = DungeonParams.loadDataFromFile(f);
                             } else {

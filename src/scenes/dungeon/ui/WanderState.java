@@ -2,6 +2,7 @@ package scenes.dungeon.ui;
 
 import github.nhydock.ssm.ServiceManager;
 import scene2d.runnables.GotoScene;
+import scene2d.ui.extras.TableUtils;
 import scenes.Messages;
 import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;
@@ -14,10 +15,7 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
-import core.datatypes.Item;
 import core.datatypes.quests.Quest;
-import core.service.implementations.ScoreTracker;
-import core.service.implementations.ScoreTracker.NumberValues;
 
 /**
  * Handles state based ui menu logic and switching
@@ -152,9 +150,10 @@ public enum WanderState implements UIState {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
-                    for (Item i : entity.sacrifices.keys()) {
-                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed, entity.sacrifices.get(i, 0));
-                    }
+                    
+                    //TODO optimize this, as it generates new labels every time
+                    entity.populateLoot();
+                    
                     entity.playerService.recover();
                     entity.dungeonService.getProgress().healed = healCost;
                     entity.changeState(Wander);

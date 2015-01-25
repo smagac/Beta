@@ -121,6 +121,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         rs.setView(wanderUI, shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
         rs.setMap(map);
         
+        input.addProcessor(wanderUI);
         input.addProcessor(rs.getStage());
     }
 
@@ -142,7 +143,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Exit);
         
         ui = wanderUI;
-        input.addProcessor(wanderUI);
+        //input.addProcessor(wanderUI);
     }
 
     @Override
@@ -317,7 +318,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         
         Gdx.input.setInputProcessor(input);
-        
     }
 
     @Override
