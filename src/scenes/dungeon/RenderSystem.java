@@ -338,13 +338,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     }
 
     void showStats(Entity e) {
-        if (statsVis != null) {
+        if (statsVis != null && !Identifier.Map.get(e).hidden()) {
             return;
         }
         
         statsVis = e;
         
-
         Actor sprite = Renderable.Map.get(e).getActor();
         v1.set(sprite.getWidth()/2f, sprite.getHeight());
 
