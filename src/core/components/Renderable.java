@@ -1,6 +1,7 @@
 package core.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class Renderable extends Component {
+    public static final ComponentMapper<Renderable> Map = ComponentMapper.getFor(Renderable.class);
 
     private Actor actor;
     private String spriteName;

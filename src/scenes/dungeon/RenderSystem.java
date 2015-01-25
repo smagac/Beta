@@ -1,5 +1,7 @@
 package scenes.dungeon;
 
+import java.net.IDN;
+
 import github.nhydock.ssm.Inject;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
@@ -65,9 +67,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     private OrthographicCamera camera;
     private OrthogonalTiledMapRenderer mapRenderer;
 
-    ComponentMapper<Position> positionMap = ComponentMapper.getFor(Position.class);
     ComponentMapper<Renderable> renderMap = ComponentMapper.getFor(Renderable.class);
-    ComponentMapper<Identifier> idMap = ComponentMapper.getFor(Identifier.class);
     ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
     private float scale;
@@ -81,7 +81,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     private Table stats;
     private Label enemyName;
     private Label enemyHP;
-    private boolean statsVis;
+    private Entity statsVis;
 
     private boolean invisible;
 
@@ -117,7 +117,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     }
     
     private void updateFOV(){
-        Position p = positionMap.get(player);
+        Position p = Position.Map.get(player);
         
         fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
         for (int x = 0, i = 0; x < fov.length; x++) {
@@ -175,7 +175,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         }
         entities.add(e);
         Renderable r = renderMap.get(e);
-        Position p = positionMap.get(e);
+        Position p = Position.Map.get(e);
         
         if (Groups.playerType.matches(e)) {
             player = e;
@@ -196,24 +196,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
                 @Override
                 public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                    Stats s = statMap.get(e);
-                    Identifier id = idMap.get(e);
-                    if (id.hidden())
-                        return;
-
-                    v1.set(sprite.getWidth()/2f, 0);
-                    v2.set(0, sprite.getHeight() + 6);
-
-                    Vector2 hv = sprite.localToStageCoordinates(v1);
-
-                    // Gdx.app.log("[Input]", id.toString() +
-                    // " has been hovered over. " + v.x + "," + v.y);
-                    if (s.hidden) {
-                        showStats(hv, v2, id.toString(), "HP: ??? / ???");
-                    }
-                    else {
-                        showStats(hv, v2, id.toString(), String.format("HP: %3d / %3d", s.hp, s.maxhp));
-                    }
+                    refreshStats(e);
+                    showStats(e);
                 }
 
                 @Override
@@ -227,7 +211,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     }
 
     protected void process(Entity e) {
-        Position p = positionMap.get(e);
+        Position p = Position.Map.get(e);
         Renderable r = renderMap.get(e);
 
         // adjust position to be aligned with tiles
@@ -334,30 +318,46 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     public Stage getStage() {
         return stage;
     }
-
-    void showStats(Vector2 v, Vector2 v2, String name, String hp) {
-        if (statsVis && name.equals(enemyName.getText().toString())) {
-            return;
+    
+    void refreshStats(Entity e) {
+        Stats s = statMap.get(e);
+        Identifier id = Identifier.Map.get(e);
+        
+        enemyName.setText(id.toString());
+        
+        if (s.hidden) {
+            enemyHP.setText("HP: ??? / ???");
         }
-
-        statsVis = true;
-
-        enemyName.setText(name);
-        enemyHP.setText(hp);
+        else {
+            enemyHP.setText( String.format("HP: %3d / %3d", s.hp, s.maxhp));
+        }
 
         stats.pack();
         float width = Math.max(enemyName.getPrefWidth(), enemyHP.getPrefWidth()) + 40;
         stats.setWidth(width);
+    }
 
+    void showStats(Entity e) {
+        if (statsVis != null) {
+            return;
+        }
+        
+        statsVis = e;
+        
+
+        Actor sprite = Renderable.Map.get(e).getActor();
+        v1.set(sprite.getWidth()/2f, sprite.getHeight());
+
+        Vector2 hv = sprite.localToStageCoordinates(v1);
+        stats.setPosition(hv.x, hv.y, Align.bottom);
         stats.setColor(1, 1, 1, 0);
-        stats.setPosition(v.x, v.y, Align.bottom);
+        
         stats.clearActions();
         stats.addAction(
             Actions.sequence(
-                Actions.moveToAligned(v.x, v.y, Align.bottom),
                 Actions.parallel(
                     Actions.alpha(1f, .2f),
-                    Actions.moveBy(v2.x, v2.y, .2f)
+                    Actions.moveBy(0, 6, .2f)
                 )
             )
         );
@@ -371,7 +371,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
      * @param dmg
      */
     protected void hit(Entity e, String dmg) {
-        Position p = positionMap.get(e);
+        Position p = Position.Map.get(e);
 
         float x = p.getX() * scale + (scale * .5f);
         float y = p.getY() * scale + (scale * .5f);
@@ -391,7 +391,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     }
 
     public void hideStats() {
-        statsVis = false;
+        statsVis = null;
         stats.clearActions();
         stats.addAction(Actions.alpha(0f, .3f));
     }
@@ -405,6 +405,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             player = null;
         }
         entities.removeValue(entity, true);
+        if (statsVis == entity) {
+            hideStats();
+        }
     }
 
     @Override
@@ -466,6 +469,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                 else {
                     hit(opponent, String.valueOf(dmg));
                 }
+            }
+            if (statsVis == opponent) {
+                refreshStats(opponent);
             }
         }
         return false;
