@@ -183,10 +183,13 @@ public class DungeonFactory {
         public void run(){
             Gdx.app.log("Dungeon Generation", "Building " + floors.size + " floors");
             
-            while (depth[0] < floors.size) {
+            while (true) {
                 int d;
                 long seed;
                 synchronized (depth) {
+                    if (depth[0] < floors.size) {
+                        break;
+                    }
                     Gdx.app.log("Dungeon Generation", "Floor : " + depth[0]);
                     d = depth[0];
                     seed = seeds[depth[0]];
