@@ -6,16 +6,32 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public enum Direction {
-    Up(Keys.UP, Keys.W), Down(Keys.DOWN, Keys.S), Left(Keys.LEFT, Keys.A), Right(Keys.RIGHT, Keys.D);
+    Up(0, 1, Keys.UP, Keys.W), 
+    Down(0, -1, Keys.DOWN, Keys.S), 
+    Left(-1, 0, Keys.LEFT, Keys.A), 
+    Right(0, 1, Keys.RIGHT, Keys.D);
 
+    private int[] move;
     private int[] keys;
 
     /**
      * @param key
      *            - Acceptable keys that mask to the direction
      */
-    Direction(int... key) {
+    Direction(int x, int y, int... key) {
+        move = new int[]{x, y};
         keys = key;
+    }
+    
+    /**
+     * Gets the position in a direction
+     * @param val
+     * @return
+     */
+    public int[] move(int[] val) {
+        val[0] += move[0];
+        val[1] += move[1];
+        return val;
     }
 
     /**

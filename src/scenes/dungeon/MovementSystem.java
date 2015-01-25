@@ -4,6 +4,9 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
+
+import java.util.Comparator;
+
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
@@ -48,6 +51,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
     private Entity player;
     Array<Entity> monsters = new Array<Entity>();
+    Array<Entity> actOrder = new Array<Entity>();
 
     private Engine engine;
     @Inject public IDungeonContainer dungeonService;
@@ -98,7 +102,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         }
         return null;
     }
-
+    
     /**
      * Moves an entity to a specified location on the map
      * 
@@ -442,5 +446,24 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         } else if (Groups.playerType.matches(entity)) {
             player = null;
         }
+    }
+    
+    private static class SpeedComparator implements Comparator<Entity> {
+
+        static final SpeedComparator instance = new SpeedComparator();
+        
+        private SpeedComparator(){};
+        
+        @Override
+        public int compare(Entity o1, Entity o2) {
+            Stats s1 = Stats.Map.get(o1);
+            Stats s2 = Stats.Map.get(o2);
+            
+            Float spd1 = s1.getSpeed();
+            Float spd2 = s2.getSpeed();
+            
+            return spd1.compareTo(spd2);
+        }
+        
     }
 }

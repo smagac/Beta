@@ -1,6 +1,7 @@
 package core.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
@@ -15,6 +16,8 @@ import core.datatypes.StatModifier;
  *
  */
 public class Stats extends Component implements Serializable {
+    public static final ComponentMapper<Stats> Map = ComponentMapper.getFor(Stats.class);
+
     private int level;
     public int hp;
     public int maxhp;
