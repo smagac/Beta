@@ -22,6 +22,8 @@ public class RandomFloorData implements Serializable, FloorData {
     int width, height;
     int size;
     int[] start, end;
+    long seed;
+    
     private boolean[][] collision;
 
     public RandomFloorData() {
@@ -33,8 +35,8 @@ public class RandomFloorData implements Serializable, FloorData {
      * @param floor
      * @param maker
      */
-    public RandomFloorData(int difficulty, int floor, int width, int height) {
-
+    public RandomFloorData(long seed, int difficulty, int floor, int width, int height) {
+        this.seed = seed;
         this.width = width;
         this.height = height;
         this.floor = floor;
@@ -195,5 +197,10 @@ public class RandomFloorData implements Serializable, FloorData {
     @Override
     public int getHeight() {
         return height;
+    }
+
+    @Override
+    public long getSeed() {
+        return seed;
     }
 }

@@ -148,4 +148,9 @@ public class BossFloor implements FloorData {
     public int getHeight() {
         return tiles[0].length;
     }
+
+    @Override
+    public long getSeed() {
+        return 0;
+    }
 }

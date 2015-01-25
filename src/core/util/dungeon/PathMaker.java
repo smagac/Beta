@@ -1,8 +1,8 @@
 package core.util.dungeon;
 
 import java.util.Arrays;
+import java.util.Random;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
@@ -43,9 +43,16 @@ public class PathMaker {
     private PathMaker() {
     }
 
-    public static void run(FloorData f, int roomCount) {
+    public static void run(FloorData f) {
         float[] filled = { 0 };
-
+        Random random = new Random(f.getSeed());
+        int roomCount;
+        {
+            int s = Math.max(5, ((3 * f.getDepth()) / 10) + f.getDepth());
+            int e = Math.max(5, ((5 * f.getDepth()) / 10) + f.getDepth());
+            roomCount = s + random.nextInt(e - s + 1);
+        }
+         
         int[][] board = f.getTiles();
         int[] start = f.getStart();
         int[] end = f.getEnd();
@@ -56,8 +63,8 @@ public class PathMaker {
 
         // place a handleful of random rooms until threshold is met
         while (rooms.size < roomCount && filled[0] / size < MAX_SATURATION) {
-            int width = MathUtils.random(10) + 3;
-            int height = MathUtils.random(10) + 3;
+            int width = random.nextInt(11) + 3;
+            int height = random.nextInt(11) + 3;
 
             Array<int[]> locations = findAllOpenAreas(board, width, height);
             if (locations.size > 0) {
@@ -84,14 +91,14 @@ public class PathMaker {
             locations = null;
         }
 
-        connectRooms(board, rooms, filled);
+        connectRooms(board, rooms, filled, random);
 
         // find random spot to place start and end
         int x = 0;
         int y = 0;
         do {
-            x = MathUtils.random(0, board.length - 1);
-            y = MathUtils.random(0, board[0].length - 1);
+            x = random.nextInt(board.length);
+            y = random.nextInt(board[0].length);
         }
         while (board[x][y] != ROOM);
         board[x][y] = UP;
@@ -99,8 +106,8 @@ public class PathMaker {
         start[1] = y;
 
         do {
-            x = MathUtils.random(0, board.length - 1);
-            y = MathUtils.random(0, board[0].length - 1);
+            x = random.nextInt(board.length);
+            y = random.nextInt(board[0].length);
         }
         while (board[x][y] != ROOM);
         board[x][y] = DOWN;
@@ -198,7 +205,7 @@ public class PathMaker {
      * alrgorithm <br>
      * </br> For now we keep things simple and don't add doors
      */
-    private static void connectRooms(int[][] board, Array<Room> rooms, float[] filled) {
+    private static void connectRooms(int[][] board, Array<Room> rooms, float[] filled, Random random) {
         // no need to connect rooms if there's less than 2 rooms
         if (rooms.size < 2)
             return;
@@ -243,7 +250,7 @@ public class PathMaker {
                                 // relation with CellA
                                 float distance = Vector2.dst(cellA[X], cellA[Y], cellB[X], cellB[Y]);
                                 if (distance < distanceMatrix[a][b] || distance == distanceMatrix[a][b]
-                                        && MathUtils.randomBoolean()) {
+                                        && random.nextBoolean()) {
                                     distanceMatrix[a][b] = distance;
 
                                     // make sure to mark which cells it is that
@@ -281,7 +288,7 @@ public class PathMaker {
             int[] to = closestMatrix[a][closest][1];
 
             // create the tunnel to that closest room
-            if (!roomConnections[a][closest] && makeHallway(board, from, to, filled)) {
+            if (!roomConnections[a][closest] && makeHallway(board, from, to, filled, random)) {
                 // flag the rooms as connected both ways
                 roomConnections[a][closest] = true;
                 roomConnections[closest][a] = true;
@@ -334,14 +341,14 @@ public class PathMaker {
                 // for now distance doesn't matter, so we just connect a random
                 // one
                 do {
-                    conB = MathUtils.random(rooms.size - 1);
+                    conB = random.nextInt(rooms.size);
                 }
                 while (conA == conB);
 
                 int[] from = closestMatrix[conA][conB][0];
                 int[] to = closestMatrix[conA][conB][1];
 
-                makeHallway(board, from, to, filled);
+                makeHallway(board, from, to, filled, random);
 
                 roomConnections[conA][conB] = true;
                 roomConnections[conB][conA] = true;
@@ -358,7 +365,7 @@ public class PathMaker {
      * @return true if a hallway could be constructed between the two rooms
      *         false if the points are invalid/outside of the board
      */
-    private static boolean makeHallway(int[][] board, int[] from, int[] to, float[] filled) {
+    private static boolean makeHallway(int[][] board, int[] from, int[] to, float[] filled, Random random) {
         // ignore out of bounds attempts
         if (!(from[X] >= 0 && from[X] < board.length && from[Y] >= 0 && from[Y] < board[0].length)
                 || !(to[X] >= 0 && to[X] < board.length && to[Y] >= 0 && to[Y] < board[0].length)) {
@@ -389,8 +396,8 @@ public class PathMaker {
             dirY = -1; // south
 
         // move into random direction
-        boolean firstHorizontal = MathUtils.randomBoolean();
-        boolean secondHorizontal = MathUtils.randomBoolean();
+        boolean firstHorizontal = random.nextBoolean();
+        boolean secondHorizontal = random.nextBoolean();
 
         // making a corridor might take awhile, just continue this iterative
         // process

@@ -7,6 +7,8 @@ import com.badlogic.gdx.utils.Array;
 import core.util.dungeon.Room;
 
 public interface FloorData {
+    public long getSeed();
+    
     public int getRoomCount();
 
     public int getDepth();

@@ -13,7 +13,6 @@ import java.util.zip.GZIPOutputStream;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
@@ -121,39 +120,88 @@ public class DungeonFactory {
             }
         }
 
-        Random oldRandom = MathUtils.random;
         Random seededRandom = new Random(params.getSeed());
-        MathUtils.random = seededRandom;
-
-        // please don't ask about my numbers, they're so randomly picked out
-        // from my head
+        
+        // please don't ask about my numbers, they're so randomly picked out from my head
         // I don't even know what the curve looks like on a TI calculator ;_;
-        int depth = MathUtils.random(5 * params.getDifficulty(), 10 * params.getDifficulty()
-                + (params.getDifficulty() - 1) * 10);
+        int s = 5 * params.getDifficulty();
+        int e = 10 * params.getDifficulty() + (params.getDifficulty() - 1) * 10;
+        int depth = s + seededRandom.nextInt(e - s + 1);
+        
         // to stress test, uncomment next line
-        //depth = 99;
+        // depth = 99;
         final Array<FloorData> floors = new Array<FloorData>();
         floors.addAll(new FloorData[depth]);
-        // final Thread[] makerThreads = new Thread[Math.min(Math.max(1,
-        // depth/8), 4)];
-
-        for (int d = depth-1, made=1; d >= 0; d--, made++) {
-            int difficulty = params.getDifficulty();
-            
-            FloorData floor;
-            int width = 50 + (5 * (d / 5));
-            int height = 50 + (5 * (d / 5));
-            floor = new RandomFloorData(difficulty, d + 1, width, height);
-
-            int roomCount = MathUtils.random(Math.max(5, ((3 * d) / 10) + d), Math.max(5, ((5 * d) / 10) + d));
-            PathMaker.run(floor, roomCount);
-            floors.set(d, floor);
-            
-            progress[0] = (int)((made / (float)depth) * 100);
+        long[] seeds = new long[depth];
+        for (int i = 0; i < depth; i++) {
+            seeds[i] = seededRandom.nextLong();
         }
-
+        
+        int[] volDepth = {0};
+        Array<Thread> threads = new Array<Thread>();
+        //create threads
+        for (int i = 0; i < 4; i++) {
+            FloorLoader fl = new FloorLoader();
+            fl.depth = volDepth;
+            fl.seeds = seeds;
+            fl.floors = floors;
+            fl.progress = progress;
+            fl.increment = (int)((1.0f / (float)depth) * 100);
+            Thread t = new Thread(fl);
+            threads.add(t);
+        }
+        //start threads
+        for (int d = 0; d < threads.size; d++) {
+            Thread t = threads.get(d);
+            t.start();
+        }
+        //wait for threads
+        boolean done = false;
+        while (!done) {
+            done = true;
+            for (int i = 0; i < threads.size && done; i++) {
+                Thread t = threads.get(i);
+                if (t.getState() != Thread.State.TERMINATED) {
+                    done = false;
+                }
+            }
+        }
+        
         Dungeon d = new Dungeon(params, floors);
-        MathUtils.random = oldRandom;
         return d;
+    }
+    
+    private static class FloorLoader implements Runnable {
+        int difficulty;
+        int increment;
+        int[] progress;
+        Array<FloorData> floors;
+        int[] depth;
+        long[] seeds;
+        
+        @Override
+        public void run(){
+            Gdx.app.log("Dungeon Generation", "Building " + floors.size + " floors");
+            
+            while (depth[0] < floors.size) {
+                int d;
+                long seed;
+                synchronized (depth) {
+                    Gdx.app.log("Dungeon Generation", "Floor : " + depth[0]);
+                    d = depth[0];
+                    seed = seeds[depth[0]];
+                    depth[0] = depth[0] + 1;   
+                }
+                
+                int width = 50 + (5 * (d / 5));
+                int height = 50 + (5 * (d / 5));
+                
+                FloorData data = new RandomFloorData(seed, difficulty, d + 1, width, height);
+                PathMaker.run(data);
+                floors.set(d, data);
+            
+                progress[0] += increment;
+            }
+        }
     }
 }
