@@ -1,6 +1,7 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.ServiceManager;
+import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
 import scene2d.ui.extras.TableUtils;
 import scenes.Messages;
@@ -76,14 +77,7 @@ public enum WanderState implements UIState {
                         entity.addAction(
                             Actions.sequence(
                                 //Actions.run(InputDisabler.instance),
-                                Actions.delay(RenderSystem.MoveSpeed),
-                                Actions.run(new Runnable(){
-                                    @Override
-                                    public void run(){
-                                        ms.process();
-                                    }
-                                }),
-                                Actions.delay(RenderSystem.MoveSpeed)
+                                Actions.delay(RenderSystem.MoveSpeed*2)
                                 //Actions.run(InputDisabler.instance)
                             )
                         );

@@ -780,6 +780,7 @@ public class TownUI extends GameUI {
 
             availableButton.setUserObject(pane);
 
+            
             availableQuests.addListener(new ScrollFollower(pane, availableQuests));
             availableQuests.addListener(new ChangeListener() {
 

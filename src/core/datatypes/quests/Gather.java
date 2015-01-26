@@ -20,7 +20,7 @@ class Gather extends Quest {
     private int need;
     private int gathered;
     
-    private String prompt;
+    private String objectivePrompt;
 
     /**
      * Creates a new randomly generated item
@@ -29,7 +29,7 @@ class Gather extends Quest {
         this.need = MathUtils.random(3, 10);
         this.item = ItemFactory.randomNonCraftableType();
         
-        prompt = String.format("Find %d %s", need, item);
+        objectivePrompt = String.format("Find %d %s", need, item);
     }
 
     @Override
@@ -71,7 +71,7 @@ class Gather extends Quest {
 
     @Override
     public String getObjectivePrompt() {
-        return prompt;
+        return objectivePrompt;
     }
 
     @Override
@@ -86,7 +86,8 @@ class Gather extends Quest {
 
     @Override
     public void write(Json json) {
-        json.writeValue("prompt", prompt);
+        json.writeValue("objectPrompt", objectivePrompt);
+        json.writeValue("prompt", objectivePrompt);
         json.writeValue("need", need);
         json.writeValue("have", gathered);
         json.writeValue("objective", item);
@@ -97,6 +98,7 @@ class Gather extends Quest {
 
     @Override
     public void read(Json json, JsonValue jsonData) {
+        objectivePrompt = jsonData.getString("objectivePrompt", "");
         prompt = jsonData.getString("prompt");
         need = jsonData.getInt("need");
         gathered = jsonData.getInt("have");

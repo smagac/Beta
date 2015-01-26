@@ -18,7 +18,7 @@ class Hunt extends Quest {
     private int need;
     private int hunted;
 
-    private String prompt;
+    private String objectivePrompt;
     
     /**
      * Creates a new randomly generated hunt quest.
@@ -31,7 +31,7 @@ class Hunt extends Quest {
         } 
         while (monster.equals("treasure chest"));
         
-        prompt = String.format("Hunt %d %s", need, monster);
+        objectivePrompt = String.format("Hunt %d %s", need, monster);
     }
 
     @Override
@@ -72,7 +72,7 @@ class Hunt extends Quest {
 
     @Override
     public String getObjectivePrompt() {
-        return prompt;
+        return objectivePrompt;
     }
 
     @Override
@@ -87,6 +87,7 @@ class Hunt extends Quest {
 
     @Override
     public void write(Json json) {
+        json.writeValue("objectPrompt", objectivePrompt);
         json.writeValue("prompt", prompt);
         json.writeValue("need", need);
         json.writeValue("have", hunted);
@@ -98,6 +99,7 @@ class Hunt extends Quest {
 
     @Override
     public void read(Json json, JsonValue jsonData) {
+        objectivePrompt = jsonData.getString("objectivePrompt", "");
         prompt = jsonData.getString("prompt");
         need = jsonData.getInt("need");
         hunted = jsonData.getInt("have");

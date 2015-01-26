@@ -768,11 +768,12 @@ enum TownState implements UIState {
 
             }
             // accept a new quest
-            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Town.Accept) {
+            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Town.AcceptQuest) {
                 Quest selected;
                 if (!completeView) {
                     selected = ui.availableQuests.getSelected();
                     ui.playerService.getQuestTracker().accept(selected);
+                    ui.availableQuests.getItems().removeValue(selected, true);
                     ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
                 }
                 // don't try to accept quests that have already been accepted
@@ -790,11 +791,19 @@ enum TownState implements UIState {
                         Reward reward = ui.playerService.getQuestTracker().getReward(craftable);
 
                         inv.pickup(reward.item, reward.count);
-
+                        String[] message = {
+                                "As a reward for your hard work, the folk you helped out left you with this...",
+                                String.format("Received %d %s", reward.count, reward.item) 
+                        };
+                        Object info = telegram.extraInfo;
+                        telegram.extraInfo = message;
+                        GoddessDialog.onMessage(ui, telegram);
+                        telegram.extraInfo = info;
+                        
                         ui.changeState(GoddessDialog);
                     }
                     ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
-                    return false;
+                    return true;
                 }
 
                 return true;

@@ -66,6 +66,9 @@ public interface Messages {
         public static final int DailyDungeon = 3;
 
         public static final int CancelDownload = 0;
+        
+        public static final int CompleteQuest = 1;
+        public static final int AcceptQuest = 1;
     }
     
     /*
