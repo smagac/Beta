@@ -114,6 +114,15 @@ public class PlayerManager implements IPlayerContainer {
         return formattedTime;
     }
     
+    
+    private int[] formatTime(float time) {
+        int[] formattedTime = new int[3];
+        formattedTime[0] = (int) (time / 3600f);
+        formattedTime[1] = (int) (time / 60f) % 60;
+        formattedTime[2] = (int) (time % 60);
+        return formattedTime;
+    }
+    
     @Override
     public String getFullTime() {
         
@@ -138,10 +147,14 @@ public class PlayerManager implements IPlayerContainer {
         try {
             JsonValue jv = json.parse(getAppData().child(String.format(SaveFormat, slot)));
 
+            
             SaveSummary s = new SaveSummary();
             s.gender = jv.getString("gender");
             s.progress = jv.getInt("made") + "/" + jv.getInt("required");
-            s.time = String.format(timeFormat, formattedTime[0], formattedTime[1], formattedTime[2]);
+            
+            int[] fTime = formatTime(jv.getFloat("time"));
+            
+            s.time = String.format(timeFormat, fTime[0], fTime[1], fTime[2]);
             s.date = jv.getString("date");
             s.diff = jv.getInt("difficulty");
             return s;
