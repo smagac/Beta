@@ -45,6 +45,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
     private boolean[][] collision;
     private int[] start, end;
+    private int[] nextMove = new int[2];
 
     ComponentMapper<Monster> monsterMap = ComponentMapper.getFor(Monster.class);
     ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
@@ -310,7 +311,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             x--;
         }
 
-        if (moveEntity(x, y, player)) {
+        if (!isWall(x, y)) {
+            nextMove[0] = x;
+            nextMove[1] = y;
             return true;
         }
 
@@ -321,11 +324,21 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * Tells all entities handled by this system to perform processing
      */
     public void process(){
-        // execute a turn
-        for (int i = 0; i < monsters.size; i++)
-        {
-            process(monsters.get(i));
+        actOrder.addAll(monsters);
+        actOrder.add(player);
+        actOrder.sort(SpeedComparator.instance);
+        
+        //execute a turn
+        for (int i = 0; i < actOrder.size; i++) {
+            Entity e = actOrder.get(i);
+            if (e == player) {
+                moveEntity(nextMove[0], nextMove[1], e);
+            } else {
+                process(e);
+            }
         }
+        
+        actOrder.clear();
     }
 
     /**

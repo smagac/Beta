@@ -70,15 +70,14 @@ public enum WanderState implements UIState {
                 else {
                     final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
                     if (ms.movePlayer(direction)) {
+                        ms.process();
                         /*
                          * Disable input when moving, move a full step, then let enemies move,
                          * then restore the input.
                          */
                         entity.addAction(
                             Actions.sequence(
-                                //Actions.run(InputDisabler.instance),
-                                Actions.delay(RenderSystem.MoveSpeed*2)
-                                //Actions.run(InputDisabler.instance)
+                                Actions.delay(RenderSystem.MoveSpeed)
                             )
                         );
                     }
