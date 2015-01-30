@@ -10,7 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 
 import core.DataDirs;
 
@@ -38,9 +40,9 @@ public class Transition extends UI {
     public void init() {
         clear();
         TextureRegion tx = captured = ScreenUtils.getFrameBufferTexture();
-    
         int width = tx.getRegionWidth();
         int height = tx.getRegionHeight();
+        setViewport(new ScalingViewport(Scaling.fill, width, height));
         
         slides = new Group();
         
@@ -52,8 +54,9 @@ public class Transition extends UI {
             slides.addActor(image);
         }
         
+        getViewport().update(width, height, true);
         slides.setPosition(0, 0);
-        slides.setSize(width, height);
+        
         
         addActor(slides);
     }

@@ -290,6 +290,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             tileset = dungeonService.getDungeon().getTileset();
             
             RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
+            input.addProcessor(wanderUI);
             input.addProcessor(rs.getStage());
             
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());

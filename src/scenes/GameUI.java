@@ -809,18 +809,17 @@ public abstract class GameUI extends UI {
             entity.spdTicker.changeValues(spd);
             entity.vitTicker.changeValues(vit);
 
-            InputDisabler.swap();
             entity.levelUpDialog.setVisible(true);
             entity.levelUpGroup.setVisible(true);
             entity.levelUpDialog.addAction(
-                    Actions.sequence(
-                            Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight() / 2 - entity.levelUpDialog.getHeight() / 2, .3f),
+                Actions.sequence(
+                    Actions.run(InputDisabler.instance),
+                    Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight() / 2 - entity.levelUpDialog.getHeight() / 2, .3f),
+                    Actions.run(InputDisabler.instance),
                     Actions.run(new Runnable() {
                         @Override
                         public void run() {
-
                             entity.resetFocus();
-                            InputDisabler.swap();
                         }
                     })
                 )

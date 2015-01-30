@@ -1,7 +1,5 @@
 package scenes.dungeon;
 
-import java.net.IDN;
-
 import github.nhydock.ssm.Inject;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
