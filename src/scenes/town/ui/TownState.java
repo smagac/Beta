@@ -244,6 +244,10 @@ enum TownState implements UIState {
             if (t.message == Messages.Interface.Selected) {
                 final FileHandle selected = (FileHandle) t.extraInfo;
 
+                if (selected == null) {
+                    ui.fileDetails.addAction(Actions.sequence(Actions.moveTo(ui.getDisplayWidth(), 0, .3f)));
+                    return true;
+                }
                 ui.fileDetails.addAction(Actions.sequence(Actions.moveTo(ui.getDisplayWidth(), 0, .3f),
                         Actions.run(new Runnable() {
 

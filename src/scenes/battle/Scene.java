@@ -13,7 +13,6 @@ import core.service.interfaces.IBattleContainer;
 
 public class Scene extends scenes.Scene<BattleUI>
 {
-
     private String bgm;
     
     public Scene(Entity boss){
@@ -34,8 +33,7 @@ public class Scene extends scenes.Scene<BattleUI>
         manager.load(DataDirs.Audio + "victory.mp3", Music.class);
         
         input.addProcessor(ui);
-        Gdx.input.setInputProcessor(input);
-	}
+    }
 	
 	@Override
 	public void dispose() {
@@ -49,6 +47,7 @@ public class Scene extends scenes.Scene<BattleUI>
 	    ui.init();
 	    audio.playBgm(manager.get(bgm, Music.class));
 	    audio.fadeIn();
+	    Gdx.input.setInputProcessor(input);
 	}
 
 	@Override

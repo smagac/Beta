@@ -34,6 +34,7 @@ import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
+import core.service.implementations.DungeonManager;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.implementations.ScoreTracker.StringValues;
@@ -50,7 +51,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     @Inject
     public ISharedResources shared;
     
-    @Inject
     public IDungeonContainer dungeonService;
     
     @Inject
@@ -66,11 +66,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     Transition transition;
 
     TiledMapTileSet tileset;
-    
-    /**
-     * Identify that we're entering a boss battle, do not dispose of the dungeon
-     */
-    public static boolean fight;
     
     public Scene() {
         super();
@@ -103,21 +98,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     private void prepareMap() {
         TiledMap map = dungeonService.getDungeon().build(tileset);
-        Engine floorEngine = dungeonService.getEngine();
         
-        MovementSystem ms = new MovementSystem();
-        RenderSystem rs = new RenderSystem();
+        RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
 
-        ServiceManager.inject(ms);
-        ServiceManager.inject(rs);
-        
-        floorEngine.addSystem(ms);
-        floorEngine.addSystem(rs);
-        floorEngine.addEntityListener(ms);
-        floorEngine.addEntityListener(rs);
-        ms.setProcessing(false);
-        rs.setProcessing(false);
-        
         rs.setView(wanderUI, shared.getResource(DataDirs.Home + "uiskin.json", Skin.class));
         rs.setMap(map);
         
@@ -128,6 +111,12 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     @Override
     public void show() {
         manager = new AssetManager();
+        
+        dungeonService = ServiceManager.getService(IDungeonContainer.class);
+        if (dungeonService == null) {
+            dungeonService = new DungeonManager();
+            ServiceManager.register(IDungeonContainer.class, dungeonService);
+        }
         
         wanderUI = new WanderUI(manager);
         transition = new Transition(manager);
@@ -148,9 +137,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Override
     public void dispose() {
-        if (!fight) {
-            dungeonService.clear();
-        }
         audio.clearBgm();
         
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.FIGHT);
@@ -284,9 +270,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         wanderUI.init();
         ui = wanderUI;
         
-        if (fight){
-            fight = false;
-
+        if (dungeonService.getDungeon() != null){
             tileset = dungeonService.getDungeon().getTileset();
             
             RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
@@ -327,12 +311,11 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             final Entity boss = (Entity)msg.extraInfo;
             final scenes.battle.Scene scene = new scenes.battle.Scene(boss);
             
-            fight = true;
             ui.draw();
             transition.init();
             transition.playAnimation(new GotoScene(scene));
             ui = transition;
-            Gdx.input.setInputProcessor(null);
+            
             return true;
         }
         if (msg.message == Messages.Dungeon.Dead && msg.extraInfo == playerService.getPlayer()) {
@@ -353,6 +336,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
                     Actions.run(new GotoScene("lore"))
                 )
             );
+            return true;
         }
         if (msg.message == Messages.Dungeon.Descend) {
             setFloor(dungeonService.getProgress().nextFloor());

@@ -1,5 +1,6 @@
 package scenes.dungeon.ui;
 
+import scene2d.InputDisabler;
 import scene2d.runnables.PlaySound;
 import scenes.UI;
 
@@ -79,6 +80,7 @@ public class Transition extends UI {
         audio.fadeOut();
         addAction(
             Actions.sequence(
+                Actions.run(InputDisabler.instance),
                 Actions.run(new PlaySound(DataDirs.Sounds.transition)), 
                 Actions.delay(delay + .3f),
                 Actions.run(after)

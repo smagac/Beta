@@ -13,14 +13,12 @@ import core.DLC;
 import core.factories.AllFactories;
 import core.service.implementations.AudioManager;
 import core.service.implementations.ColorManager;
-import core.service.implementations.DungeonManager;
 import core.service.implementations.LoadScreen;
 import core.service.implementations.PlayerManager;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.SharedLoader;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
-import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IGame;
 import core.service.interfaces.ILoader;
 import core.service.interfaces.IPlayerContainer;
@@ -38,7 +36,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     private BossListener boss;
 
     private IPlayerContainer playerManager;
-    private IDungeonContainer dungeonManager;
     private AudioManager audioManager;
     private LoadScreen loadScreen;
     private ColorManager colorMode;
@@ -78,8 +75,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IAudioManager.class, audioManager);
         playerManager = new PlayerManager();
         ServiceManager.register(IPlayerContainer.class, playerManager);
-        dungeonManager = new DungeonManager();
-        ServiceManager.register(IDungeonContainer.class, dungeonManager);
         
         boss = new BossListener(colorMode, this);
         
@@ -98,7 +93,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     @Override
     public void startGame(int difficulty, boolean gender) {
         playerManager.init(difficulty, gender);
-        dungeonManager.clear();
         tracker.reset();
         TownUI.clearHistory();
         started = true;

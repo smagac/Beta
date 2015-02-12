@@ -3,7 +3,6 @@ package core.datatypes.dungeon;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
@@ -166,9 +165,7 @@ public class DungeonParams {
         is.read(data);
         is.close();
         UUID hash = java.util.UUID.nameUUIDFromBytes(data);
-        String clean = hash.toString().replace("-", "").substring(0, 16);
-        Gdx.app.log("UUID", clean);
-        return new BigInteger(clean, 16).longValue();
+        return hash.getMostSignificantBits();
     }
 
     /**

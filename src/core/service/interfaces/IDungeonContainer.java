@@ -20,6 +20,4 @@ public interface IDungeonContainer extends Service {
     public Engine getEngine();
     public Dungeon getDungeon();
     public Progress getProgress();
-    
-    public void clear();
 }

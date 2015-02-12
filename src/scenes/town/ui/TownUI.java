@@ -633,6 +633,7 @@ public class TownUI extends GameUI {
             });
         }
 
+        if (history.size > 0)
         {
             final TextButton recentButton = new TextButton("Recent Files", skin);
             recentButton.setName("history");
@@ -642,7 +643,7 @@ public class TownUI extends GameUI {
 
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    FileHandle selected = history.get(fileList.getSelectedIndex());
+                    FileHandle selected = history.get(recentFileList.getSelectedIndex());
                     MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected, selected);
                 }
 
@@ -665,6 +666,28 @@ public class TownUI extends GameUI {
 
         exploreSubmenu.add(exploreMenu).fill().expand();
 
+        exploreMenu.setTabAction(new Runnable(){
+
+            @Override
+            public void run() {
+                List<?> l;
+                Array<FileHandle> files;
+                if (exploreMenu.getOpenTabIndex() == 0) {
+                    l = fileList;
+                    files = directoryList;
+                }
+                else {
+                    l = recentFileList;
+                    l.setSelectedIndex(0);
+                    files = history;
+                }
+                
+                FileHandle selected = files.get(l.getSelectedIndex());
+                MessageDispatcher.getInstance().dispatchMessage(0f, ui, ui, Messages.Interface.Selected, selected);
+            }
+            
+        });
+        
         exploreMenu.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {

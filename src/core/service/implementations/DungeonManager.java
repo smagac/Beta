@@ -1,6 +1,9 @@
 package core.service.implementations;
 
+import scenes.dungeon.MovementSystem;
+import scenes.dungeon.RenderSystem;
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
@@ -151,21 +154,6 @@ public class DungeonManager implements IDungeonContainer {
             }
         }
     }
-    
-    @Override
-    public void clear() {
-        dungeonLoader.clear();
-        dungeon = null;
-        progress = new Progress();
-        engine.removeAllEntities();
-        
-        for (EntitySystem system : engine.getSystems()) { 
-            engine.removeSystem(system);
-            if (system instanceof EntityListener) {
-                engine.removeEntityListener((EntityListener)system);
-            }
-        }
-    }
 
     @Override
     public Progress getProgress() {
@@ -182,11 +170,35 @@ public class DungeonManager implements IDungeonContainer {
         
         engine = new Engine();
         progress = new Progress();
+
+        MovementSystem ms = new MovementSystem();
+        RenderSystem rs = new RenderSystem();
+
+        ServiceManager.inject(ms);
+        ServiceManager.inject(rs);        
+
+        ms.setProcessing(false);
+        rs.setProcessing(false);
+        
+        engine.addSystem(ms);
+        engine.addSystem(rs);
+        engine.addEntityListener(ms);
+        engine.addEntityListener(rs);
     }
 
     @Override
     public void onUnregister() {
         dungeonLoader.dispose();
+        
+        engine.removeAllEntities();
+        
+        for (EntitySystem system : engine.getSystems()) { 
+            engine.removeSystem(system);
+            if (system instanceof EntityListener) {
+                engine.removeEntityListener((EntityListener)system);
+            }
+        }
+        
         dungeon = null;
         progress = null;
         engine = null;

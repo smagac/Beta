@@ -20,8 +20,7 @@ public class Scene extends scenes.Scene<TownUI> {
     
     @Override
     public void show() {
-        ServiceManager.getService(IDungeonContainer.class).clear();
-        scenes.dungeon.Scene.fight = false;
+        ServiceManager.register(IDungeonContainer.class, null);
     
         ui = new TownUI(manager);
         
