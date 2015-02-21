@@ -8,7 +8,8 @@ public class Position extends Component {
     public static final ComponentMapper<Position> Map = ComponentMapper.getFor(Position.class);
 
     private float x, y;
-    private boolean changed;
+    private float destX, destY;
+    private boolean changed, fight;
 
     public Position(int x, int y) {
         this.x = x;
@@ -21,8 +22,8 @@ public class Position extends Component {
     }
 
     public void move(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.destX = x;
+        this.destY = y;
         changed = true;
     }
 
@@ -33,16 +34,39 @@ public class Position extends Component {
     public int getY() {
         return (int) y;
     }
+    
+    public int getDestinationX() {
+        return (int) destX;
+    }
+    
+    public int getDestinationY() {
+        return (int) destY;
+    }
 
     public float distance(Position p) {
         return Vector2.dst(this.x, this.y, p.x, p.y);
     }
 
     public void update() {
+        if (changed) {
+            x = destX;
+            y = destY;
+        }
         changed = false;
+        fight = false;
+    }
+    
+    public void fight(int x, int y) {
+        fight = true;
+        destX = x;
+        destY = y;
+    }
+    
+    public boolean isFighting() {
+        return fight;
     }
 
-    public boolean changed() {
+    public boolean hasChanged() {
         return changed;
     }
 }

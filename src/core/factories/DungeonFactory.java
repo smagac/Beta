@@ -103,7 +103,7 @@ public class DungeonFactory {
      * @throws IOException
      * @return an array of the serial ids of the floors on the file system
      */
-    public static Dungeon create(DungeonParams params, int[] progress) {
+    public static Dungeon create(DungeonParams params, float[] progress) {
         // make sure dungeon dir exists
         // Gdx.files.absolute(tmpDir).mkdirs();
         // make sure to create cache files one first create
@@ -174,7 +174,7 @@ public class DungeonFactory {
     private static class FloorLoader implements Runnable {
         int difficulty;
         int increment;
-        int[] progress;
+        float[] progress;
         Array<FloorData> floors;
         int[] depth;
         long[] seeds;
@@ -190,14 +190,13 @@ public class DungeonFactory {
                     if (depth[0] >= floors.size) {
                         break;
                     }
-                    Gdx.app.log("Dungeon Generation", "Floor : " + depth[0]);
                     d = depth[0];
                     seed = seeds[depth[0]];
                     depth[0] = depth[0] + 1;   
                 }
                 
-                int width = 50 + (5 * (d / 5));
-                int height = 50 + (5 * (d / 5));
+                int width = 30 + (int)(5 * (d / 5f));
+                int height = 30 + (int)(5 * (d / 5f));
                 
                 FloorData data = new RandomFloorData(seed, difficulty, d + 1, width, height);
                 PathMaker.run(data);

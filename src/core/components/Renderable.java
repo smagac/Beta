@@ -7,11 +7,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class Renderable extends Component {
     public static final ComponentMapper<Renderable> Map = ComponentMapper.getFor(Renderable.class);
 
-    private Actor actor;
+    private Image actor;
     private String spriteName;
     private float density;
     private boolean changed;
@@ -30,7 +31,11 @@ public class Renderable extends Component {
     }
     
     public void loadImage(TextureAtlas atlas) {
-        this.actor = new Image(atlas.findRegion(spriteName));
+        if (this.actor == null){
+            this.actor = new Image(atlas.findRegion(spriteName));
+        } else {
+            this.actor.setDrawable(new TextureRegionDrawable(atlas.findRegion(spriteName)));
+        }
         changed = false;
     }
     
@@ -55,7 +60,11 @@ public class Renderable extends Component {
     }
 
     public void loadImage(Skin skin) {
-        this.actor = new Image(skin, spriteName);
+        if (this.actor == null) {
+            this.actor = new Image(skin, spriteName);
+        } else {
+            this.actor.setDrawable(skin, spriteName);
+        }
         changed = false;
     }
 }

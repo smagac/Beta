@@ -19,7 +19,8 @@ public class Groups {
     public static class Monster extends Component {
 
         public static final String Loot = "treasure chest";
-    
+        public static final String Door = "door";
+        
     }
 
     public static class Boss extends Component {

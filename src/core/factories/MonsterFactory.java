@@ -216,7 +216,7 @@ public class MonsterFactory {
                 t = selection.random();
             }
             // don't allow loot chests to be bosses
-            while (t.name.equals("treasure chest") || t.name.equals("door"));
+            while (t.name.equals(Monster.Loot) || t.name.equals(Monster.Door));
             
             Entity monster = create(t, lootMaker.createItem(), floor.depth, true);
             monster.add(new Boss());
@@ -232,7 +232,10 @@ public class MonsterFactory {
                 t = selection.random();
             }
             // don't allow mimics as normal enemies
-            while (t.name.equals("mimic") || t.name.equals("treasure chest"));
+            while (t.name.equals("mimic") || 
+                    t.name.equals(Monster.Loot) || 
+                    t.name.equals(Monster.Door) ||
+                    t.name.equals("domimic"));
 
             Entity monster = create(t, lootMaker.createItem(), floor.depth, false);
 
@@ -353,7 +356,7 @@ public class MonsterFactory {
         if (floor.isBossFloor)
             return;
         
-        MonsterTemplate treasure = allMonsters.get("treasure chest");
+        MonsterTemplate treasure = allMonsters.get(Monster.Loot);
         MonsterTemplate mimic = allMonsters.get("mimic");
 
         int limit = floor.loot;
@@ -393,14 +396,27 @@ public class MonsterFactory {
      * @param entities
      * @param f
      */
-    public void placeDoors(Array<Entity> entities, Floor f){
+    public void placeDoors(Array<Entity> entities, ItemFactory lootMaker, Floor floor){
         MonsterTemplate t = allMonsters.get("door");
+        MonsterTemplate mimic = allMonsters.get("domimic");
         
-        int doors = (int)(f.roomCount * MathUtils.random(.3f, 1.0f));
+        int doors = (int)(floor.roomCount * MathUtils.random(.3f, 1.0f));
         for (int i = 0; i < doors; i++) {
-            Entity door = create(t, null, f.depth, false);
-            door.add(new Lock());
-            door.add(new Position(f.getHallwayTile()));
+            int[] tile = floor.getHallwayTile();
+            //there are no tiles where we can place doors
+            if (tile == null) {
+                break;
+            }
+            Entity door;
+            if (MathUtils.randomBoolean(.02f + (floor.depth / 300f))) {
+                door = create(mimic, lootMaker.createItem(), floor.depth, false);
+            }
+            else {
+                door = create(t, null, floor.depth, false);
+                door.add(new Lock());
+            }
+            
+            door.add(new Position(tile));
             entities.add(door);
         }
     }

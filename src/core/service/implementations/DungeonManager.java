@@ -132,7 +132,7 @@ public class DungeonManager implements IDungeonContainer {
         if (!dungeonLoader.update()) {
             if (!dungeonLoader.isLoaded("dungeon") && dungeon == null) {
                 loader.setLoading(true);
-                loader.setLoadingMessage(String.format("Creating Dungeon...%d%%", dl.getProgress()));
+                loader.setLoadingMessage(String.format("Creating Dungeon...%d%%", (int)dl.getProgress()));
             }
             return true;
         } else {

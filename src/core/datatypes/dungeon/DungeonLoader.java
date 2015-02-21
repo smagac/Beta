@@ -24,7 +24,7 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
     }
 
     private Dungeon generatedDungeon;
-    protected int[] progress = {0};
+    protected float[] progress = {0};
 
     @Override
     public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
@@ -65,7 +65,7 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
         public Dungeon generatedDungeon;
     }
 
-    public int getProgress() {
+    public float getProgress() {
         return progress[0];
     }
 }

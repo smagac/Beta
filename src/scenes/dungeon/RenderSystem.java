@@ -249,10 +249,39 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         Position p = Position.Map.get(e);
         Renderable r = renderMap.get(e);
 
-        // adjust position to be aligned with tiles
-        if (p.changed()) {
+        //update image
+        if (r.hasChanged()) {
+            r.loadImage(uiSkin);
+        }
+        
+        if (p.isFighting()) {
+            float shiftX, shiftY, x, y;
+
+            float scale = getScale();
+            x = p.getX() * scale;
+            y = p.getY() * scale;
+            shiftX = (p.getDestinationX() * scale) - x;
+            shiftY = (p.getDestinationY() * scale) - y;
+            
             r.getActor().clearActions();
-            r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale, MoveSpeed));
+            r.getActor().addAction(
+                Actions.sequence(
+                    Actions.moveTo(x, y),
+                    Actions.moveTo(x + shiftX / 4f, y + shiftY / 4f, RenderSystem.MoveSpeed / 2f),
+                    Actions.moveTo(x, y, RenderSystem.MoveSpeed / 2f)
+                )
+            );
+            
+            p.update();
+            
+            if (e == player) {
+                moved = true;
+            }
+        }
+        // adjust position to be aligned with tiles
+        else if (p.hasChanged()) {
+            r.getActor().clearActions();
+            r.getActor().addAction(Actions.moveTo(p.getDestinationX() * scale, p.getDestinationY() * scale, MoveSpeed));
             p.update();
             
             if (e == player) {

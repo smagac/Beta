@@ -123,7 +123,7 @@ public class PathMaker {
                     {
                         for (int b = Math.max(0, n-1); b <= Math.min(board[i].length-1, n+1) && !placeWall; b++)
                         {
-                            placeWall = board[a][b] == ROOM || board[a][b] == HALL;
+                            placeWall = board[a][b] == ROOM;
                         }
                     }
                     if (placeWall) {
@@ -377,8 +377,8 @@ public class PathMaker {
         int y1 = from[Y];
         int y2 = to[Y];
 
-        board[x1][y1] = HALL;
-        board[x2][y2] = HALL;
+        board[x1][y1] = ROOM;
+        board[x2][y2] = ROOM;
 
         filled[0] += 2;
 

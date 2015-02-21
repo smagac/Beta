@@ -212,5 +212,16 @@
         "hideStats" : "true",
         "hideName" : "true"
         "density" : "1.0"
-    }
+    },
+    "domimic" : {
+        "hp" : "28", "str" : "13", "def": "9", "exp" : "5", "spd" : "10",
+        "maxhp" : "450", "maxstr" : "160", "maxdef" : "95", "maxexp" : "50", "maxpsd" : "15",
+        "type" : "door",
+        "norm" : "0",
+        "agro" : ".8",
+        "passive" : "true",
+        "hideStats" : "true",
+        "hideName" : "true",
+        "density" : "1.0"
+    },
 }

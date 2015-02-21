@@ -1,5 +1,6 @@
 package core.datatypes.dungeon;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
@@ -47,8 +48,21 @@ public class Floor {
         {
             for (int n = 0; n < data.getHeight(); n++) 
             {
+                
                 if (data.getTiles()[i][n] == PathMaker.HALL) {
-                    hallways.add(new int[]{i, n});
+                    int surround = 0;
+                    if (i > 0)
+                        surround += (data.getTiles()[i-1][n] == PathMaker.NULL)?1:0;
+                    if (i < data.getWidth()-1)
+                        surround += (data.getTiles()[i+1][n] == PathMaker.NULL)?1:0;
+                    if (n > 0)
+                        surround += (data.getTiles()[i][n-1] == PathMaker.NULL)?1:0;
+                    if (n < data.getHeight()-1)
+                        surround += (data.getTiles()[i][n+1] == PathMaker.NULL)?1:0;
+                    
+                    if (surround > 1) {
+                        hallways.add(new int[]{i, n});
+                    }
                 }
             }
         }

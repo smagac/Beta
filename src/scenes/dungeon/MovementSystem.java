@@ -19,7 +19,6 @@ import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Array;
 
 import core.components.Combat;
@@ -205,24 +204,10 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             return;
         }
         
-        Renderable aChar = actor.getComponent(Renderable.class);
-        Renderable bChar = opponent.getComponent(Renderable.class);
-
-        float shiftX, shiftY, x, y;
-
         Position p = Position.Map.get(actor);
-        float scale = engine.getSystem(RenderSystem.class).getScale();
-        x = p.getX() * scale;
-        y = p.getY() * scale;
-        shiftX = bChar.getActor().getX() - x;
-        shiftY = bChar.getActor().getY() - y;
-
-        aChar.getActor().clearActions();
-        aChar.getActor().addAction(
-                Actions.sequence(Actions.moveTo(x, y),
-                        Actions.moveTo(x + shiftX / 4f, y + shiftY / 4f, RenderSystem.MoveSpeed / 2f),
-                        Actions.moveTo(x, y, RenderSystem.MoveSpeed / 2f)));
-
+        Position p1 = Position.Map.get(opponent);
+        p.fight(p1.getX(), p1.getY());
+        
         //show ids
         {
             Identifier id = Identifier.Map.get(actor);
@@ -255,6 +240,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 {
                     Lock lock = Lock.Map.get(opponent);
                     lock.unlocked = true;
+                    Renderable.Map.get(opponent).setSpriteName("opened");
+                    Renderable.Map.get(opponent).setDensity(0);
+                    
                     return;
                 }
                 // drop item if opponent killed was not a player
@@ -267,16 +255,15 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     }
                     ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
                     Renderable.Map.get(opponent).setSpriteName("dead");
-                    opponent.remove(Combat.class);
+                    Renderable.Map.get(opponent).setDensity(0);
                     
-                    engine.removeEntity(opponent);
-
                     Identifier id = Identifier.Map.get(opponent);
 
                     String name = id.toString();
                     if (name.endsWith(Monster.Loot)) {
                         dungeonService.getProgress().lootFound++;
                         dungeonService.getProgress().totalLootFound++;
+                        engine.removeEntity(opponent);
                     } else {
                         dungeonService.getProgress().monstersKilled++;
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
@@ -285,6 +272,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
                 }
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
+                opponent.remove(Combat.class);
             }
         }
         else {
@@ -384,15 +372,13 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @param e
      */
     protected void process(Entity e) {
+        if (!Combat.Map.has(e)) {
+            return;
+        }
+        Combat prop = Combat.Map.get(e);
         Position m = Position.Map.get(e);
         Position p = Position.Map.get(player);
 
-        Stats s = statMap.get(e);
-        if (s.hp <= 0) {
-            return;
-        }
-
-        Combat prop = Combat.Map.get(e);
 
         // only try moving once the character is in the same room as it
         // try to move towards the player when nearby
