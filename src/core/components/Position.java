@@ -19,6 +19,8 @@ public class Position extends Component {
     public Position(int[] p) {
         this.x = p[0];
         this.y = p[1];
+        this.destX = p[0];
+        this.destY = p[1];
     }
 
     public void move(int x, int y) {
@@ -28,10 +30,16 @@ public class Position extends Component {
     }
 
     public int getX() {
+        if (changed) {
+            return (int) destX;
+        }
         return (int) x;
     }
 
     public int getY() {
+        if (changed) {
+            return (int) destY;
+        }
         return (int) y;
     }
     
