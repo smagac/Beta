@@ -20,6 +20,7 @@ public class Groups {
 
         public static final String Loot = "treasure chest";
         public static final String Door = "door";
+        public static final String Key = "key";
         
     }
 

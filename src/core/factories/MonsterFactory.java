@@ -415,7 +415,7 @@ public class MonsterFactory {
      * @param f
      */
     public void placeDoors(Array<Entity> entities, ItemFactory lootMaker, Floor floor){
-        MonsterTemplate t = allMonsters.get("door");
+        MonsterTemplate t = allMonsters.get(Monster.Door);
         MonsterTemplate mimic = allMonsters.get("domimic");
         
         int doors = (int)(floor.roomCount * MathUtils.random(.3f, 1.0f));
@@ -436,6 +436,33 @@ public class MonsterFactory {
             
             door.add(new Position(tile));
             entities.add(door);
+        }
+    }
+
+    public void placeKeys(Array<Entity> entities, Floor floor) {
+        MonsterTemplate t = allMonsters.get(Monster.Key);
+        
+        int doors = (int)(floor.roomCount * MathUtils.random(.3f, 1.0f));
+        for (int i = 0; i < doors; i++) {
+            //pick a tile to spawn the entity on
+            int[] tile = null;
+            do
+            {
+                tile = floor.getOpenTile();
+                //make sure we don't spawn a chest on top of an enemy
+                for (int n = 0; n < entities.size; n++) {
+                    Entity e = entities.get(i);
+                    Position p = Position.Map.get(e);
+                    if (tile[0] == p.getX() && tile[1] == p.getY()) {
+                        tile = null;
+                        break;
+                    }
+                }
+            } while (tile == null);
+            Entity key;
+            key = create(t, null, floor.depth, false);
+            key.add(new Position(tile));
+            entities.add(key);
         }
     }
 }

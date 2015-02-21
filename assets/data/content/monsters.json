@@ -224,4 +224,15 @@
         "hideName" : "true",
         "density" : "1.0"
     },
+    "key" : {
+        "hp" : "1", "str" : "0", "def": "0", "exp" : "0", "spd" : "0",
+        "maxhp" : "1", "maxstr" : "0", "maxdef" : "0", "maxexp" : "0", "maxpsd" : "0",
+        "type" : "key",
+        "norm" : "0",
+        "agro" : "0",
+        "passive" : "true",
+        "die" : "%s was picked up",
+        "hideStats" : "true",
+        "hideName" : "true"
+    },
 }

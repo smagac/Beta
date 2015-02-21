@@ -62,6 +62,8 @@ public class WanderUI extends GameUI {
     private Label floorLabel;
     private Label monsterLabel;
     private Label lootLabel;
+    private Label keyLabel;
+    
 
     // variables for sacrifice menu
     Group dialog;
@@ -101,7 +103,9 @@ public class WanderUI extends GameUI {
             Messages.Dungeon.Dead,
             Messages.Dungeon.Exit,
             Messages.Dungeon.Leave,
-            Messages.Dungeon.Refresh
+            Messages.Dungeon.Refresh,
+            Messages.Dungeon.Action,
+            Messages.Dungeon.Unlock
         );
     }
     
@@ -148,6 +152,17 @@ public class WanderUI extends GameUI {
                 set.add(label).expandX().fillX();
                 table.add(set).expandX().colspan(1);
             }
+            // keys
+            {
+                Table set = new Table();
+                Image icon = new Image(atlas.findRegion("key"));
+                Label label = keyLabel = new Label("0", skin, "prompt");
+
+                set.add(icon).size(32f).padRight(10f);
+                set.add(label).expandX().fillX();
+                table.add(set).expandX().colspan(1);
+            }
+                        
             // floors
             {
                 Table set = new Table();
@@ -447,6 +462,11 @@ public class WanderUI extends GameUI {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                         return true;
                     }
+                    
+                    if (Input.SWITCH.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+                        return true;
+                    }
                 }
                 return false;
             }
@@ -505,6 +525,7 @@ public class WanderUI extends GameUI {
     void refresh(Progress progress) {
         floorLabel.setText(String.format("Floor %d/%d", progress.depth, progress.floors));
         lootLabel.setText(String.format("%d", progress.totalLootFound));
+        keyLabel.setText(String.format("%d", progress.keys));
         monsterLabel.setText(String.format("%d/%d", progress.monstersKilled, progress.monstersTotal));
     }
 
@@ -764,6 +785,19 @@ public class WanderUI extends GameUI {
             Entity opponent = (Entity)telegram.extraInfo;
             Combat combat = Combat.Map.get(opponent);
             setMessage(combat.getDeathMessage(Identifier.Map.get(opponent).toString()));
+            
+            Item item = combat.getDrop();
+            if (item != null) {
+                playerService.getInventory().pickup(item);
+                
+                setMessage(String.format("Obtained %s", item.fullname()));
+            }
+            return true;
+        }
+        if (telegram.message == Messages.Dungeon.Unlock) {
+            Entity opponent = (Entity)telegram.extraInfo;
+            Combat combat = Combat.Map.get(opponent);
+            setMessage(String.format("%s was unlocked", Identifier.Map.get(opponent).toString()));
             
             Item item = combat.getDrop();
             if (item != null) {

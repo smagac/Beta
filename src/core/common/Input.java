@@ -25,10 +25,8 @@ public enum Input {
      */
     public static Input valueOf(int keycode) {
         for (Input i : Input.values()) {
-            for (int key : i.keys) {
-                if (keycode == key) {
-                    return i;
-                }
+            if (i.match(keycode)) {
+                return i;
             }
         }
         return null;

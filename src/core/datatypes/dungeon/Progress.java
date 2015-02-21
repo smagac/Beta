@@ -12,6 +12,7 @@ public class Progress {
     public int depth;
     public int floors;
     public int healed;
+    public int keys;
 
     public boolean hasPrevFloor(int depth){
         return depth - 1 >= 0;

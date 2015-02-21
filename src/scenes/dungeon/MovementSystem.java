@@ -125,10 +125,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         if ((!lock.open && e == player) || lock.open) {
                             //move onto the square and open the door
                             p.move(x, y);
-                            lock.open = true;
-                            Renderable.Map.get(foe).setSpriteName("opened");
-                            Renderable.Map.get(foe).setDensity(0);
-                            
+                            unlockDoor(foe);
                             moved = true;
                         } else {
                             //do nothing, blocking the path
@@ -194,7 +191,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         final float MULT = (actor == player) ? 2 : 1.25f;
 
         // ignore if target died at some point along the way
-        if (bStats.hp <= 0) {
+        if (bStats.hp <= 0 || !Combat.Map.has(opponent)) {
             return;
         }
 
@@ -241,11 +238,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 //open door instead of handling drops
                 if (Lock.Map.has(opponent))
                 {
-                    Lock lock = Lock.Map.get(opponent);
-                    lock.unlocked = true;
-                    lock.open = true;
-                    Renderable.Map.get(opponent).setSpriteName("opened");
-                    Renderable.Map.get(opponent).setDensity(0);
+                    unlockDoor(opponent);
                 }
                 // drop item if opponent killed was not a player
                 else if (opponent != player){
@@ -266,7 +259,12 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         dungeonService.getProgress().lootFound++;
                         dungeonService.getProgress().totalLootFound++;
                         engine.removeEntity(opponent);
-                    } else {
+                    }
+                    else if (name.endsWith(Monster.Key)) {
+                        dungeonService.getProgress().keys++;
+                        engine.removeEntity(opponent);
+                    }
+                    else {
                         dungeonService.getProgress().monstersKilled++;
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
@@ -349,6 +347,84 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         return false;
     }
     
+    private void unlockDoor(Entity e) {
+        Lock lock = Lock.Map.get(e);
+        lock.unlocked = true;
+        lock.open = true;
+        Renderable.Map.get(e).setSpriteName("opened");
+        Renderable.Map.get(e).setDensity(0);
+    }
+    
+    /**
+     * Looks in the tiles around the player, if they keys they may unlock certain objects
+     */
+    public boolean openAction() {
+        int keys = dungeonService.getProgress().keys;
+        if (keys <= 0) {
+            return false;
+        }
+        
+        Position playerPos = Position.Map.get(player);
+        int x = playerPos.getX();
+        int y = playerPos.getY();
+        
+        boolean unlocked = false;
+        int[][] adjacent = {{x-1, y}, {x, y-1}, {x, y+1}, {x+1, y}};
+        for (int[] adj : adjacent) {
+            Entity e = checkFoe(adj[0], adj[1], player);
+            if (e != null)
+            {
+                Identifier id = Identifier.Map.get(e);
+                String type = id.toString();
+                if (type.endsWith(Monster.Door) || 
+                    type.endsWith(Monster.Loot) ||
+                    type.endsWith("mimic") ||
+                    type.endsWith("domimic") ) {
+                    
+                    unlocked = true;
+                    
+                    Position p1 = Position.Map.get(e);
+                    playerPos.fight(p1.getX(), p1.getY());
+                    //is door, unlock
+                    if (Lock.Map.has(e)) {
+                        unlockDoor(e);
+                    } 
+                    //kill creature/chest
+                    else {
+                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
+                        Renderable.Map.get(e).setSpriteName("dead");
+                        Renderable.Map.get(e).setDensity(0);
+
+                        String name = id.toString();
+                        if (name.endsWith(Monster.Loot)) {
+                            dungeonService.getProgress().lootFound++;
+                            dungeonService.getProgress().totalLootFound++;
+                            engine.removeEntity(e);
+                        }
+                        else {
+                            dungeonService.getProgress().monstersKilled++;
+                            MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
+                        }
+                        
+                        monsters.removeValue(e, true);
+                    }
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Unlock, e);
+                    e.remove(Combat.class);
+                    
+                    break;
+                }
+            }
+        }
+        
+        if (unlocked) {
+            keys--;
+            dungeonService.getProgress().keys = keys;
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Tells all entities handled by this system to perform processing
      */
@@ -361,7 +437,12 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         for (int i = 0; i < actOrder.size; i++) {
             Entity e = actOrder.get(i);
             if (e == player) {
-                moveEntity(nextMove[0], nextMove[1], e);
+                Position p = Position.Map.get(player);
+                //only move the player entity if they've actually tried to move,
+                // ignores player movement unlock, preventing attacking oneself
+                if (p.getX() != nextMove[0] || p.getY() != nextMove[1]) {
+                    moveEntity(nextMove[0], nextMove[1], e);
+                }
             } else {
                 process(e);
             }

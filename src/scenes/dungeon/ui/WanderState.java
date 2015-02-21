@@ -13,6 +13,7 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
+import core.common.Input;
 import core.datatypes.quests.Quest;
 
 /**
@@ -62,7 +63,15 @@ public enum WanderState implements UIState {
             if (telegram.message == Messages.Dungeon.Movement) {
                 Direction direction = (Direction) telegram.extraInfo;
                 if (direction == null) {
-                    walkTimer = -1f;
+                    boolean held = false;
+                    for (Input i : Input.values()){
+                        if (i.isPressed()) {
+                            held = true;
+                        }
+                    }
+                    if (!held) {
+                        walkTimer = -1f;
+                    }
                 }
                 else {
                     final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
@@ -79,6 +88,22 @@ public enum WanderState implements UIState {
                         );
                     }
                     walkTimer = 0f;
+                }
+                return true;
+            }
+            else if (telegram.message == Messages.Dungeon.Action) {
+                final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
+                if (ms.openAction()) {
+                    ms.process();
+                    /*
+                     * Disable input when moving, move a full step, then let enemies move,
+                     * then restore the input.
+                     */
+                    entity.addAction(
+                        Actions.sequence(
+                            Actions.delay(RenderSystem.MoveSpeed)
+                        )
+                    );
                 }
                 return true;
             }

@@ -96,7 +96,9 @@ public interface Messages {
         public static final int Ascend = 0x1007;
         
         //different kind of notify, this goes in the bottom right box of the log instead of popups
-        public static final int Notify = 0x1008; 
+        public static final int Notify = 0x1008;
+        public static final int Action = 0x100A; 
+        public static final int Unlock = 0x100B; 
         
         public static final class CombatNotify {
             public Entity attacker;
