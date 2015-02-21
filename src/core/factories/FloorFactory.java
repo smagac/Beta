@@ -39,7 +39,10 @@ public class FloorFactory {
 
         // forcibly add some loot monsters
         monsterFactory.makeTreasure(entities, itemFactory, floor);
-
+        progress[0] = 100;
+        
+        // add doors onto the floor
+        monsterFactory.placeDoors(entities, floor);
         progress[0] = 100;
         
         return new ImmutableArray<Entity>(entities);

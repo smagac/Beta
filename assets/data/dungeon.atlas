@@ -13,7 +13,7 @@ bug
   index: -1
 bunny
   rotate: false
-  xy: 70, 36
+  xy: 172, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -32,9 +32,16 @@ male
   orig: 16, 16
   offset: 0, 0
   index: -1
+door
+  rotate: false
+  xy: 2, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 duck
   rotate: false
-  xy: 88, 36
+  xy: 190, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -48,91 +55,105 @@ dude
   index: -1
 elf
   rotate: false
-  xy: 106, 36
+  xy: 208, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 female
   rotate: false
-  xy: 124, 36
+  xy: 56, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 ghost
   rotate: false
-  xy: 142, 36
+  xy: 226, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 girl
   rotate: false
-  xy: 160, 36
+  xy: 74, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 gnome
   rotate: false
-  xy: 178, 36
+  xy: 92, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 header
   rotate: false
-  xy: 2, 20
+  xy: 36, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 horse
   rotate: false
-  xy: 196, 36
+  xy: 110, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
+key
+  rotate: false
+  xy: 70, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 loot
   rotate: false
-  xy: 214, 36
+  xy: 128, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 ogre
   rotate: false
-  xy: 232, 36
+  xy: 146, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
+opened
+  rotate: false
+  xy: 104, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 plant
   rotate: false
-  xy: 70, 18
+  xy: 172, 18
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 rat
   rotate: false
-  xy: 88, 18
+  xy: 190, 18
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 snake
   rotate: false
-  xy: 106, 18
+  xy: 208, 18
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 up
   rotate: false
-  xy: 36, 20
+  xy: 138, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

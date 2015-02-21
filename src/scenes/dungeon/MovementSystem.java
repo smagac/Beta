@@ -26,6 +26,7 @@ import core.components.Combat;
 import core.components.Groups;
 import core.components.Groups.Monster;
 import core.components.Identifier;
+import core.components.Lock;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
@@ -118,16 +119,42 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             Entity foe = checkFoe(x, y, e);
             // Handle combat
             if (foe != null) {
-                if (e == player) {
-                    fight(e, foe);
-                    moved = true;
-                }
-                else {
-                    Combat c = Combat.Map.get(e);
-                    if (foe == player && !c.isPassive()) {
+                //door handling logic
+                if (Lock.Map.has(foe)) {
+                    Lock lock = Lock.Map.get(foe);
+                    if (lock.unlocked) {
+                        if ((!lock.open && e == player) || lock.open) {
+                            //move onto the square and open the door
+                            p.move(x, y);
+                            lock.open = true;
+                            moved = true;
+                        } else {
+                            //do nothing, blocking the path
+                            moved = false;
+                        }
+                    } 
+                    else {
+                        if (e == player){
+                            //bash open the door
+                            fight(e, foe);
+                            moved = true;
+                        } else {
+                            //do nothing
+                            moved = false;
+                        }
+                    }
+                } else {
+                    if (e == player) {
                         fight(e, foe);
                         moved = true;
                     }
+                    else {
+                        Combat c = Combat.Map.get(e);
+                        if (foe == player && !c.isPassive()) {
+                            fight(e, foe);
+                            moved = true;
+                        }
+                    } 
                 }
             }
             // just move to square
@@ -223,8 +250,16 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             }
             
             if (bStats.hp <= 0) {
+                //open door instead of handling drops
+                if (Lock.Map.has(opponent))
+                {
+                    Lock lock = Lock.Map.get(opponent);
+                    lock.unlocked = true;
+                    return;
+                }
                 // drop item if opponent killed was not a player
-                if (opponent != player){
+                else if (opponent != player){
+                    
                     aStats.exp += bStats.exp;
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                     if (aStats.canLevelUp()) {
@@ -461,6 +496,11 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         }
     }
     
+    /**
+     * Comparator used to sort the action order of entities in the system
+     * @author nhydock
+     *
+     */
     private static class SpeedComparator implements Comparator<Entity> {
 
         static final SpeedComparator instance = new SpeedComparator();

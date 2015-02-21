@@ -5,6 +5,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
+import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
 
 public class Floor {
@@ -19,6 +20,7 @@ public class Floor {
     final float[][] shadow;
     private int[] start;
     private int[] end;
+    private Array<int[]> hallways;
     
     public Floor(TiledMapTileLayer layer, FloorData data) {
         roomCount = data.getRoomCount();
@@ -40,6 +42,16 @@ public class Floor {
             }
         }
         
+        hallways = new Array<int[]>();
+        for (int i = 0; i < data.getWidth(); i++)
+        {
+            for (int n = 0; n < data.getHeight(); n++) 
+            {
+                if (data.getTiles()[i][n] == PathMaker.HALL) {
+                    hallways.add(new int[]{i, n});
+                }
+            }
+        }
         
         start = data.getStart();
         end = data.getEnd();
@@ -75,5 +87,10 @@ public class Floor {
         } while ((x == start[0] && y == start[1]) || (x == end[0] && y == end[1]));
         
         return new int[]{x, y};
+    }
+    
+    public int[] getHallwayTile()
+    {
+        return hallways.random();
     }
 }

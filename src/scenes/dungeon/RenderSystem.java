@@ -57,8 +57,11 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     public static final float MoveSpeed = .15f;
 
     //SquidPony's FOV System
-    private float[][] wallMap;
-    private float[][] fov;
+    private int width, height;
+    private float[][] wallMap;  //fov density of walls
+    private float[][] actorMap; //fov density of actors
+    private float[][] actorFOV; //calculated fov from actors
+    private float[][] wallFOV;  //calculated fov from walls
     private FOVSolver fovSolver;
     
     private SpriteBatch batch;
@@ -101,7 +104,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     // temp vars used for hover effect
     static Vector2 v1 = new Vector2(0, 0);
     static Vector2 v2 = new Vector2(0, 0);
-
+    boolean moved;
+    
     public RenderSystem() {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
@@ -114,17 +118,45 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         scale = 32f * mapRenderer.getUnitScale();
     }
     
+    /**
+     * Combines wall and entity density to create an accurate FOV blocking space
+     */
+    private void calculateDensity() {
+        for (int i = 0; i < actorMap.length; i++) {
+            for (int n = 0; n < actorMap[0].length; n++) {
+                actorMap[i][n] = 0;
+            }
+        }
+        
+        for (int i = 0; i < entities.size; i++) {
+            Entity e  = entities.get(i);
+            
+            Renderable r = Renderable.Map.get(e);
+            Position p = Position.Map.get(e);
+            
+            actorMap[p.getX()][p.getY()] = r.getDensity();
+        }
+    }
+    
+    /**
+     * Updates all the actors on screen with the calculated FOV
+     */
     private void updateFOV(){
         Position p = Position.Map.get(player);
         
-        fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, fov);
-        for (int x = 0, i = 0; x < fov.length; x++) {
-            for (int y = 0; y < fov.length; y++, i++) {
+        calculateDensity();
+        fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, wallFOV);
+        fovSolver.calculateFOV(actorMap, p.getX(), p.getY(), 8.0f, actorFOV);
+        
+        for (int x = 0, i = 0; x < width; x++) {
+            for (int y = 0; y < height; y++, i++) {
                 Actor a = shadows.get(i);
                 a.clearActions();
-                a.addAction(Actions.alpha(1.0f-fov[x][y]));
+                float strength = 0;
+                strength = Math.min(wallFOV[x][y], actorFOV[x][y]);
+                a.addAction(Actions.alpha(1.0f-strength));
                 //block hover over enemies when they're in the shadows
-                if (fov[x][y] <= .5f) {
+                if (strength <= .5f) {
                     a.setTouchable(Touchable.enabled);
                 } 
                 else {
@@ -139,8 +171,13 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         
         //set shadow mapping
         Floor f = dungeonService.getDungeon().getFloor(depth);
+        width = f.getBooleanMap().length;
+        height = f.getBooleanMap()[0].length;
+        
         wallMap = f.getShadowMap();
-        fov = new float[wallMap.length][wallMap[0].length];
+        actorMap = new float[width][height];
+        wallFOV = new float[width][height];
+        actorFOV = new float[width][height];
         
         shadowLayer.clear();
         for (Image s : shadows)
@@ -217,11 +254,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             r.getActor().clearActions();
             r.getActor().addAction(Actions.moveTo(p.getX() * scale, p.getY() * scale, MoveSpeed));
             p.update();
-            //update fov on move
+            
             if (e == player) {
-                updateFOV();
+                moved = true;
             }
         }
+        
     }
     
     @Override
@@ -261,6 +299,11 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             return;
         }
 
+        if (moved) {
+            updateFOV();
+            moved = false;
+        }
+        
         stage.draw();
         
         batch.setColor(1f, 1f, 1f, 1f);
@@ -335,8 +378,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         stats.setWidth(width);
     }
 
+    /**
+     * Pops up the message box with the actor's stats in it
+     * @param e
+     */
     void showStats(Entity e) {
-        if (statsVis != null && !Identifier.Map.get(e).hidden()) {
+        if (statsVis != null || Identifier.Map.get(e).hidden()) {
             return;
         }
         

@@ -15,6 +15,7 @@ import core.components.Combat;
 import core.components.Groups.Boss;
 import core.components.Groups.Monster;
 import core.components.Identifier;
+import core.components.Lock;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
@@ -111,6 +112,10 @@ public class MonsterFactory {
         final boolean hideName; // hides the entire bubble if no name is
                                 // available
 
+        //determines that amount of light the monster's body will block
+        // when calculating FOV
+        final float density;
+        
         MonsterTemplate(final JsonValue src) {
             name = src.name;
             hp = src.getInt("hp", 1);
@@ -129,6 +134,7 @@ public class MonsterFactory {
             passive = src.getBoolean("passive", false);
             location = src.getString("where", null);
             type = src.getString("type", "rat");
+            density = src.getFloat("density", 0f);
             hideName = src.getBoolean("hideName", false);
         }
 
@@ -210,10 +216,9 @@ public class MonsterFactory {
                 t = selection.random();
             }
             // don't allow loot chests to be bosses
-            while (t.name.equals("treasure chest"));
+            while (t.name.equals("treasure chest") || t.name.equals("door"));
             
             Entity monster = create(t, lootMaker.createItem(), floor.depth, true);
-            monster.add(new Monster());
             monster.add(new Boss());
             monster.add(new Position((int)floor.rooms.get(0).x, (int)floor.rooms.get(0).y));
 
@@ -230,7 +235,6 @@ public class MonsterFactory {
             while (t.name.equals("mimic") || t.name.equals("treasure chest"));
 
             Entity monster = create(t, lootMaker.createItem(), floor.depth, false);
-            monster.add(new Monster());
 
             Position p = new Position(0, 0);
             int[] xy = null;
@@ -303,14 +307,24 @@ public class MonsterFactory {
             id.hide();
         }
         e.add(id);
-        e.add(new Renderable(t.type));
+        Renderable r = new Renderable(t.type); 
+        r.setDensity(t.density);
+        e.add(r);
 
         Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
         e.add(c);
 
+        e.add(new Monster());
+
         return e;
     }
 
+    /**
+     * Calculates the population density within a room, so we do not over populate it
+     * @param m
+     * @param r
+     * @return
+     */
     private float calculateDensity(Array<Entity> m, Room r) {
 
         // calculate population density
@@ -362,7 +376,6 @@ public class MonsterFactory {
                 else {
                     monster = create(treasure, lootMaker.createItem(), floor.depth, false);
                 }
-                monster.add(new Monster());
                 monster.add(new Position(floor.getOpenTile()));
                 entities.add(monster);
                 
@@ -372,6 +385,23 @@ public class MonsterFactory {
         }
         if (limit < 0) {
             floor.loot = made;
+        }
+    }
+    
+    /**
+     * Places door enemies within the map upon hallways
+     * @param entities
+     * @param f
+     */
+    public void placeDoors(Array<Entity> entities, Floor f){
+        MonsterTemplate t = allMonsters.get("door");
+        
+        int doors = (int)(f.roomCount * MathUtils.random(.3f, 1.0f));
+        for (int i = 0; i < doors; i++) {
+            Entity door = create(t, null, f.depth, false);
+            door.add(new Lock());
+            door.add(new Position(f.getHallwayTile()));
+            entities.add(door);
         }
     }
 }
