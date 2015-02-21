@@ -239,22 +239,23 @@ public class MonsterFactory {
 
             Entity monster = create(t, lootMaker.createItem(), floor.depth, false);
 
-            Position p = new Position(0, 0);
-            int[] xy = null;
-            do {
-                xy = floor.getOpenTile();
-                for (Entity e : entities) {
-                    Position ep = e.getComponent(Position.class);
-                    if (ep.getX() == xy[0] && ep.getY() == xy[1]) {
-                        xy = null;
+            //pick a tile to spawn the entity on
+            int[] tile = null;
+            do
+            {
+                tile = floor.getOpenTile();
+                //make sure we don't spawn a chest on top of an enemy
+                for (int n = 0; n < entities.size; n++) {
+                    Entity e = entities.get(n);
+                    Position p = Position.Map.get(e);
+                    if (tile[0] == p.getX() && tile[1] == p.getY()) {
+                        tile = null;
                         break;
                     }
                 }
-            } while (xy == null);
-            p.move(xy[0], xy[1]);
-            
+            } while (tile == null);
             // add its position into a random room
-            monster.add(p);
+            monster.add(new Position(tile));
 
             entities.add(monster);
         }
@@ -379,7 +380,24 @@ public class MonsterFactory {
                 else {
                     monster = create(treasure, lootMaker.createItem(), floor.depth, false);
                 }
-                monster.add(new Position(floor.getOpenTile()));
+                
+                //pick a tile to spawn the entity on
+                int[] tile = null;
+                do
+                {
+                    tile = floor.getOpenTile();
+                    //make sure we don't spawn a chest on top of an enemy
+                    for (int i = 0; i < entities.size; i++) {
+                        Entity e = entities.get(i);
+                        Position p = Position.Map.get(e);
+                        if (tile[0] == p.getX() && tile[1] == p.getY()) {
+                            tile = null;
+                            break;
+                        }
+                    }
+                } while (tile == null);
+                
+                monster.add(new Position(tile));
                 entities.add(monster);
                 
                 limit--;
