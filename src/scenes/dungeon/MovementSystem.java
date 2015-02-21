@@ -92,7 +92,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             for (int i = 0; i < monsters.size; i++) {
                 Entity m = monsters.get(i);
                 Position p = Position.Map.get(m);
-                if ((p.getX() == x && p.getY() == y)) {
+                if ((p.getX() == x && p.getY() == y) && Combat.Map.has(m)) {
                     return m;
                 }
             }
@@ -266,6 +266,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
                     }
                     ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
+                    Renderable.Map.get(opponent).setSpriteName("dead");
+                    opponent.remove(Combat.class);
+                    
                     engine.removeEntity(opponent);
 
                     Identifier id = Identifier.Map.get(opponent);

@@ -6,154 +6,161 @@ filter: Nearest,Nearest
 repeat: none
 bug
   rotate: false
-  xy: 2, 2
+  xy: 2, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 bunny
   rotate: false
-  xy: 172, 36
+  xy: 206, 38
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 character
   rotate: false
-  xy: 20, 2
+  xy: 20, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 male
   rotate: false
-  xy: 20, 2
+  xy: 20, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
+dead
+  rotate: false
+  xy: 2, 22
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 door
   rotate: false
-  xy: 2, 20
+  xy: 36, 22
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 duck
   rotate: false
-  xy: 190, 36
+  xy: 224, 38
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 dude
   rotate: false
-  xy: 38, 2
+  xy: 38, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 elf
   rotate: false
-  xy: 208, 36
+  xy: 56, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 female
   rotate: false
-  xy: 56, 2
+  xy: 74, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 ghost
   rotate: false
-  xy: 226, 36
+  xy: 92, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 girl
   rotate: false
-  xy: 74, 2
+  xy: 110, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 gnome
   rotate: false
-  xy: 92, 2
+  xy: 128, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 header
   rotate: false
-  xy: 36, 20
+  xy: 70, 22
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 horse
   rotate: false
-  xy: 110, 2
+  xy: 146, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 key
   rotate: false
-  xy: 70, 20
+  xy: 104, 22
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 loot
   rotate: false
-  xy: 128, 2
+  xy: 164, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 ogre
   rotate: false
-  xy: 146, 2
+  xy: 182, 4
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 opened
   rotate: false
-  xy: 104, 20
+  xy: 138, 22
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 plant
   rotate: false
-  xy: 172, 18
+  xy: 206, 20
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 rat
   rotate: false
-  xy: 190, 18
+  xy: 224, 20
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 snake
   rotate: false
-  xy: 208, 18
+  xy: 200, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 up
   rotate: false
-  xy: 138, 20
+  xy: 172, 22
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

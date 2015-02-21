@@ -14,13 +14,24 @@ public class Renderable extends Component {
     private Actor actor;
     private String spriteName;
     private float density;
+    private boolean changed;
 
     public Renderable(String type) {
         this.spriteName = type;
     }
     
+    public void setSpriteName(String type) {
+        this.spriteName = type;
+        changed = true;
+    }
+    
+    public boolean hasChanged() {
+        return changed;
+    }
+    
     public void loadImage(TextureAtlas atlas) {
         this.actor = new Image(atlas.findRegion(spriteName));
+        changed = false;
     }
     
     public void setDensity(float d) {
@@ -45,5 +56,6 @@ public class Renderable extends Component {
 
     public void loadImage(Skin skin) {
         this.actor = new Image(skin, spriteName);
+        changed = false;
     }
 }
