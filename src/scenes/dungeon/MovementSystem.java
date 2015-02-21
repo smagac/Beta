@@ -4,11 +4,11 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import java.util.Comparator;
 
-import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 
@@ -126,6 +126,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                             //move onto the square and open the door
                             p.move(x, y);
                             lock.open = true;
+                            Renderable.Map.get(foe).setSpriteName("opened");
+                            Renderable.Map.get(foe).setDensity(0);
+                            
                             moved = true;
                         } else {
                             //do nothing, blocking the path
@@ -240,10 +243,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 {
                     Lock lock = Lock.Map.get(opponent);
                     lock.unlocked = true;
+                    lock.open = true;
                     Renderable.Map.get(opponent).setSpriteName("opened");
                     Renderable.Map.get(opponent).setDensity(0);
-                    
-                    return;
                 }
                 // drop item if opponent killed was not a player
                 else if (opponent != player){
@@ -269,6 +271,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
                     
+                    monsters.removeValue(opponent, true);
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
                 }
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);

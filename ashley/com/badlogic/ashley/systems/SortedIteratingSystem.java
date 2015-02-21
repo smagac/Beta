@@ -16,6 +16,8 @@
 
 package com.badlogic.ashley.systems;
 
+import java.util.Comparator;
+
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
@@ -23,7 +25,6 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.utils.Array;
-import java.util.Comparator;
 
 /**
  * A simple EntitySystem that processes each entity of a given family in the order specified by a comparator and calls

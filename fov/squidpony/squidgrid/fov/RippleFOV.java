@@ -1,8 +1,8 @@
 package squidpony.squidgrid.fov;
 
-import squidpony.squidgrid.util.RadiusStrategy;
-import squidpony.squidgrid.util.BasicRadiusStrategy;
 import squidpony.annotation.Beta;
+import squidpony.squidgrid.util.BasicRadiusStrategy;
+import squidpony.squidgrid.util.RadiusStrategy;
 
 /**
  * Performs FOV by pushing values outwards from the source location. It will

@@ -1,9 +1,6 @@
 package scenes.dungeon.ui;
 
-import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
-import scene2d.ui.extras.TableUtils;
 import scenes.Messages;
 import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;

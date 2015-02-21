@@ -47,7 +47,6 @@ import core.components.Combat;
 import core.components.Identifier;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
-import core.datatypes.quests.Quest;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 
@@ -767,9 +766,11 @@ public class WanderUI extends GameUI {
             setMessage(combat.getDeathMessage(Identifier.Map.get(opponent).toString()));
             
             Item item = combat.getDrop();
-            playerService.getInventory().pickup(item);
-            
-            setMessage(String.format("Obtained %s", item.fullname()));
+            if (item != null) {
+                playerService.getInventory().pickup(item);
+                
+                setMessage(String.format("Obtained %s", item.fullname()));
+            }
             return true;
         }
         if (telegram.message == Messages.Dungeon.Refresh) {

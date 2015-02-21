@@ -1,9 +1,9 @@
 package core.service.implementations;
 
-import scenes.dungeon.MovementSystem;
-import scenes.dungeon.RenderSystem;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
+import scenes.dungeon.MovementSystem;
+import scenes.dungeon.RenderSystem;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
