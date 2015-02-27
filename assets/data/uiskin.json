@@ -28,7 +28,7 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: { background: button_up, vScrollKnob: scroll-knob },
 	log: { vScrollKnob: scroll-knob },
-    
+    files: { vScrollKnob: scroll-knob },
 },
 com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 	default: {
@@ -44,7 +44,8 @@ com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 },
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 	default: { titleFont: small, background: window, titleFontColor: white },
-	window: { titleFont: small, background: window, titleFontColor: white }
+	window: { titleFont: small, background: window, titleFontColor: white },
+	pane: { titleFont: small, background: button_up, titleFontColor: white }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: small, fontColor: white },
@@ -56,6 +57,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	promptsm: { font: promptsm, fontColor: white },
 	hover: { font: small, fontColor: black, background: button_down },
 	header: { font: smaller, fontColor: white, background: button_up },
+	field: { font: smaller, fontColor: white, background: button_up },
 	dmg: { font: dmg, fontColor: white },
 	loading: { font: loading, fontColor: white },
 },

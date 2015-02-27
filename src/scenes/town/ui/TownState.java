@@ -227,8 +227,13 @@ enum TownState implements UIState {
             ui.sleepImg.addAction(Actions.moveTo(-ui.sleepImg.getWidth(), 0, .8f));
             ui.craftImg.addAction(Actions.moveTo(ui.getDisplayWidth(), 0, .8f));
 
-            ui.exploreSubmenu.addAction(Actions.sequence(Actions.moveTo(-ui.exploreSubmenu.getWidth(), 0),
-                    Actions.delay(.8f), Actions.moveTo(0, 0, .3f, Interpolation.circleOut)));
+            ui.fileBrowser.addAction(
+                Actions.sequence(
+                    Actions.moveTo(0, -ui.getDisplayHeight()),
+                    Actions.delay(.8f), 
+                    Actions.moveToAligned(0, ui.getDisplayHeight(), Align.topLeft, .3f, Interpolation.circleOut)
+                )
+            );
 
             ui.setMessage("Where to?");
             ui.refreshButtons();
@@ -241,51 +246,7 @@ enum TownState implements UIState {
              * Updates the information in the right side file panel to reflect
              * the metadata of the specified file
              */
-            if (t.message == Messages.Interface.Selected) {
-                final FileHandle selected = (FileHandle) t.extraInfo;
-
-                if (selected == null) {
-                    ui.fileDetails.addAction(Actions.sequence(Actions.moveTo(ui.getDisplayWidth(), 0, .3f)));
-                    return true;
-                }
-                ui.fileDetails.addAction(Actions.sequence(Actions.moveTo(ui.getDisplayWidth(), 0, .3f),
-                        Actions.run(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                // generate a details panel
-                                Table contents = ui.fileDetailsContent;
-                                contents.clear();
-
-                                FileType ext = FileType.getType(selected.extension());
-                                Image icon = new Image(ui.getSkin().getRegion(ext.toString()));
-                                Label type = new Label("File Type: " + ext, ui.getSkin());
-                                Label size = new Label("File Size: " + (selected.length() / 1000f) + " kb", ui
-                                        .getSkin());
-                                Label diff = new Label("Difficulty: "
-                                        + new String(new char[ext.difficulty(selected.length())]).replace('\0', '*'),
-                                        ui.getSkin());
-
-                                icon.setAlign(Align.center);
-                                icon.setSize(96f, 96f);
-                                icon.setScaling(Scaling.fit);
-
-                                contents.pad(10f);
-                                contents.add(icon).size(96f, 96f).expandX();
-                                contents.row();
-                                contents.add(type).expandX().fillX();
-                                contents.row();
-                                contents.add(size).expandX().fillX();
-                                contents.row();
-                                contents.add(diff).expandX().fillX();
-
-                                contents.pack();
-                                ui.fileDetailsPane.pack();
-                            }
-                        }), Actions.moveTo(ui.getDisplayWidth() - ui.fileDetails.getWidth(), 0, .3f)));
-                return true;
-            }
-            else if (t.message == Messages.Interface.Close) {
+            if (t.message == Messages.Interface.Close) {
                 ui.changeState(Main);
                 return true;
             }
@@ -304,34 +265,17 @@ enum TownState implements UIState {
                     FileHandle f = null;
                     // load selected file dungeon
                     if (button == Messages.Town.Explore) {
-                        if (ui.exploreTabs.getChecked().getName().equals("history")) {
-                            int index = ui.fileList.getSelectedIndex();
-                            if (index == 0) {
-                                return false;
-                            }
-                            f = TownUI.history.get(index);
-                            if (f != null && !f.isDirectory()) {
-                                params = DungeonParams.loadDataFromFile(f);
-                            } else {
-                                return false;
-                            }
-                        }
-                        else {
-                            f = ui.directoryList.get(ui.fileList.getSelectedIndex());
-                            if (f != null && !f.isDirectory()) {
-                                params = DungeonParams.loadDataFromFile(f);
-                                TownUI.history.add(f);
-                                TownUI.historyPaths.add(f.name());
-                            }
-                            else {
-                                return false;
-                            }
+                        FileHandle file = ui.fileBrowser.getSelectedFile();
+                        if (file != null) {
+                            params = DungeonParams.loadDataFromFile(file);
+                            ui.fileBrowser.addToHistory(file);
+                        } else {
+                            return false;
                         }
                     }
                     // random dungeons
                     else {
                         params = DungeonParams.loadRandomDungeon();
-                        TownUI.directory = null;
                     }
                     scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                     dungeon.setDungeon(params, f);

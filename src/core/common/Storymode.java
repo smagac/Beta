@@ -2,6 +2,7 @@ package core.common;
 
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
+import scenes.town.ui.FileBrowser;
 import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
@@ -94,7 +95,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     public void startGame(int difficulty, boolean gender) {
         playerManager.init(difficulty, gender);
         tracker.reset();
-        TownUI.clearHistory();
+        FileBrowser.clearHistory();
         started = true;
     }
 
