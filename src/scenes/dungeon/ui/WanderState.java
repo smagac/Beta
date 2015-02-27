@@ -91,6 +91,11 @@ public enum WanderState implements UIState {
                 }
                 return true;
             }
+            else if (telegram.message == Messages.Dungeon.Zoom) {
+                RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
+                rs.toggleZoom();
+                return true;
+            }
             else if (telegram.message == Messages.Dungeon.Action) {
                 final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
                 if (ms.openAction()) {

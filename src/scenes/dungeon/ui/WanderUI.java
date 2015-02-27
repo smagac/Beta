@@ -105,7 +105,8 @@ public class WanderUI extends GameUI {
             Messages.Dungeon.Leave,
             Messages.Dungeon.Refresh,
             Messages.Dungeon.Action,
-            Messages.Dungeon.Unlock
+            Messages.Dungeon.Unlock,
+            Messages.Dungeon.Zoom
         );
     }
     
@@ -467,6 +468,13 @@ public class WanderUI extends GameUI {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
                         return true;
                     }
+                    
+                    if (Input.CANCEL.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Zoom);
+                        return true;
+                    }
+                    
+                    
                 }
                 return false;
             }

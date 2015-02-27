@@ -13,6 +13,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
@@ -55,6 +56,7 @@ import core.service.interfaces.IDungeonContainer;
 public class RenderSystem extends EntitySystem implements EntityListener, Telegraph {
 
     public static final float MoveSpeed = .15f;
+    public static final float MaxZoom = .5f;
 
     //SquidPony's FOV System
     private int width, height;
@@ -94,6 +96,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     
     Family type = Family.all(Renderable.class, Position.class).get();
 
+    boolean zoomb;
+    Actor zoom = new Actor();
     Array<Entity> entities = new Array<Entity>();
     Array<Image> shadows = new Array<Image>();
     Group shadowLayer = new Group();
@@ -321,6 +325,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             Actor a = r.getActor();
             camera.position.x = a.getX(Align.center);
             camera.position.y = a.getY() - a.getHeight()/2f;
+            camera.zoom = 1f + (zoom.getColor().a);
         }
 
         if (invisible) {
@@ -349,7 +354,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         this.camera = (OrthographicCamera) this.stage.getCamera();
 
         uiSkin = skin;
-
+        zoom.addAction(Actions.alpha(0f));
+        stage.addActor(zoom);
+        
         entityLayer = new Group();
         shadowLayer = new Group();
         damageNumbers = new Group();
@@ -467,6 +474,18 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         statsVis = null;
         stats.clearActions();
         stats.addAction(Actions.alpha(0f, .3f));
+    }
+    
+    public void toggleZoom() {
+        
+        zoom.clearActions();
+        if (zoomb) {
+            zoom.addAction(Actions.sequence(Actions.alpha(MaxZoom), Actions.alpha(0f, .3f, Interpolation.circleOut)));
+            zoomb = false;
+        } else {
+            zoom.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(MaxZoom, .3f, Interpolation.circleOut)));
+            zoomb = true;
+        }
     }
 
     @Override
