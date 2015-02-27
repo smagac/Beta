@@ -191,7 +191,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         final float MULT = (actor == player) ? 2 : 1.25f;
 
         // ignore if target died at some point along the way
-        if (bStats.hp <= 0 || !Combat.Map.has(opponent)) {
+        if (bStats.hp <= 0 || (opponent != player && !Combat.Map.has(opponent))) {
             return;
         }
 
