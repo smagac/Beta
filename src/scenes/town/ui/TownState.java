@@ -226,7 +226,9 @@ enum TownState implements UIState {
         public void enter(TownUI ui) {
             ui.sleepImg.addAction(Actions.moveTo(-ui.sleepImg.getWidth(), 0, .8f));
             ui.craftImg.addAction(Actions.moveTo(ui.getDisplayWidth(), 0, .8f));
-
+            ui.exploreImg.addAction(Actions.moveTo(ui.getDisplayWidth() - 200f, ui.exploreImg.getY(), .8f));
+            ui.character.addAction(Actions.moveTo(ui.getDisplayWidth() - 180f, ui.character.getY(), .8f));
+            
             ui.fileBrowser.addAction(
                 Actions.sequence(
                     Actions.moveTo(0, -ui.getDisplayHeight()),

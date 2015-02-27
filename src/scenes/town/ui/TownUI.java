@@ -496,7 +496,7 @@ public class TownUI extends GameUI {
         final TownUI ui = this;
 
         fileBrowser = new FileBrowser(skin);
-        fileBrowser.setWidth(getDisplayWidth());
+        fileBrowser.setWidth(getDisplayWidth() - 200);
         fileBrowser.setHeight(getDisplayHeight()-20);
         fileBrowser.setPosition(0, 0, Align.top);
         fileBrowser.init();

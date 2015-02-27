@@ -55,7 +55,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	smallest: {font: smallest, fontColor: white},
 	prompt: { font: prompt, fontColor: white },
 	promptsm: { font: promptsm, fontColor: white },
-	hover: { font: small, fontColor: black, background: button_down },
+	hover: { font: smaller, fontColor: black, background: button_down },
 	header: { font: smaller, fontColor: white, background: button_up },
 	field: { font: smaller, fontColor: white, background: button_up },
 	dmg: { font: dmg, fontColor: white },
