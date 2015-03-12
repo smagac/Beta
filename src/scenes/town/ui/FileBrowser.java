@@ -8,15 +8,19 @@ import scene2d.ui.extras.TabbedPane;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.Pools;
 
+import core.common.Input;
 import core.datatypes.FileType;
 
 /**
@@ -29,21 +33,16 @@ public class FileBrowser extends Group {
 
     private static final String FONTSIZE = "smaller";
     
-    Label.LabelStyle listStyle;
-    Label.LabelStyle hoverStyle;
-    
     Label url;
     private static FileHandle currentFolder;
-    private static ObjectSet<FileHandle> history = new ObjectSet<FileHandle>();
-    ObjectMap<FileHandle, Label[]> rows;
-    Table fileList;
-    Table historyList;
     
-    
+    private static Array<FileHandle> history = new Array<FileHandle>();
+    ScrollPane filePane, historyPane;
+    TabbedPane frame;
     Skin skin;
     
-    private FileHandle currentFile;
-    final ListInputEmulator lie = new ListInputEmulator();
+    private FileList currentFolderContents;
+    private FileList historyContents;
     
     /**
      * Constructs the actor, but does not lay anything out within it.
@@ -58,9 +57,7 @@ public class FileBrowser extends Group {
         }
         
         this.skin = skin;
-        rows = new ObjectMap<FileHandle, Label[]>();
-        listStyle = skin.get(FONTSIZE, Label.LabelStyle.class);
-        hoverStyle = skin.get("hover", Label.LabelStyle.class);
+
     }
     
     /**
@@ -86,14 +83,11 @@ public class FileBrowser extends Group {
         browseView.add("Size (Kb)", FONTSIZE).width(COL[2]).expandX().align(Align.left);
         browseView.row();
         
-        fileList = new Table(skin);
-        fileList.top().left().pad(5f);
-        fileList.columnDefaults(0).align(Align.left).width(COL[0]).expandX().fillX();
-        fileList.columnDefaults(1).align(Align.center).width(COL[1]).padLeft(8f).padRight(8f).expandX().fill();
-        fileList.columnDefaults(2).align(Align.right).width(COL[2]).expandX().fill();
+        currentFolderContents = new FileList(skin, COL, this);
         
-        ScrollPane filePane = new ScrollPane(fileList, skin, "files");
+        filePane = new ScrollPane(currentFolderContents.list, skin, "files");
         filePane.setFadeScrollBars(false);
+        filePane.setScrollingDisabled(true, false);
         browseView.add(filePane).colspan(3).fillX();
         browseWindow.addActor(browseView);
         browseWindow.setWidth(getWidth());
@@ -110,22 +104,17 @@ public class FileBrowser extends Group {
         historyView.add("Size (Kb)", FONTSIZE).width(COL[2]).expandX().align(Align.left);
         historyView.row();
         
-        historyList = new Table(skin);
-        historyList.top().left().pad(5f);
-        historyList.columnDefaults(0).align(Align.left).width(COL[0]).expandX().fillX();
-        historyList.columnDefaults(1).align(Align.center).width(COL[1]).padLeft(8f).padRight(8f).expandX().fill();
-        historyList.columnDefaults(2).align(Align.right).width(COL[2]).expandX().fill();
+        historyContents = new FileList(skin, COL, this);
+        historyContents.setFiles((FileHandle[])history.toArray(FileHandle.class), null);
         
-        for (FileHandle file : history) {
-            makeLabel(file, historyList);
-        }
-        
-        ScrollPane historyPane = new ScrollPane(historyList, skin, "files");
+        historyPane = new ScrollPane(historyContents.list, skin, "files");
         historyPane.setFadeScrollBars(false);
+        historyPane.setScrollingDisabled(false, true);
         historyView.add(historyPane).colspan(3).fillX();
         historyWindow.addActor(historyView);
         historyWindow.setWidth(getWidth());
         historyWindow.setHeight(getHeight());
+        historyWindow.setUserObject(historyContents);
         
         TextButton browseTab = new TextButton("Browse", skin);
         browseTab.setUserObject(browseWindow);
@@ -134,59 +123,58 @@ public class FileBrowser extends Group {
         ButtonGroup<Button> tabs = new ButtonGroup<Button>(browseTab, historyTab);
         browseTab.setChecked(true);
         
-        TabbedPane frame = new TabbedPane(tabs, false);
+        frame = new TabbedPane(tabs, false);
         frame.setWidth(getWidth());
         frame.setHeight(getHeight());
         
-
         changeFolder(currentFolder);
         
+        addListener(new InputListener(){
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (frame.getOpenTabIndex() == 0) {
+                    if (Input.DOWN.match(keycode)) {
+                        currentFolderContents.nextFile();
+                    }
+                    else if (Input.UP.match(keycode)) {
+                        currentFolderContents.prevFile();
+                    }
+                    else if (Input.ACCEPT.match(keycode)) {
+                        changeFolder(currentFolderContents.currentFile);
+                    }
+                } else {
+                    if (Input.DOWN.match(keycode)) {
+                        historyContents.nextFile();
+                    }
+                    else if (Input.UP.match(keycode)) {
+                        historyContents.prevFile();
+                    }
+                }
+                
+                if (Input.LEFT.match(keycode)) {
+                    frame.showTab(0);
+                }
+                else if (Input.RIGHT.match(keycode)) {
+                    frame.showTab(1);
+                }
+                
+                return super.keyDown(event, keycode);
+            }
+        });
+        
+        addListener(new ChangeListener() {
+            
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (frame.getOpenTabIndex() == 0) {
+                    filePane.scrollTo(0, actor.getY(), 1, actor.getHeight());
+                } else {
+                    historyPane.scrollTo(0, actor.getY(), 1, actor.getHeight());
+                }
+            }
+        });
+        
         addActor(frame);
-    }
-    
-    /**
-     * Make a row for a file object
-     * @param file
-     */
-    private void makeLabel(FileHandle file, Table list) {
-        list.row();
-        Label[] row;
-        
-        row = new Label[3];
-        //name of the file
-        String name = file.name();
-        row[0] = list.add(name, FONTSIZE).getActor();
-    
-        if (!file.isDirectory()) {
-            //file type
-            String type = FileType.getType(file.extension()).toString();
-            row[1] = list.add(type, FONTSIZE).getActor();
-            //size in kb
-            String size = String.format("%.02f", file.length() / 1000f);
-            row[2] = list.add(size, FONTSIZE).getActor();            
-        } else {
-            row[1] = list.add("Folder", FONTSIZE).getActor();
-            row[2] = list.add("", FONTSIZE).getActor();
-        }
-        
-        for (Label l : row) {
-            l.addListener(lie);
-            l.setUserObject(file);
-        }
-        rows.put(file, row);
-    }
-    
-    private void makeParentLabel() {
-        Label[] row = new Label[3];
-        fileList.row();
-        row[0] = fileList.add("..", FONTSIZE).getActor();
-        row[1] = fileList.add("", FONTSIZE).getActor();
-        row[2] = fileList.add("", FONTSIZE).getActor();
-        for (Label l : row) {
-            l.addListener(lie);
-            l.setUserObject(currentFolder.parent());
-        }
-        rows.put(currentFolder.parent(), row);
     }
     
     /**
@@ -194,23 +182,15 @@ public class FileBrowser extends Group {
      * @param folder
      */
     private void changeFolder(FileHandle folder) {
-        currentFolder = folder;
-        currentFile = null;
-    
-        fileList.clear();
-        rows.clear();
-        
-        makeParentLabel();
-        Array<FileHandle> children = new Array<FileHandle>();
-        children.addAll(folder.list(NoHidden.instance));
-        children.sort(FileComparator.instance);
-        
-        for (FileHandle file : children) {
-            makeLabel(file, fileList);
+        if (!folder.isDirectory()) {
+            return;
         }
         
-        url.setText(folder.file().getAbsolutePath());
+        currentFolder = folder;
+    
+        currentFolderContents.setFiles(folder.list(NoHidden.instance), currentFolder);
         
+        url.setText(folder.file().getAbsolutePath());
     }
 
     /**
@@ -218,46 +198,24 @@ public class FileBrowser extends Group {
      * @return the currently selected file
      */
     public FileHandle getSelectedFile() {
-        if (!currentFile.isDirectory()) {
-            return currentFile;
+        if (frame.getOpenTabIndex() == 0) {
+            if (!currentFolderContents.currentFile.isDirectory()) {
+                return currentFolderContents.currentFile;
+            }
+            return null;
+        } else {
+            return historyContents.currentFile;
         }
-        return null;
     }
 
-    /**
-     * Light up the row of the selected file, and mark it as the current
-     * file of the file browser
-     * @param file
-     */
-    protected void selectFile(FileHandle file) {
-        Label[] row;
-        
-        if (currentFile != null) {
-            row = rows.get(currentFile);
-            if (row != null) {
-                for (Label l : row) {
-                    l.setStyle(listStyle);
-                }
-            }
-        }
-        
-
-        row = rows.get(file);
-        if (row != null) {
-            for (Label l : row) {
-                l.setStyle(hoverStyle);
-            }
-        }
-        
-        currentFile = file;
-    }
-    
     /**
      * 
      * @param file
      */
     public void addToHistory(FileHandle file) {
-        history.add(file);
+        if (!history.contains(file, false)) {
+            history.add(file);
+        }
     }
 
     public static void clearHistory() {
@@ -265,24 +223,191 @@ public class FileBrowser extends Group {
     }
     
     /**
+     * Simple wrapper object for managing collections of files in our view
+     * @author nhydock
+     *
+     */
+    static class FileList {
+
+        Label.LabelStyle listStyle;
+        Label.LabelStyle hoverStyle;
+        
+        Table list;
+        Array<FileHandle> files;
+        ObjectMap<FileHandle, Label[]> rows;
+        
+        int currentIndex;
+        FileHandle currentFile;
+        
+        final ListInputEmulator lie;
+        FileBrowser browser;
+        
+        FileList(Skin skin, final Value[] COL, FileBrowser browser){
+            list = new Table(skin);
+            list.top().left().pad(5f);
+            list.columnDefaults(0).align(Align.left).width(COL[0]).expandX().fillX();
+            list.columnDefaults(1).align(Align.center).width(COL[1]).padLeft(8f).padRight(8f).expandX().fill();
+            list.columnDefaults(2).align(Align.right).width(COL[2]).expandX().fill();
+            
+            listStyle = skin.get(FONTSIZE, Label.LabelStyle.class);
+            hoverStyle = skin.get("hover", Label.LabelStyle.class);
+            
+            lie = new ListInputEmulator();
+            lie.browser = browser;
+            lie.list = this;
+            
+            files = new Array<FileHandle>();
+            rows = new ObjectMap<FileHandle, Label[]>();
+            this.browser = browser;
+        }
+        
+        
+        
+        public void nextFile() {
+            if (files.size > 0) {
+                currentIndex++;
+                if (currentIndex > files.size - 1) {
+                    currentIndex = 0;
+                }
+                selectFile(files.get(currentIndex));
+            }
+        }
+        
+        public void prevFile() {
+            if (files.size > 0) {
+                currentIndex--;
+                if (currentIndex < 0) {
+                    currentIndex = files.size - 1;
+                }
+                selectFile(files.get(currentIndex));
+            }
+        }
+
+        /**
+         * Light up the row of the selected file, and mark it as the current
+         * file of the file browser
+         * @param file
+         */
+        public void selectFile(FileHandle file) {
+            Label[] row;
+            
+            if (currentFile != null) {
+                row = rows.get(currentFile);
+                if (row != null) {
+                    for (Label l : row) {
+                        l.setStyle(listStyle);
+                    }
+                }
+            }
+            
+
+            row = rows.get(file);
+            if (row != null) {
+                for (Label l : row) {
+                    l.setStyle(hoverStyle);
+                }
+            }
+            
+            currentFile = file;
+            currentIndex = files.indexOf(file, true);
+            
+            if (row != null) {
+                ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
+                row[0].fire(changeEvent);
+                Pools.free(changeEvent);
+            }
+        }
+
+        public void setFiles(FileHandle[] files, FileHandle parent) {
+            this.files.clear();
+            this.files.addAll(files);
+            this.files.sort(FileComparator.instance);
+            
+            rows.clear();
+            list.clear();
+            
+            if (parent != null) {
+                makeParentLabel(parent);
+            }
+            
+            for (FileHandle file : this.files) {
+                makeLabel(file);
+            }
+            
+            if (parent != null) {
+                this.files.insert(0, parent);
+            }
+            
+            if (files.length > 0) {
+                selectFile(this.files.first());
+            }
+        }
+        
+        /**
+         * Make a row for a file object
+         * @param file
+         */
+        private void makeLabel(FileHandle file) {
+            list.row();
+            Label[] row;
+            
+            row = new Label[3];
+            //name of the file
+            String name = file.name();
+            row[0] = list.add(name, FONTSIZE).getActor();
+        
+            if (!file.isDirectory()) {
+                //file type
+                String type = FileType.getType(file.extension()).toString();
+                row[1] = list.add(type, FONTSIZE).getActor();
+                //size in kb
+                String size = String.format("%.02f", file.length() / 1000f);
+                row[2] = list.add(size, FONTSIZE).getActor();            
+            } else {
+                row[1] = list.add("Folder", FONTSIZE).getActor();
+                row[2] = list.add("", FONTSIZE).getActor();
+            }
+            
+            for (Label l : row) {
+                l.addListener(lie);
+                l.setUserObject(file);
+            }
+            rows.put(file, row);
+        }
+
+        private void makeParentLabel(FileHandle currentFolder) {
+            Label[] row = new Label[3];
+            list.row();
+            row[0] = list.add("..", FONTSIZE).getActor();
+            row[1] = list.add("", FONTSIZE).getActor();
+            row[2] = list.add("", FONTSIZE).getActor();
+            for (Label l : row) {
+                l.addListener(lie);
+                l.setUserObject(currentFolder.parent());
+            }
+            rows.put(currentFolder.parent(), row);
+        }
+    }
+    
+    /**
      * Emulate list input by allowing
      * @author nhydock
      *
      */
-    class ListInputEmulator extends InputListener {
+    static class ListInputEmulator extends InputListener {
+        
+        FileList list;
+        FileBrowser browser;
         
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
             FileHandle file = (FileHandle)event.getTarget().getUserObject();
             
-            if (currentFile == file && file.isDirectory()) {
-                changeFolder(file);
-                return true;
+            if (file == list.currentFile) {
+                browser.changeFolder(file);
+            } else {
+                list.selectFile(file);
             }
-            
-            
-            selectFile(file);
-            
             return true;
         }
         

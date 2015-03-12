@@ -114,6 +114,15 @@ public class TabbedPane extends Table {
     public int getOpenTabIndex() {
         return this.buttons.getButtons().indexOf(this.buttons.getChecked(), true);
     }
+    
+    /**
+     * Get the user object assigned to the tab that is open, as that is
+     * what we identify the tabbed content with.
+     * @return
+     */
+    public Object getOpenTab() {
+        return this.buttons.getChecked().getUserObject();
+    }
 
     /**
      * Adds a specific action to changing tabs
