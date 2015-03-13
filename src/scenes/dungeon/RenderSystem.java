@@ -35,10 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -56,7 +53,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     public static final float MoveSpeed = .15f;
     public static final float MaxZoom = .5f;
-
+    private static final float SCALE = 32f;
+    private static final int[] SHADOW_RANGE = {41, 21};
+    
     //SquidPony's FOV System
     private int width, height;
     private float[][] wallMap;  //fov density of walls
@@ -71,8 +70,6 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     ComponentMapper<Renderable> renderMap = ComponentMapper.getFor(Renderable.class);
     ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
-
-    private float scale;
 
     private final Array<Actor> addQueue;
     private final Array<Actor> removeQueue;
@@ -98,10 +95,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     boolean zoomb;
     Actor zoom = new Actor();
     Array<Entity> entities = new Array<Entity>();
-    Array<Image> shadows = new Array<Image>();
-    Group shadowLayer = new Group();
-    Group entityLayer = new Group();
-    Pool<Image> shadowPool = Pools.get(Image.class, 4000);
+    Image[][] shadows;
+    Group shadowLayer;
+    Group entityLayer;
     Entity player;
 
     // temp vars used for hover effect
@@ -118,7 +114,6 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
-        scale = 32f * mapRenderer.getUnitScale();
     }
     
     /**
@@ -151,12 +146,22 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, wallFOV);
         fovSolver.calculateFOV(actorMap, p.getX(), p.getY(), 8.0f, actorFOV);
         
-        for (int x = 0, i = 0; x < width; x++) {
-            for (int y = 0; y < height; y++, i++) {
-                Actor a = shadows.get(i);
+        final int WBOUND = SHADOW_RANGE[0]/2;
+        final int HBOUND = SHADOW_RANGE[1]/2;
+        final int LEFT = p.getX() - WBOUND;
+        final int RIGHT = p.getX() + WBOUND;
+        final int BOTTOM = p.getY() + HBOUND;
+        final int TOP = p.getY() - HBOUND;
+        for (int x = LEFT, i = 0; x < RIGHT; x++, i++) {
+            for (int y = TOP, n = 0; y < BOTTOM; y++, n++) {
+                Actor a = shadows[i][n];
                 a.clearActions();
                 float strength = 0;
-                strength = Math.min(wallFOV[x][y], actorFOV[x][y]);
+                if (x < 0 || x >= wallFOV.length || y < 0 || y >= wallFOV[0].length) {
+                    strength = 0;
+                } else {
+                    strength = Math.min(wallFOV[x][y], actorFOV[x][y]);
+                }
                 a.addAction(Actions.alpha(1.0f-strength));
                 //block hover over enemies when they're in the shadows
                 if (strength <= .5f) {
@@ -167,6 +172,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                 }
             }
         }
+        shadowLayer.setPosition(p.getX() * SCALE + (SCALE/2), p.getY() * SCALE + (SCALE/2), Align.center);
     }
 
     public void setFloor(int depth) {
@@ -181,24 +187,6 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         actorMap = new float[width][height];
         wallFOV = new float[width][height];
         actorFOV = new float[width][height];
-        
-        shadowLayer.clear();
-        for (Image s : shadows)
-        {
-            shadowPool.free(s);
-        }
-        shadows.clear();
-        Drawable d = uiSkin.getDrawable("fill");
-        for (int x = 0, rx = 0; x < wallMap.length; x++, rx += scale) {
-            for (int y = 0, ry = 0; y < wallMap[0].length; y++, ry += scale) {
-                Image image = shadowPool.obtain();
-                image.setDrawable(d);
-                image.setSize(scale, scale);
-                image.setPosition(rx, ry);
-                shadowLayer.addActor(image);
-                shadows.add(image);
-            }
-        }
         
         if (player != null){
             updateFOV();
@@ -226,8 +214,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             r.loadImage(uiSkin);
         }
         final Image sprite = (Image) r.getActor();
-        sprite.setSize(scale, scale);
-        sprite.setPosition(p.getX() * scale, p.getY() * scale);
+        sprite.setSize(SCALE, SCALE);
+        sprite.setPosition(p.getX() * SCALE, p.getY() * SCALE);
         if (Groups.monsterType.matches(e)) {
             //Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
             sprite.addListener(new InputListener() {
@@ -260,11 +248,10 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         if (p.isFighting()) {
             float shiftX, shiftY, x, y;
 
-            float scale = getScale();
-            x = p.getX() * scale;
-            y = p.getY() * scale;
-            shiftX = (p.getDestinationX() * scale) - x;
-            shiftY = (p.getDestinationY() * scale) - y;
+            x = p.getX() * SCALE;
+            y = p.getY() * SCALE;
+            shiftX = (p.getDestinationX() * SCALE) - x;
+            shiftY = (p.getDestinationY() * SCALE) - y;
             
             r.getActor().clearActions();
             r.getActor().addAction(
@@ -284,7 +271,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         // adjust position to be aligned with tiles
         else if (p.hasChanged()) {
             r.getActor().clearActions();
-            r.getActor().addAction(Actions.moveTo(p.getDestinationX() * scale, p.getDestinationY() * scale, MoveSpeed));
+            r.getActor().addAction(Actions.moveTo(p.getDestinationX() * SCALE, p.getDestinationY() * SCALE, MoveSpeed));
             p.update();
             
             if (e == player) {
@@ -323,8 +310,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             Renderable r = renderMap.get(player);
             Actor a = r.getActor();
             camera.position.x = a.getX(Align.center);
-            camera.position.y = a.getY() - a.getHeight()/2f;
+            camera.position.y = a.getY(Align.center);
             camera.zoom = 1f + (zoom.getColor().a);
+            camera.update();
         }
 
         if (invisible) {
@@ -385,10 +373,19 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             stage.addActor(stats);
         }
 
-    }
 
-    protected float getScale() {
-        return scale;
+        shadows = new Image[SHADOW_RANGE[0]][SHADOW_RANGE[1]];
+        for (int x = 0, rx = 0; x < SHADOW_RANGE[0]; x++, rx += SCALE) {
+            for (int y = 0, ry = 0; y < SHADOW_RANGE[1]; y++, ry += SCALE) {
+                Image image = new Image(skin, "fill");
+                image.setSize(SCALE, SCALE);
+                image.setPosition(rx, ry);
+                shadowLayer.addActor(image);
+                shadows[x][y] = image;
+            }
+        }
+        shadowLayer.setSize(SHADOW_RANGE[0] * SCALE, SHADOW_RANGE[1] * SCALE);
+        
     }
 
     public Stage getStage() {
@@ -452,15 +449,15 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     protected void hit(Entity e, String dmg) {
         Position p = Position.Map.get(e);
 
-        float x = p.getX() * scale + (scale * .5f);
-        float y = p.getY() * scale + (scale * .5f);
+        float x = p.getX() * SCALE + (SCALE * .5f);
+        float y = p.getY() * SCALE + (SCALE * .5f);
 
         final Label popup = new Label(dmg, uiSkin, "dmg");
         popup.setPosition(x - (popup.getPrefWidth() * .5f), y - (popup.getPrefHeight()));
         popup.addAction(
             Actions.sequence(
                 Actions.alpha(0f),
-                Actions.parallel(Actions.fadeIn(.2f), Actions.moveBy(0, scale, .3f, Interpolation.sineOut)),
+                Actions.parallel(Actions.fadeIn(.2f), Actions.moveBy(0, SCALE, .3f, Interpolation.sineOut)),
                 Actions.fadeOut(.2f), 
                 Actions.removeActor()
             )

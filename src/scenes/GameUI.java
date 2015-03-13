@@ -84,7 +84,7 @@ public abstract class GameUI extends UI {
                 hidePointer();
                 if (focused instanceof Button) {
                     ((Button)focused).setChecked(true);
-                } else if (focused == buttonList) {
+                } else if (focused == buttonList && buttons.getButtons().size > 0) {
                     buttons.getButtons().get(0).setChecked(true);
                 }
             }

@@ -58,7 +58,6 @@ public class WanderUI extends GameUI {
     private Label lootLabel;
     private Label keyLabel;
     
-
     // variables for sacrifice menu
     Group dialog;
     Image goddess;
