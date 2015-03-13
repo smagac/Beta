@@ -335,7 +335,7 @@ public class FileBrowser extends Group {
             }
             
             if (parent != null) {
-                this.files.insert(0, parent);
+                this.files.insert(0, parent.parent());
             }
             
             if (files.length > 0) {
