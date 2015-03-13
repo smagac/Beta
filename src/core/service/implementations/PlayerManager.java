@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 
 import core.DataDirs;
+import core.components.Equipment;
 import core.components.Groups;
 import core.components.Identifier;
 import core.components.Position;
@@ -271,6 +272,7 @@ public class PlayerManager implements IPlayerContainer {
         player.add(new Identifier("Adventurer", null, new String[0]));
         player.add(new Groups.Player());
         player.add(new Position(0,0));
+        player.add(new Equipment());
         
         // make crafting requirements
         inventory = new Inventory(difficulty);

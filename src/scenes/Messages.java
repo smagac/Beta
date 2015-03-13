@@ -41,6 +41,8 @@ public interface Messages {
         public static final int RemoveItem = 0xffe4;
         
         public static final int UpdateItem = 0xffe5;
+
+        public static final int Equipment = 0xffe6;
         
         public static final class ItemMsg {
             public Item item;

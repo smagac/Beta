@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.Array;
 import core.components.Combat;
 import core.components.Groups;
 import core.components.Groups.Monster;
+import core.components.Equipment;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
@@ -187,7 +188,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private void fight(Entity actor, Entity opponent) {
         Stats aStats = statMap.get(actor);
         Stats bStats = statMap.get(opponent);
-
+        Equipment equipment = Equipment.Map.get(player);
+        
         final float MULT = (actor == player) ? 2 : 1.25f;
 
         // ignore if target died at some point along the way
@@ -222,7 +224,27 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     
         if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
             float chance = MathUtils.random(.8f, MULT);
-            int dmg = Math.max(0, (int) (chance * aStats.getStrength()) - bStats.getDefense());
+            int str = aStats.getStrength();
+            if (actor == player) {
+                str += equipment.getSword().getPower();
+                equipment.getSword().decay();
+            }
+            int def = bStats.getDefense();
+            if (opponent == player) {
+                //shield provides chance to block
+                float pow = equipment.getShield().getPower(); 
+                if (MathUtils.randomBoolean(pow / Equipment.Piece.MAX_POWER)) {
+                    equipment.getShield().decay();
+                    def += Integer.MAX_VALUE;    
+                }
+                //armor lessens damage if the shield doesn't blog
+                else {
+                    def += equipment.getArmor().getPower();
+                    equipment.getArmor().decay();    
+                }
+            }
+            int dmg = (int)Math.max(0, (chance * str) - def);
+            
             bStats.hp = Math.max(0, bStats.hp - dmg);
 
             notification.dmg = dmg;

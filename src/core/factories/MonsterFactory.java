@@ -420,11 +420,26 @@ public class MonsterFactory {
         
         int doors = (int)(floor.roomCount * MathUtils.random(.3f, 1.0f));
         for (int i = 0; i < doors; i++) {
-            int[] tile = floor.getHallwayTile();
-            //there are no tiles where we can place doors
-            if (tile == null) {
-                break;
-            }
+            int[] tile;
+            do {
+                tile = floor.getHallwayTile();
+                //there are no tiles where we can place doors
+                if (tile == null) {
+                    return;
+                }
+                
+                //make sure we don't spawn a door on top of another door or entity
+                for (int n = 0; n < entities.size; n++) {
+                    Entity e = entities.get(n);
+                    Position p = Position.Map.get(e);
+                    if (tile[0] == p.getX() && tile[1] == p.getY()) {
+                        tile = null;
+                        break;
+                    }
+                }
+            } 
+            while (tile == null);
+            
             Entity door;
             if (MathUtils.randomBoolean(.02f + (floor.depth / 300f))) {
                 door = create(mimic, lootMaker.createItem(), floor.depth, false);
@@ -449,16 +464,16 @@ public class MonsterFactory {
             do
             {
                 tile = floor.getOpenTile();
-                //make sure we don't spawn a chest on top of an enemy
-                for (int n = 0; n < entities.size; n++) {
-                    Entity e = entities.get(i);
+                //make sure we don't spawn a key on top of anything else
+                for (int n = 0; n < entities.size && tile != null; n++) {
+                    Entity e = entities.get(n);
                     Position p = Position.Map.get(e);
                     if (tile[0] == p.getX() && tile[1] == p.getY()) {
                         tile = null;
-                        break;
                     }
                 }
             } while (tile == null);
+            
             Entity key;
             key = create(t, null, floor.depth, false);
             key.add(new Position(tile));
