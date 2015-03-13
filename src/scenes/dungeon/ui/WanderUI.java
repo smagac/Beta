@@ -13,7 +13,6 @@ import scenes.dungeon.RenderSystem;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
@@ -25,19 +24,14 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SnapshotArray;
 
@@ -73,19 +67,13 @@ public class WanderUI extends GameUI {
     private Group goddessDialog;
     private Label gMsg;
     private Table itemSubmenu;
-    Table lootList;
-    ObjectIntMap<Item> loot;
-    Array<Item> lootRows;
-    private ButtonGroup<Button> lootButtons;
-    private Table sacrificeList;
-    ObjectIntMap<Item> sacrifices;
-    private ButtonGroup<Button> sacrificeButtons;
-
+    
+    ItemList lootList;
     private ScrollPane lootPane;
+    ItemList sacrificeList;
     private ScrollPane sacrificePane;
+    
     private FocusGroup sacrificeGroup;
-    private ScrollOnChange lootPaneScroller;
-    private ScrollOnChange sacrificePaneScroller;
     
     ParticleActor weather;
 
@@ -112,9 +100,6 @@ public class WanderUI extends GameUI {
     
     public WanderUI(AssetManager manager) {
         super(manager);
-
-        loot = new ObjectIntMap<Item>();
-        sacrifices = new ObjectIntMap<Item>();
 
         menu = new DefaultStateMachine<WanderUI>(this, WanderState.Wander);
     }
@@ -228,182 +213,40 @@ public class WanderUI extends GameUI {
                 itemSubmenu.top().add(sacrificeLabel).width(230f).pad(4f).padBottom(0f);
                 itemSubmenu.row();
 
-                lootList = new Table();
-                lootList.top();
-                lootList.pad(0f);
-
-                lootPane = new ScrollPane(lootList, skin);
+                lootList = new ItemList(skin);
+                lootList.list.setTouchable(Touchable.childrenOnly);
+                lootList.setItems(playerService.getInventory().getLoot());
+                
+                lootPane = new ScrollPane(lootList.list, skin);
                 lootPane.setScrollingDisabled(true, false);
                 lootPane.setScrollbarsOnTop(false);
                 lootPane.setScrollBarPositions(true, false);
                 lootPane.setFadeScrollBars(false);
                 lootPane.addListener(new ScrollFocuser(lootPane));
-
-                lootList.setTouchable(Touchable.childrenOnly);
+                
                 itemSubmenu.add(lootPane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 
-                sacrificeList = new Table();
-                sacrificeList.bottom();
-                sacrificeList.pad(4f).padRight(10f);
-
-                sacrificePane = new ScrollPane(sacrificeList, skin);
+                sacrificeList = new ItemList(skin);
+                sacrificeList.list.setTouchable(Touchable.childrenOnly);
+                
+                lootList.setSwapList(sacrificeList);
+                sacrificeList.setSwapList(lootList);
+                
+                sacrificePane = new ScrollPane(sacrificeList.list, skin);
                 sacrificePane.setScrollingDisabled(true, false);
                 sacrificePane.setScrollbarsOnTop(false);
                 sacrificePane.setScrollBarPositions(true, false);
                 sacrificePane.setFadeScrollBars(false);
                 sacrificePane.addListener(new ScrollFocuser(sacrificePane));
 
-                sacrificeList.setTouchable(Touchable.childrenOnly);
                 itemSubmenu.add(sacrificePane).width(230f).expandY().fillY().pad(4f).padTop(0f);
 
                 itemSubmenu.addAction(Actions.alpha(0f));
                 display.addActor(itemSubmenu);
 
-                lootPane.addListener(new InputListener() {
-                    @Override
-                    public boolean keyDown(InputEvent evt, int keycode) {
-                        if (Input.RIGHT.match(keycode)) {
-                            sacrificeGroup.setFocus(sacrificePane);
-                            return true;
-                        }
-
-                        if (loot.size <= 0) {
-                            return false;
-                        }
-
-                        if (Input.ACCEPT.match(keycode)) {
-                            Item item = (Item) lootButtons.getChecked().getUserObject();
-                            Integer k = loot.get(item, 0);
-
-                            if (k - 1 >= 0) {
-                                sacrifices.put(item, sacrifices.get(item, 0) + 1);
-                                loot.put(item, k - 1);
-                                populateSacrifices();
-                                populateLoot();
-                            }
-                            return true;
-                        }
-
-                        if (Input.DOWN.match(keycode)) {
-                            if (lootButtons.getChecked() == null) {
-                                Button next = lootButtons.getButtons().first();
-                                if (next != null) {
-                                    next.setChecked(true);
-                                }
-                            }
-                            else {
-                                int selected = lootButtons.getButtons().indexOf(lootButtons.getChecked(), true);
-
-                                if (selected + 1 >= lootButtons.getButtons().size) {
-                                    return false;
-                                }
-                                else {
-                                    Button next = lootButtons.getButtons().get(selected + 1);
-                                    next.setChecked(true);
-                                }
-                            }
-                            return true;
-                        }
-                        if (Input.UP.match(keycode)) {
-                            if (lootButtons.getChecked() == null) {
-                                Button next = lootButtons.getButtons().first();
-                                if (next != null) {
-                                    next.setChecked(true);
-                                }
-                            }
-                            else {
-                                int selected = lootButtons.getButtons().indexOf(lootButtons.getChecked(), true);
-                                if (selected - 1 < 0) {
-                                    return false;
-                                }
-                                else {
-                                    Button next = lootButtons.getButtons().get(selected - 1);
-                                    next.setChecked(true);
-                                }
-                            }
-                            return true;
-                        }
-
-                        return false;
-                    }
-                });
-
-                sacrificePane.addListener(new InputListener() {
-                    @Override
-                    public boolean keyDown(InputEvent evt, int keycode) {
-                        if (Input.LEFT.match(keycode)) {
-                            sacrificeGroup.setFocus(lootPane);
-                            return true;
-                        }
-
-                        if (sacrifices.size <= 0) {
-                            return false;
-                        }
-
-                        if (Input.ACCEPT.match(keycode)) {
-                            Item item = (Item) sacrificeButtons.getChecked().getUserObject();
-                            Integer k = sacrifices.get(item, 0);
-
-                            if (k - 1 >= 0) {
-                                loot.put(item, loot.get(item, 0) + 1);
-                                sacrifices.put(item, k - 1);
-                                if (k - 1 == 0) {
-                                    sacrifices.remove(item, 0);
-                                }
-                                populateSacrifices();
-                                populateLoot();
-                            }
-                            return true;
-                        }
-
-                        if (Input.DOWN.match(keycode)) {
-                            if (sacrificeButtons.getChecked() == null) {
-                                Button next = sacrificeButtons.getButtons().first();
-                                if (next != null) {
-                                    next.setChecked(true);
-                                }
-                            }
-                            else {
-                                int selected = sacrificeButtons.getButtons().indexOf(sacrificeButtons.getChecked(),
-                                        true);
-
-                                if (selected + 1 >= sacrificeButtons.getButtons().size) {
-                                    return false;
-                                }
-                                else {
-                                    Button next = sacrificeButtons.getButtons().get(selected + 1);
-                                    next.setChecked(true);
-                                }
-                            }
-                            return true;
-                        }
-                        if (Input.UP.match(keycode)) {
-                            if (sacrificeButtons.getChecked() == null) {
-                                Button next = sacrificeButtons.getButtons().first();
-                                if (next != null) {
-                                    next.setChecked(true);
-                                }
-                            }
-                            else {
-                                int selected = sacrificeButtons.getButtons().indexOf(sacrificeButtons.getChecked(),
-                                        true);
-                                if (selected - 1 < 0) {
-                                    return false;
-                                }
-                                else {
-                                    Button next = sacrificeButtons.getButtons().get(selected - 1);
-                                    next.setChecked(true);
-                                }
-                            }
-                            return true;
-                        }
-
-                        return false;
-                    }
-                });
             }
 
-            sacrificeGroup = new FocusGroup(buttonList, lootPane, sacrificePane);
+            sacrificeGroup = new FocusGroup(buttonList, lootList.list, sacrificeList.list);
             sacrificeGroup.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -412,11 +255,11 @@ public class WanderUI extends GameUI {
 
                     Actor a = focusList().getFocused();
 
-                    if (a == lootPane) {
-                        showPointer(a, Align.left, Align.top);
+                    if (a == lootList.list) {
+                        showPointer(lootPane, Align.left, Align.top);
                     }
-                    else if (a == sacrificePane) {
-                        showPointer(a, Align.right, Align.top);
+                    else if (a == sacrificeList.list) {
+                        showPointer(sacrificePane, Align.right, Align.top);
                     }
                     else {
                         hidePointer();
@@ -425,11 +268,11 @@ public class WanderUI extends GameUI {
                     setFocus(a);
                 }
             });
-            lootButtons = new ButtonGroup<Button>();
-            sacrificeButtons = new ButtonGroup<Button>();
 
-            lootPaneScroller = new ScrollOnChange(lootPane);
-            sacrificePaneScroller = new ScrollOnChange(sacrificePane);
+            ScrollOnChange lootPaneScroller = new ScrollOnChange(lootPane);
+            ScrollOnChange sacrificePaneScroller = new ScrollOnChange(sacrificePane);
+            lootList.list.addListener(lootPaneScroller);
+            sacrificeList.list.addListener(sacrificePaneScroller);
             
             goddess = new Image(skin.getRegion(playerService.getWorship()));
             goddess.setSize(128f, 128f);
@@ -473,8 +316,6 @@ public class WanderUI extends GameUI {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Zoom);
                         return true;
                     }
-                    
-                    
                 }
                 return false;
             }
@@ -510,6 +351,7 @@ public class WanderUI extends GameUI {
         });
         
         defaultGroup = new FocusGroup(buttonList);
+        defaultGroup.addListener(focusListener);
     }
 
     @Override
@@ -563,128 +405,11 @@ public class WanderUI extends GameUI {
         itemSubmenu.clearActions();
 
         // make clone so we can work with it
-        this.loot = new ObjectIntMap<Item>(playerService.getInventory().getLoot());
-
-        sacrifices.clear();
-
-        populateLoot();
-        populateSacrifices();
-
-        if (loot.size > 0) {
-            lootButtons.getButtons().first().setChecked(true);
-        }
-        if (sacrifices.size > 0) {
-            sacrificeButtons.getButtons().first().setChecked(true);
-        }
-
         goddessDialog.clearActions();
         goddessDialog.addAction(Actions.moveTo(goddessDialog.getX(), display.getHeight() - goddessDialog.getHeight(),
                 .2f));
         itemSubmenu.addAction(Actions.alpha(1f, .2f));
 
-        lootPane.pack();
-        sacrificePane.pack();
-    }
-
-    void populateLoot() {
-        lootList.clear();
-        lootList.top().left();
-        lootButtons.getAllChecked().clear();
-        lootButtons.getButtons().clear();
-
-        if (loot.keys().hasNext) {
-            for (final Item item : loot.keys()) {
-                final TextButton l = new TextButton(item.toString(), skin);
-                l.setName(item.toString());
-                l.setUserObject(item);
-                l.setDisabled(true);
-                lootList.add(l).width(190f);
-                Label i = new Label(String.valueOf(loot.get(item, 0)), skin, "smaller");
-                i.setAlignment(Align.right);
-                lootList.add(i).width(20f);
-                lootList.row();
-                lootButtons.add(l);
-                l.addListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                        if (button == Buttons.LEFT) {
-                            Integer k = loot.get(item, 0);
-
-                            if (k - 1 >= 0) {
-                                sacrifices.put(item, sacrifices.get(item, 0) + 1);
-                                loot.put(item, k - 1);
-                                populateSacrifices();
-                                populateLoot();
-                            }
-                            l.setChecked(true);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                l.addListener(lootPaneScroller);
-            }
-        }
-        else {
-            lootList.center();
-            Label l = new Label("Looks like you don't have any loot!", skin, "smaller");
-            l.setWrap(true);
-            l.setAlignment(Align.center);
-            lootList.add(l).expandX().fillX();
-        }
-        lootList.pack();
-    }
-
-    private void populateSacrifices() {
-        sacrificeList.clear();
-        sacrificeList.top().left();
-        sacrificeButtons.getAllChecked().clear();
-        sacrificeButtons.getButtons().clear();
-
-        if (sacrifices.keys().hasNext) {
-            for (final Item item : sacrifices.keys()) {
-                final TextButton l = new TextButton(item.toString(), skin);
-                l.setName(item.toString());
-                l.setUserObject(item);
-                l.setDisabled(true);
-                sacrificeList.add(l).width(190f);
-                Label i = new Label(String.valueOf(sacrifices.get(item, 0)), skin, "smaller");
-                i.setAlignment(Align.right);
-                sacrificeList.add(i).width(20f);
-                sacrificeList.row();
-                sacrificeButtons.add(l);
-                l.addListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                        if (button == Buttons.LEFT) {
-                            Integer k = sacrifices.get(item, 0);
-
-                            if (k - 1 >= 0) {
-                                loot.put(item, loot.get(item, 0) + 1);
-                                sacrifices.put(item, k - 1);
-                                if (k - 1 == 0) {
-                                    sacrifices.remove(item, 0);
-                                }
-                                populateSacrifices();
-                                populateLoot();
-                            }
-                            l.setChecked(true);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                l.addListener(sacrificePaneScroller);
-            }
-        }
-        else {
-            sacrificeList.center();
-            Label l = new Label("Click on an item to add it to the list!", skin, "smaller");
-            l.setWrap(true);
-            l.setAlignment(Align.center);
-            sacrificeList.add(l).expandX().fillX();
-        }
-        sacrificeList.pack();
     }
 
     public void fadeOut(Runnable cmd) {
@@ -797,7 +522,7 @@ public class WanderUI extends GameUI {
             Item item = combat.getDrop();
             if (item != null) {
                 playerService.getInventory().pickup(item);
-                
+                lootList.updateLabel(item, playerService.getInventory().getTmpLoot().get(item, 0));
                 setMessage(String.format("Obtained %s", item.fullname()));
             }
             return true;

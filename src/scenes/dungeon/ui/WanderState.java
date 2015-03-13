@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.common.Input;
+import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 
 /**
@@ -31,6 +32,14 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.hideGoddess();
+            
+            //move everything from sacrifice into tmp
+            for (Item i : entity.sacrificeList.items.keys()) {
+                int amount = entity.sacrificeList.items.get(i, 0);
+                entity.lootList.updateLabel(i, entity.lootList.items.get(i, 0) + amount);
+            }
+            entity.sacrificeList.clear();
+            
         }
 
         @Override
@@ -169,10 +178,10 @@ public enum WanderState implements UIState {
             if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
-                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, healCost)) {
+                if (entity.playerService.getInventory().sacrifice(entity.sacrificeList.items, healCost)) {
                     
                     //TODO optimize this, as it generates new labels every time
-                    entity.populateLoot();
+                    entity.sacrificeList.clear();
                     
                     entity.playerService.recover();
                     entity.dungeonService.getProgress().healed = healCost;
@@ -205,7 +214,7 @@ public enum WanderState implements UIState {
 
             if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
                 int fleeCost = entity.dungeonService.getProgress().depth;
-                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, fleeCost)) {
+                if (entity.playerService.getInventory().sacrifice(entity.sacrificeList.items, fleeCost)) {
                     entity.changeState(Exit);
                     return true;
                 }

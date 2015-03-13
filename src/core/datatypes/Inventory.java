@@ -227,8 +227,20 @@ public class Inventory implements Serializable {
         }
     }
 
+    /**
+     * Get all the loot that the player has total
+     * @return
+     */
     public ObjectIntMap<Item> getLoot() {
         return all;
+    }
+    
+    /**
+     * Get all the loot that's only available in the player's dungeon inventory
+     * @return
+     */
+    public ObjectIntMap<Item> getTmpLoot() {
+        return tmp;
     }
 
     /**

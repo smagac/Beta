@@ -16,12 +16,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 public class ScrollOnChange extends ChangeListener {
 
     ScrollPane pane;
-    Rectangle bounds;
-    Vector2 pos;
+    Vector2 pos, bounds;
     public ScrollOnChange(ScrollPane pane) {
         this.pane = pane;
-        bounds = new Rectangle();
         pos = new Vector2();
+        bounds = new Vector2();
     }
     
     @Override
@@ -35,9 +34,17 @@ public class ScrollOnChange extends ChangeListener {
         
         pos.x = actor.getX();
         pos.y = actor.getY();
+        bounds.x = actor.getX() + actor.getWidth();
+        bounds.y = actor.getY() + actor.getHeight();
         actor.localToStageCoordinates(pos);
         pane.stageToLocalCoordinates(pos);
-        this.pane.scrollTo(pos.x, pos.y, actor.getWidth(), actor.getHeight(), false, false);
+        actor.localToStageCoordinates(bounds);
+        pane.stageToLocalCoordinates(bounds);
+
+        bounds.x -= pos.x;
+        bounds.y -= pos.y;
+        
+        this.pane.scrollTo(pos.x, pos.y, bounds.x, bounds.y, false, false);
     }
 
 }
