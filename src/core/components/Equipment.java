@@ -5,14 +5,16 @@ import scenes.Messages;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.math.MathUtils;
 
 public class Equipment extends Component {
 
     public static final ComponentMapper<Equipment> Map = ComponentMapper.getFor(Equipment.class); 
     
-    abstract public class Piece {
+    abstract public static class Piece {
 
         public static final int MAX_POWER = 14;
+        public static final int MAX_DURABILITY = 20;
         
         protected int power;
         protected int maxDurability;
@@ -50,9 +52,29 @@ public class Equipment extends Component {
         }
         
         abstract String breakMsg();
+
+        public static Piece getRandom(int depth) {
+            Piece p;
+            float r = MathUtils.random();
+            if (r < .4) {
+                p = new Sword();
+            }
+            else if (r < .6) {
+                p = new Shield();
+            }
+            else {
+                p = new Armor();
+            }
+            
+            p.power = (int)MathUtils.random(1, depth/50f * MAX_POWER);
+            p.maxDurability = (int)MathUtils.random(1, depth/50f * MAX_DURABILITY);
+            p.durability = p.maxDurability;
+            
+            return p;
+        }
     }
     
-    public class Sword extends Piece {
+    public static class Sword extends Piece {
 
         @Override
         String breakMsg() {
@@ -61,7 +83,7 @@ public class Equipment extends Component {
         
     }
     
-    public class Shield extends Piece {
+    public static class Shield extends Piece {
         @Override
         String breakMsg() {
             return "Your shield broke!";
@@ -69,7 +91,7 @@ public class Equipment extends Component {
         
     }
     
-    public class Armor extends Piece {
+    public static class Armor extends Piece {
         @Override
         String breakMsg() {
             return "Your armor broke!";

@@ -56,6 +56,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
     private Entity player;
     Array<Entity> monsters = new Array<Entity>();
+    Array<Entity> equipment = new Array<Entity>();
     Array<Entity> actOrder = new Array<Entity>();
 
     private Engine engine;
@@ -91,19 +92,28 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @return true if there is an enemy blocking the way
      */
     private Entity checkFoe(int x, int y, Entity e) {
-        if (monsters != null) {
-            for (int i = 0; i < monsters.size; i++) {
-                Entity m = monsters.get(i);
-                Position p = Position.Map.get(m);
-                if ((p.getX() == x && p.getY() == y) && Combat.Map.has(m)) {
-                    return m;
-                }
+        for (int i = 0; i < monsters.size; i++) {
+            Entity m = monsters.get(i);
+            Position p = Position.Map.get(m);
+            if ((p.getX() == x && p.getY() == y) && Combat.Map.has(m)) {
+                return m;
             }
         }
-
+    
         Position p = Position.Map.get(player);
         if (p.getX() == x && p.getY() == y) {
             return player;
+        }
+        return null;
+    }
+    
+    private Entity pickup(int x, int y) {
+        for (int i = 0; i < equipment.size; i++) {
+            Entity e = equipment.get(i);
+            Position p = Position.Map.get(e);
+            if ((p.getX() == x && p.getY() == y)) {
+                return e;
+            }
         }
         return null;
     }
@@ -118,6 +128,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private boolean moveEntity(int x, int y, Entity e) {
         Position p = Position.Map.get(e);
         boolean moved = false;
+        
         if (!isWall(x, y)) {
             Entity foe = checkFoe(x, y, e);
             // Handle combat
@@ -174,6 +185,16 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     else if (x == (int) start[0] && y == (int) start[1]) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Ascend);
                     }
+                    Entity obj = pickup(x, y);
+                    // equipment
+                    if (obj != null) {
+                        //pick up equipment that is laying on the floor if it's been dropped
+                        Drop drop = Drop.Map.get(obj);
+                        Equipment eq = Equipment.Map.get(player);
+                        eq.pickup((Equipment.Piece)drop.reward);
+                        equipment.removeValue(obj, true);
+                        engine.removeEntity(obj);
+                    }
                 }
 
                 moved = true;
@@ -196,16 +217,11 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         final float MULT = (actor == player) ? 2 : 1.25f;
 
         // ignore if target died at some point along the way
-        if (aStats.hp <= 0 || bStats.hp <= 0 || (opponent != player && !Combat.Map.has(opponent))) {
-            //pick up equipment that is laying on the floor if it's been dropped
-            if (Drop.Map.has(opponent)) {
-                Drop drop = Drop.Map.get(opponent);
-                if (drop.reward instanceof Equipment.Piece) {
-                    Equipment eq = Equipment.Map.get(player);
-                    eq.pickup((Equipment.Piece)drop.reward);
-                    engine.removeEntity(opponent);
-                }
-            }
+        if (aStats.hp <= 0 ) {
+            return;
+        }
+        
+        if (bStats.hp <= 0 || (opponent != player && !Combat.Map.has(opponent))) {
             return;
         }
 
@@ -237,12 +253,12 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
             float chance = MathUtils.random(.8f, MULT);
             int str = aStats.getStrength();
+            int def = bStats.getDefense();
             if (actor == player) {
                 str += equipment.getSword().getPower();
                 equipment.getSword().decay();
             }
-            int def = bStats.getDefense();
-            if (opponent == player) {
+            else {
                 //shield provides chance to block
                 float pow = equipment.getShield().getPower(); 
                 if (MathUtils.randomBoolean(pow / Equipment.Piece.MAX_POWER)) {
@@ -305,6 +321,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         } else if (piece instanceof Equipment.Armor) {
                             r.setSpriteName("armor");
                         }
+                        this.equipment.add(opponent);
                     }
                 }
                 
@@ -324,8 +341,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     dungeonService.getProgress().monstersKilled++;
                     MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                 }
-                
+                opponent.remove(Monster.class);
                 monsters.removeValue(opponent, true);
+                    
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
             }
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
@@ -631,7 +649,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     public void entityRemoved(Entity entity) {
         if (Groups.monsterType.matches(entity)) {
             monsters.removeValue(entity, true);
-        } else if (Groups.playerType.matches(entity)) {
+        }
+        else if (Groups.playerType.matches(entity)) {
             player = null;
         }
     }

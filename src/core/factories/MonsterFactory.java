@@ -15,6 +15,7 @@ import core.components.Combat;
 import core.components.Groups.Boss;
 import core.components.Groups.Monster;
 import core.components.Drop;
+import core.components.Equipment;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
@@ -238,7 +239,19 @@ public class MonsterFactory {
                     t.name.equals(Monster.Door) ||
                     t.name.equals("domimic"));
 
-            Entity monster = create(t, lootMaker.createItem(), floor.depth, false);
+            Entity monster;
+            Object reward;
+            float chance = MathUtils.random();
+            if (chance < .4) {
+                reward = lootMaker.createItem();
+            } else if (chance < .785) {
+                reward = Equipment.Piece.getRandom(floor.depth);
+            }
+            else {
+                reward = null;
+            }
+            
+            monster = create(t, reward, floor.depth, false);
 
             //pick a tile to spawn the entity on
             int[] tile = null;
@@ -271,7 +284,7 @@ public class MonsterFactory {
      *            - template we use to base our entity from
      * @return an entity
      */
-    private Entity create(MonsterTemplate t, Item item, int depth, boolean boss) {
+    private Entity create(MonsterTemplate t, Object item, int depth, boolean boss) {
         Entity e = new Entity();
         String suffix = "";
         
@@ -319,8 +332,13 @@ public class MonsterFactory {
         Combat c = new Combat(t.norm, t.agro, t.passive, t.die);
         e.add(c);
         
-        if (item != null) {
-            Drop drop = new Drop(item);
+        if (item != null && (item instanceof Item || item instanceof Equipment.Piece)) {
+            Drop drop;
+            if (item instanceof Item) {
+                drop = new Drop((Item)item);
+            } else {
+                drop = new Drop((Equipment.Piece)item);
+            }
             e.add(drop);
         }
         e.add(new Monster());

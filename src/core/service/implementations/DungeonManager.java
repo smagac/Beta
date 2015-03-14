@@ -112,7 +112,9 @@ public class DungeonManager implements IDungeonContainer {
                     if (id.getType().endsWith(Monster.Loot)) {
                         progress.lootTotal++;
                     }
-                    else {
+                    else if 
+                        (!id.getType().endsWith(Monster.Key) &&
+                         !id.getType().endsWith(Monster.Door)){
                         progress.monstersTotal++;
                     }
                     engine.addEntity(entity);
