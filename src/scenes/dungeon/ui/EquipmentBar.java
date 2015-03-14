@@ -30,20 +30,21 @@ public class EquipmentBar {
             equipmentIcon = new Image(skin, "armor");
         }
         equipmentIcon.setSize(32, 32);
+        equipmentIcon.setPosition(0, 12, Align.bottomLeft);
         
         container.addActor(equipmentIcon);
         
-        durabilityBar = new ProgressBar(0, 1.0f, .1f, true, skin, "default");
-        durabilityBar.setSize(24, 80);
-        durabilityBar.setPosition(16, 36, Align.bottom);
+        durabilityBar = new ProgressBar(0, 1.0f, .1f, false, skin, "default");
+        durabilityBar.setSize(44, 4);
+        durabilityBar.setPosition(24, 0, Align.bottom);
         container.addActor(durabilityBar);
         
-        powerValue = new Label("+0", skin, "promptsm");
-        powerValue.setPosition(16, 130, Align.bottom);
-        powerValue.setAlignment(Align.center);
+        powerValue = new Label("+0", skin, "tag");
+        powerValue.setPosition(48, 10, Align.bottomRight);
+        powerValue.setAlignment(Align.right);
         container.addActor(powerValue);
         
-        container.setSize(48, 160);
+        container.setSize(48, 48);
     }
     
     /**

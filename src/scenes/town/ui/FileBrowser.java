@@ -74,7 +74,7 @@ public class FileBrowser extends Group {
         
         Table browseView = new Table(skin);
         browseView.setFillParent(true);
-        url = new Label("", skin, "field");
+        url = new Label("", skin, "tag");
         browseView.left().top().pad(5f).row();
         browseView.add(url).align(Align.left).colspan(3).expandX().fillX().padBottom(8f);
         browseView.row().padBottom(5f);

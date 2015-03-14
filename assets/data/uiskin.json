@@ -60,7 +60,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	field: { font: smaller, fontColor: white, background: button_up },
 	dmg: { font: dmg, fontColor: white },
 	loading: { font: loading, fontColor: white },
-	tag: { font: smallest, fontColor: white, background: progback },
+	tag: { font: smallest, fontColor: white, background: tag },
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }
@@ -70,6 +70,6 @@ com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
 	log: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: smallest },
 },
 com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
-	default: { background: progback, knob: progfront, knobBefore: progfront},
+	default: { background: progback, knobBefore: progfront},
 }
 }

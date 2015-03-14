@@ -1,6 +1,6 @@
 
 uiskin.png
-size: 914,902
+size: 1024,1024
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
@@ -151,6 +151,14 @@ progback
   xy: 774, 744
   size: 8, 8
   split: 1, 1, 1, 1
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+tag
+  rotate: false
+  xy: 774, 744
+  size: 8, 8
+  split: 3, 3, 3, 3
   orig: 8, 8
   offset: 0, 0
   index: -1

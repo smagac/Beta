@@ -11,6 +11,26 @@ public class Equipment extends Component {
 
     public static final ComponentMapper<Equipment> Map = ComponentMapper.getFor(Equipment.class); 
     
+    public static Piece getRandomPiece(int depth) {
+        Piece p;
+        float r = MathUtils.random();
+        if (r < .4) {
+            p = new Sword();
+        }
+        else if (r < .6) {
+            p = new Shield();
+        }
+        else {
+            p = new Armor();
+        }
+        
+        p.power = (int)MathUtils.random(1, 1+(depth/50f * Piece.MAX_POWER));
+        p.maxDurability = (int)MathUtils.random(1, 1+(depth/50f * Piece.MAX_DURABILITY));
+        p.durability = p.maxDurability;
+        
+        return p;
+    }
+
     abstract public static class Piece {
 
         public static final int MAX_POWER = 14;
@@ -27,7 +47,7 @@ public class Equipment extends Component {
                     power = 0;
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, breakMsg());
                 }
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Equipment);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Equipment, this);
             }
         }
         
@@ -35,10 +55,14 @@ public class Equipment extends Component {
             power = p.power;
             maxDurability = p.maxDurability;
             durability = p.maxDurability;
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, replaceMsg());
+            
         }
         
         protected void repair(Piece p) {
             durability = Math.max(durability + p.maxDurability, maxDurability);
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, repairMsg());
+            
         }
         
         protected void reset() {
@@ -52,25 +76,17 @@ public class Equipment extends Component {
         }
         
         abstract String breakMsg();
+        
+        abstract String replaceMsg();
+        
+        abstract String repairMsg();
 
-        public static Piece getRandom(int depth) {
-            Piece p;
-            float r = MathUtils.random();
-            if (r < .4) {
-                p = new Sword();
-            }
-            else if (r < .6) {
-                p = new Shield();
-            }
-            else {
-                p = new Armor();
-            }
-            
-            p.power = (int)MathUtils.random(1, depth/50f * MAX_POWER);
-            p.maxDurability = (int)MathUtils.random(1, depth/50f * MAX_DURABILITY);
-            p.durability = p.maxDurability;
-            
-            return p;
+        public int getDurability() {
+            return durability;
+        }
+        
+        public int getMaxDurability() {
+            return maxDurability;
         }
     }
     
@@ -80,6 +96,16 @@ public class Equipment extends Component {
         String breakMsg() {
             return "Your sword broke!";
         }
+
+        @Override
+        String replaceMsg() {
+            return "You equipped a sword of +" + power;
+        }
+
+        @Override
+        String repairMsg() {
+            return "You repaired your sword";
+        }
         
     }
     
@@ -88,6 +114,16 @@ public class Equipment extends Component {
         String breakMsg() {
             return "Your shield broke!";
         }
+
+        @Override
+        String replaceMsg() {
+            return "You equipped a shield of +" + power;
+        }
+
+        @Override
+        String repairMsg() {
+            return "You repaired your shield";
+        }
         
     }
     
@@ -95,6 +131,16 @@ public class Equipment extends Component {
         @Override
         String breakMsg() {
             return "Your armor broke!";
+        }
+
+        @Override
+        String replaceMsg() {
+            return "You equipped armor of +" + power;
+        }
+
+        @Override
+        String repairMsg() {
+            return "You repaired your armor";
         }
         
     }
@@ -142,7 +188,7 @@ public class Equipment extends Component {
             }
         }
         
-        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Equipment);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Equipment, socket);
     }
     
     /**

@@ -106,4 +106,8 @@ public class Floor {
     {
         return hallways.random();
     }
+    
+    public int getHallways() {
+        return hallways.size;
+    }
 }

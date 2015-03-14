@@ -84,6 +84,9 @@ public class WanderUI extends GameUI {
     @Inject public IPlayerContainer playerService;
     @Inject public IDungeonContainer dungeonService;
     private FocusGroup defaultGroup;
+    private EquipmentBar swordBar;
+    private EquipmentBar shieldBar;
+    private EquipmentBar armorBar;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -172,19 +175,19 @@ public class WanderUI extends GameUI {
         {
             Group hud = new Group();
             
-            EquipmentBar swordBar = new EquipmentBar(Equipment.Sword.class, skin);
+            swordBar = new EquipmentBar(Equipment.Sword.class, skin);
             hud.addActor(swordBar.getActor());
             
-            EquipmentBar shieldBar = new EquipmentBar(Equipment.Shield.class, skin);
-            shieldBar.getActor().setPosition(48, 0);
+            shieldBar = new EquipmentBar(Equipment.Shield.class, skin);
+            shieldBar.getActor().setPosition(0, 48);
             hud.addActor(shieldBar.getActor());
             
-            EquipmentBar armorBar = new EquipmentBar(Equipment.Armor.class, skin);
-            armorBar.getActor().setPosition(96, 0);
+            armorBar = new EquipmentBar(Equipment.Armor.class, skin);
+            armorBar.getActor().setPosition(0, 96);
             hud.addActor(armorBar.getActor());
             
-            hud.setSize(144, swordBar.getActor().getHeight());
-            hud.setPosition(getDisplayWidth(), 0, Align.bottomRight);
+            hud.setSize(48, swordBar.getActor().getHeight());
+            hud.setPosition(getDisplayWidth()-10, 10, Align.bottomRight);
             display.addActor(hud);
         }
 
@@ -561,7 +564,23 @@ public class WanderUI extends GameUI {
             lootList.updateLabel(msg.item, msg.amount);
             return true;
         }
-        
+        if (telegram.message == Messages.Player.Equipment) {
+            Equipment.Piece piece = (Equipment.Piece)telegram.extraInfo;
+            if (piece instanceof Equipment.Sword) {
+                swordBar.setPower(piece.getPower());
+                swordBar.updateDurability(piece.getDurability(), piece.getMaxDurability());
+            }
+            else if (piece instanceof Equipment.Shield) {
+                shieldBar.setPower(piece.getPower());
+                shieldBar.updateDurability(piece.getDurability(), piece.getMaxDurability());
+            }
+            else {
+                armorBar.setPower(piece.getPower());
+                armorBar.updateDurability(piece.getDurability(), piece.getMaxDurability());
+            }
+
+            return true;
+        }
         return super.handleMessage(telegram);
     }
     

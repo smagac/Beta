@@ -245,7 +245,7 @@ public class MonsterFactory {
             if (chance < .4) {
                 reward = lootMaker.createItem();
             } else if (chance < .785) {
-                reward = Equipment.Piece.getRandom(floor.depth);
+                reward = Equipment.getRandomPiece(floor.depth);
             }
             else {
                 reward = null;
@@ -441,9 +441,10 @@ public class MonsterFactory {
         MonsterTemplate t = allMonsters.get(Monster.Door);
         MonsterTemplate mimic = allMonsters.get("domimic");
         
-        int doors = (int)(floor.roomCount * MathUtils.random(.3f, 1.0f));
+        int doors = (int)(Math.min(floor.getHallways(), floor.roomCount) * MathUtils.random(.3f, 1.0f));
         for (int i = 0; i < doors; i++) {
             int[] tile;
+            int tries = 0;
             do {
                 tile = floor.getHallwayTile();
                 //there are no tiles where we can place doors
@@ -452,16 +453,20 @@ public class MonsterFactory {
                 }
                 
                 //make sure we don't spawn a door on top of another door or entity
-                for (int n = 0; n < entities.size; n++) {
+                for (int n = 0; n < entities.size && tile != null; n++) {
                     Entity e = entities.get(n);
                     Position p = Position.Map.get(e);
                     if (tile[0] == p.getX() && tile[1] == p.getY()) {
                         tile = null;
-                        break;
                     }
                 }
+                tries++;
             } 
-            while (tile == null);
+            while (tile == null && tries < 10);
+            
+            if (tile == null) {
+                continue;
+            }
             
             Entity door;
             if (MathUtils.randomBoolean(.02f + (floor.depth / 300f))) {
@@ -487,6 +492,7 @@ public class MonsterFactory {
             do
             {
                 tile = floor.getOpenTile();
+                
                 //make sure we don't spawn a key on top of anything else
                 for (int n = 0; n < entities.size && tile != null; n++) {
                     Entity e = entities.get(n);
