@@ -10,9 +10,10 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
-import core.components.Combat;
 import core.components.Identifier;
 import core.components.Stats;
+import core.components.Drop;
+
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;
@@ -72,7 +73,7 @@ public class BossBattle implements IBattleContainer {
                 String reward = inv.getRequiredCrafts().random().getRequirementTypes().random();
                 String adjective = AdjectiveFactory.getAdjective();
                 
-                results.reward = boss.getComponent(Combat.class).getDrop();
+                results.reward = (Item)Drop.Map.get(boss).reward;
                 results.bonus = new Item(reward, adjective);
                 results.bonusCount = MathUtils.random(1, 5); 
                 results.exp = 5;

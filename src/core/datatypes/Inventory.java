@@ -293,13 +293,17 @@ public class Inventory implements Serializable {
                         tmp.put(item, count);
                     }
                 }
+                ItemMsg im = new ItemMsg();
+                im.item = item;
+                im.amount = allCount;
+                
                 if (allCount == 0) {
                     all.remove(item, 0);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, item);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
                 }
                 else {
                     all.put(item, allCount);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, item);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
                 }
             }
             

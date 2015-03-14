@@ -100,7 +100,6 @@ public interface Messages {
         //different kind of notify, this goes in the bottom right box of the log instead of popups
         public static final int Notify = 0x1008;
         public static final int Action = 0x100A; 
-        public static final int Unlock = 0x100B;
         
         //zoom in and out with the camera;
         public static final int Zoom = 0x100C; 

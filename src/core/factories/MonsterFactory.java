@@ -14,6 +14,7 @@ import core.DataDirs;
 import core.components.Combat;
 import core.components.Groups.Boss;
 import core.components.Groups.Monster;
+import core.components.Drop;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
@@ -315,9 +316,13 @@ public class MonsterFactory {
         r.setDensity(t.density);
         e.add(r);
 
-        Combat c = new Combat(t.norm, t.agro, t.passive, item, t.die);
+        Combat c = new Combat(t.norm, t.agro, t.passive, t.die);
         e.add(c);
-
+        
+        if (item != null) {
+            Drop drop = new Drop(item);
+            e.add(drop);
+        }
         e.add(new Monster());
 
         return e;

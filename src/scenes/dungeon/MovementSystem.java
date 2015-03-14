@@ -24,17 +24,20 @@ import com.badlogic.gdx.utils.Array;
 import core.components.Combat;
 import core.components.Groups;
 import core.components.Groups.Monster;
+import core.components.Drop;
 import core.components.Equipment;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Item;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IDungeonContainer;
+import core.service.interfaces.IPlayerContainer;
 
 /**
  * Handles all movement for dungeoning, as well as bump combat
@@ -193,7 +196,16 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         final float MULT = (actor == player) ? 2 : 1.25f;
 
         // ignore if target died at some point along the way
-        if (bStats.hp <= 0 || (opponent != player && !Combat.Map.has(opponent))) {
+        if (aStats.hp <= 0 || bStats.hp <= 0 || (opponent != player && !Combat.Map.has(opponent))) {
+            //pick up equipment that is laying on the floor if it's been dropped
+            if (Drop.Map.has(opponent)) {
+                Drop drop = Drop.Map.get(opponent);
+                if (drop.reward instanceof Equipment.Piece) {
+                    Equipment eq = Equipment.Map.get(player);
+                    eq.pickup((Equipment.Piece)drop.reward);
+                    engine.removeEntity(opponent);
+                }
+            }
             return;
         }
 
@@ -255,48 +267,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             } else {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
             }
-            
-            if (bStats.hp <= 0) {
-                //open door instead of handling drops
-                if (Lock.Map.has(opponent))
-                {
-                    unlockDoor(opponent);
-                }
-                // drop item if opponent killed was not a player
-                else if (opponent != player){
-                    
-                    aStats.exp += bStats.exp;
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-                    if (aStats.canLevelUp()) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
-                    }
-                    ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
-                    Renderable.Map.get(opponent).setSpriteName("dead");
-                    Renderable.Map.get(opponent).setDensity(0);
-                    
-                    Identifier id = Identifier.Map.get(opponent);
-
-                    String name = id.toString();
-                    if (name.endsWith(Monster.Loot)) {
-                        dungeonService.getProgress().lootFound++;
-                        dungeonService.getProgress().totalLootFound++;
-                        engine.removeEntity(opponent);
-                    }
-                    else if (name.endsWith(Monster.Key)) {
-                        dungeonService.getProgress().keys++;
-                        engine.removeEntity(opponent);
-                    }
-                    else {
-                        dungeonService.getProgress().monstersKilled++;
-                        MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
-                    }
-                    
-                    monsters.removeValue(opponent, true);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
-                }
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
-                opponent.remove(Combat.class);
-            }
         }
         else {
             notification.attacker = actor;
@@ -304,6 +274,73 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             notification.dmg = -1;
         }
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+        
+
+        if (bStats.hp <= 0) {
+            //open door instead of handling drops
+            if (Lock.Map.has(opponent))
+            {
+                unlockDoor(opponent);
+            }
+            // drop item if opponent killed was not a player
+            else if (opponent != player){
+                
+                aStats.exp += bStats.exp;
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+                if (aStats.canLevelUp()) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
+                }
+                ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
+                Renderable r = Renderable.Map.get(opponent);
+                r.setSpriteName("dead");
+                r.setDensity(0);
+                if (Drop.Map.has(opponent)) {
+                    Drop drop = Drop.Map.get(opponent);
+                    if (drop.reward instanceof Equipment.Piece) {
+                        Equipment.Piece piece = (Equipment.Piece)drop.reward;
+                        if (piece instanceof Equipment.Sword) {
+                            r.setSpriteName("sword");
+                        } else if (piece instanceof Equipment.Shield) {
+                            r.setSpriteName("shield");
+                        } else if (piece instanceof Equipment.Armor) {
+                            r.setSpriteName("armor");
+                        }
+                    }
+                }
+                
+                Identifier id = Identifier.Map.get(opponent);
+
+                String name = id.toString();
+                if (name.endsWith(Monster.Loot)) {
+                    dungeonService.getProgress().lootFound++;
+                    dungeonService.getProgress().totalLootFound++;
+                    engine.removeEntity(opponent);
+                }
+                else if (name.endsWith(Monster.Key)) {
+                    dungeonService.getProgress().keys++;
+                    engine.removeEntity(opponent);
+                }
+                else {
+                    dungeonService.getProgress().monstersKilled++;
+                    MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
+                }
+                
+                monsters.removeValue(opponent, true);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
+            }
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
+            opponent.remove(Combat.class);
+            
+            if (Drop.Map.has(opponent)) {
+                Drop drop = Drop.Map.get(opponent);
+                if (drop.reward instanceof Item) {
+                    Item item = (Item)drop.reward;
+                    ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
+                    opponent.remove(Drop.class);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
+                }
+            }
+        }
     }
 
     /**
@@ -430,9 +467,17 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         
                         monsters.removeValue(e, true);
                     }
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Unlock, e);
                     e.remove(Combat.class);
-                    
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("%s was unlocked", id.toString()));
+
+                    if (Drop.Map.has(e)){
+                        Drop drop = Drop.Map.get(e);
+                        if (drop.reward instanceof Item) {
+                            Item item = (Item)drop.reward;
+                            ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
+                        }
+                    }
                     break;
                 }
             }

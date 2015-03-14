@@ -162,7 +162,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                 } else {
                     strength = Math.min(wallFOV[x][y], actorFOV[x][y]);
                 }
-                a.addAction(Actions.alpha(1.0f-strength));
+                a.getColor().a = 1.0f-strength;
                 //block hover over enemies when they're in the shadows
                 if (strength <= .5f) {
                     a.setTouchable(Touchable.enabled);
@@ -534,7 +534,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     @Override
     public boolean handleMessage(Telegram msg) {
-        if (msg.message == Messages.Dungeon.Notify) {
+        if (msg.message == Messages.Dungeon.Notify && msg.extraInfo instanceof CombatNotify) {
             CombatNotify notification = (CombatNotify)msg.extraInfo;
             int dmg = notification.dmg;
             Entity attacker = notification.attacker;

@@ -823,28 +823,24 @@ public class TownUI extends GameUI {
     }
 
     @Override
-    public boolean handleMessage(Telegram msg) {
+    public boolean handleMessage(Telegram telegram) {
         // handle expiration of quests notification
-        if (msg.message == Quest.Actions.Expired) {
+        if (telegram.message == Quest.Actions.Expired) {
             this.pushNotification("A quest has expired");
             return true;
         }
-        if (msg.message == Messages.Player.NewItem) {
-            ItemMsg item = (ItemMsg)msg.extraInfo;
-            addItem(item.item, item.amount);
+        if (telegram.message == Messages.Player.NewItem) {
+            ItemMsg msg = (ItemMsg)telegram.extraInfo;
+            addItem(msg.item, msg.amount);
             return true;
         }
-        if (msg.message == Messages.Player.UpdateItem) {
-            ItemMsg item = (ItemMsg)msg.extraInfo;
-            modifyItem(item.item, item.amount);
+        if (telegram.message == Messages.Player.UpdateItem || 
+            telegram.message == Messages.Player.RemoveItem ) {
+            ItemMsg msg = (ItemMsg)telegram.extraInfo;
+            modifyItem(msg.item, msg.amount);
             return true;
         }
-        if (msg.message == Messages.Player.RemoveItem) {
-            Item item = (Item)msg.extraInfo;
-            modifyItem(item, 0);
-            return true;
-        }
-        return super.handleMessage(msg);
+        return super.handleMessage(telegram);
     }
 
     /**

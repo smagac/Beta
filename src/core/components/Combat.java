@@ -3,6 +3,7 @@ package core.components;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 
+import core.components.Equipment.Piece;
 import core.datatypes.Item;
 
 public class Combat extends Component {
@@ -13,13 +14,11 @@ public class Combat extends Component {
     float agroMoveChance;
     boolean agro;
     boolean passive;
-    Item itemDrop;
 
-    public Combat(float norm, float agro, boolean passive, Item drop, String deathMessage) {
+    public Combat(float norm, float agro, boolean passive, String deathMessage) {
         this.moveChance = norm;
         this.agroMoveChance = agro;
         this.die = deathMessage;
-        this.itemDrop = drop;
     }
 
     /**
@@ -29,13 +28,6 @@ public class Combat extends Component {
      */
     public float getMovementRate() {
         return (agro) ? agroMoveChance : moveChance;
-    }
-
-    /**
-     * @return get the loot dropped when the entity is killed
-     */
-    public Item getDrop() {
-        return itemDrop;
     }
 
     public boolean isPassive() {

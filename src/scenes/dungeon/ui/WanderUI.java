@@ -38,6 +38,9 @@ import com.badlogic.gdx.utils.SnapshotArray;
 import core.DataDirs;
 import core.common.Input;
 import core.components.Combat;
+import core.components.Drop;
+import core.components.Equipment;
+import core.components.Equipment.Piece;
 import core.components.Identifier;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
@@ -92,8 +95,9 @@ public class WanderUI extends GameUI {
             Messages.Dungeon.Leave,
             Messages.Dungeon.Refresh,
             Messages.Dungeon.Action,
-            Messages.Dungeon.Unlock,
-            Messages.Dungeon.Zoom
+            Messages.Dungeon.Zoom,
+            Messages.Player.UpdateItem,
+            Messages.Player.NewItem
         );
     }
     
@@ -473,7 +477,10 @@ public class WanderUI extends GameUI {
 
     @Override
     public boolean handleMessage(Telegram telegram) {
-        if (telegram.message == Messages.Dungeon.Notify) {
+        if (telegram.message == Messages.Dungeon.Notify && telegram.extraInfo instanceof String) {
+            setMessage((String)telegram.extraInfo);
+        }
+        else if (telegram.message == Messages.Dungeon.Notify && telegram.extraInfo instanceof CombatNotify) {
             CombatNotify notification = (CombatNotify)telegram.extraInfo;
             audio.playSfx(DataDirs.Sounds.hit);
             int dmg = notification.dmg;
@@ -518,29 +525,16 @@ public class WanderUI extends GameUI {
             Combat combat = Combat.Map.get(opponent);
             setMessage(combat.getDeathMessage(Identifier.Map.get(opponent).toString()));
             
-            Item item = combat.getDrop();
-            if (item != null) {
-                playerService.getInventory().pickup(item);
-                lootList.updateLabel(item, playerService.getInventory().getTmpLoot().get(item, 0));
-                setMessage(String.format("Obtained %s", item.fullname()));
-            }
-            return true;
-        }
-        if (telegram.message == Messages.Dungeon.Unlock) {
-            Entity opponent = (Entity)telegram.extraInfo;
-            Combat combat = Combat.Map.get(opponent);
-            setMessage(String.format("%s was unlocked", Identifier.Map.get(opponent).toString()));
-            
-            Item item = combat.getDrop();
-            if (item != null) {
-                playerService.getInventory().pickup(item);
-                
-                setMessage(String.format("Obtained %s", item.fullname()));
-            }
             return true;
         }
         if (telegram.message == Messages.Dungeon.Refresh) {
             refresh((Progress) telegram.extraInfo);
+            return true;
+        }
+        if (telegram.message == Messages.Player.UpdateItem || 
+            telegram.message == Messages.Player.NewItem) {
+            Messages.Player.ItemMsg msg = (Messages.Player.ItemMsg)telegram.extraInfo;
+            lootList.updateLabel(msg.item, msg.amount);
             return true;
         }
         
