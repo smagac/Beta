@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -97,7 +98,8 @@ public class WanderUI extends GameUI {
             Messages.Dungeon.Action,
             Messages.Dungeon.Zoom,
             Messages.Player.UpdateItem,
-            Messages.Player.NewItem
+            Messages.Player.NewItem,
+            Messages.Player.Equipment
         );
     }
     
@@ -164,6 +166,26 @@ public class WanderUI extends GameUI {
             }
             table.setPosition(0, display.getHeight() - 32f);
             display.addActor(table);
+        }
+
+        //create equipment hud
+        {
+            Group hud = new Group();
+            
+            EquipmentBar swordBar = new EquipmentBar(Equipment.Sword.class, skin);
+            hud.addActor(swordBar.getActor());
+            
+            EquipmentBar shieldBar = new EquipmentBar(Equipment.Shield.class, skin);
+            shieldBar.getActor().setPosition(48, 0);
+            hud.addActor(shieldBar.getActor());
+            
+            EquipmentBar armorBar = new EquipmentBar(Equipment.Armor.class, skin);
+            armorBar.getActor().setPosition(96, 0);
+            hud.addActor(armorBar.getActor());
+            
+            hud.setSize(144, swordBar.getActor().getHeight());
+            hud.setPosition(getDisplayWidth(), 0, Align.bottomRight);
+            display.addActor(hud);
         }
 
         fader = new Image(skin.getRegion("wfill"));
@@ -296,6 +318,8 @@ public class WanderUI extends GameUI {
             goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight() / 2 - 64f));
             goddessDialog.addAction(Actions.alpha(0f));
         }
+        
+        
 
 
         // key listener for moving the character by pressing the arrow keys or
