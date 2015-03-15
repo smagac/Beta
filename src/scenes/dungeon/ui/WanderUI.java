@@ -339,7 +339,7 @@ public class WanderUI extends GameUI {
                         return true;
                     }
                     
-                    if (Input.SWITCH.match(keycode)) {
+                    if (Input.ACTION.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
                         return true;
                     }

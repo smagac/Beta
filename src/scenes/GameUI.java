@@ -293,7 +293,7 @@ public abstract class GameUI extends UI {
                     return false;
                 }
 
-                if (Input.SWITCH.match(keycode)) {
+                if (Input.ACTION.match(keycode)) {
                     focus().next(true);
                     return true;
                 }

@@ -4,13 +4,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 
 public enum Input {
-    ACCEPT(Keys.ENTER, Keys.SPACE, Keys.Q, Keys.NUMPAD_7),
-    CANCEL(Keys.BACKSPACE, Keys.ESCAPE, Keys.E, Keys.NUMPAD_9),
-    SWITCH(Keys.TAB, Keys.CONTROL_RIGHT, Keys.NUMPAD_5),
-    UP(Keys.UP, Keys.W, Keys.NUMPAD_8),
-    DOWN(Keys.DOWN, Keys.S, Keys.NUMPAD_2),
-    LEFT(Keys.LEFT, Keys.A, Keys.NUMPAD_4),
-    RIGHT(Keys.RIGHT, Keys.D, Keys.NUMPAD_6);
+    ACCEPT(Keys.ENTER, Keys.SPACE, Keys.Q, Keys.U, Keys.NUMPAD_7),
+    CANCEL(Keys.BACKSPACE, Keys.ESCAPE, Keys.E, Keys.O, Keys.NUMPAD_9),
+    ACTION(Keys.TAB, Keys.BACKSLASH, Keys.NUMPAD_5),
+    UP(Keys.UP, Keys.W, Keys.I, Keys.NUMPAD_8),
+    DOWN(Keys.DOWN, Keys.S, Keys.K, Keys.NUMPAD_2),
+    LEFT(Keys.LEFT, Keys.A, Keys.J, Keys.NUMPAD_4),
+    RIGHT(Keys.RIGHT, Keys.D, Keys.L, Keys.NUMPAD_6);
     
     int[] keys;
     
