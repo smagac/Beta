@@ -27,11 +27,18 @@ import core.service.interfaces.ISharedResources;
 
 public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
+    public static class StorymodePreferences implements GamePreferences {
+        public boolean gender;
+        public boolean hardcore;
+        public int difficulty;
+    }
+    
     public static final int[] InternalRes = { 960, 540 };
     protected static float[] InternalVolume = {1.0f, 1.0f};
     
     private boolean resumed;
-
+    private boolean hardcore;
+    
     private Screen queued;
 
     private BossListener boss;
@@ -92,8 +99,10 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     }
 
     @Override
-    public void startGame(int difficulty, boolean gender) {
-        playerManager.init(difficulty, gender);
+    public void startGame(GamePreferences preferences) {
+        StorymodePreferences p = (StorymodePreferences)preferences;
+        playerManager.init(p.difficulty, p.gender);
+        this.hardcore = p.hardcore;
         tracker.reset();
         FileBrowser.clearHistory();
         started = true;
@@ -120,7 +129,12 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         playerManager = new PlayerManager();
         ServiceManager.register(IPlayerContainer.class, playerManager);
 
-        startGame(3, true);
+        StorymodePreferences preferences = new StorymodePreferences();
+        preferences.gender = false;
+        preferences.difficulty = 3;
+        preferences.hardcore = false;
+        
+        startGame(preferences);
         SceneManager.switchToScene("town");
         started = true;
     }
@@ -213,6 +227,11 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     @Override
     public boolean debug() {
         return false;
+    }
+
+    @Override
+    public boolean hardcore() {
+        return hardcore;
     }
 
 }

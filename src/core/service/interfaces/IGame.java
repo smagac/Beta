@@ -4,7 +4,9 @@ import github.nhydock.ssm.Service;
 
 public interface IGame extends Service {
 
-    public void startGame(int difficulty, boolean gender);
+    public interface GamePreferences {};
+    
+    public void startGame(GamePreferences preferences);
 
     public void fastStart();
 
@@ -13,6 +15,8 @@ public interface IGame extends Service {
     public void endGame();
 
     public boolean hasStarted();
+    
+    public boolean hardcore();
     
     public boolean debug();
 }

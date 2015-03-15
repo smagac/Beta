@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 
 import core.DataDirs;
+import core.common.Storymode.StorymodePreferences;
 import core.service.interfaces.IGame;
 
 public class Scene extends scenes.Scene<NewUI> {
@@ -42,7 +43,13 @@ public class Scene extends scenes.Scene<NewUI> {
     }
 
     protected void prepareStory() {
-        gameService.startGame(ui.getDifficulty(), ui.getGender());
+        StorymodePreferences preferences = new StorymodePreferences();
+        preferences.difficulty = ui.getDifficulty();
+        preferences.gender = ui.getGender();
+        preferences.hardcore = ui.isHardcore();
+        
+        gameService.startGame(preferences);
+        
         audio.playBgm(manager.get(DataDirs.Audio + "story.mp3", Music.class));
     }
 

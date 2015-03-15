@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -57,6 +58,7 @@ public class NewUI extends UI {
     Scene parent;
     private ButtonGroup<Button> gender;
     private LabeledTicker<Integer> number;
+    private CheckBox hardcore;
 
     @Inject public IPlayerContainer player;
 
@@ -252,52 +254,94 @@ public class NewUI extends UI {
                 }
             });
         }
-
-        final TextButton accept = new TextButton("START", skin);
-        accept.align(Align.center);
-        accept.setSize(80, 32);
-        accept.pad(5);
-        accept.setPosition(createFrame.getWidth() / 2 - accept.getWidth() / 2, 10f);
-        accept.addListener(new ChangeListener() {
-
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-
-                createFrame.addAction(Actions.sequence(Actions.run(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        number.clearListeners();
-                        createFrame.clearListeners();
-                        accept.clearListeners();
-                        createFocus.clearListeners();
-                        audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
-                        hidePointer();
+        window.row();
+        
+        //hardcore
+        {
+            hardcore = new CheckBox("Hardcore Mode", skin, "default");
+            window.add(hardcore).expandX().fillX().align(Align.left).pad(10);
+            createFocus.add(hardcore);
+            hardcore.addListener(new InputListener(){
+                @Override
+                public boolean keyDown(InputEvent event, int keycode) {
+                    if (Input.ACCEPT.match(keycode)) {
+                        hardcore.toggle();
+                        return true;
                     }
+                    return false;
+                };
+            });
+        }
+        window.row();
 
-                }), Actions.alpha(0f, .5f), Actions.run(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        createFrame.clear();
-                        createFrame.remove();
-                        parent.prepareStory();
-                        sm.changeState(UIState.Story);
+        //accept button
+        {
+            final TextButton accept = new TextButton("START", skin);
+            accept.align(Align.center);
+            accept.setSize(80, 32);
+            accept.pad(5);
+            accept.setPosition(createFrame.getWidth() / 2 - accept.getWidth() / 2, 10f);
+            window.add(accept).expandX().width(80f).height(32);
+            accept.addListener(new InputListener() {
+    
+                private void next() {
+                    createFrame.addAction(Actions.sequence(Actions.run(new Runnable() {
+    
+                        @Override
+                        public void run() {
+                            number.clearListeners();
+                            createFrame.clearListeners();
+                            accept.clearListeners();
+                            createFocus.clearListeners();
+                            audio.playSfx(shared.getResource(DataDirs.Sounds.accept, Sound.class));
+                            hidePointer();
+                        }
+    
+                    }), Actions.alpha(0f, .5f), Actions.run(new Runnable() {
+    
+                        @Override
+                        public void run() {
+                            createFrame.clear();
+                            createFrame.remove();
+                            parent.prepareStory();
+                            sm.changeState(UIState.Story);
+                        }
+                    })));                
+                }
+                
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    accept.setChecked(true);
+                }
+                
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                    accept.setChecked(false);
+                }
+                
+                @Override
+                public boolean keyDown(InputEvent event, int keycode) {
+                    if (Input.ACCEPT.match(keycode)) {
+                        accept.setChecked(true);
+                        next();
                     }
-                })));
-            }
-        });
-        createFrame.addActor(accept);
-
+                    return super.keyDown(event, keycode);
+                }
+                
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    next();
+                    return true;
+                }
+            });
+            createFocus.add(accept);
+        }
+        
         createFrame.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
                 boolean hit = false;
 
-                if (Input.ACCEPT.match(keycode)) {
-                    hit = true;
-                    accept.setChecked(true);
-                }
                 if (Input.DOWN.match(keycode)) {
                     hit = true;
                     createFocus.next();
@@ -672,5 +716,9 @@ public class NewUI extends UI {
             }
 
         };
+    }
+
+    public boolean isHardcore() {
+        return hardcore.isChecked();
     }
 }

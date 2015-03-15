@@ -71,5 +71,10 @@ com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
 },
 com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
 	default: { background: progback, knobBefore: progfront},
-}
+},
+com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+	default: { checkboxOff: checkbox-unchecked,
+	           checkboxOn: checkbox-checked,
+	           font: promptsm },
+},
 }
