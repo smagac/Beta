@@ -16,7 +16,5 @@ public interface IGame extends Service {
 
     public boolean hasStarted();
     
-    public boolean hardcore();
-    
     public boolean debug();
 }

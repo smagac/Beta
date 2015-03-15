@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
 import core.service.interfaces.IGame;
+import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
 import core.util.dungeon.TsxTileSet;
@@ -65,7 +66,7 @@ public class RandomFloorData implements Serializable, FloorData {
     @Override
     public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int tW, int tH) {
         TiledMapTileLayer layer = new TiledMapTileLayer(tiles.length, tiles[0].length, tW, tH);
-        IGame game = ServiceManager.getService(IGame.class);
+        IPlayerContainer player = ServiceManager.getService(IPlayerContainer.class);
         
         for (int x = 0; x < tiles.length; x++) {
             for (int y = 0; y < tiles[0].length; y++) {
@@ -78,7 +79,7 @@ public class RandomFloorData implements Serializable, FloorData {
                 else if (tiles[x][y] == PathMaker.WALL) {
                     tile = tileset.getTile(TsxTileSet.WALL);
                 }
-                else if (tiles[x][y] == PathMaker.UP && !game.hardcore()) {
+                else if (tiles[x][y] == PathMaker.UP && !player.isHardcore()) {
                     tile = tileset.getTile(3);
                 }
                 else if (tiles[x][y] == PathMaker.DOWN) {

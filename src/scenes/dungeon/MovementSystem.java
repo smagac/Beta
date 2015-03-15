@@ -62,7 +62,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
     private Engine engine;
     @Inject public IDungeonContainer dungeonService;
-    @Inject public IGame gameService;
+    @Inject public IPlayerContainer playerService;
     
     public void setMap(Floor floorData) {
         // set collision map
@@ -184,7 +184,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Descend);
                     }
                     // ascend
-                    else if (x == (int) start[0] && y == (int) start[1] && !gameService.hardcore()) {
+                    else if (x == (int) start[0] && y == (int) start[1] && !playerService.isHardcore()) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Ascend);
                     }
                     Entity obj = pickup(x, y);

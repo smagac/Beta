@@ -42,7 +42,6 @@ import core.components.Equipment;
 import core.components.Identifier;
 import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
-import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 
 @SuppressWarnings("unchecked")
@@ -80,7 +79,6 @@ public class WanderUI extends GameUI {
     // services
     @Inject public IPlayerContainer playerService;
     @Inject public IDungeonContainer dungeonService;
-    @Inject public IGame gameService;
     
     private FocusGroup defaultGroup;
     private EquipmentBar swordBar;
@@ -242,7 +240,7 @@ public class WanderUI extends GameUI {
 
                 lootList = new ItemList(skin);
                 lootList.list.setTouchable(Touchable.childrenOnly);
-                if (gameService.hardcore()) {
+                if (playerService.isHardcore()) {
                     lootList.setItems(playerService.getInventory().getTmpLoot());
                 } else {
                     lootList.setItems(playerService.getInventory().getLoot());    

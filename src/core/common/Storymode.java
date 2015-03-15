@@ -101,7 +101,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     @Override
     public void startGame(GamePreferences preferences) {
         StorymodePreferences p = (StorymodePreferences)preferences;
-        playerManager.init(p.difficulty, p.gender);
+        playerManager.init(p.difficulty, p.gender, p.hardcore);
         this.hardcore = p.hardcore;
         tracker.reset();
         FileBrowser.clearHistory();
@@ -227,11 +227,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     @Override
     public boolean debug() {
         return false;
-    }
-
-    @Override
-    public boolean hardcore() {
-        return hardcore;
     }
 
 }

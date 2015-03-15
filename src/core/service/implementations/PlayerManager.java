@@ -31,6 +31,7 @@ import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 import core.datatypes.StatModifier;
 import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 
@@ -43,7 +44,8 @@ public class PlayerManager implements IPlayerContainer {
     private float time;
     private int[] formattedTime = new int[3];
     private int difficulty;
-
+    private boolean hardcore;
+    
     private Entity player;
     private Inventory inventory;
     private QuestTracker quests;
@@ -54,7 +56,7 @@ public class PlayerManager implements IPlayerContainer {
     
     @Inject public ISharedResources shared;
     @Inject public ScoreTracker tracker;
-
+    
     public PlayerManager() {
         for (int i = 1; i <= SaveSlots; i++) {
 
@@ -158,6 +160,7 @@ public class PlayerManager implements IPlayerContainer {
             s.time = String.format(timeFormat, fTime[0], fTime[1], fTime[2]);
             s.date = jv.getString("date");
             s.diff = jv.getInt("difficulty");
+            s.hardcore = jv.getBoolean("hardcore", false);
             return s;
         }
         catch (Exception e) {
@@ -187,6 +190,7 @@ public class PlayerManager implements IPlayerContainer {
             json.writeValue("required", inventory.getRequiredCrafts().size);
             json.writeValue("time", time);
             json.writeValue("difficulty", difficulty);
+            json.writeValue("hardcore", hardcore);
 
             DateFormat df = DateFormat.getDateInstance();
             json.writeValue("date", df.format(Calendar.getInstance().getTime()));
@@ -217,6 +221,7 @@ public class PlayerManager implements IPlayerContainer {
         this.time = root.getFloat("time");
         this.difficulty = root.getInt("difficulty");
         this.player = new Entity();
+        this.hardcore = root.getBoolean("hardcore");
         Stats stats = new Stats();
         stats.read(json, root.get("stats"));
         this.player.add(stats);
@@ -258,13 +263,14 @@ public class PlayerManager implements IPlayerContainer {
     }
 
     @Override
-    public void init(int difficulty, boolean gender) {
+    public void init(int difficulty, boolean gender, boolean hardcore) {
         if (made) {
             throw new GdxRuntimeException(
                     "Player Manager has already created a character.  The service must be disposed of before init can be called again");
         }
 
         this.difficulty = difficulty;
+        this.hardcore = hardcore;
 
         // make a player
         player = new Entity();
@@ -303,6 +309,11 @@ public class PlayerManager implements IPlayerContainer {
         time += delta;
     }
 
+    @Override
+    public boolean isHardcore() {
+        return hardcore;
+    }
+    
     @Override
     public void onRegister() {
         // Do nothing   

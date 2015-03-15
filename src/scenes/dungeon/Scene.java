@@ -27,6 +27,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import core.DataDirs;
+import core.components.Equipment;
 import core.datatypes.FileType;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonLoader.DungeonParam;
@@ -116,6 +117,9 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         if (dungeonService == null) {
             dungeonService = new DungeonManager();
             ServiceManager.register(IDungeonContainer.class, dungeonService);
+            
+            //make sure equipment is reset whenever you enter a dungeon
+            Equipment.Map.get(player).reset();
         }
         
         wanderUI = new WanderUI(manager);

@@ -131,7 +131,7 @@ public class NewUI extends UI {
                             .right().row();
                     info.add(new Label("Time: " + s.time, skin, "smaller")).expand().colspan(1).right().row();
                     info.add(
-                            new Label(new String(new char[s.diff]).replace('\0', '*') + " difficulty", skin, "smaller"))
+                            new Label(((s.hardcore) ? "Hardcore " : "") + new String(new char[s.diff]).replace('\0', '*') + " difficulty", skin, "smaller"))
                             .expand().colspan(1).right();
 
                     row.add(info).colspan(1).expand().right();

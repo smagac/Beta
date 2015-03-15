@@ -41,11 +41,14 @@ public interface IPlayerContainer extends Service {
         public String progress;
         public String date;
         public int diff;
+        public boolean hardcore;
     }
 
-    public void init(int difficulty, boolean gender);
+    public void init(int difficulty, boolean gender, boolean hardcore);
 
     public boolean isPrepared();
+    
+    public boolean isHardcore();
 
     public void updateTime(float delta);
 }
