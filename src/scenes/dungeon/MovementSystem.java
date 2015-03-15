@@ -179,14 +179,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
                 // try to figure out which room you're in now
                 if (e == player) {
-                    // descend
-                    if (x == (int) end[0] && y == (int) end[1]) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Descend);
-                    }
-                    // ascend
-                    else if (x == (int) start[0] && y == (int) start[1] && !playerService.isHardcore()) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Ascend);
-                    }
                     Entity obj = pickup(x, y);
                     // equipment
                     if (obj != null) {
@@ -679,5 +671,20 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             return spd1.compareTo(spd2);
         }
         
+    }
+
+    public int changeFloor() {
+        Position p = Position.Map.get(player);
+        int x = p.getX();
+        int y = p.getY();
+        // descend
+        if (x == (int) end[0] && y == (int) end[1]) {
+            return Messages.Dungeon.Descend;
+        }
+        // ascend
+        else if (x == (int) start[0] && y == (int) start[1] && !playerService.isHardcore()) {
+            return Messages.Dungeon.Ascend;
+        }
+        return -1;
     }
 }

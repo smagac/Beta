@@ -118,6 +118,12 @@ public enum WanderState implements UIState {
                             Actions.delay(RenderSystem.MoveSpeed)
                         )
                     );
+                    return true;
+                }
+                int change = ms.changeFloor();
+                
+                if (change != -1) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, change);
                 }
                 return true;
             }

@@ -13,6 +13,7 @@ import scenes.dungeon.RenderSystem;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
@@ -366,8 +367,12 @@ public class WanderUI extends GameUI {
             @Override
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 if (menu.isInState(WanderState.Wander)) {
-                    Direction to = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                    if (button == Buttons.LEFT) {
+                        Direction to = Direction.valueOf(x, y, display.getWidth(), display.getHeight());
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                    } else if (button == Buttons.RIGHT){
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+                    }
                     return true;
                 }
                 return false;
