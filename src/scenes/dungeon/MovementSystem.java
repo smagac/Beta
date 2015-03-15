@@ -37,6 +37,7 @@ import core.datatypes.quests.Quest;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IDungeonContainer;
+import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 
 /**
@@ -61,6 +62,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
     private Engine engine;
     @Inject public IDungeonContainer dungeonService;
+    @Inject public IGame gameService;
     
     public void setMap(Floor floorData) {
         // set collision map
@@ -182,7 +184,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Descend);
                     }
                     // ascend
-                    else if (x == (int) start[0] && y == (int) start[1]) {
+                    else if (x == (int) start[0] && y == (int) start[1] && !gameService.hardcore()) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Ascend);
                     }
                     Entity obj = pickup(x, y);

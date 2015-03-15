@@ -26,7 +26,6 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -39,13 +38,11 @@ import com.badlogic.gdx.utils.SnapshotArray;
 import core.DataDirs;
 import core.common.Input;
 import core.components.Combat;
-import core.components.Drop;
 import core.components.Equipment;
-import core.components.Equipment.Piece;
 import core.components.Identifier;
-import core.datatypes.Item;
 import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
+import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 
 @SuppressWarnings("unchecked")
@@ -83,6 +80,8 @@ public class WanderUI extends GameUI {
     // services
     @Inject public IPlayerContainer playerService;
     @Inject public IDungeonContainer dungeonService;
+    @Inject public IGame gameService;
+    
     private FocusGroup defaultGroup;
     private EquipmentBar swordBar;
     private EquipmentBar shieldBar;
@@ -243,7 +242,11 @@ public class WanderUI extends GameUI {
 
                 lootList = new ItemList(skin);
                 lootList.list.setTouchable(Touchable.childrenOnly);
-                lootList.setItems(playerService.getInventory().getLoot());
+                if (gameService.hardcore()) {
+                    lootList.setItems(playerService.getInventory().getTmpLoot());
+                } else {
+                    lootList.setItems(playerService.getInventory().getLoot());    
+                }
                 
                 lootPane = new ScrollPane(lootList.list, skin);
                 lootPane.setScrollingDisabled(true, false);

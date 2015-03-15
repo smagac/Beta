@@ -1,5 +1,7 @@
 package core.datatypes.dungeon;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -9,6 +11,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
+import core.service.interfaces.IGame;
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;
 import core.util.dungeon.TsxTileSet;
@@ -62,7 +65,8 @@ public class RandomFloorData implements Serializable, FloorData {
     @Override
     public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int tW, int tH) {
         TiledMapTileLayer layer = new TiledMapTileLayer(tiles.length, tiles[0].length, tW, tH);
-
+        IGame game = ServiceManager.getService(IGame.class);
+        
         for (int x = 0; x < tiles.length; x++) {
             for (int y = 0; y < tiles[0].length; y++) {
                 Cell cell = new Cell();
@@ -71,18 +75,17 @@ public class RandomFloorData implements Serializable, FloorData {
                 {
                     tile = tileset.getTile(TsxTileSet.NULL);
                 }
-                else if (tiles[x][y] == PathMaker.ROOM || tiles[x][y] == PathMaker.HALL)
-                {
-                    tile = tileset.getTile(TsxTileSet.FLOOR);
-                }
                 else if (tiles[x][y] == PathMaker.WALL) {
                     tile = tileset.getTile(TsxTileSet.WALL);
                 }
-                else if (tiles[x][y] == PathMaker.UP) {
+                else if (tiles[x][y] == PathMaker.UP && !game.hardcore()) {
                     tile = tileset.getTile(3);
                 }
                 else if (tiles[x][y] == PathMaker.DOWN) {
                     tile = tileset.getTile(5);
+                }
+                else {
+                    tile = tileset.getTile(TsxTileSet.FLOOR);
                 }
                 cell.setTile(tile);
                 layer.setCell(x, y, cell);

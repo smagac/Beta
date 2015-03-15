@@ -215,6 +215,7 @@ public enum WanderState implements UIState {
             if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
                 int fleeCost = entity.dungeonService.getProgress().depth;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrificeList.items, fleeCost)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
                     entity.changeState(Exit);
                     return true;
                 }
