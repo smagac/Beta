@@ -31,7 +31,7 @@ import core.datatypes.FileType;
  */
 public class FileBrowser extends Group {
 
-    private static final String FONTSIZE = "smaller";
+    private static final String FONTSIZE = "list";
     
     Label url;
     private static FileHandle currentFolder;
@@ -250,7 +250,7 @@ public class FileBrowser extends Group {
             list.columnDefaults(2).align(Align.right).width(COL[2]).expandX().fill();
             
             listStyle = skin.get(FONTSIZE, Label.LabelStyle.class);
-            hoverStyle = skin.get("hover", Label.LabelStyle.class);
+            hoverStyle = skin.get("selected", Label.LabelStyle.class);
             
             lie = new ListInputEmulator();
             lie.browser = browser;

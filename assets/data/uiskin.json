@@ -61,6 +61,8 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	dmg: { font: dmg, fontColor: white },
 	loading: { font: loading, fontColor: white },
 	tag: { font: smallest, fontColor: white, background: tag },
+	list: { font: smaller, fontColor: white, background: list}
+	selected: { font: smaller, fontColor: black, background: selected}
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }

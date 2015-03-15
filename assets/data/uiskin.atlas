@@ -139,6 +139,14 @@ image
   orig: 24, 32
   offset: 0, 0
   index: -1
+list
+  rotate: false
+  xy: 820, 796
+  size: 8, 8
+  split: 3, 3, 3, 3
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
 other
   rotate: false
   xy: 36, 54
@@ -162,7 +170,7 @@ pointersm
   index: -1
 progback
   rotate: false
-  xy: 820, 796
+  xy: 872, 842
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -170,7 +178,7 @@ progback
   index: -1
 tag
   rotate: false
-  xy: 820, 796
+  xy: 872, 842
   size: 8, 8
   split: 3, 3, 3, 3
   orig: 8, 8
@@ -178,7 +186,7 @@ tag
   index: -1
 progfront
   rotate: false
-  xy: 872, 842
+  xy: 898, 876
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -186,7 +194,7 @@ progfront
   index: -1
 scroll-knob
   rotate: false
-  xy: 872, 842
+  xy: 898, 876
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -204,6 +212,14 @@ scroll
   xy: 800, 774
   size: 10, 10
   orig: 10, 10
+  offset: 0, 0
+  index: -1
+selected
+  rotate: false
+  xy: 916, 894
+  size: 8, 8
+  split: 3, 3, 3, 3
+  orig: 8, 8
   offset: 0, 0
   index: -1
 sleep

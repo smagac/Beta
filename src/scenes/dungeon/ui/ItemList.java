@@ -66,8 +66,8 @@ class ItemList {
         order = new Array<Item>();
         index = 0;
         
-        hoverStyle = skin.get("hover", Label.LabelStyle.class);
-        normalStyle = skin.get("smaller", Label.LabelStyle.class);
+        hoverStyle = skin.get("selected", Label.LabelStyle.class);
+        normalStyle = skin.get("list", Label.LabelStyle.class);
         
         list.top();
         list.setWidth(230f);
