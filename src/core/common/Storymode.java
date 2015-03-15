@@ -9,6 +9,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.MathUtils;
 
 import core.DLC;
 import core.factories.AllFactories;
@@ -130,7 +131,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IPlayerContainer.class, playerManager);
 
         StorymodePreferences preferences = new StorymodePreferences();
-        preferences.gender = false;
+        preferences.gender = MathUtils.randomBoolean();
         preferences.difficulty = 3;
         preferences.hardcore = false;
         
