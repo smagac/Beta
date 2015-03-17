@@ -58,10 +58,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     
     //SquidPony's FOV System
     private int width, height;
-    private float[][] wallMap;  //fov density of walls
-    private float[][] actorMap; //fov density of actors
-    private float[][] actorFOV; //calculated fov from actors
-    private float[][] wallFOV;  //calculated fov from walls
+    private float[][] wallMap;  //base fov density of walls
+    private float[][] mergeMap; //combined fov density of walls and actors
+    private float[][] fov;
     private FOVSolver fovSolver;
     
     private SpriteBatch batch;
@@ -120,9 +119,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
      * Combines wall and entity density to create an accurate FOV blocking space
      */
     private void calculateDensity() {
-        for (int i = 0; i < actorMap.length; i++) {
-            for (int n = 0; n < actorMap[0].length; n++) {
-                actorMap[i][n] = 0;
+        for (int i = 0; i < wallMap.length; i++) {
+            for (int n = 0; n < wallMap[0].length; n++) {
+                mergeMap[i][n] = wallMap[i][n];
             }
         }
         
@@ -132,7 +131,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             Renderable r = Renderable.Map.get(e);
             Position p = Position.Map.get(e);
             
-            actorMap[p.getX()][p.getY()] = r.getDensity();
+            mergeMap[p.getX()][p.getY()] = r.getDensity();
         }
     }
     
@@ -143,8 +142,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         Position p = Position.Map.get(player);
         
         calculateDensity();
-        fovSolver.calculateFOV(wallMap, p.getX(), p.getY(), 8.0f, wallFOV);
-        fovSolver.calculateFOV(actorMap, p.getX(), p.getY(), 8.0f, actorFOV);
+        fovSolver.calculateFOV(mergeMap, p.getX(), p.getY(), 8.0f, fov);
         
         final int WBOUND = SHADOW_RANGE[0]/2;
         final int HBOUND = SHADOW_RANGE[1]/2;
@@ -157,10 +155,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                 Actor a = shadows[i][n];
                 a.clearActions();
                 float strength = 0;
-                if (x < 0 || x >= wallFOV.length || y < 0 || y >= wallFOV[0].length) {
-                    strength = 0;
-                } else {
-                    strength = Math.min(wallFOV[x][y], actorFOV[x][y]);
+                if (x >= 0 && x < fov.length && y >= 0 && y < fov[0].length) {
+                    strength = fov[x][y];
                 }
                 a.getColor().a = 1.0f-strength;
                 //block hover over enemies when they're in the shadows
@@ -184,9 +180,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         height = f.getBooleanMap()[0].length;
         
         wallMap = f.getShadowMap();
-        actorMap = new float[width][height];
-        wallFOV = new float[width][height];
-        actorFOV = new float[width][height];
+        mergeMap = new float[width][height];
+        fov = new float[width][height];
         
         if (player != null){
             updateFOV();
