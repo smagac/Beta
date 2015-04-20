@@ -3,7 +3,6 @@ package core.common;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 import scenes.town.ui.FileBrowser;
-import scenes.town.ui.TownUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -38,7 +37,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     protected static float[] InternalVolume = {1.0f, 1.0f};
     
     private boolean resumed;
-    private boolean hardcore;
     
     private Screen queued;
 
@@ -103,7 +101,6 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     public void startGame(GamePreferences preferences) {
         StorymodePreferences p = (StorymodePreferences)preferences;
         playerManager.init(p.difficulty, p.gender, p.hardcore);
-        this.hardcore = p.hardcore;
         tracker.reset();
         FileBrowser.clearHistory();
         started = true;
