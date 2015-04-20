@@ -98,7 +98,7 @@ public class Craftable extends Item {
     public void read(Json json, JsonValue jsonData) {
         name = jsonData.getString("name");
         adj = jsonData.getString("adj");
-        fullname = String.format("%s%s", adj, name);
+        fullname = String.format("%s %s", adj, name);
         isReady = "*"+fullname;
         
         JsonValue jv = jsonData.get("requirements");

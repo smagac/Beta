@@ -31,7 +31,6 @@ import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 import core.datatypes.StatModifier;
 import core.service.implementations.ScoreTracker.NumberValues;
-import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 
@@ -221,7 +220,7 @@ public class PlayerManager implements IPlayerContainer {
         this.time = root.getFloat("time");
         this.difficulty = root.getInt("difficulty");
         this.player = new Entity();
-        this.hardcore = root.getBoolean("hardcore");
+        this.hardcore = root.getBoolean("hardcore", false);
         Stats stats = new Stats();
         stats.read(json, root.get("stats"));
         this.player.add(stats);

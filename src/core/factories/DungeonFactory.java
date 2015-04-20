@@ -1,5 +1,7 @@
 package core.factories;
 
+import github.nhydock.ssm.ServiceManager;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -16,10 +18,12 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
+import core.datatypes.dungeon.BossFloor;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.FloorData;
 import core.datatypes.dungeon.RandomFloorData;
+import core.service.interfaces.IGame;
 import core.util.dungeon.PathMaker;
 
 /**
@@ -137,7 +141,12 @@ public class DungeonFactory {
             seeds[i] = seededRandom.nextLong();
         }
         
-        int[] volDepth = {0};
+        int[] volDepth = new int[1];
+        if (ServiceManager.getService(IGame.class).debug()) {
+            volDepth[0] = 1;
+            FloorData data = new BossFloor(params.getDifficulty(), 1);
+            floors.set(0, data);
+        }
         Array<Thread> threads = new Array<Thread>();
         //create threads
         for (int i = 0; i < 4; i++) {
