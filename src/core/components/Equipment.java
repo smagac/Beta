@@ -31,7 +31,7 @@ public class Equipment extends Component {
         return p;
     }
 
-    abstract public static class Piece {
+    abstract public static class Piece implements Comparable<Piece> {
 
         public static final int MAX_POWER = 14;
         public static final int MAX_DURABILITY = 20;
@@ -44,7 +44,6 @@ public class Equipment extends Component {
             if (durability > 0) {
                 durability = Math.max(0, durability - 1);
                 if (durability <= 0) {
-                    power = 0;
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, breakMsg());
                 }
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Equipment, this);
@@ -60,7 +59,7 @@ public class Equipment extends Component {
         }
         
         protected void repair(Piece p) {
-            durability = Math.max(durability + p.maxDurability, maxDurability);
+            durability = Math.min(durability + p.maxDurability, maxDurability);
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, repairMsg());
             
         }
@@ -72,7 +71,7 @@ public class Equipment extends Component {
         }
         
         public int getPower() {
-            return power;
+            return (durability > 0 ) ? power : 0;
         }
         
         abstract String breakMsg();
@@ -87,6 +86,28 @@ public class Equipment extends Component {
         
         public int getMaxDurability() {
             return maxDurability;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof Piece) {
+                Piece p = (Piece)o;
+                return p.power == this.power && 
+                        p.durability == this.durability &&
+                        p.maxDurability == this.maxDurability;
+            }
+            return false;
+        }
+        
+        @Override
+        public int compareTo(Piece o) {
+            if (o.power > this.power) {
+                return 1;
+            }
+            if (o.maxDurability > this.maxDurability) {
+                return 1;
+            }
+            return 0;
         }
     }
     
@@ -105,6 +126,14 @@ public class Equipment extends Component {
         @Override
         String repairMsg() {
             return "You repaired your sword";
+        }
+
+        @Override
+        public int compareTo(Piece o) {
+            if (!(o instanceof Sword)) {
+                return -1;
+            }
+            return super.compareTo(o);
         }
         
     }
@@ -125,6 +154,14 @@ public class Equipment extends Component {
             return "You repaired your shield";
         }
         
+        @Override
+        public int compareTo(Piece o) {
+            if (!(o instanceof Shield)) {
+                return -1;
+            }
+            return super.compareTo(o);
+        }
+        
     }
     
     public static class Armor extends Piece {
@@ -143,6 +180,13 @@ public class Equipment extends Component {
             return "You repaired your armor";
         }
         
+        @Override
+        public int compareTo(Piece o) {
+            if (!(o instanceof Armor)) {
+                return -1;
+            }
+            return super.compareTo(o);
+        }
     }
     
     private Piece sword = new Sword();
@@ -180,12 +224,11 @@ public class Equipment extends Component {
             socket = armor;
         }
         
-        if (piece.maxDurability > socket.maxDurability) {
-            if (piece.power >= socket.power) {
-                socket.replace(piece);
-            } else {
-                socket.repair(piece);
-            }
+        int worth = socket.compareTo(piece); 
+        if (worth == 0) {
+            socket.repair(piece);
+        } else if (worth > 0) {
+            socket.replace(piece);
         }
         
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Equipment, socket);
