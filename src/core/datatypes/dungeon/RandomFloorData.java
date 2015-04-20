@@ -11,7 +11,6 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
-import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.PathMaker;
 import core.util.dungeon.Room;

@@ -2,8 +2,6 @@ package scenes.town.ui;
 
 import github.nhydock.ssm.Inject;
 
-import java.io.File;
-
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
@@ -13,14 +11,11 @@ import scenes.GameUI;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -53,8 +48,6 @@ import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
-import core.util.FileSort;
-import core.util.PathSort;
 
 @SuppressWarnings("unchecked")
 public class TownUI extends GameUI {
@@ -100,9 +93,7 @@ public class TownUI extends GameUI {
 
     Image fader;
     
-    private boolean changeDir;
     private ButtonGroup<Button> craftTabs;
-    private FileHandle queueDir;
 
     @Inject
     public IPlayerContainer playerService;
@@ -493,8 +484,6 @@ public class TownUI extends GameUI {
      * create explore submenu layout
      */
     private void makeExplore() {
-        final TownUI ui = this;
-
         fileBrowser = new FileBrowser(skin);
         fileBrowser.setWidth(getDisplayWidth() - 200);
         fileBrowser.setHeight(getDisplayHeight()-20);

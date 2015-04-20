@@ -3,9 +3,6 @@ package core.components;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 
-import core.components.Equipment.Piece;
-import core.datatypes.Item;
-
 public class Combat extends Component {
     public static final ComponentMapper<Combat> Map = ComponentMapper.getFor(Combat.class);
     

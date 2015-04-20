@@ -29,12 +29,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.components.Stats;
 import core.datatypes.Craftable;
-import core.datatypes.FileType;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker.Reward;
 import core.datatypes.dungeon.DungeonParams;
