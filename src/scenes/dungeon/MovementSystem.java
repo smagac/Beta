@@ -37,7 +37,6 @@ import core.datatypes.quests.Quest;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
 import core.service.interfaces.IDungeonContainer;
-import core.service.interfaces.IGame;
 import core.service.interfaces.IPlayerContainer;
 
 /**
@@ -250,7 +249,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             int def = bStats.getDefense();
             if (actor == player) {
                 str += equipment.getSword().getPower();
-                equipment.getSword().decay();
+                if (!Monster.isObject(opponent)) {
+                    equipment.getSword().decay();
+                }
             }
             else {
                 //shield provides chance to block
@@ -319,20 +320,18 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     }
                 }
                 
-                Identifier id = Identifier.Map.get(opponent);
-
-                String name = id.toString();
-                if (name.endsWith(Monster.Loot)) {
+                if (Monster.isLoot(opponent)) {
                     dungeonService.getProgress().lootFound++;
                     dungeonService.getProgress().totalLootFound++;
                     engine.removeEntity(opponent);
                 }
-                else if (name.endsWith(Monster.Key)) {
+                else if (Monster.isKey(opponent)) {
                     dungeonService.getProgress().keys++;
                     engine.removeEntity(opponent);
                 }
                 else {
                     dungeonService.getProgress().monstersKilled++;
+                    String name = Identifier.Map.get(opponent).toString();
                     MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                 }
                 opponent.remove(Monster.class);
@@ -445,12 +444,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             Entity e = checkFoe(adj[0], adj[1], player);
             if (e != null)
             {
-                Identifier id = Identifier.Map.get(e);
-                String type = id.toString();
-                if (type.endsWith(Monster.Door) || 
-                    type.endsWith(Monster.Loot) ||
-                    type.endsWith("mimic") ||
-                    type.endsWith("domimic") ) {
+                if (Monster.isDoor(e) || Monster.isLoot(e) || Monster.isMimic(e)) {
+                    String name = Identifier.Map.get(e).toString();
                     
                     unlocked = true;
                     
@@ -466,8 +461,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         Renderable.Map.get(e).setSpriteName("dead");
                         Renderable.Map.get(e).setDensity(0);
 
-                        String name = id.toString();
-                        if (name.endsWith(Monster.Loot)) {
+                        if (Monster.isLoot(e)) {
                             dungeonService.getProgress().lootFound++;
                             dungeonService.getProgress().totalLootFound++;
                             engine.removeEntity(e);
@@ -480,7 +474,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         monsters.removeValue(e, true);
                     }
                     e.remove(Combat.class);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("%s was unlocked", id.toString()));
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("%s was unlocked", name));
 
                     if (Drop.Map.has(e)){
                         Drop drop = Drop.Map.get(e);
