@@ -14,7 +14,7 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Align;
 
 import core.DataDirs;
 import core.components.Stats;
