@@ -194,7 +194,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
                     @Override
                     public void run() {
-                        wanderUI.setMessage("You move onto floor " + depth + " of " + d.size());
+                        wanderUI.addEventMessage("You move onto floor " + depth + " of " + d.size());
                         
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
                         
@@ -278,8 +278,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             tileset = dungeonService.getDungeon().getTileset();
             
             RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
-            input.addProcessor(wanderUI);
             input.addProcessor(rs.getStage());
+            input.addProcessor(wanderUI);
             
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
             
@@ -336,7 +336,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             leave();
             wanderUI.addAction(
                 Actions.sequence(
-                    wanderUI.fadeOutAction(),
                     Actions.run(new GotoScene("lore"))
                 )
             );

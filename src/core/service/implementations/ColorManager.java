@@ -29,8 +29,7 @@ public class ColorManager implements IColorMode {
 
     @Override
     public void onUnregister() {
-        // TODO Auto-generated method stub
-
+        hueify.dispose();
     }
     
     @Override
