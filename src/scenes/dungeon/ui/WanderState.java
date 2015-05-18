@@ -63,20 +63,15 @@ public enum WanderState implements UIState {
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
             if (telegram.message == Messages.Dungeon.Movement) {
-                Gdx.app.log("Wander", "Moving player");
                 Direction direction = (Direction) telegram.extraInfo;
                 if (direction == null) {
-                    boolean held = false;
-                    for (Input i : Input.values()){
-                        if (i.isPressed()) {
-                            held = true;
-                        }
-                    }
-                    if (!held) {
+                    Gdx.app.log("Wander", "Stopping player");
+                    if (Direction.valueOf(Gdx.input) != null) {
                         walkTimer = -1f;
                     }
                 }
                 else {
+                    Gdx.app.log("Wander", "Moving player");
                     final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
                     if (ms.movePlayer(direction)) {
                         ms.process();
@@ -121,7 +116,7 @@ public enum WanderState implements UIState {
                 }
                 return true;
             }
-            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Assist) {
+            else if (telegram.message == Messages.Dungeon.Assist) {
                 entity.changeState(Assist);
                 return true;
             }
@@ -143,16 +138,16 @@ public enum WanderState implements UIState {
 
         @Override
         public void enter(WanderUI entity) {
-            entity.showGoddess("Hello there, what is it that you need?");
+            entity.sacrificeMenu.show();
         }
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Heal) {
+            if (telegram.message == Messages.Dungeon.Heal) {
                 entity.changeState(Sacrifice_Heal);
                 return true;
             }
-            else if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Leave) {
+            else if (telegram.message == Messages.Dungeon.Leave) {
                 entity.changeState(Sacrifice_Leave);
                 return true;
             }

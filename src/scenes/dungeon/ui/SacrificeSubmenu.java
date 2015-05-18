@@ -6,6 +6,8 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
 
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -30,14 +32,15 @@ public class SacrificeSubmenu {
     ItemList sacrificeList;
     private ScrollPane sacrificePane;
     
-    private FocusGroup sacrificeGroup;
+    private Card healCard;
+    private Card leaveCard;
     
     public SacrificeSubmenu(Skin skin, IPlayerContainer playerService) {
         menu = new Group();
         menu.setWidth(600);
         menu.setHeight(400);
         
-     // loot List and buttons
+        // loot List and buttons
         {
             itemSubmenu = new Group();
             itemSubmenu.setWidth(200f);
@@ -97,16 +100,13 @@ public class SacrificeSubmenu {
 
         //cards for choosing menu
         {
-            Card healCard = new Card(skin, "Heal", "Sacrifice items to recover all of your hp and/or status ailments", "god");
-            healCard.setPosition(getWidth()/2f - 20, getHeight(), Align.bottomRight);
-            healCard.addAction(Actions.moveToAligned(getWidth()/2f - 20, getHeight()/2f, Align.right, 1f));
+            healCard = new Card(skin, "Heal", "Sacrifice items to recover all of your hp and/or status ailments", "god");
+            healCard.setPosition(getWidth()/2f - 20, getHeight()/2f, Align.right);
             menu.addActor(healCard);
             
-            Card leaveCard = new Card(skin, "Escape", "Sacrifice items to instantly escape from this dungeon with all of your loot", "up");
-            leaveCard.setPosition(getWidth()/2f + 20, getHeight(), Align.bottomLeft);
-            leaveCard.addAction(Actions.moveToAligned(getWidth()/2f + 20, getHeight()/2f, Align.left, 1f));
+            leaveCard = new Card(skin, "Escape", "Sacrifice items to instantly escape from this dungeon with all of your loot", "up");
+            leaveCard.setPosition(getWidth()/2f + 20, getHeight()/2f, Align.left);
             menu.addActor(leaveCard);
-            
         }
         
         ScrollOnChange lootPaneScroller = new ScrollOnChange(lootPane);
@@ -114,6 +114,9 @@ public class SacrificeSubmenu {
         lootList.list.addListener(lootPaneScroller);
         sacrificeList.list.addListener(sacrificePaneScroller);
         
+        //start view as invisible
+        menu.setColor(1f, 1f, 1f, 0f);
+        menu.setOrigin(Align.center);
     }
     
     private float getWidth() {
@@ -136,14 +139,54 @@ public class SacrificeSubmenu {
      * Show initial state with cards
      */
     public void show() {
-        
+        clearActions();
+        menu.addAction(
+            Actions.sequence(
+                Actions.scaleTo(.7f, .7f),
+                Actions.alpha(0f),
+                Actions.addAction(
+                    Actions.moveToAligned(getWidth()/2f - 20, getHeight()/2f, Align.right), 
+                    healCard
+                ),
+                Actions.addAction(
+                    Actions.moveToAligned(getWidth()/2f + 20, getHeight()/2f, Align.left), 
+                    leaveCard
+                ),
+                Actions.addAction(
+                    Actions.parallel(
+                            Actions.moveToAligned(getWidth()/2f - 100, getHeight()/2f, Align.left),
+                            Actions.alpha(0f)
+                    ),
+                    itemSubmenu
+                ),
+                Actions.parallel(
+                        Actions.alpha(1f, .15f),
+                        Actions.scaleTo(1f, 1f, .3f, Interpolation.circleOut)
+                )
+            )
+        );
     }
     
     /**
      * Show all elements and prompt associated with healing
      */
     public void showHeal() {
+        clearActions();
         
+        menu.addAction(
+            Actions.sequence(
+                Actions.addAction(
+                    Actions.moveToAligned(getWidth()/2f - 180, getHeight()/2f, Align.left, .2f),
+                    healCard
+                ),
+                Actions.addAction(
+                    Actions.alpha(0f, .15f),
+                    leaveCard
+                ),
+                Actions.delay(.25f),
+                showItems()
+            )
+        );
     }
     
     /**
@@ -156,15 +199,21 @@ public class SacrificeSubmenu {
     /**
      * Show the item lists
      */
-    private void showItems() {
-        
+    private Action showItems() {
+        return Actions.addAction(
+                Actions.parallel(
+                    Actions.moveBy(20, 0, .2f),
+                    Actions.alpha(1f, .15f)
+                ), itemSubmenu
+            );
     }
     
     /**
      * Hide all elements
      */
     public void hide() {
-
+        clearActions();
+        
         //any items still in the sacrifice pool will be returned to the item list
         for (Item i : sacrificeList.items.keys()) {
             int amount = sacrificeList.items.get(i, 0);
@@ -172,7 +221,14 @@ public class SacrificeSubmenu {
         }
         sacrificeList.clear();
         
-        
+        menu.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                        Actions.alpha(0f, .2f),
+                        Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
+                )
+            )
+        );
     }
 
     /**
@@ -192,5 +248,10 @@ public class SacrificeSubmenu {
         lootList.selectItem(null);
     }
     
-    
+    private void clearActions(){
+        healCard.clearActions();
+        leaveCard.clearActions();
+        itemSubmenu.clearActions();
+        menu.clearActions();
+    }
 }

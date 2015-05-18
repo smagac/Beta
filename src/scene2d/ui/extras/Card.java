@@ -10,7 +10,7 @@ public class Card extends Group {
     
     public Card(Skin skin, String titleText, String contentText, String iconName) {
    
-        Image background = new Image(skin, "window2");
+        Image background = new Image(skin, "window4");
         background.setSize(200, 400);
         addActor(background);
         

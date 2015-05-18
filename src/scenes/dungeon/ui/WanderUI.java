@@ -94,10 +94,14 @@ public class WanderUI extends UI {
             Messages.Dungeon.Leave,
             Messages.Dungeon.Refresh,
             Messages.Dungeon.Action,
+            Messages.Dungeon.Assist,
             Messages.Dungeon.Zoom,
             Messages.Player.UpdateItem,
             Messages.Player.NewItem,
-            Messages.Player.Equipment
+            Messages.Player.Equipment,
+            Messages.Interface.Close,
+            Messages.Interface.Notify,
+            Messages.Interface.Button
         );
     }
     
@@ -206,20 +210,32 @@ public class WanderUI extends UI {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
                 if (menu.isInState(WanderState.Wander)) {
-                    Direction to = Direction.valueOf(keycode);
-                    if (to != null) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
-                        //Gdx.app.log("Wander", "moving player - " + to);
-                        return true;
-                    }
                     
                     if (Input.ACTION.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
                         return true;
                     }
                     
+                    if (Input.ACCEPT.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
+                        return true;
+                    }
+                    
                     if (Input.CANCEL.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Zoom);
+                        return true;
+                    }
+                    
+                    Direction to = Direction.valueOf(keycode);
+                    if (to != null) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                        //Gdx.app.log("Wander", "moving player - " + to);
+                        return true;
+                    }
+                }
+                if (menu.isInState(WanderState.Assist)) {
+                    if (Input.CANCEL.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
                         return true;
                     }
                 }
@@ -229,7 +245,10 @@ public class WanderUI extends UI {
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
                 if (menu.isInState(WanderState.Wander)) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+                    Direction to = Direction.valueOf(keycode);
+                    if (to != null) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+                    }
                     return true;
                 }
                 return false;

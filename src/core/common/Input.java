@@ -12,7 +12,7 @@ public enum Input {
     LEFT(Keys.LEFT, Keys.A, Keys.J, Keys.NUMPAD_4),
     RIGHT(Keys.RIGHT, Keys.D, Keys.L, Keys.NUMPAD_6);
     
-    int[] keys;
+    public final int[] keys;
     
     Input(int... k) {
         keys = k;
@@ -47,9 +47,13 @@ public enum Input {
     }
 
     public boolean isPressed() {
+        return isPressed(Gdx.input);
+    }
+    
+    public boolean isPressed(com.badlogic.gdx.Input input) {
         boolean pressed = false;
         for (int key : keys) {
-            if (Gdx.input.isKeyPressed(key)) {
+            if (input.isKeyPressed(key)) {
                 pressed = true;
                 break;
             }

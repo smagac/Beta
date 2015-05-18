@@ -1,24 +1,23 @@
 package scenes.dungeon;
 
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public enum Direction {
-    Up(0, 1, Keys.UP, Keys.W), 
-    Down(0, -1, Keys.DOWN, Keys.S), 
-    Left(-1, 0, Keys.LEFT, Keys.A), 
-    Right(0, 1, Keys.RIGHT, Keys.D);
+    Up(0, 1, core.common.Input.UP), 
+    Down(0, -1, core.common.Input.DOWN), 
+    Left(-1, 0, core.common.Input.LEFT), 
+    Right(0, 1, core.common.Input.RIGHT);
 
     private int[] move;
-    private int[] keys;
+    private core.common.Input keys;
 
     /**
      * @param key
      *            - Acceptable keys that mask to the direction
      */
-    Direction(int x, int y, int... key) {
+    Direction(int x, int y, core.common.Input key) {
         move = new int[]{x, y};
         keys = key;
     }
@@ -43,9 +42,8 @@ public enum Direction {
     public static Direction valueOf(int keycode) {
         for (int i = 0; i < Direction.values().length; i++) {
             Direction d = Direction.values()[i];
-            for (int key : d.keys) {
-                if (keycode == key)
-                    return d;
+            if (d.keys.match(keycode)) {
+                return d;
             }
         }
         return null;
@@ -119,9 +117,8 @@ public enum Direction {
     public static Direction valueOf(Input input) {
         for (int i = 0; i < Direction.values().length; i++) {
             Direction d = Direction.values()[i];
-            for (int key : d.keys) {
-                if (input.isKeyPressed(key))
-                    return d;
+            if (d.keys.isPressed(input)) {
+                return d;
             }
         }
         return null;
