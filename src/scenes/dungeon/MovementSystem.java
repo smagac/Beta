@@ -17,6 +17,8 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
+import com.badlogic.ashley.utils.ImmutableArray;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -26,11 +28,13 @@ import core.components.Groups;
 import core.components.Groups.Monster;
 import core.components.Drop;
 import core.components.Equipment;
+import core.components.Health;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Ailment;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
@@ -395,24 +399,46 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         Position playerPos = Position.Map.get(player);
         int x = playerPos.getX();
         int y = playerPos.getY();
-        if (direction == Up) {
-            y++;
-        }
-        if (direction == Down) {
-            y--;
-        }
-        if (direction == Right) {
-            x++;
-        }
-        if (direction == Left) {
-            x--;
-        }
-
-        if (!isWall(x, y)) {
-            nextMove[0] = x;
-            nextMove[1] = y;
+        
+        Health health = Health.Map.get(player);
+        //randomize movement when confused
+        if (health.getAilments().contains(Ailment.CONFUSE, true)) {
+            Gdx.app.log("Status", "Player is confused");
+            
+            x += MathUtils.random(-1, 1);
+            if (x != playerPos.getX()) {
+                y += MathUtils.random(-1, 1);
+            }
+            
+            if (!isWall(x, y)) {
+                nextMove[0] = x;
+                nextMove[1] = y;
+            }
+            //always execute turn when confused, even if it's into a wall
             return true;
-        }
+        } 
+        //normal movement behavior
+        else {
+            if (direction == Up) {
+                y++;
+            }
+            if (direction == Down) {
+                y--;
+            }
+            if (direction == Right) {
+                x++;
+            }
+            if (direction == Left) {
+                x--;
+            }
+            
+            //do not execute turn when you try to walk into a wall
+            if (!isWall(x, y)) {
+                nextMove[0] = x;
+                nextMove[1] = y;
+                return true;
+            }
+        }        
 
         return false;
     }
@@ -514,7 +540,52 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 //only move the player entity if they've actually tried to move,
                 // ignores player movement unlock, preventing attacking oneself
                 if (p.getX() != nextMove[0] || p.getY() != nextMove[1]) {
-                    moveEntity(nextMove[0], nextMove[1], e);
+                    //applied all status ailments to player
+                    Health health = Health.Map.get(e);
+                    Stats stats = Stats.Map.get(e);
+                    ImmutableArray<Ailment> active = health.getAilments();
+                    
+                    //handle movement inhibitors
+                    if (active.contains(Ailment.SPRAIN, false)){
+                        Gdx.app.log("Status", "Player is sprained");
+                        //arthritis has higher chance to disable movement and deals damage
+                        // when the player does move
+                        float disable = .8f;
+                        int dmg = 0;
+                        if (active.contains(Ailment.ARTHRITIS, true)) {
+                            disable = .4f;
+                            dmg = (int)Math.max(stats.maxhp / 20f, 1);
+                        } else {
+                            dmg = (int)Math.max(stats.maxhp / 15f, 1);
+                        }
+                        if (MathUtils.randomBoolean(disable)) {
+                            moveEntity(nextMove[0], nextMove[1], e);
+                            CombatNotify notification = new CombatNotify();
+                            notification.attacker = null;
+                            notification.opponent = e;
+                            notification.dmg = dmg;
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+                        }
+                    }
+                    else
+                    {
+                        moveEntity(nextMove[0], nextMove[1], e);
+                    }
+                    
+                    //handle movement inhibitors
+                    if (active.contains(Ailment.POISON, false)){
+                        int dmg = 0;
+                        if (active.contains(Ailment.TOXIC, true)) {
+                            dmg = (int)Math.max(stats.maxhp / 12f, 1);
+                        } else {
+                            dmg = (int)Math.max(stats.maxhp / 15f, 1);
+                        }
+                        CombatNotify notification = new CombatNotify();
+                        notification.attacker = null;
+                        notification.opponent = e;
+                        notification.dmg = dmg;
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+                    }
                 }
             } else {
                 process(e);

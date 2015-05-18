@@ -41,10 +41,12 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.components.Groups;
+import core.components.Health;
 import core.components.Identifier;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Ailment;
 import core.datatypes.dungeon.Floor;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
@@ -55,6 +57,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     public static final float MaxZoom = .5f;
     private static final float SCALE = 32f;
     private static final int[] SHADOW_RANGE = {41, 21};
+    private static final float FOV_RANGE = 8.0f;
+    private static final float BLIND_RANGE = 3.0f;
     
     //SquidPony's FOV System
     private int width, height;
@@ -112,7 +116,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     }
 
     public void setMap(TiledMap map) {
-        this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, batch);
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map, (SCALE)/32f, batch);
     }
     
     /**
@@ -142,7 +146,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         Position p = Position.Map.get(player);
         
         calculateDensity();
-        fovSolver.calculateFOV(mergeMap, p.getX(), p.getY(), 8.0f, fov);
+        Health health = Health.Map.get(player);
+        float range = FOV_RANGE;
+        if (health.getAilments().contains(Ailment.BLIND, true)) {
+            range = BLIND_RANGE;
+        }
+        fovSolver.calculateFOV(mergeMap, p.getX(), p.getY(), range, fov);
         
         final int WBOUND = SHADOW_RANGE[0]/2;
         final int HBOUND = SHADOW_RANGE[1]/2;
@@ -231,6 +240,10 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         addQueue.add(sprite);
     }
 
+    /**
+     * Handles movement animations of actors
+     * @param e
+     */
     protected void process(Entity e) {
         Position p = Position.Map.get(e);
         Renderable r = renderMap.get(e);

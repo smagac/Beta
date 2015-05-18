@@ -23,6 +23,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import core.DataDirs;
 import core.components.Equipment;
 import core.components.Groups;
+import core.components.Health;
 import core.components.Identifier;
 import core.components.Position;
 import core.components.Renderable;
@@ -274,6 +275,7 @@ public class PlayerManager implements IPlayerContainer {
         // make a player
         player = new Entity();
         player.add(new Stats(new int[]{10, 5, 5, 10, 0}, new StatModifier[0]));
+        player.add(new Health());
         player.add(new Identifier("Adventurer", null, new String[0]));
         player.add(new Groups.Player());
         player.add(new Position(0,0));

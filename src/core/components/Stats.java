@@ -191,6 +191,5 @@ public class Stats extends Component implements Serializable {
         baseStats[2] = defense;
         baseStats[3] = speed;
         baseStats[4] = exp;
-        
     }
 }
