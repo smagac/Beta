@@ -33,14 +33,6 @@ fader
   orig: 16, 16
   offset: 0, 0
   index: -1
-selected
-  rotate: false
-  xy: 100, 112
-  size: 16, 16
-  split: 2, 2, 2, 2
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
 button_up
   rotate: false
   xy: 126, 146
@@ -151,7 +143,7 @@ list
   rotate: false
   xy: 2, 2
   size: 8, 8
-  split: 0, 0, 0, 0
+  split: 2, 2, 2, 2
   orig: 8, 8
   offset: 0, 0
   index: -1
@@ -227,6 +219,14 @@ scroll
   xy: 941, 968
   size: 10, 10
   orig: 10, 10
+  offset: 0, 0
+  index: -1
+selected
+  rotate: false
+  xy: 100, 102
+  size: 8, 8
+  split: 2, 2, 2, 2
+  orig: 8, 8
   offset: 0, 0
   index: -1
 sleep

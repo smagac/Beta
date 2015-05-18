@@ -1,5 +1,6 @@
 package scenes.dungeon.ui;
 
+import scene2d.InputDisabler;
 import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
@@ -43,10 +44,8 @@ public class SacrificeSubmenu {
         // loot List and buttons
         {
             itemSubmenu = new Group();
-            itemSubmenu.setWidth(200f);
-            itemSubmenu.setHeight(500f);
-            itemSubmenu.setPosition(-200f, 100f);
-
+            itemSubmenu.setWidth(500f);
+            itemSubmenu.setHeight(400f);
 
             lootList = new ItemList(skin);
             lootList.list.setTouchable(Touchable.childrenOnly);
@@ -55,10 +54,9 @@ public class SacrificeSubmenu {
             } else {
                 lootList.setItems(playerService.getInventory().getLoot());    
             }
-            
             lootPane = new ScrollPane(lootList.list, skin);
-            lootPane.setWidth(200f);
-            lootPane.setHeight(240f);
+            lootPane.setWidth(240f);
+            lootPane.setHeight(380f);
             lootPane.setScrollingDisabled(true, false);
             lootPane.setScrollbarsOnTop(false);
             lootPane.setScrollBarPositions(true, false);
@@ -68,7 +66,9 @@ public class SacrificeSubmenu {
             TextButton label = new TextButton("My Loot", skin);
             label.setUserObject(lootPane);
             TabbedPane pane = new TabbedPane(new ButtonGroup<Button>(label), false);
-            pane.setWidth(230f);
+            pane.setWidth(240f);
+            pane.setHeight(380f);
+            pane.setPosition(0f, itemSubmenu.getHeight(), Align.topLeft);
             itemSubmenu.addActor(pane);
             
             sacrificeList = new ItemList(skin);
@@ -78,19 +78,20 @@ public class SacrificeSubmenu {
             sacrificeList.setSwapList(lootList);
             
             sacrificePane = new ScrollPane(sacrificeList.list, skin);
-            sacrificePane.setWidth(200f);
-            sacrificePane.setHeight(240f);
+            sacrificePane.setWidth(240f);
+            sacrificePane.setHeight(180f);
             sacrificePane.setScrollingDisabled(true, false);
             sacrificePane.setScrollbarsOnTop(false);
             sacrificePane.setScrollBarPositions(true, false);
             sacrificePane.setFadeScrollBars(false);
             sacrificePane.addListener(new ScrollFocuser(sacrificePane));
 
-            label = new TextButton("My Loot", skin);
-            label.setUserObject(lootPane);
+            label = new TextButton("Sacrifice", skin);
+            label.setUserObject(sacrificePane);
             pane = new TabbedPane(new ButtonGroup<Button>(label), false);
-            pane.setWidth(230f);
-            pane.setPosition(0f, 260f);
+            pane.setWidth(240f);
+            pane.setHeight(180f);
+            pane.setPosition(260f, itemSubmenu.getHeight(), Align.topLeft);
             itemSubmenu.addActor(pane);
             
             
@@ -144,25 +145,33 @@ public class SacrificeSubmenu {
             Actions.sequence(
                 Actions.scaleTo(.7f, .7f),
                 Actions.alpha(0f),
+                Actions.run(InputDisabler.instance),
                 Actions.addAction(
-                    Actions.moveToAligned(getWidth()/2f - 20, getHeight()/2f, Align.right), 
+                    Actions.parallel(
+                        Actions.alpha(1f),
+                        Actions.moveToAligned(getWidth()/2f - 20, getHeight()/2f, Align.right)
+                    ),
                     healCard
                 ),
                 Actions.addAction(
-                    Actions.moveToAligned(getWidth()/2f + 20, getHeight()/2f, Align.left), 
+                    Actions.parallel(
+                        Actions.alpha(1f),
+                        Actions.moveToAligned(getWidth()/2f + 20, getHeight()/2f, Align.left)
+                    ), 
                     leaveCard
                 ),
                 Actions.addAction(
                     Actions.parallel(
-                            Actions.moveToAligned(getWidth()/2f - 100, getHeight()/2f, Align.left),
+                            Actions.moveToAligned(getWidth()/2f - 220, getHeight()/2f, Align.left),
                             Actions.alpha(0f)
                     ),
                     itemSubmenu
                 ),
                 Actions.parallel(
                         Actions.alpha(1f, .15f),
-                        Actions.scaleTo(1f, 1f, .3f, Interpolation.circleOut)
-                )
+                        Actions.scaleTo(1f, 1f, .25f, Interpolation.circleOut)
+                ),
+                Actions.run(InputDisabler.instance)
             )
         );
     }
@@ -175,8 +184,9 @@ public class SacrificeSubmenu {
         
         menu.addAction(
             Actions.sequence(
+                Actions.run(InputDisabler.instance),
                 Actions.addAction(
-                    Actions.moveToAligned(getWidth()/2f - 180, getHeight()/2f, Align.left, .2f),
+                    Actions.moveToAligned(getWidth()/2f - 200, getHeight()/2f, Align.right, .3f, Interpolation.circleOut),
                     healCard
                 ),
                 Actions.addAction(
@@ -184,7 +194,8 @@ public class SacrificeSubmenu {
                     leaveCard
                 ),
                 Actions.delay(.25f),
-                showItems()
+                showItems(),
+                Actions.run(InputDisabler.instance)
             )
         );
     }
@@ -193,7 +204,24 @@ public class SacrificeSubmenu {
      * Show all elements and prompt associated with escaping
      */
     public void showEscape() {
+        clearActions();
         
+        menu.addAction(
+            Actions.sequence(
+                Actions.run(InputDisabler.instance),
+                Actions.addAction(
+                    Actions.moveToAligned(getWidth()/2f - 200, getHeight()/2f, Align.right, .3f, Interpolation.circleOut),
+                    leaveCard
+                ),
+                Actions.addAction(
+                    Actions.alpha(0f, .15f),
+                    healCard
+                ),
+                Actions.delay(.25f),
+                showItems(),
+                Actions.run(InputDisabler.instance)
+            )
+        );
     }
     
     /**
@@ -202,7 +230,7 @@ public class SacrificeSubmenu {
     private Action showItems() {
         return Actions.addAction(
                 Actions.parallel(
-                    Actions.moveBy(20, 0, .2f),
+                    Actions.moveBy(20f, 0, .2f, Interpolation.circleOut),
                     Actions.alpha(1f, .15f)
                 ), itemSubmenu
             );

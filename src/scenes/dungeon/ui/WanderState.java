@@ -163,7 +163,7 @@ public enum WanderState implements UIState {
             int healCost = entity.dungeonService.getProgress().healed + 1;
             
             entity.showGoddess("So you'd like me to heal you?\nThat'll cost you " + healCost + " loot.");
-            entity.showLoot();
+            entity.sacrificeMenu.showHeal();
         }
 
         @Override
@@ -196,7 +196,7 @@ public enum WanderState implements UIState {
             int fleeCost = entity.dungeonService.getProgress().depth;
             entity.showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently "
                     + fleeCost + " floors deep.");
-            entity.showLoot();
+            entity.sacrificeMenu.showEscape();
         }
 
         @Override

@@ -96,6 +96,8 @@ public class WanderUI extends UI {
             Messages.Dungeon.Action,
             Messages.Dungeon.Assist,
             Messages.Dungeon.Zoom,
+            Messages.Dungeon.Heal,
+            Messages.Dungeon.Leave,
             Messages.Player.UpdateItem,
             Messages.Player.NewItem,
             Messages.Player.Equipment,
@@ -234,11 +236,20 @@ public class WanderUI extends UI {
                     }
                 }
                 if (menu.isInState(WanderState.Assist)) {
-                    if (Input.CANCEL.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                    if (Input.LEFT.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Heal);
+                        return true;
+                    }
+                    if (Input.RIGHT.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Leave);
                         return true;
                     }
                 }
+                if (Input.CANCEL.match(keycode)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                    return true;
+                }
+                
                 return false;
             }
 
