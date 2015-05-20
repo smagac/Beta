@@ -81,7 +81,7 @@ public class SacrificeSubmenu {
             lootPane.setFadeScrollBars(false);
             lootPane.addListener(new ScrollFocuser(lootPane));
             
-            TextButton label = new TextButton("My Loot", skin);
+            TextButton label = new TextButton("My Loot", skin, "tab");
             label.setUserObject(lootPane);
             TabbedPane pane = new TabbedPane(new ButtonGroup<Button>(label), false);
             pane.setWidth(240f);
@@ -104,7 +104,7 @@ public class SacrificeSubmenu {
             sacrificePane.setFadeScrollBars(false);
             sacrificePane.addListener(new ScrollFocuser(sacrificePane));
 
-            label = new TextButton("Sacrifice", skin);
+            label = new TextButton("Sacrifice", skin, "tab");
             label.setUserObject(sacrificePane);
             pane = new TabbedPane(new ButtonGroup<Button>(label), false);
             pane.setWidth(240f);
@@ -122,7 +122,7 @@ public class SacrificeSubmenu {
             buttonList = new Group();
             ButtonGroup<Button> buttons = new ButtonGroup<Button>();
             
-            TextButton button = new TextButton("Sacrifice", skin);
+            TextButton button = new TextButton("Sacrifice", skin, "pop");
             button.setWidth(240f);
             button.setHeight(48f);
             button.setPosition(0,0);

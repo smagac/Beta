@@ -18,12 +18,15 @@ com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable: {
 },
 com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	default: { down: button_down, up: button_up },
-	toggle: { down: button_down, checked: button_down, up: button_up }
+	toggle: { down: button_down, checked: button_down, up: button_up },
+	pop: { down: 3dbutton_down, checked: 3dbutton_down, up: 3dbutton_up }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: { down: button_down, up: button_up, checked: button_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
-    big: { down: button_down, up: button_up, checked: button_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },	
-	list: {font: smaller, fontColor: white}
+    big: { down: button_down, up: button_up, checked: button_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },
+    pop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black }	
+	list: {font: smaller, fontColor: white},
+	tab: { down: tab_down, up: tab_up, checked: tab_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: { background: window6, vScrollKnob: scroll-knob },
@@ -45,8 +48,11 @@ com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 	default: { titleFont: small, background: window, titleFontColor: white },
 	window: { titleFont: small, background: window, titleFontColor: white },
+	thick: { titleFont: small, background: window2, titleFontColor: white },
+	round: { titleFont: small, background: window3, titleFontColor: white },
+	square: { titleFont: small, background: window4, titleFontColor: white },
+	flattop: { titleFont: small, background: window5, titleFontColor: white },
 	pane: { titleFont: small, background: window6, titleFontColor: white },
-	dialog: { titleFont: small, background: window5, titleFontColor: white },
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: small, fontColor: white },

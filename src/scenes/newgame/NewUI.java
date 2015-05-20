@@ -32,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
@@ -84,7 +85,8 @@ public class NewUI extends UI {
 
         // create load data dialog
         {
-            Group window = slotFrame = super.makeWindow(skin, 600, 300, true);
+            Group window = slotFrame = new Window("", skin, "thick");
+            window.setSize(600, 300);
             Table table = new Table();
 
             FocusGroup focus = slotFocus = new FocusGroup();
@@ -168,13 +170,13 @@ public class NewUI extends UI {
             }
 
             window.addActor(table);
-            window.setPosition(getWidth() / 2 - window.getWidth() / 2, getHeight() / 2 - window.getHeight() / 2);
+            window.setPosition(getWidth()/2, getHeight()/2, Align.center);
             addActor(window);
         }
 
-        createFrame = UI.makeWindow(skin, 580, 300);
-        createFrame.setPosition(getWidth() / 2 - createFrame.getWidth() / 2, getHeight() / 2 - createFrame.getHeight()
-                / 2);
+        createFrame = new Window("", skin, "thick");
+        createFrame.setSize(580, 300);
+        createFrame.setPosition(getWidth()/2, getHeight()/2, Align.center);
 
         final Table window = new Table(skin);
         window.setFillParent(true);

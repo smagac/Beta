@@ -116,9 +116,9 @@ public class FileBrowser extends Group {
         historyWindow.setHeight(getHeight());
         historyWindow.setUserObject(historyContents);
         
-        TextButton browseTab = new TextButton("Browse", skin);
+        TextButton browseTab = new TextButton("Browse", skin, "tab");
         browseTab.setUserObject(browseWindow);
-        TextButton historyTab = new TextButton("Recent Files", skin);
+        TextButton historyTab = new TextButton("Recent Files", skin, "tab");
         historyTab.setUserObject(historyWindow);
         ButtonGroup<Button> tabs = new ButtonGroup<Button>(browseTab, historyTab);
         browseTab.setChecked(true);

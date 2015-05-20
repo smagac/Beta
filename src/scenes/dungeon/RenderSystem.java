@@ -54,7 +54,7 @@ import core.service.interfaces.IDungeonContainer;
 public class RenderSystem extends EntitySystem implements EntityListener, Telegraph {
 
     public static final float MoveSpeed = .15f;
-    public static final float MaxZoom = .5f;
+    public static final float MaxZoom = 0f;
     private static final float SCALE = 32f;
     private static final int[] SHADOW_RANGE = {41, 21};
     private static final float FOV_RANGE = 8.0f;

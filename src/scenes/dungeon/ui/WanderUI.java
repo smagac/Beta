@@ -82,6 +82,10 @@ public class WanderUI extends UI {
     List<String> eventLog;
 
     SacrificeSubmenu sacrificeMenu;
+
+    private Label enemyLabel;
+
+    private Label lootLabel;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -147,10 +151,20 @@ public class WanderUI extends UI {
             combatLog = new List<String>(skin);
             combatLog.setWidth(300f);
             combatLog.setHeight(100f);
-            combatLog.setPosition(10, 40, Align.bottomLeft);
+            combatLog.setPosition(10, 50, Align.bottomLeft);
             
             combatLog.getItems().addAll("", "Test", "Test", "Test", "Test");
             addActor(combatLog);
+            
+            Image icon = new Image(skin, "ogre");
+            enemyLabel = new Label("10/10", skin, "prompt"); 
+            icon.setSize(32, 32);
+            icon.setPosition(4, 4);
+            enemyLabel.setPosition(42, 0, Align.bottomLeft);
+            enemyLabel.setAlignment(Align.bottomLeft);
+            
+            addActor(icon);
+            addActor(enemyLabel);
         }
         
         //event log
@@ -158,10 +172,20 @@ public class WanderUI extends UI {
             eventLog = new List<String>(skin);
             eventLog.setWidth(300f);
             eventLog.setHeight(100f);
-            eventLog.setPosition(getWidth()-10, 40, Align.bottomRight);
+            eventLog.setPosition(getWidth()-10, 50, Align.bottomRight);
             
             eventLog.getItems().addAll("", "Test", "Test", "Test", "Test");
             addActor(eventLog);
+            
+            Image icon = new Image(skin, "loot");
+            lootLabel = new Label("10", skin, "prompt"); 
+            icon.setSize(32, 32);
+            icon.setPosition(getWidth()-4, 4, Align.bottomRight);
+            lootLabel.setPosition(getWidth()-42, 0, Align.bottomRight);
+            lootLabel.setAlignment(Align.bottomRight);
+            
+            addActor(icon);
+            addActor(lootLabel);
         }
         
         //create equipment hud
@@ -304,6 +328,8 @@ public class WanderUI extends UI {
      * progress of the dungeon
      */
     void refresh(Progress progress) {
+        enemyLabel.setText(progress.monstersKilled + "/" + progress.monstersTotal);
+        lootLabel.setText(String.valueOf(progress.lootFound));
     }
 
     void showGoddess(String string) {
@@ -318,9 +344,6 @@ public class WanderUI extends UI {
         goddess.addAction(Actions.moveTo(getWidth(), getHeight() / 2 - 64f, .3f));
     }
 
-    void showLoot() {
-
-    }
 
     public void fadeOut(Runnable cmd) {
         fader.addAction(

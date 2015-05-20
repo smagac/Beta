@@ -211,11 +211,11 @@ public class TownUI extends GameUI {
         craftSubmenu.setHeight(display.getHeight());
 
         craftTabs = new ButtonGroup<Button>();
-        final TextButton myButton = new TextButton("My List", skin);
+        final TextButton myButton = new TextButton("My List", skin, "tab");
         myButton.setName("required");
         craftTabs.add(myButton);
 
-        final TextButton todayButton = new TextButton("Today's Special", skin);
+        final TextButton todayButton = new TextButton("Today's Special", skin, "tab");
         todayButton.setName("extra");
         craftTabs.add(todayButton);
 
@@ -374,7 +374,7 @@ public class TownUI extends GameUI {
         lootPane.setScrollbarsOnTop(true);
         lootPane.addListener(new ScrollFocuser(lootPane));
 
-        TextButton lootLabel = new TextButton("My Loot", skin);
+        TextButton lootLabel = new TextButton("My Loot", skin, "tab");
         lootLabel.setUserObject(lootPane);
         lootSubmenu = new TabbedPane(new ButtonGroup<Button>(lootLabel), false);
         lootSubmenu.setWidth(250f);
@@ -521,7 +521,7 @@ public class TownUI extends GameUI {
 
         ButtonGroup<Button> questTabs = new ButtonGroup<Button>();
         {
-            final TextButton availableButton = new TextButton("Available", skin);
+            final TextButton availableButton = new TextButton("Available", skin, "tab");
             availableButton.setName("available");
             questTabs.add(availableButton);
 
@@ -549,7 +549,7 @@ public class TownUI extends GameUI {
         }
 
         {
-            final TextButton acceptedButton = new TextButton("Accepted", skin);
+            final TextButton acceptedButton = new TextButton("Accepted", skin, "tab");
             acceptedButton.setName("history");
             questTabs.add(acceptedButton);
 
@@ -743,7 +743,7 @@ public class TownUI extends GameUI {
         goddess.setSize(128f, 128f);
         goddess.setPosition(620, 75, Align.center);
         goddess.setScaling(Scaling.stretch);
-        goddessDialog = new Window("", skin, "dialog");
+        goddessDialog = new Window("", skin, "round");
         goddessDialog.setSize(700, 150);
         goddessDialog.setOrigin(Align.center);
         goddessDialog.setPosition(display.getWidth()/2f, display.getHeight() / 2f, Align.center);
