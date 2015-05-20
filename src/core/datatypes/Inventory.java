@@ -4,6 +4,7 @@ import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -11,7 +12,10 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Keys;
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import core.datatypes.quests.Quest;
 import core.datatypes.quests.info.GatherInfo;
@@ -49,8 +53,6 @@ public class Inventory implements Serializable {
         }
         while (required.size < difficulty * 2);
 
-        refreshCrafts();
-
         if (ServiceManager.getService(IGame.class).debug()){
              //debug add loot to test crafting
              for (int i = 0; i < 100; i++)
@@ -68,6 +70,10 @@ public class Inventory implements Serializable {
              }
              loot.putAll(all);
         }
+        
+
+        refreshCrafts();
+        refreshRequirements();
     }
 
     /**
@@ -116,30 +122,55 @@ public class Inventory implements Serializable {
 
     public boolean canMake(Craftable c) {
         ObjectIntMap<String> requirements = c.getRequirements();
-        boolean make = true;
+        Entries<String> reqItems = requirements.entries();
+        while (reqItems.hasNext) {
+            Entry<String> required = reqItems.next();
+            int need = required.value;
 
-        for (String required : requirements.keys()) {
-            int need = requirements.get(required, 1);
-            int have = 0;
-
-            for (Item lootName : all.keys()) {
-                if (lootName.equals(required)) {
-                    Integer amount = all.get(lootName, 0);
-
-                    have = have + amount;
-
-                    if (have >= need) {
-                        break;
-                    }
-                }
-            }
-
-            if (have < need) {
-                make = false;
-                break;
+            ObjectIntMap<Item> itemsOfType = getByType(required.key);
+            if (getSumOfItems(itemsOfType) < need) {
+                return false;
             }
         }
-        return make;
+        return true;
+    }
+    
+    /**
+     * Gets a mapping of all items that satisfy a provided type requirement.
+     * @param name
+     * @return
+     */
+    private ObjectIntMap<Item> getByType(String type) {
+        ObjectIntMap<Item> found = new ObjectIntMap<Item>();
+        Entries<Item> items = all.entries(); 
+                
+        while (items.hasNext) {
+            Entry<Item> item = items.next();
+            if (item.key.equals(type)) {
+                //Gdx.app.log("Craft", "Found item " + item.key + " which matches type " + type);
+                found.put(item.key, item.value);
+            }
+        }
+        
+        return found;
+    }
+    
+    /**
+     * Provided a list of items (typically used with getByType), get a sum of how many
+     * items exist in the list
+     * @param items
+     * @return sum of all items in list
+     */
+    private int getSumOfItems(ObjectIntMap<Item> items) {
+        int sum = 0;
+        
+        Entries<Item> entries = items.entries(); 
+        while (entries.hasNext) {
+            Entry<Item> item = entries.next();
+            sum += item.value;
+        }
+        
+        return sum;
     }
 
     /**
@@ -155,41 +186,47 @@ public class Inventory implements Serializable {
             return false;
         }
 
-        for (String required : requirements.keys()) {
-            int need = requirements.get(required, 1);
+        Entries<String> reqItems = requirements.entries();
+        
+        //figure out how to remove items 
+        while (reqItems.hasNext){
+            Entry<String> required = reqItems.next();
+            ObjectIntMap<Item> itemsOfType = getByType(required.key);
+            int need = required.value;
             int have = 0;
-
-            for (Item i : all.keys()) {
-                if (i.equals(required)) {
-                    Integer amount = all.get(i, 0);
-
-                    have = have + amount;
-
-                    amount = 0;
-                    if (have > need) {
-                        amount = have - need;
-                    }
-
-                    if (amount == 0) {
-                        //Gdx.app.log("Crafting", "removing " + i);
-                        all.remove(i, 0);
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, i);
-                    }
-                    else {
-                        all.put(i, amount);
-                        ItemMsg im = new ItemMsg();
-                        im.item = i;
-                        im.amount = amount;
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
-                    }
-
-                    if (have >= need) {
-                        break;
-                    }
+            
+            //select items randomly to remove
+            Array<Item> keys = itemsOfType.keys().toArray();
+            while (have < need) {
+                Item item = keys.random();
+                int val = itemsOfType.getAndIncrement(item, 1, -1);
+                //value before decrement, so after it should be 0 and not an option to remove again
+                if (val == 1) {
+                    keys.removeValue(item, true);
+                }
+                have++;
+            }
+            
+            //update inventory with new values
+            Entries<Item> items = itemsOfType.entries();
+            while (items.hasNext) {
+                Entry<Item> item = items.next();
+                if (item.value > 0) {
+                    all.put(item.key, item.value);
+                    ItemMsg im = new ItemMsg();
+                    im.item = item.key;
+                    im.amount = item.value;
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
+                } else {
+                    all.remove(item.key, 0);
+                    ItemMsg im = new ItemMsg();
+                    im.item = item.key;
+                    im.amount = 0;
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
                 }
             }
         }
-
+        
         // add the item to your loot
         Item crafted = new Item(c.name, c.adj);
         pickup(crafted);
@@ -249,71 +286,55 @@ public class Inventory implements Serializable {
      * @param sacrifices
      */
     public boolean sacrifice(ObjectIntMap<Item> sacrifices, int required) {
-        int pieces = 0;
-        boolean canSacrifice = true;
-        for (Item item : sacrifices.keys()) {
-            Integer i = sacrifices.get(item, 1);
-            if (all.get(item, 0) < i) {
-                canSacrifice = false;
-                break;
-            }
-            else {
-                pieces += i;
-            }
-        }
-
-        if (pieces < required) {
-            canSacrifice = false;
-        }
-
-        if (canSacrifice) {
-            for (Item item : sacrifices.keys()) {
-                int total = sacrifices.get(item, 1);
-                int tmpCount = tmp.get(item, 0);
-                int lootCount = loot.get(item, 0); 
-                int tmpSub = Math.min(total, tmpCount);
-                int lootSub = Math.min(total - tmpSub, lootCount);
-                int allCount = (tmpCount + lootCount) - (tmpSub + lootSub);
-                
-                if (lootSub > 0) {
-                    int count = lootCount - lootSub;
-                    if (count == 0) {
-                        loot.remove(item, 0);
-                    }
-                    else {
-                        loot.put(item, count);
-                    }
-                }
-                if (tmpSub > 0) {
-                    int count = tmpCount - tmpSub;
-                    if (count == 0) {
-                        tmp.remove(item, 0);
-                    }
-                    else {
-                        tmp.put(item, count);
-                    }
-                }
-                ItemMsg im = new ItemMsg();
-                im.item = item;
-                im.amount = allCount;
-                
-                if (allCount == 0) {
-                    all.remove(item, 0);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
-                }
-                else {
-                    all.put(item, allCount);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
-                }
-            }
-            
-            for (Item i : sacrifices.keys()) {
-                ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed, sacrifices.get(i, 0));
-            }
-            
+        if (getSumOfItems(sacrifices) < required) {
+            return false;
         }
         
-        return canSacrifice;
+        for (Item item : sacrifices.keys()) {
+            int total = sacrifices.get(item, 1);
+            int tmpCount = tmp.get(item, 0);
+            int lootCount = loot.get(item, 0); 
+            int tmpSub = Math.min(total, tmpCount);
+            int lootSub = Math.min(total - tmpSub, lootCount);
+            int allCount = (tmpCount + lootCount) - (tmpSub + lootSub);
+            
+            if (lootSub > 0) {
+                int count = lootCount - lootSub;
+                if (count == 0) {
+                    loot.remove(item, 0);
+                }
+                else {
+                    loot.put(item, count);
+                }
+            }
+            if (tmpSub > 0) {
+                int count = tmpCount - tmpSub;
+                if (count == 0) {
+                    tmp.remove(item, 0);
+                }
+                else {
+                    tmp.put(item, count);
+                }
+            }
+            ItemMsg im = new ItemMsg();
+            im.item = item;
+            im.amount = allCount;
+            
+            if (allCount == 0) {
+                all.remove(item, 0);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
+            }
+            else {
+                all.put(item, allCount);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
+            }
+        }
+        
+        for (Item i : sacrifices.keys()) {
+            ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed, sacrifices.get(i, 0));
+        }
+        
+        return true;
     }
 
     /**
