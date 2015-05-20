@@ -227,10 +227,10 @@ public abstract class GameUI extends UI {
             window.addActor(frame);
             addActor(window);
 
+            buildLevelUpDialog();
+
             // populate the window frame
             extend();
-
-            buildLevelUpDialog();
         }
 
         // notification area

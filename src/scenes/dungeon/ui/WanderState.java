@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.common.Input;
+import core.components.Health;
 import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 
@@ -162,8 +163,7 @@ public enum WanderState implements UIState {
         public void enter(WanderUI entity) {
             int healCost = entity.dungeonService.getProgress().healed + 1;
             
-            entity.showGoddess("So you'd like me to heal you?\nThat'll cost you " + healCost + " loot.");
-            entity.sacrificeMenu.showHeal();
+            entity.sacrificeMenu.showHeal(healCost);
         }
 
         @Override
@@ -172,6 +172,9 @@ public enum WanderState implements UIState {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), healCost)) {
+                    if (entity.sacrificeMenu.getSacrificeCount() > healCost * 2) {
+                        entity.playerService.getPlayer().getComponent(Health.class).reset();
+                    }
                     entity.sacrificeMenu.sacrifice();
                     entity.playerService.recover();
                     entity.dungeonService.getProgress().healed = healCost;
@@ -194,9 +197,8 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             int fleeCost = entity.dungeonService.getProgress().depth;
-            entity.showGoddess("Each floor deep you are costs another piece of loot.\nYou're currently "
-                    + fleeCost + " floors deep.");
-            entity.sacrificeMenu.showEscape();
+            
+            entity.sacrificeMenu.showEscape(fleeCost);
         }
 
         @Override

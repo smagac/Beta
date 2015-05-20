@@ -14,16 +14,30 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 
 import core.datatypes.Item;
 import core.service.interfaces.IPlayerContainer;
 
+/**
+ * Submenu element for the Dungeon UI.  Contains the mechanics
+ * and UI elements required for requesting asssistance and sacrificing
+ * items to the goddess.
+ * @author nhydock
+ *
+ */
 public class SacrificeSubmenu {
+    
+    private static final String HEALFMT = "So you'd like me to heal you?\n \n%d loot recovers hp\n%d loot cures ailments.";
+    private static final String LEAVEFMT = "Each floor deep you are costs another piece of loot.\n \nYou're currently %d floors deep.";
     
     private Group menu;
     private Group itemSubmenu;
@@ -36,12 +50,16 @@ public class SacrificeSubmenu {
     private Card healCard;
     private Card leaveCard;
     
+    FocusGroup focus;
+    private Group buttonList;
+    private Label prompt;
+    
     public SacrificeSubmenu(Skin skin, IPlayerContainer playerService) {
         menu = new Group();
-        menu.setWidth(600);
+        menu.setWidth(720);
         menu.setHeight(400);
         
-        // loot List and buttons
+        // loot List
         {
             itemSubmenu = new Group();
             itemSubmenu.setWidth(500f);
@@ -56,7 +74,7 @@ public class SacrificeSubmenu {
             }
             lootPane = new ScrollPane(lootList.list, skin);
             lootPane.setWidth(240f);
-            lootPane.setHeight(380f);
+            lootPane.setHeight(400f);
             lootPane.setScrollingDisabled(true, false);
             lootPane.setScrollbarsOnTop(false);
             lootPane.setScrollBarPositions(true, false);
@@ -67,7 +85,7 @@ public class SacrificeSubmenu {
             label.setUserObject(lootPane);
             TabbedPane pane = new TabbedPane(new ButtonGroup<Button>(label), false);
             pane.setWidth(240f);
-            pane.setHeight(380f);
+            pane.setHeight(400f);
             pane.setPosition(0f, itemSubmenu.getHeight(), Align.topLeft);
             itemSubmenu.addActor(pane);
             
@@ -79,7 +97,7 @@ public class SacrificeSubmenu {
             
             sacrificePane = new ScrollPane(sacrificeList.list, skin);
             sacrificePane.setWidth(240f);
-            sacrificePane.setHeight(180f);
+            sacrificePane.setHeight(200f);
             sacrificePane.setScrollingDisabled(true, false);
             sacrificePane.setScrollbarsOnTop(false);
             sacrificePane.setScrollBarPositions(true, false);
@@ -99,6 +117,50 @@ public class SacrificeSubmenu {
             menu.addActor(itemSubmenu);
         }
 
+        //buttons for sacrificing
+        {
+            buttonList = new Group();
+            ButtonGroup<Button> buttons = new ButtonGroup<Button>();
+            
+            TextButton button = new TextButton("Sacrifice", skin);
+            button.setWidth(240f);
+            button.setHeight(48f);
+            button.setPosition(0,0);
+            buttonList.addActor(button);
+            buttons.add(button);
+            
+            buttonList.setWidth(240f);
+            buttonList.setHeight(48f);
+            buttonList.setPosition(260f, 0, Align.bottomLeft);
+            
+            itemSubmenu.addActor(buttonList);
+        }
+        
+        //Goddess prompt
+        {
+            Group promptGroup = new Group();
+            promptGroup.setSize(240f, 140f);
+            promptGroup.setPosition(260f, 60f);
+            
+            Window pane = new Window("", skin, "pane");
+            pane.setSize(240f, 140f);
+            promptGroup.addActor(pane);
+            
+            prompt = new Label("", skin, "promptsm");
+            prompt.setSize(150f, 180f);
+            prompt.setAlignment(Align.topLeft);
+            prompt.setPosition(10, 130, Align.topLeft);
+            prompt.setWrap(true);
+            promptGroup.addActor(prompt);
+            
+            Image worship = new Image(skin, playerService.getWorship());
+            worship.setSize(64, 64);
+            worship.setPosition(190f, 70f, Align.center);
+            promptGroup.addActor(worship);
+            
+            itemSubmenu.addActor(promptGroup);
+        }
+        
         //cards for choosing menu
         {
             healCard = new Card(skin, "Heal", "Sacrifice items to recover all of your hp and/or status ailments", "god");
@@ -109,6 +171,9 @@ public class SacrificeSubmenu {
             leaveCard.setPosition(getWidth()/2f + 20, getHeight()/2f, Align.left);
             menu.addActor(leaveCard);
         }
+        
+        focus = new FocusGroup(sacrificeList.list, lootList.list, buttonList);
+        
         
         ScrollOnChange lootPaneScroller = new ScrollOnChange(lootPane);
         ScrollOnChange sacrificePaneScroller = new ScrollOnChange(sacrificePane);
@@ -162,7 +227,7 @@ public class SacrificeSubmenu {
                 ),
                 Actions.addAction(
                     Actions.parallel(
-                            Actions.moveToAligned(getWidth()/2f - 220, getHeight()/2f, Align.left),
+                            Actions.moveToAligned(200, getHeight()/2f, Align.left),
                             Actions.alpha(0f)
                     ),
                     itemSubmenu
@@ -179,14 +244,14 @@ public class SacrificeSubmenu {
     /**
      * Show all elements and prompt associated with healing
      */
-    public void showHeal() {
+    public void showHeal(int cost) {
         clearActions();
         
         menu.addAction(
             Actions.sequence(
                 Actions.run(InputDisabler.instance),
                 Actions.addAction(
-                    Actions.moveToAligned(getWidth()/2f - 200, getHeight()/2f, Align.right, .3f, Interpolation.circleOut),
+                    Actions.moveToAligned(0, getHeight()/2f, Align.left, .3f, Interpolation.circleOut),
                     healCard
                 ),
                 Actions.addAction(
@@ -198,19 +263,21 @@ public class SacrificeSubmenu {
                 Actions.run(InputDisabler.instance)
             )
         );
+        
+        prompt.setText(String.format(HEALFMT, cost, cost * 2));
     }
     
     /**
      * Show all elements and prompt associated with escaping
      */
-    public void showEscape() {
+    public void showEscape(int cost) {
         clearActions();
         
         menu.addAction(
             Actions.sequence(
                 Actions.run(InputDisabler.instance),
                 Actions.addAction(
-                    Actions.moveToAligned(getWidth()/2f - 200, getHeight()/2f, Align.right, .3f, Interpolation.circleOut),
+                    Actions.moveToAligned(0, getHeight()/2f, Align.left, .3f, Interpolation.circleOut),
                     leaveCard
                 ),
                 Actions.addAction(
@@ -222,6 +289,8 @@ public class SacrificeSubmenu {
                 Actions.run(InputDisabler.instance)
             )
         );
+        
+        prompt.setText(String.format(LEAVEFMT, cost));
     }
     
     /**
@@ -251,10 +320,12 @@ public class SacrificeSubmenu {
         
         menu.addAction(
             Actions.sequence(
+                Actions.run(InputDisabler.instance),
                 Actions.parallel(
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
-                )
+                ),
+                Actions.run(InputDisabler.instance)
             )
         );
     }
@@ -281,5 +352,14 @@ public class SacrificeSubmenu {
         leaveCard.clearActions();
         itemSubmenu.clearActions();
         menu.clearActions();
+    }
+
+    public int getSacrificeCount() {
+        int sum = 0;
+        Entries<Item> items = sacrificeList.items.entries();
+        while (items.hasNext){
+            sum += items.next().value;
+        }
+        return sum;
     }
 }
