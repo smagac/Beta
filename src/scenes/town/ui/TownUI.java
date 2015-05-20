@@ -1,7 +1,6 @@
 package scenes.town.ui;
 
 import github.nhydock.ssm.Inject;
-
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
@@ -32,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
@@ -86,7 +86,6 @@ public class TownUI extends GameUI {
     // download display
     Group downloadWindow;
 
-    Image goddess;
     Group goddessDialog;
     Label gMsg;
     Image miniGoddess;
@@ -365,16 +364,6 @@ public class TownUI extends GameUI {
         craftSubmenu.setPosition(display.getWidth(), 0);
         display.addActor(craftSubmenu);
 
-        lootSubmenu = new Table();
-        lootSubmenu.setWidth(250f);
-        lootSubmenu.setHeight(display.getHeight());
-        lootSubmenu.setPosition(-lootSubmenu.getWidth(), 0);
-
-        Label lootLabel = new Label("My Loot", skin, "header");
-        lootLabel.setAlignment(Align.center);
-        lootSubmenu.top().add(lootLabel).expandX().fillX().pad(10f).padBottom(0f);
-        lootSubmenu.row();
-
         lootList = new Table();
         
         lootPane = new ScrollPane(lootList, skin);
@@ -385,7 +374,12 @@ public class TownUI extends GameUI {
         lootPane.setScrollbarsOnTop(true);
         lootPane.addListener(new ScrollFocuser(lootPane));
 
-        lootSubmenu.add(lootPane).expand().fill().pad(10f).padTop(0f);
+        TextButton lootLabel = new TextButton("My Loot", skin);
+        lootLabel.setUserObject(lootPane);
+        lootSubmenu = new TabbedPane(new ButtonGroup<Button>(lootLabel), false);
+        lootSubmenu.setWidth(250f);
+        lootSubmenu.setHeight(display.getHeight());
+        lootSubmenu.setPosition(-lootSubmenu.getWidth(), 0);
 
         lootPane.addListener(new InputListener() {
             @Override
@@ -745,23 +739,23 @@ public class TownUI extends GameUI {
         makeSave();
         makeDownload();
 
-        goddess = new Image(skin.getRegion(playerService.getWorship()));
+        Image goddess = new Image(skin.getRegion(playerService.getWorship()));
         goddess.setSize(128f, 128f);
+        goddess.setPosition(620, 75, Align.center);
         goddess.setScaling(Scaling.stretch);
-        goddessDialog = makeWindow(skin, 500, 150, true);
-        goddessDialog.setPosition(40f, display.getHeight() / 2f - goddessDialog.getHeight() / 2f);
-        Table gMessage = new Table();
-        gMessage.setFillParent(true);
-        gMessage.pad(36f);
+        goddessDialog = new Window("", skin, "dialog");
+        goddessDialog.setSize(700, 150);
+        goddessDialog.setOrigin(Align.center);
+        goddessDialog.setPosition(display.getWidth()/2f, display.getHeight() / 2f, Align.center);
         gMsg = new Label("", skin, "small");
         gMsg.setWrap(true);
-        gMessage.add(gMsg).expand().fill();
-        goddessDialog.addActor(gMessage);
+        gMsg.setWidth(500);
+        gMsg.setPosition(20, 75, Align.left);
+        goddessDialog.addActor(gMsg);
 
-        display.addActor(goddess);
+        goddessDialog.addActor(goddess);
         display.addActor(goddessDialog);
 
-        goddess.addAction(Actions.moveTo(display.getWidth(), display.getHeight() / 2f - 64f));
         goddessDialog.addAction(Actions.alpha(0f));
         goddessDialog.setVisible(false);
 

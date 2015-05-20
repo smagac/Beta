@@ -347,11 +347,19 @@ enum TownState implements UIState {
 
         @Override
         public void enter(TownUI ui) {
-            ui.goddess.clearActions();
-            ui.goddess.addAction(Actions.moveTo(ui.getDisplayWidth() - 128f, ui.getDisplayHeight() / 2 - 64f, .3f));
-
             ui.goddessDialog.clearActions();
-            ui.goddessDialog.addAction(Actions.alpha(1f, .2f));
+            ui.goddessDialog.addAction(
+                    Actions.sequence(
+                        Actions.moveToAligned(ui.getDisplayWidth()/2f, ui.getDisplayHeight()/2f-20, Align.center),
+                        Actions.scaleTo(.7f, .7f),
+                        Actions.alpha(0f),
+                        Actions.parallel(
+                            Actions.alpha(1f, .2f),
+                            Actions.scaleTo(1f, 1f, .2f, Interpolation.circleOut),
+                            Actions.moveBy(0, 20, .2f, Interpolation.circleOut)
+                        )
+                    )
+                );
             ui.goddessDialog.setVisible(true);
             ui.restore();
 
@@ -361,9 +369,7 @@ enum TownState implements UIState {
 
         @Override
         public void exit(final TownUI ui) {
-            ui.goddess.clearActions();
             ui.goddessDialog.clearActions();
-            ui.goddess.addAction(Actions.moveTo(ui.getDisplayWidth(), ui.getDisplayHeight() / 2 - 64f, .3f));
             ui.goddessDialog.addAction(Actions.sequence(Actions.alpha(0f, .2f), Actions.run(new Runnable() {
                 @Override
                 public void run() {

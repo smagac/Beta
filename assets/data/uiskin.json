@@ -26,7 +26,7 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	list: {font: smaller, fontColor: white}
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
-	default: { background: button_up, vScrollKnob: scroll-knob },
+	default: { background: window6, vScrollKnob: scroll-knob },
 	log: { vScrollKnob: scroll-knob },
     files: { vScrollKnob: scroll-knob },
 },
@@ -45,7 +45,8 @@ com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 	default: { titleFont: small, background: window, titleFontColor: white },
 	window: { titleFont: small, background: window, titleFontColor: white },
-	pane: { titleFont: small, background: button_up, titleFontColor: white }
+	pane: { titleFont: small, background: window6, titleFontColor: white },
+	dialog: { titleFont: small, background: window5, titleFontColor: white },
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: small, fontColor: white },
@@ -68,8 +69,8 @@ com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }
 },
 com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
-	default: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: smaller },
-	log: { fontColorUnselected: white, selection: button_down, fontColorSelected: black, font: smallest },
+	default: { fontColorUnselected: white, selection: selected, fontColorSelected: black, font: smaller },
+	log: { fontColorUnselected: white, selection: selected, fontColorSelected: black, font: smallest },
 },
 com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
 	default: { background: progback, knobBefore: progfront},
