@@ -6,10 +6,16 @@ import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
+import scenes.Messages;
+import scenes.dungeon.Direction;
 
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -24,6 +30,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 
+import core.common.Input;
 import core.datatypes.Item;
 import core.service.interfaces.IPlayerContainer;
 
@@ -51,8 +58,8 @@ public class SacrificeSubmenu {
     private Card leaveCard;
     
     FocusGroup focus;
-    private Group buttonList;
     private Label prompt;
+    private TextButton sacrificeButton;
     
     public SacrificeSubmenu(Skin skin, IPlayerContainer playerService) {
         menu = new Group();
@@ -119,21 +126,32 @@ public class SacrificeSubmenu {
 
         //buttons for sacrificing
         {
-            buttonList = new Group();
-            ButtonGroup<Button> buttons = new ButtonGroup<Button>();
+            sacrificeButton = new TextButton("Sacrifice", skin, "pop");
+            sacrificeButton.setWidth(240f);
+            sacrificeButton.setHeight(48f);
+            sacrificeButton.setPosition(260,0);
+            sacrificeButton.setChecked(true);
+            sacrificeButton.addListener(new InputListener(){
+                @Override
+                public boolean keyDown(InputEvent event, int keycode) {
+                    if (Input.ACCEPT.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Sacrifice);
+                        return true;
+                    }
+                    return false;
+                }
+                
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT){
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Sacrifice);
+                        return true;
+                    }
+                    return false;
+                }
+            });
             
-            TextButton button = new TextButton("Sacrifice", skin, "pop");
-            button.setWidth(240f);
-            button.setHeight(48f);
-            button.setPosition(0,0);
-            buttonList.addActor(button);
-            buttons.add(button);
-            
-            buttonList.setWidth(240f);
-            buttonList.setHeight(48f);
-            buttonList.setPosition(260f, 0, Align.bottomLeft);
-            
-            itemSubmenu.addActor(buttonList);
+            itemSubmenu.addActor(sacrificeButton);
         }
         
         //Goddess prompt
@@ -172,7 +190,7 @@ public class SacrificeSubmenu {
             menu.addActor(leaveCard);
         }
         
-        focus = new FocusGroup(sacrificeList.list, lootList.list, buttonList);
+        focus = new FocusGroup(sacrificeList.list, lootList.list, sacrificeButton);
         
         
         ScrollOnChange lootPaneScroller = new ScrollOnChange(lootPane);
@@ -352,14 +370,5 @@ public class SacrificeSubmenu {
         leaveCard.clearActions();
         itemSubmenu.clearActions();
         menu.clearActions();
-    }
-
-    public int getSacrificeCount() {
-        int sum = 0;
-        Entries<Item> items = sacrificeList.items.entries();
-        while (items.hasNext){
-            sum += items.next().value;
-        }
-        return sum;
     }
 }

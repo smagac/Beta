@@ -10,11 +10,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.common.Input;
 import core.components.Health;
+import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 
@@ -32,7 +34,6 @@ public enum WanderState implements UIState {
 
         @Override
         public void enter(WanderUI entity) {
-            entity.hideGoddess();
             entity.sacrificeMenu.hide();
         }
 
@@ -168,11 +169,11 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
+            if (telegram.message == Messages.Dungeon.Sacrifice) {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), healCost)) {
-                    if (entity.sacrificeMenu.getSacrificeCount() > healCost * 2) {
+                    if (Inventory.getSumOfItems(entity.sacrificeMenu.getSacrifice()) > healCost * 2) {
                         entity.playerService.getPlayer().getComponent(Health.class).reset();
                     }
                     entity.sacrificeMenu.sacrifice();
@@ -180,9 +181,6 @@ public enum WanderState implements UIState {
                     entity.dungeonService.getProgress().healed = healCost;
                     entity.changeState(Wander);
                     return true;
-                }
-                else {
-                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + healCost + " items");
                 }
             }
             else {
@@ -204,15 +202,12 @@ public enum WanderState implements UIState {
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
 
-            if (telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Sacrifice) {
+            if (telegram.message == Messages.Dungeon.Sacrifice) {
                 int fleeCost = entity.dungeonService.getProgress().depth;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), fleeCost)) {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
                     entity.changeState(Exit);
                     return true;
-                }
-                else {
-                    entity.showGoddess("That's not enough!\nYou need to sacrifice " + fleeCost + " items");
                 }
             }
             else {
@@ -228,8 +223,19 @@ public enum WanderState implements UIState {
     Dead("Return Home") {
         @Override
         public void enter(WanderUI entity) {
-            entity.hideGoddess();
             entity.message.setText("You are dead.\n\nYou have dropped all your new loot.\nSucks to be you.");
+            entity.messageWindow.addAction(
+                Actions.sequence(
+                    Actions.scaleTo(.5f, .5f),
+                    Actions.moveBy(0, -20),
+                    Actions.alpha(0f),
+                    Actions.parallel(
+                        Actions.scaleTo(1, 1, .2f, Interpolation.circleOut),
+                        Actions.moveBy(0, 20, .2f, Interpolation.circleOut),
+                        Actions.alpha(1f, .15f)
+                    )    
+                )
+            );
             entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
         }
         
@@ -239,6 +245,7 @@ public enum WanderState implements UIState {
                 telegram.message == Messages.Interface.Close){
                 entity.fader.addAction(
                     Actions.sequence(
+                        Actions.addAction(Actions.alpha(0f, .3f), entity.messageWindow),
                         Actions.alpha(1f, 2f), 
                         Actions.run(new GotoScene("town"))
                     )
@@ -254,20 +261,30 @@ public enum WanderState implements UIState {
     Exit( "Return Home" ) {
         @Override
         public void enter(WanderUI entity) {
-            entity.hideGoddess();
-            entity.message
-                    .setText("You decide to leave the dungeon.\nWhether that was smart of you or not, you got some sweet loot, and that's what matters.");
+            entity.message.setText("You decide to leave the dungeon.\n \nWhether that was smart of you or not, you got some sweet loot, and that's what matters.");
+            entity.messageWindow.addAction(
+                Actions.sequence(
+                    Actions.scaleTo(.5f, .5f),
+                    Actions.moveBy(0, -20),
+                    Actions.alpha(0f),
+                    Actions.parallel(
+                        Actions.scaleTo(1, 1, .2f, Interpolation.circleOut),
+                        Actions.moveBy(0, 20, .2f, Interpolation.circleOut),
+                        Actions.alpha(1f, .15f)
+                    )    
+                )
+            );
             entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
 
         }
 
         @Override
         public boolean onMessage(final WanderUI entity, Telegram telegram) {
-            if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
-                telegram.message == Messages.Interface.Close) {
+            if (telegram.message == Messages.Interface.Close) {
                 entity.fader.addAction(
                     Actions.sequence(
-                        Actions.alpha(1f, 2f), 
+                        Actions.addAction(Actions.alpha(0f, .3f), entity.messageWindow),
+                        Actions.alpha(1f, 2f),
                         Actions.run(new GotoScene("town"))
                     )
                 );

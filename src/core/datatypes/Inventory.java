@@ -161,7 +161,7 @@ public class Inventory implements Serializable {
      * @param items
      * @return sum of all items in list
      */
-    private int getSumOfItems(ObjectIntMap<Item> items) {
+    public static int getSumOfItems(ObjectIntMap<Item> items) {
         int sum = 0;
         
         Entries<Item> entries = items.entries(); 

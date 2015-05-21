@@ -39,6 +39,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -65,7 +66,6 @@ public class WanderUI extends UI {
     Label message;
 
     // variables for sacrifice menu
-    Image goddess;
     Image fader;
     
     ParticleActor weather;
@@ -84,8 +84,9 @@ public class WanderUI extends UI {
     SacrificeSubmenu sacrificeMenu;
 
     private Label enemyLabel;
-
     private Label lootLabel;
+
+    Group messageWindow;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -102,9 +103,13 @@ public class WanderUI extends UI {
             Messages.Dungeon.Zoom,
             Messages.Dungeon.Heal,
             Messages.Dungeon.Leave,
+            Messages.Dungeon.LevelUp,
             Messages.Player.UpdateItem,
             Messages.Player.NewItem,
             Messages.Player.Equipment,
+            Messages.Player.Progress,
+            Messages.Player.Stats,
+            Messages.Player.Time,
             Messages.Interface.Close,
             Messages.Interface.Notify,
             Messages.Interface.Button
@@ -123,28 +128,10 @@ public class WanderUI extends UI {
         skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
 
         //user hud
-        {
-            Group hud = new Group();
-            Image pane = new Image(skin, "window3");
-            pane.setSize(280, 100);
-            hud.addActor(pane);
-            
-            hud.setSize(280, 100);
-            hud.setPosition(getWidth()/2f, -32f, Align.bottom);
-            addActor(hud);
-            //TODO info
-            Label hpLabel = new Label("HP: 10/10", skin, "prompt");
-            hpLabel.setPosition(8, 100, Align.topLeft);
-            hud.addActor(hpLabel);
-            //TODO level label
-            Label floorLabel = new Label("Level: 1/68", skin, "small");
-            floorLabel.setPosition(272, 40, Align.bottomRight);
-            hud.addActor(floorLabel);
-            //TODO keys label
-            Label keyLabel = new Label("Keys: 10", skin, "small");
-            keyLabel.setPosition(8, 40, Align.bottomLeft);
-            hud.addActor(keyLabel);
-        }
+        HUD hud = new HUD(skin);
+        hud.update(playerService);
+        hud.getGroup().setPosition(getWidth()/2f, -8, Align.bottom);
+        addActor(hud.getGroup());
         
         //combat log
         {
@@ -190,22 +177,22 @@ public class WanderUI extends UI {
         
         //create equipment hud
         {
-            Group hud = new Group();
+            Group group = new Group();
             
             swordBar = new EquipmentBar(Equipment.Sword.class, skin);
-            hud.addActor(swordBar.getActor());
+            group.addActor(swordBar.getActor());
             
             shieldBar = new EquipmentBar(Equipment.Shield.class, skin);
             shieldBar.getActor().setPosition(64, 0);
-            hud.addActor(shieldBar.getActor());
+            group.addActor(shieldBar.getActor());
             
             armorBar = new EquipmentBar(Equipment.Armor.class, skin);
             armorBar.getActor().setPosition(128, 0);
-            hud.addActor(armorBar.getActor());
+            group.addActor(armorBar.getActor());
             
-            hud.setSize(176, swordBar.getActor().getHeight());
-            hud.setPosition(getWidth()/2f, getHeight()-50f, Align.bottom);
-            addActor(hud);
+            group.setSize(176, swordBar.getActor().getHeight());
+            group.setPosition(getWidth()/2f, getHeight()-50f, Align.bottom);
+            addActor(group);
         }
 
         fader = new Image(skin.getRegion("wfill"));
@@ -218,18 +205,39 @@ public class WanderUI extends UI {
         
         addActor(fader);
 
+        //prompts
+        {
+            messageWindow = new Group();
+            
+            Window window = new Window("", skin, "thick");
+            window.setSize(550, 300);
+            
+            message = new Label("", skin, "prompt");
+            message.setSize(490, 280);
+            message.setAlignment(Align.center);
+            message.setPosition(275, 150, Align.center);
+            message.setWrap(true);
+            window.addActor(message);
+            
+            messageWindow.setSize(550, 300);
+            messageWindow.setOrigin(Align.center);
+            messageWindow.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+            messageWindow.setColor(1,1,1,0);
+            messageWindow.addActor(window);
+            
+            Button button = new TextButton("Return Home", skin, "bigpop");
+            button.setWidth(150f);
+            button.setHeight(48f);
+            button.setPosition(messageWindow.getWidth()/2f, 0f, Align.center);
+            messageWindow.addActor(button);
+            
+            addActor(messageWindow);
+        }
+        
         // goddess sacrifice view
         sacrificeMenu = new SacrificeSubmenu(skin, playerService);
         sacrificeMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
         addActor(sacrificeMenu.getGroup());
-        
-        goddess = new Image(skin.getRegion(playerService.getWorship()));
-        goddess.setSize(128f, 128f);
-        goddess.setScaling(Scaling.stretch);
-        goddess.addAction(Actions.moveTo(getWidth(), getHeight() / 2 - 64f));
-        
-        addActor(goddess);
-
 
         // key listener for moving the character by pressing the arrow keys or WASD
         addListener(new InputListener() {
@@ -266,6 +274,12 @@ public class WanderUI extends UI {
                     }
                     if (Input.RIGHT.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Leave);
+                        return true;
+                    }
+                }
+                if (menu.isInState(WanderState.Dead) || menu.isInState(WanderState.Exit)) {
+                    if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
                         return true;
                     }
                 }
@@ -331,19 +345,6 @@ public class WanderUI extends UI {
         enemyLabel.setText(progress.monstersKilled + "/" + progress.monstersTotal);
         lootLabel.setText(String.valueOf(progress.lootFound));
     }
-
-    void showGoddess(String string) {
-
-        goddess.clearActions();
-        goddess.addAction(Actions.moveTo(getWidth() - 128f, getHeight() / 2 - 64f, .3f));
-
-    }
-
-    void hideGoddess() {
-        goddess.clearActions();
-        goddess.addAction(Actions.moveTo(getWidth(), getHeight() / 2 - 64f, .3f));
-    }
-
 
     public void fadeOut(Runnable cmd) {
         fader.addAction(
