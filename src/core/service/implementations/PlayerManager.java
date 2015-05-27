@@ -23,11 +23,11 @@ import com.badlogic.gdx.utils.JsonWriter;
 import core.DataDirs;
 import core.components.Equipment;
 import core.components.Groups;
-import core.components.Health;
 import core.components.Identifier;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Health;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 import core.datatypes.StatModifier;
@@ -56,6 +56,7 @@ public class PlayerManager implements IPlayerContainer {
     
     @Inject public ISharedResources shared;
     @Inject public ScoreTracker tracker;
+    private Health health;
     
     public PlayerManager() {
         for (int i = 1; i <= SaveSlots; i++) {
@@ -235,6 +236,8 @@ public class PlayerManager implements IPlayerContainer {
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
         tracker.read(json, root.get("tracker"));
         made = true;
+        
+        health = new Health();
     }
 
     private FileHandle getSaveFile(int slot) {
@@ -275,7 +278,6 @@ public class PlayerManager implements IPlayerContainer {
         // make a player
         player = new Entity();
         player.add(new Stats(new int[]{10, 5, 5, 10, 0}, new StatModifier[0]));
-        player.add(new Health());
         player.add(new Identifier("Adventurer", null, new String[0]));
         player.add(new Groups.Player());
         player.add(new Position(0,0));
@@ -284,6 +286,9 @@ public class PlayerManager implements IPlayerContainer {
         // make crafting requirements
         inventory = new Inventory(difficulty);
 
+        // make ailment container
+        health = new Health();
+        
         // make quest tracker
         quests = new QuestTracker();
 
@@ -323,5 +328,10 @@ public class PlayerManager implements IPlayerContainer {
     @Override
     public void onUnregister() {
         // Do nothing
+    }
+
+    @Override
+    public Health getAilments() {
+        return health;
     }
 }

@@ -2,6 +2,7 @@ package scenes;
 
 import com.badlogic.ashley.core.Entity;
 
+import core.datatypes.Ailment;
 import core.datatypes.Item;
 
 /**
@@ -43,6 +44,10 @@ public interface Messages {
         public static final int UpdateItem = 0xffe5;
 
         public static final int Equipment = 0xffe6;
+
+        public static final int AddAilment = 0xffe7;
+
+        public static final int RemoveAilment = 0xffe8;
         
         public static final class ItemMsg {
             public Item item;
@@ -109,6 +114,7 @@ public interface Messages {
             public Entity opponent;
             public int dmg;
             public boolean critical;
+            public Ailment cause;
         }
     }
     

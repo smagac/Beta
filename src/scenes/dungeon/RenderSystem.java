@@ -41,15 +41,16 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.components.Groups;
-import core.components.Health;
 import core.components.Identifier;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Ailment;
+import core.datatypes.Health;
 import core.datatypes.dungeon.Floor;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
+import core.service.interfaces.IPlayerContainer;
 
 public class RenderSystem extends EntitySystem implements EntityListener, Telegraph {
 
@@ -92,6 +93,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     @Inject public IColorMode color;
     @Inject public IDungeonContainer dungeonService;
+    @Inject public IPlayerContainer playerService;
     
     Family type = Family.all(Renderable.class, Position.class).get();
 
@@ -146,7 +148,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         Position p = Position.Map.get(player);
         
         calculateDensity();
-        Health health = Health.Map.get(player);
+        Health health = playerService.getAilments();
         float range = FOV_RANGE;
         if (health.getAilments().contains(Ailment.BLIND, true)) {
             range = BLIND_RANGE;

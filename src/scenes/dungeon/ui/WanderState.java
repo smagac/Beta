@@ -14,10 +14,7 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
-import core.common.Input;
-import core.components.Health;
 import core.datatypes.Inventory;
-import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 
 /**
@@ -98,7 +95,7 @@ public enum WanderState implements UIState {
             }
             else if (telegram.message == Messages.Dungeon.Action) {
                 final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
-                if (ms.openAction()) {
+                if (ms.openAction((Direction)telegram.extraInfo)) {
                     ms.process();
                     /*
                      * Disable input when moving, move a full step, then let enemies move,
@@ -174,7 +171,7 @@ public enum WanderState implements UIState {
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), healCost)) {
                     if (Inventory.getSumOfItems(entity.sacrificeMenu.getSacrifice()) > healCost * 2) {
-                        entity.playerService.getPlayer().getComponent(Health.class).reset();
+                        entity.playerService.getAilments().reset();
                     }
                     entity.sacrificeMenu.sacrifice();
                     entity.playerService.recover();

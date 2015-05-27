@@ -11,6 +11,8 @@ import java.util.Comparator;
 
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
+import scenes.dungeon.CombatHandler.Result;
+import scenes.dungeon.CombatHandler.Turn;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
@@ -19,7 +21,10 @@ import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
+import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
@@ -28,13 +33,13 @@ import core.components.Groups;
 import core.components.Groups.Monster;
 import core.components.Drop;
 import core.components.Equipment;
-import core.components.Health;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
 import core.datatypes.Ailment;
+import core.datatypes.Health;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
@@ -58,7 +63,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     ComponentMapper<Monster> monsterMap = ComponentMapper.getFor(Monster.class);
     ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
-    private Entity player;
+    Entity player;
     Array<Entity> monsters = new Array<Entity>();
     Array<Entity> equipment = new Array<Entity>();
     Array<Entity> actOrder = new Array<Entity>();
@@ -112,6 +117,12 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         return null;
     }
     
+    /**
+     * Detects if there is equipment on the ground that can be picked up at the designated location
+     * @param x
+     * @param y
+     * @return
+     */
     private Entity pickup(int x, int y) {
         for (int i = 0; i < equipment.size; i++) {
             Entity e = equipment.get(i);
@@ -130,7 +141,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @param y
      * @param e
      */
-    private boolean moveEntity(int x, int y, Entity e) {
+    boolean moveEntity(int x, int y, Entity e) {
         Position p = Position.Map.get(e);
         boolean moved = false;
         
@@ -139,48 +150,22 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             // Handle combat
             if (foe != null) {
                 //door handling logic
-                if (Lock.Map.has(foe)) {
-                    Lock lock = Lock.Map.get(foe);
-                    if (lock.unlocked) {
-                        if ((!lock.open && e == player) || lock.open) {
-                            //move onto the square and open the door
-                            p.move(x, y);
-                            unlockDoor(foe);
-                            moved = true;
-                        } else {
-                            //do nothing, blocking the path
-                            moved = false;
-                        }
-                    } 
-                    else {
-                        if (e == player){
-                            //bash open the door
-                            fight(e, foe);
-                            moved = true;
-                        } else {
-                            //do nothing
-                            moved = false;
-                        }
-                    }
-                } else {
-                    if (e == player) {
+                if (e == player) {
+                    fight(e, foe);
+                    moved = true;
+                }
+                else {
+                    Combat c = Combat.Map.get(e);
+                    if (foe == player && !c.isNaturallyPassive()) {
                         fight(e, foe);
                         moved = true;
                     }
-                    else {
-                        Combat c = Combat.Map.get(e);
-                        if (foe == player && !c.isPassive()) {
-                            fight(e, foe);
-                            moved = true;
-                        }
-                    } 
-                }
+                } 
             }
             // just move to square
             else {
                 p.move(x, y);
 
-                // try to figure out which room you're in now
                 if (e == player) {
                     Entity obj = pickup(x, y);
                     // equipment
@@ -200,25 +185,40 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         return moved;
     }
 
+    boolean handleDrop(Entity actor){
+        if (Drop.Map.has(actor)) {
+            Drop drop = Drop.Map.get(actor);
+            if (drop.reward instanceof Item) {
+                Item item = (Item)drop.reward;
+                ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
+                actor.remove(Drop.class);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
+            }
+            else if (drop.reward instanceof Equipment.Piece) {
+                Equipment.Piece piece = (Equipment.Piece)drop.reward;
+                Renderable r = Renderable.Map.get(actor);
+                if (piece instanceof Equipment.Sword) {
+                    r.setSpriteName("sword");
+                } else if (piece instanceof Equipment.Shield) {
+                    r.setSpriteName("shield");
+                } else if (piece instanceof Equipment.Armor) {
+                    r.setSpriteName("armor");
+                }
+                this.equipment.add(actor);
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Make two entities fight
      * 
      * @param actor
      * @param opponent
      */
-    private void fight(Entity actor, Entity opponent) {
-        Stats aStats = statMap.get(actor);
-        Stats bStats = statMap.get(opponent);
-        Equipment equipment = Equipment.Map.get(player);
-        
-        final float MULT = (actor == player) ? 2 : 1.25f;
-
-        // ignore if target died at some point along the way
-        if (aStats.hp <= 0 ) {
-            return;
-        }
-        
-        if (bStats.hp <= 0 || (opponent != player && !Combat.Map.has(opponent))) {
+    private void fight(Entity attacker, Entity opponent) {
+        if (CombatHandler.isDead(attacker, player) || CombatHandler.isDead(opponent, player)){
             return;
         }
 
@@ -226,138 +226,82 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (Groups.bossType.matches(opponent)) {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, opponent);
             return;
-        } else if (Groups.bossType.matches(actor)) {
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, actor);
+        } else if (Groups.bossType.matches(attacker)) {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, attacker);
             return;
         }
         
-        Position p = Position.Map.get(actor);
+        //animate fight
+        Position p = Position.Map.get(attacker);
         Position p1 = Position.Map.get(opponent);
         p.fight(p1.getX(), p1.getY());
         
         //show ids
         {
-            Identifier id = Identifier.Map.get(actor);
+            Identifier id = Identifier.Map.get(attacker);
             id.show();
             id = Identifier.Map.get(opponent);
             id.show();
         }
         
+        Result results = CombatHandler.fight(new Turn(attacker, opponent), player);
+        
         CombatNotify notification = new CombatNotify();
-        notification.attacker = actor;
+        notification.attacker = attacker;
         notification.opponent = opponent;
-    
-        if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
-            float chance = MathUtils.random(.8f, MULT);
-            int str = aStats.getStrength();
-            int def = bStats.getDefense();
-            if (actor == player) {
-                str += equipment.getSword().getPower();
-                if (!Monster.isObject(opponent)) {
-                    equipment.getSword().decay();
-                }
-            }
-            else {
-                //shield provides chance to block
-                float pow = equipment.getShield().getPower(); 
-                if (MathUtils.randomBoolean(pow / Equipment.Piece.MAX_POWER)) {
-                    equipment.getShield().decay();
-                    def += Integer.MAX_VALUE;    
-                }
-                //armor lessens damage if the shield doesn't blog
-                else {
-                    def += equipment.getArmor().getPower();
-                    equipment.getArmor().decay();    
-                }
-            }
-            int dmg = (int)Math.max(0, (chance * str) - def);
-            
-            bStats.hp = Math.max(0, bStats.hp - dmg);
-
-            notification.dmg = dmg;
-            if (actor == player) {
-                notification.critical = chance > MULT * .8f && dmg > 0;
-                Combat combatProp = Combat.Map.get(opponent);
-                combatProp.aggress();
-            } else {
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-            }
-        }
-        else {
-            notification.attacker = actor;
-            notification.opponent = opponent;
-            notification.dmg = -1;
-        }
+        notification.dmg = results.damage;
+        notification.critical = results.critical;
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
         
-
-        if (bStats.hp <= 0) {
+        //agro enemies when hit
+        if (attacker == player){
+            Combat combatProp = Combat.Map.get(opponent);
+            combatProp.getAI().changeState(MovementAI.Agro);
+        }
+        else
+        {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+        }
+        
+        if (results.killed) {
             //open door instead of handling drops
-            if (Lock.Map.has(opponent))
-            {
-                unlockDoor(opponent);
+            if (Lock.Map.has(opponent)) {
+                CombatHandler.unlockDoor(opponent);
             }
-            // drop item if opponent killed was not a player
-            else if (opponent != player){
+            else if (Monster.isLoot(opponent)) {
+                dungeonService.getProgress().lootFound++;
+                dungeonService.getProgress().totalLootFound++;
+                engine.removeEntity(opponent);
+            }
+            else if (Monster.isKey(opponent)) {
+                dungeonService.getProgress().keys++;
+                engine.removeEntity(opponent);
+            }
+            else if (opponent != player) {
+                CombatHandler.markDead(opponent);
+                dungeonService.getProgress().monstersKilled++;
+                String name = Identifier.Map.get(opponent).toString();
+                MessageDispatcher.getInstance().dispatchMessage(null, Quest.Actions.Hunt, name);
                 
-                aStats.exp += bStats.exp;
+                Stats playerStats = Stats.Map.get(player);
+                playerStats.exp += results.exp;
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-                if (aStats.canLevelUp()) {
+                if (playerStats.canLevelUp()) {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
                 }
                 ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
-                Renderable r = Renderable.Map.get(opponent);
-                r.setSpriteName("dead");
-                r.setDensity(0);
-                if (Drop.Map.has(opponent)) {
-                    Drop drop = Drop.Map.get(opponent);
-                    if (drop.reward instanceof Equipment.Piece) {
-                        Equipment.Piece piece = (Equipment.Piece)drop.reward;
-                        if (piece instanceof Equipment.Sword) {
-                            r.setSpriteName("sword");
-                        } else if (piece instanceof Equipment.Shield) {
-                            r.setSpriteName("shield");
-                        } else if (piece instanceof Equipment.Armor) {
-                            r.setSpriteName("armor");
-                        }
-                        this.equipment.add(opponent);
-                    }
-                }
-                
-                if (Monster.isLoot(opponent)) {
-                    dungeonService.getProgress().lootFound++;
-                    dungeonService.getProgress().totalLootFound++;
-                    engine.removeEntity(opponent);
-                }
-                else if (Monster.isKey(opponent)) {
-                    dungeonService.getProgress().keys++;
-                    engine.removeEntity(opponent);
-                }
-                else {
-                    dungeonService.getProgress().monstersKilled++;
-                    String name = Identifier.Map.get(opponent).toString();
-                    MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
-                }
-                opponent.remove(Monster.class);
-                monsters.removeValue(opponent, true);
-                    
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
             }
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
-            opponent.remove(Combat.class);
             
-            if (Drop.Map.has(opponent)) {
-                Drop drop = Drop.Map.get(opponent);
-                if (drop.reward instanceof Item) {
-                    Item item = (Item)drop.reward;
-                    ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
-                    opponent.remove(Drop.class);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
-                }
-            }
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
+            opponent.remove(Monster.class);
+            opponent.remove(Combat.class);
+            monsters.removeValue(opponent, true);    
+            
+            handleDrop(opponent);
         }
     }
-
+    
     /**
      * Set the system's main player and moves them to their starting position
      * Used to descend to the next level
@@ -381,7 +325,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         p.update();
     }
 
-
     /**
      * Moves just the player entity and executes a turn
      * 
@@ -400,7 +343,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         int x = playerPos.getX();
         int y = playerPos.getY();
         
-        Health health = Health.Map.get(player);
+        Health health = playerService.getAilments();
         //randomize movement when confused
         if (health.getAilments().contains(Ailment.CONFUSE, true)) {
             Gdx.app.log("Status", "Player is confused");
@@ -443,18 +386,12 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         return false;
     }
     
-    private void unlockDoor(Entity e) {
-        Lock lock = Lock.Map.get(e);
-        lock.unlocked = true;
-        lock.open = true;
-        Renderable.Map.get(e).setSpriteName("opened");
-        Renderable.Map.get(e).setDensity(0);
-    }
+    
     
     /**
      * Looks in the tiles around the player, if they keys they may unlock certain objects
      */
-    public boolean openAction() {
+    public boolean openAction(Direction dir) {
         int keys = dungeonService.getProgress().keys;
         if (keys <= 0) {
             return false;
@@ -463,55 +400,45 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         Position playerPos = Position.Map.get(player);
         int x = playerPos.getX();
         int y = playerPos.getY();
+        int[] adj = {x, y};
+        dir.move(adj);
         
         boolean unlocked = false;
-        int[][] adjacent = {{x-1, y}, {x, y-1}, {x, y+1}, {x+1, y}};
-        for (int[] adj : adjacent) {
-            Entity e = checkFoe(adj[0], adj[1], player);
-            if (e != null)
-            {
-                if (Monster.isDoor(e) || Monster.isLoot(e) || Monster.isMimic(e)) {
-                    String name = Identifier.Map.get(e).toString();
-                    
-                    unlocked = true;
-                    
-                    Position p1 = Position.Map.get(e);
-                    playerPos.fight(p1.getX(), p1.getY());
-                    //is door, unlock
-                    if (Lock.Map.has(e)) {
-                        unlockDoor(e);
-                    } 
-                    //kill creature/chest
+        Entity e = checkFoe(adj[0], adj[1], player);
+        if (e != null)
+        {
+            if (Monster.isDoor(e) || Monster.isLoot(e) || Monster.isMimic(e)) {
+                String name = Identifier.Map.get(e).toString();
+                
+                unlocked = true;
+                
+                Position p1 = Position.Map.get(e);
+                playerPos.fight(p1.getX(), p1.getY());
+                //is door, unlock
+                if (Lock.Map.has(e)) {
+                    CombatHandler.unlockDoor(e);
+                } 
+                //kill creature/chest
+                else {
+                    if (Monster.isLoot(e)) {
+                        dungeonService.getProgress().lootFound++;
+                        dungeonService.getProgress().totalLootFound++;
+                        engine.removeEntity(e);
+                    }
                     else {
                         ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
-                        Renderable.Map.get(e).setSpriteName("dead");
-                        Renderable.Map.get(e).setDensity(0);
+                        CombatHandler.markDead(e);
 
-                        if (Monster.isLoot(e)) {
-                            dungeonService.getProgress().lootFound++;
-                            dungeonService.getProgress().totalLootFound++;
-                            engine.removeEntity(e);
-                        }
-                        else {
-                            dungeonService.getProgress().monstersKilled++;
-                            MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
-                        }
-                        
-                        monsters.removeValue(e, true);
+                        dungeonService.getProgress().monstersKilled++;
+                        MessageDispatcher.getInstance().dispatchMessage(0, null, null, Quest.Actions.Hunt, name);
                     }
-                    e.remove(Combat.class);
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("%s was unlocked", name));
-
-                    if (Drop.Map.has(e)){
-                        Drop drop = Drop.Map.get(e);
-                        if (drop.reward instanceof Item) {
-                            Item item = (Item)drop.reward;
-                            ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
-                        }
-                    }
-                    break;
+                    
+                    monsters.removeValue(e, true);
                 }
+                e.remove(Combat.class);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("%s was unlocked", name));
+
+                handleDrop(e);
             }
         }
         
@@ -541,7 +468,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 // ignores player movement unlock, preventing attacking oneself
                 if (p.getX() != nextMove[0] || p.getY() != nextMove[1]) {
                     //applied all status ailments to player
-                    Health health = Health.Map.get(e);
+                    Health health = playerService.getAilments();
                     Stats stats = Stats.Map.get(e);
                     ImmutableArray<Ailment> active = health.getAilments();
                     
@@ -552,11 +479,14 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         // when the player does move
                         float disable = .8f;
                         int dmg = 0;
+                        Ailment cause;
                         if (active.contains(Ailment.ARTHRITIS, true)) {
                             disable = .4f;
                             dmg = (int)Math.max(stats.maxhp / 20f, 1);
+                            cause = Ailment.ARTHRITIS;
                         } else {
                             dmg = (int)Math.max(stats.maxhp / 15f, 1);
+                            cause = Ailment.SPRAIN;
                         }
                         if (MathUtils.randomBoolean(disable)) {
                             moveEntity(nextMove[0], nextMove[1], e);
@@ -564,7 +494,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                             notification.attacker = null;
                             notification.opponent = e;
                             notification.dmg = dmg;
+                            notification.cause = cause;
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                         }
                     }
                     else
@@ -575,16 +507,21 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     //handle movement inhibitors
                     if (active.contains(Ailment.POISON, false)){
                         int dmg = 0;
+                        Ailment cause;
                         if (active.contains(Ailment.TOXIC, true)) {
                             dmg = (int)Math.max(stats.maxhp / 12f, 1);
+                            cause = Ailment.TOXIC;
                         } else {
                             dmg = (int)Math.max(stats.maxhp / 15f, 1);
+                            cause = Ailment.POISON;
                         }
                         CombatNotify notification = new CombatNotify();
                         notification.attacker = null;
                         notification.opponent = e;
                         notification.dmg = dmg;
+                        notification.cause = cause;
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                     }
                 }
             } else {
@@ -604,78 +541,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             return;
         }
         Combat prop = Combat.Map.get(e);
-        Position m = Position.Map.get(e);
-        Position p = Position.Map.get(player);
-
-
-        // only try moving once the character is in the same room as it
-        // try to move towards the player when nearby
-        if (prop.isAgro()) {
-            // roll for move
-            // Stats s = statMap.get(e);
-            // chance multiplied since agro
-            if (MathUtils.randomBoolean(prop.getMovementRate())) {
-                int dX = 0;
-                int dY = 0;
-                boolean priority = MathUtils.randomBoolean();
-
-                // horizontal priority flip
-                if (priority) {
-                    if (p.getX() < m.getX())
-                        dX = -1;
-                    if (p.getX() > m.getX())
-                        dX = 1;
-                    if (dX == 0) {
-                        if (p.getY() < m.getY())
-                            dY = -1;
-                        if (p.getY() > m.getY())
-                            dY = 1;
-                    }
-
-                }
-                // vertical priority
-                else {
-                    if (p.getY() < m.getY())
-                        dY = -1;
-                    if (p.getY() > m.getY())
-                        dY = 1;
-                    if (dY == 0) {
-                        if (p.getX() < m.getX())
-                            dX = -1;
-                        if (p.getX() > m.getX())
-                            dX = 1;
-                    }
-                }
-
-                // follow player chance
-                moveEntity(m.getX() + dX, m.getY() + dY, e);
-
-                if (p.distance(m) > 5) {
-                    prop.calm();
-                }
-            }
-        }
-        // lazily wander around
-        else {
-            // roll for move
-            // Stats s = statMap.get(e);
-            if (MathUtils.randomBoolean(prop.getMovementRate())) {
-                int dX = 0;
-                int dY = 0;
-
-                dX = MathUtils.random(-1, 1);
-                if (dX == 0) {
-                    dY = MathUtils.random(-1, 1);
-                }
-
-                // follow player chance
-                moveEntity(m.getX() + dX, m.getY() + dY, e);
-
-                if (p.distance(m) < 3 && !prop.isPassive()) {
-                    prop.aggress();
-                }
-            }
-        }
+        prop.getAI().update();
     }
 
     /**
@@ -684,17 +550,24 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     public void dispose() {
         monsters = null;
         player = null;
+        MovementAI.setWorld(null);
     }
     
     @Override
     public void addedToEngine(Engine engine) {
         this.engine = engine;
+        MovementAI.setWorld(this);
     }
 
     @Override
     public void entityAdded(Entity entity) {
         if (Groups.monsterType.matches(entity)) {
             monsters.add(entity);
+            Combat combat = Combat.Map.get(entity);
+            combat.initAI(new DefaultStateMachine<Entity>(entity, MovementAI.Wander));
+            if (combat.isNaturallyPassive()) {
+                combat.getAI().changeState(MovementAI.Passive);
+            }
         } 
         /**
          * Assigns a direct reference to the player in the system for faster access
@@ -713,30 +586,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             player = null;
         }
     }
-    
-    /**
-     * Comparator used to sort the action order of entities in the system
-     * @author nhydock
-     *
-     */
-    private static class SpeedComparator implements Comparator<Entity> {
-
-        static final SpeedComparator instance = new SpeedComparator();
-        
-        private SpeedComparator(){};
-        
-        @Override
-        public int compare(Entity o1, Entity o2) {
-            Stats s1 = Stats.Map.get(o1);
-            Stats s2 = Stats.Map.get(o2);
-            
-            Float spd1 = s1.getSpeed();
-            Float spd2 = s2.getSpeed();
-            
-            return spd1.compareTo(spd2);
-        }
-        
-    }
 
     public int changeFloor() {
         Position p = Position.Map.get(player);
@@ -752,4 +601,5 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         }
         return -1;
     }
+    
 }

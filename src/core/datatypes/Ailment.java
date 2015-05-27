@@ -6,15 +6,19 @@ package core.datatypes;
  *
  */
 public final class Ailment {
-    public static final Ailment POISON = new Ailment(10, 0b0001);
-    public static final Ailment TOXIC = new Ailment(-1, 0b0001);    
-    public static final Ailment CONFUSE = new Ailment(8, 0b0010);
-    public static final Ailment SPRAIN = new Ailment(10, 0b0100);
-    public static final Ailment ARTHRITIS = new Ailment(0, 0b0100);
-    public static final Ailment BLIND = new Ailment(20, 0b1000);
+    public static final Ailment POISON = new Ailment(10, 0b0001, "poison", 1);
+    public static final Ailment TOXIC = new Ailment(-1, 0b0001, "toxic", 2);    
+    public static final Ailment CONFUSE = new Ailment(8, 0b0010, "confuse", 1);
+    public static final Ailment SPRAIN = new Ailment(10, 0b0100, "sprain", 1);
+    public static final Ailment ARTHRITIS = new Ailment(0, 0b0100, "arthritis", 2);
+    public static final Ailment BLIND = new Ailment(20, 0b1000, "blind", 1);
+    
+    public static final Ailment[] ALL = {POISON, TOXIC, CONFUSE, SPRAIN, ARTHRITIS, BLIND};
     
     private final int turns;
     private final int bit;
+    private final int priority;
+    private final String name;
     
     /**
      * Define a status effect
@@ -22,14 +26,20 @@ public final class Ailment {
      *   the number of turns it takes to naturally wear off
      *   0 indicates that medicine is required to heal it
      */
-    private Ailment(int t, int b){
+    private Ailment(int t, int b, String n, int p){
         turns = t;
         bit = b;
+        name = n;
+        priority = p;
     }
     
     @Override
     public int hashCode(){
         return bit;
+    }
+    
+    public int getPriority(){
+        return priority;
     }
     
     /**
@@ -48,5 +58,10 @@ public final class Ailment {
      */
     public boolean requiresMedicine() {
         return turns <= -1;
+    }
+    
+    @Override
+    public String toString() {
+        return name;
     }
 }

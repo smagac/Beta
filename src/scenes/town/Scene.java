@@ -22,6 +22,8 @@ public class Scene extends scenes.Scene<TownUI> {
     public void show() {
         ServiceManager.register(IDungeonContainer.class, null);
     
+        playerService.getAilments().reset();
+        
         ui = new TownUI(manager);
         
         bgm = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "town/")).random();

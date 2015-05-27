@@ -4,6 +4,7 @@ import github.nhydock.ssm.Service;
 
 import com.badlogic.ashley.core.Entity;
 
+import core.datatypes.Health;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 
@@ -14,6 +15,8 @@ public interface IPlayerContainer extends Service {
     public QuestTracker getQuestTracker();
 
     public Entity getPlayer();
+    
+    public Health getAilments();
 
     public void rest();
 
