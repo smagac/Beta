@@ -496,7 +496,13 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                             notification.dmg = dmg;
                             notification.cause = cause;
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+                            
+                            stats.hp = Math.max(0, stats.hp - dmg);
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+                            
+                            if (stats.hp <= 0) {
+                                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, player);
+                            }
                         }
                     }
                     else
@@ -521,7 +527,13 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         notification.dmg = dmg;
                         notification.cause = cause;
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+                        
+                        stats.hp = Math.max(0, stats.hp - dmg);
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+                        
+                        if (stats.hp <= 0) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, player);
+                        }
                     }
                 }
             } else {
