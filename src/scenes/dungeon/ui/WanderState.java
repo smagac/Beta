@@ -32,6 +32,7 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.sacrificeMenu.hide();
+            entity.setKeyboardFocus(entity.getRoot());
         }
 
         @Override
@@ -140,6 +141,7 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.sacrificeMenu.show();
+            entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
         }
 
         @Override

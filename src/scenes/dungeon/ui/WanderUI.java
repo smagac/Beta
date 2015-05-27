@@ -55,7 +55,6 @@ import core.components.Equipment;
 import core.components.Identifier;
 import core.components.Stats;
 import core.datatypes.Ailment;
-import core.datatypes.Health;
 import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
@@ -244,15 +243,19 @@ public class WanderUI extends UI {
         }
         
         // goddess sacrifice view
-        sacrificeMenu = new SacrificeSubmenu(skin, playerService);
+        sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu);
         sacrificeMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
         addActor(sacrificeMenu.getGroup());
 
+        getRoot().setName("root");
+        setKeyboardFocus(getRoot());
         // key listener for moving the character by pressing the arrow keys or WASD
         addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
                 if (menu.isInState(WanderState.Wander)) {
+                    if (evt.getTarget() != getRoot())
+                        return false;
                     
                     if (Input.ACCEPT.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
@@ -277,16 +280,6 @@ public class WanderUI extends UI {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                         }
                         //Gdx.app.log("Wander", "moving player - " + to);
-                        return true;
-                    }
-                }
-                if (menu.isInState(WanderState.Assist)) {
-                    if (Input.LEFT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Heal);
-                        return true;
-                    }
-                    if (Input.RIGHT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Leave);
                         return true;
                     }
                 }

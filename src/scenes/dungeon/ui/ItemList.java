@@ -101,6 +101,7 @@ class ItemList {
                 else if (Input.ACCEPT.match(keycode)) {
                     if (index >= 0 && index <= order.size - 1) {
                         swap(order.get(index));
+                        return true;
                     }
                 }
                 return false;
