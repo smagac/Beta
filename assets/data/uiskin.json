@@ -24,7 +24,8 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: { down: button_down, up: button_up, checked: button_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
     big: { down: button_down, up: button_up, checked: button_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },
-    pop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black }	
+    pop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
+    bigpop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },
 	list: {font: smaller, fontColor: white},
 	tab: { down: tab_down, up: tab_up, checked: tab_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
 },
@@ -80,6 +81,7 @@ com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
 },
 com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
 	default: { background: progback, knobBefore: progfront},
+	simple: { background: list, knobBefore: selected }
 },
 com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
 	default: { checkboxOff: checkbox-unchecked,

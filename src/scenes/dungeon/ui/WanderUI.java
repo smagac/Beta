@@ -53,6 +53,9 @@ import core.common.Input;
 import core.components.Combat;
 import core.components.Equipment;
 import core.components.Identifier;
+import core.components.Stats;
+import core.datatypes.Ailment;
+import core.datatypes.Health;
 import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
@@ -87,6 +90,8 @@ public class WanderUI extends UI {
     private Label lootLabel;
 
     Group messageWindow;
+
+    private HUD hud;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -110,6 +115,8 @@ public class WanderUI extends UI {
             Messages.Player.Progress,
             Messages.Player.Stats,
             Messages.Player.Time,
+            Messages.Player.AddAilment,
+            Messages.Player.RemoveAilment,
             Messages.Interface.Close,
             Messages.Interface.Notify,
             Messages.Interface.Button
@@ -128,9 +135,11 @@ public class WanderUI extends UI {
         skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
 
         //user hud
-        HUD hud = new HUD(skin);
-        hud.update(playerService);
+        hud = new HUD(skin);
+        hud.updateStats(Stats.Map.get(playerService.getPlayer()));
+        hud.updateProgress(dungeonService.getProgress());
         hud.getGroup().setPosition(getWidth()/2f, -8, Align.bottom);
+        hud.updateAilments(null, false);
         addActor(hud.getGroup());
         
         //combat log
@@ -245,11 +254,6 @@ public class WanderUI extends UI {
             public boolean keyDown(InputEvent evt, int keycode) {
                 if (menu.isInState(WanderState.Wander)) {
                     
-                    if (Input.ACTION.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
-                        return true;
-                    }
-                    
                     if (Input.ACCEPT.match(keycode)) {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
                         return true;
@@ -262,7 +266,11 @@ public class WanderUI extends UI {
                     
                     Direction to = Direction.valueOf(keycode);
                     if (to != null) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                        if (Input.ACTION.isPressed()){
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
+                        } else {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                        }
                         //Gdx.app.log("Wander", "moving player - " + to);
                         return true;
                     }
@@ -422,6 +430,22 @@ public class WanderUI extends UI {
                     addCombatMessage(String.format("You attacked %s for %d damage", name, notification.dmg));
                 }
             }
+            //status ailment damage
+            else if (notification.cause != null) {
+                if (notification.cause == Ailment.POISON) {
+                    addCombatMessage(String.format("The poison damaged you for %d points", notification.dmg));
+                }
+                if (notification.cause == Ailment.TOXIC) {
+                    addCombatMessage(String.format("The toxin damaged you for %d points", notification.dmg));
+                }
+                if (notification.cause == Ailment.SPRAIN) {
+                    addCombatMessage(String.format("Your sprained leg ached for %d damage", notification.dmg));
+                }
+                if (notification.cause == Ailment.ARTHRITIS) {
+                    addCombatMessage(String.format("Your joints ache for %d damage", notification.dmg));
+                }
+                
+            }
             else {
                 Identifier id = Identifier.Map.get(notification.attacker);
                 String name = id.toString();
@@ -443,6 +467,7 @@ public class WanderUI extends UI {
         }
         if (telegram.message == Messages.Dungeon.Refresh) {
             refresh((Progress) telegram.extraInfo);
+            hud.updateProgress((Progress) telegram.extraInfo);
             return true;
         }
         if (telegram.message == Messages.Player.UpdateItem || 
@@ -466,6 +491,21 @@ public class WanderUI extends UI {
                 armorBar.updateDurability(piece.getDurability(), piece.getMaxDurability());
             }
 
+            return true;
+        }
+        if (telegram.message == Messages.Player.AddAilment) {
+            Ailment ailment = (Ailment)telegram.extraInfo;
+            hud.updateAilments(ailment, true);
+            return true;
+        }
+        if (telegram.message == Messages.Player.RemoveAilment) {
+            Ailment ailment = (Ailment)telegram.extraInfo;
+            hud.updateAilments(ailment, false);
+            return true;
+        }
+        if (telegram.message == Messages.Player.Stats) {
+            Stats stats = playerService.getPlayer().getComponent(Stats.class);
+            hud.updateStats(stats);
             return true;
         }
         return menu.handleMessage(telegram);

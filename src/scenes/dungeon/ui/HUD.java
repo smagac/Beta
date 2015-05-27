@@ -1,28 +1,38 @@
 package scenes.dungeon.ui;
 
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import scenes.Messages;
 import core.components.Stats;
+import core.datatypes.Ailment;
+import core.datatypes.Health;
+import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IPlayerContainer;
 
 public class HUD {
 
-    Group container;
-    Label hpStats;
-    ProgressBar hpBar;
+    private Group container;
+    private Label hpStats;
+    private ProgressBar hpBar;
     
-    Label expStats;
-    ProgressBar expBar;
+    private Label expStats;
+    private ProgressBar expBar;
     
-    Label keys;
-    Label depth;
+    private Label keys;
+    private Label depth;
+    
+    private Group ailmentList;
+    private ObjectMap<String, Image> ailments;
     
     public HUD(Skin skin) {
     
@@ -113,17 +123,144 @@ public class HUD {
         }
         
         //status ailment icons
+        {
+            ailmentList = new Group();
+            ailments = new ObjectMap<String, Image>();
+        
+            Image image;
+            Ailment a;
+            
+            a = Ailment.POISON;
+            image = new Image(skin, "status_" + a.toString());
+            image.setSize(32f, 32f);
+            image.setPosition(0f, 0f);
+            image.setAlign(Align.center);
+            ailments.put(a.toString(), image);
+            ailmentList.addActor(image);
+        
+            a = Ailment.TOXIC;
+            image = new Image(skin, "status_" + a.toString());
+            image.setSize(32f, 32f);
+            image.setPosition(0f, 0f);
+            image.setAlign(Align.center);
+            ailments.put(a.toString(), image);
+            ailmentList.addActor(image);
+            
+            a = Ailment.SPRAIN;
+            image = new Image(skin, "status_" + a.toString());
+            image.setSize(32f, 32f);
+            image.setPosition(40f, 0f);
+            image.setAlign(Align.center);
+            ailments.put(a.toString(), image);
+            ailmentList.addActor(image);
+            
+            a = Ailment.ARTHRITIS;
+            image = new Image(skin, "status_" + a.toString());
+            image.setSize(32f, 32f);
+            image.setPosition(40f, 0f);
+            image.setAlign(Align.center);
+            ailments.put(a.toString(), image);
+            ailmentList.addActor(image);
+            
+            a = Ailment.CONFUSE;
+            image = new Image(skin, "status_" + a.toString());
+            image.setSize(32f, 32f);
+            image.setPosition(80f, 0f);
+            image.setAlign(Align.center);
+            ailments.put(a.toString(), image);
+            ailmentList.addActor(image);
+            
+            a = Ailment.BLIND;
+            image = new Image(skin, "status_" + a.toString());
+            image.setSize(32f, 32f);
+            image.setPosition(120f, 0f);
+            image.setAlign(Align.center);
+            ailments.put(a.toString(), image);
+            ailmentList.addActor(image);
+            
+            ailmentList.setWidth(152f);
+            ailmentList.setHeight(32f);
+            ailmentList.setPosition(240, 80, Align.bottom);
+            container.addActor(ailmentList);
+        }
     }
     
     public Group getGroup(){
         return container;
     }
     
-    public void update(IPlayerContainer playerService) {
+    public void updateStats(Stats s) {
         // update stats
-        Stats s = playerService.getPlayer().getComponent(Stats.class);
         hpStats.setText(String.format("%d/%d", s.hp, s.maxhp));
         expStats.setText(String.format("%d/%d", s.exp, s.nextExp));
+        
+        hpBar.setValue(s.hp/(float)s.maxhp);
+        expBar.setValue(s.getExp()/s.nextExp);
+    }
+    
+    public void updateProgress(Progress progress) {
+        keys.setText(String.valueOf(progress.keys));
+        depth.setText(String.valueOf(progress.depth));
     }
 
+    /**
+     * Perform the animation for popping in an ailment icon
+     * @param icon
+     */
+    private void popInAilment(Image icon) {
+        icon.clearActions();
+        icon.addAction(
+            Actions.sequence(
+                Actions.alpha(0f),
+                Actions.scaleTo(.2f, .2f),
+                Actions.parallel(
+                    Actions.alpha(1f, .1f),
+                    Actions.scaleTo(1, 1, .14f, Interpolation.circleOut)
+                )
+            )
+        );
+    }
+
+    /**
+     * Perform the animation for popping in an ailment icon
+     * @param icon
+     */
+    private void popOutAilment(Image icon) {
+        icon.clearActions();
+        icon.addAction(
+            Actions.sequence(
+                Actions.alpha(1f),
+                Actions.scaleTo(1f, 1f),
+                Actions.parallel(
+                    Actions.alpha(0f, .1f),
+                    Actions.scaleTo(.2f, .2f, .14f, Interpolation.circleOut)
+                )
+            )
+        );
+    }
+    
+    /**
+     * Updates the visible icons for ailments
+     * @param ailment
+     * @param added
+     *  true if the ailment is new
+     */
+    public void updateAilments(Ailment ailment, boolean added) {
+        if (added) {
+            String name = ailment.toString();
+            Image icon = ailments.get(name);
+            popInAilment(icon);
+        } else {
+            if (ailment == null) {
+                for (Image i : ailments.values()) {
+                    popOutAilment(i);
+                }
+            }
+            else {
+                String name = ailment.toString();
+                Image icon = ailments.get(name);
+                popOutAilment(icon);
+            }
+        }
+    }
 }
