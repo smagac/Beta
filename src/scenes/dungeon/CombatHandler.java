@@ -76,7 +76,7 @@ class CombatHandler {
                 result.critical = chance > MULT * .8f && result.damage > 0;   
             }
             
-            bStats.hp -= result.damage;
+            bStats.hp = Math.max(0, bStats.hp - result.damage);
         }
         else {
             result.damage = -1;

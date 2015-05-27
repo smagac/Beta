@@ -264,6 +264,11 @@ public class WanderUI extends UI {
                         return true;
                     }
                     
+                    if (Input.ACTION.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+                        return true;
+                    }
+                    
                     Direction to = Direction.valueOf(keycode);
                     if (to != null) {
                         if (Input.ACTION.isPressed()){

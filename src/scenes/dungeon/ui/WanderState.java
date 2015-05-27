@@ -95,23 +95,25 @@ public enum WanderState implements UIState {
             }
             else if (telegram.message == Messages.Dungeon.Action) {
                 final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
-                if (ms.openAction((Direction)telegram.extraInfo)) {
-                    ms.process();
-                    /*
-                     * Disable input when moving, move a full step, then let enemies move,
-                     * then restore the input.
-                     */
-                    entity.addAction(
-                        Actions.sequence(
-                            Actions.delay(RenderSystem.MoveSpeed)
-                        )
-                    );
-                    return true;
-                }
-                int change = ms.changeFloor();
-                
-                if (change != -1) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, change);
+                if (telegram.extraInfo != null) {
+                    if (ms.openAction((Direction)telegram.extraInfo)) {
+                        ms.process();
+                        /*
+                         * Disable input when moving, move a full step, then let enemies move,
+                         * then restore the input.
+                         */
+                        entity.addAction(
+                            Actions.sequence(
+                                Actions.delay(RenderSystem.MoveSpeed)
+                            )
+                        );
+                    }
+                } else {
+                    int change = ms.changeFloor();
+                    
+                    if (change != -1) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, change);
+                    }
                 }
                 return true;
             }

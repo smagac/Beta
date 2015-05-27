@@ -3,7 +3,6 @@ package scenes.dungeon.ui;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
@@ -11,13 +10,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectMap.Entries;
+import com.badlogic.gdx.utils.ObjectMap.Entry;
 
-import scenes.Messages;
 import core.components.Stats;
 import core.datatypes.Ailment;
-import core.datatypes.Health;
 import core.datatypes.dungeon.Progress;
-import core.service.interfaces.IPlayerContainer;
 
 public class HUD {
 
@@ -32,7 +30,12 @@ public class HUD {
     private Label depth;
     
     private Group ailmentList;
-    private ObjectMap<String, Image> ailments;
+    private ObjectMap<String, Icon> ailments;
+    
+    private class Icon {
+        Image icon;
+        boolean visible;
+    }
     
     public HUD(Skin skin) {
     
@@ -125,58 +128,24 @@ public class HUD {
         //status ailment icons
         {
             ailmentList = new Group();
-            ailments = new ObjectMap<String, Image>();
+            ailments = new ObjectMap<String, Icon>();
         
-            Image image;
-            Ailment a;
             
-            a = Ailment.POISON;
-            image = new Image(skin, "status_" + a.toString());
-            image.setSize(32f, 32f);
-            image.setPosition(0f, 0f);
-            image.setAlign(Align.center);
-            ailments.put(a.toString(), image);
-            ailmentList.addActor(image);
-        
-            a = Ailment.TOXIC;
-            image = new Image(skin, "status_" + a.toString());
-            image.setSize(32f, 32f);
-            image.setPosition(0f, 0f);
-            image.setAlign(Align.center);
-            ailments.put(a.toString(), image);
-            ailmentList.addActor(image);
+            Object[] pos = {Ailment.POISON, 0, Ailment.TOXIC, 0, Ailment.SPRAIN, 40, Ailment.ARTHRITIS, 40, Ailment.CONFUSE, 80, Ailment.BLIND, 120};
             
-            a = Ailment.SPRAIN;
-            image = new Image(skin, "status_" + a.toString());
-            image.setSize(32f, 32f);
-            image.setPosition(40f, 0f);
-            image.setAlign(Align.center);
-            ailments.put(a.toString(), image);
-            ailmentList.addActor(image);
-            
-            a = Ailment.ARTHRITIS;
-            image = new Image(skin, "status_" + a.toString());
-            image.setSize(32f, 32f);
-            image.setPosition(40f, 0f);
-            image.setAlign(Align.center);
-            ailments.put(a.toString(), image);
-            ailmentList.addActor(image);
-            
-            a = Ailment.CONFUSE;
-            image = new Image(skin, "status_" + a.toString());
-            image.setSize(32f, 32f);
-            image.setPosition(80f, 0f);
-            image.setAlign(Align.center);
-            ailments.put(a.toString(), image);
-            ailmentList.addActor(image);
-            
-            a = Ailment.BLIND;
-            image = new Image(skin, "status_" + a.toString());
-            image.setSize(32f, 32f);
-            image.setPosition(120f, 0f);
-            image.setAlign(Align.center);
-            ailments.put(a.toString(), image);
-            ailmentList.addActor(image);
+            for (int i = 0, n = 1; i < pos.length; i += 2, n += 2){
+                Ailment a = (Ailment)pos[i];
+                int x = (int)pos[n];
+                Image image = new Image(skin, "status_" + a.toString());
+                image.setSize(32f, 32f);
+                image.setPosition(x, 0f);
+                image.setAlign(Align.center);
+                image.setColor(1,1,1,0);
+                Icon icon = new Icon();
+                icon.icon = image;
+                ailments.put(a.toString(), icon);
+                ailmentList.addActor(image);
+            }
             
             ailmentList.setWidth(152f);
             ailmentList.setHeight(32f);
@@ -248,18 +217,30 @@ public class HUD {
     public void updateAilments(Ailment ailment, boolean added) {
         if (added) {
             String name = ailment.toString();
-            Image icon = ailments.get(name);
-            popInAilment(icon);
+            Icon icon = ailments.get(name);
+            if (!icon.visible) {
+                popInAilment(icon.icon);
+                icon.visible = true;
+            }
         } else {
             if (ailment == null) {
-                for (Image i : ailments.values()) {
-                    popOutAilment(i);
+                Entries<String, Icon> e = ailments.entries();
+                while (e.hasNext) {
+                    Entry<String, Icon> entry = e.next();
+                    Image image = entry.value.icon;
+                    if (entry.value.visible) {
+                        popOutAilment(image);
+                        entry.value.visible = false;
+                    }
                 }
             }
             else {
                 String name = ailment.toString();
-                Image icon = ailments.get(name);
-                popOutAilment(icon);
+                Icon icon = ailments.get(name);
+                if (icon.visible) {
+                    popOutAilment(icon.icon);
+                    icon.visible = false;
+                }
             }
         }
     }
