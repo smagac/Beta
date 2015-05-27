@@ -324,7 +324,11 @@ public class WanderUI extends UI {
                 if (menu.isInState(WanderState.Wander)) {
                     if (button == Buttons.LEFT) {
                         Direction to = Direction.valueOf(x, y, getWidth(), getHeight());
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                        if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
+                        } else {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                        }
                     } else if (button == Buttons.RIGHT){
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
                     }
@@ -501,11 +505,21 @@ public class WanderUI extends UI {
         if (telegram.message == Messages.Player.AddAilment) {
             Ailment ailment = (Ailment)telegram.extraInfo;
             hud.updateAilments(ailment, true);
+            
+            if (ailment == Ailment.BLIND) {
+                dungeonService.getEngine().getSystem(RenderSystem.class).updateFOV();
+            }
+            
             return true;
         }
         if (telegram.message == Messages.Player.RemoveAilment) {
             Ailment ailment = (Ailment)telegram.extraInfo;
             hud.updateAilments(ailment, false);
+            
+            if (ailment == Ailment.BLIND || ailment == null) {
+                dungeonService.getEngine().getSystem(RenderSystem.class).updateFOV();
+            }
+            
             return true;
         }
         if (telegram.message == Messages.Player.Stats) {

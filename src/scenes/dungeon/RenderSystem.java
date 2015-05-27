@@ -144,7 +144,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     /**
      * Updates all the actors on screen with the calculated FOV
      */
-    private void updateFOV(){
+    public void updateFOV(){
         Position p = Position.Map.get(player);
         
         calculateDensity();
