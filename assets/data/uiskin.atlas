@@ -52,7 +52,7 @@ button_down
   index: -1
 button_up
   rotate: false
-  xy: 602, 388
+  xy: 2, 2
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -165,7 +165,7 @@ image
   index: -1
 list
   rotate: false
-  xy: 80, 93
+  xy: 774, 733
   size: 8, 8
   split: 2, 2, 2, 2
   orig: 8, 8
@@ -201,7 +201,7 @@ pointersm
   index: -1
 progback
   rotate: false
-  xy: 774, 733
+  xy: 800, 773
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -209,7 +209,7 @@ progback
   index: -1
 tag
   rotate: false
-  xy: 774, 733
+  xy: 800, 773
   size: 8, 8
   split: 3, 3, 3, 3
   orig: 8, 8
@@ -217,7 +217,7 @@ tag
   index: -1
 progfront
   rotate: false
-  xy: 800, 773
+  xy: 838, 811
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -225,7 +225,7 @@ progfront
   index: -1
 scroll-knob
   rotate: false
-  xy: 800, 773
+  xy: 838, 811
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -247,7 +247,7 @@ scroll
   index: -1
 selected
   rotate: false
-  xy: 838, 811
+  xy: 872, 837
   size: 8, 8
   split: 2, 2, 2, 2
   orig: 8, 8
@@ -309,13 +309,6 @@ status_poison
   orig: 16, 16
   offset: 0, 0
   index: -1
-status_toxic
-  rotate: false
-  xy: 918, 901
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
 status_sprain
   rotate: false
   xy: 518, 291
@@ -323,9 +316,16 @@ status_sprain
   orig: 16, 16
   offset: 0, 0
   index: -1
+status_toxic
+  rotate: false
+  xy: 602, 385
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 tab_down
   rotate: false
-  xy: 2, 2
+  xy: 28, 36
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -333,7 +333,7 @@ tab_down
   index: -1
 tab_up
   rotate: false
-  xy: 28, 36
+  xy: 46, 54
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -371,7 +371,7 @@ window2
   index: -1
 window3
   rotate: false
-  xy: 46, 57
+  xy: 62, 73
   size: 10, 10
   split: 4, 5, 4, 5
   pad: 4, 1, 4, 1
@@ -388,7 +388,7 @@ window4
   index: -1
 window5
   rotate: false
-  xy: 62, 73
+  xy: 80, 91
   size: 10, 10
   split: 4, 5, 4, 5
   pad: 4, 1, 4, 1
