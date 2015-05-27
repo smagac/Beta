@@ -535,6 +535,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, player);
                         }
                     }
+                    
+                    health.update();
                 }
             } else {
                 process(e);

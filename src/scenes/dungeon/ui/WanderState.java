@@ -172,7 +172,7 @@ public enum WanderState implements UIState {
                 
                 int healCost = entity.dungeonService.getProgress().healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), healCost)) {
-                    if (Inventory.getSumOfItems(entity.sacrificeMenu.getSacrifice()) > healCost * 2) {
+                    if (Inventory.getSumOfItems(entity.sacrificeMenu.getSacrifice()) >= healCost * 2) {
                         entity.playerService.getAilments().reset();
                     }
                     entity.sacrificeMenu.sacrifice();
