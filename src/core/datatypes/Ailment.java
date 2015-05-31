@@ -1,5 +1,6 @@
 package core.datatypes;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ObjectFloatMap;
 
 /**
@@ -91,7 +92,7 @@ public final class Ailment {
             ObjectFloatMap.Entries<Ailment> e = a.chance.entries();
             while (e.hasNext) {
                 ObjectFloatMap.Entry<Ailment> entry = e.next();
-                float val = chance.get(entry.key, entry.value);
+                float val = this.chance.get(entry.key, entry.value);
                 if (val <= entry.value) {
                     chance.put(entry.key, entry.value);
                 }

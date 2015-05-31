@@ -252,7 +252,9 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (attacker == player){
             Combat combatProp = Combat.Map.get(opponent);
             combatProp.getAI().changeState(MovementAI.Agro);
-            
+        }
+        else
+        {
             //apply any inflicted ailments
             Array<Ailment> ailments = results.inflicted;
             Health health = playerService.getAilments();
@@ -262,9 +264,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, "You have been inflicted with " + a.toString());
                 }
             }
-        }
-        else
-        {
+            
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
         }
         

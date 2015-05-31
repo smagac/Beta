@@ -144,8 +144,15 @@ public class MonsterFactory {
             hideName = src.getBoolean("hideName", false);
             
             ailments = new AilmentModifier();
-            for (Ailment a : Ailment.ALL) {
-                ailments.addAilment(a, src.getFloat(a.toString(), 0f));
+            JsonValue ailmentSection = src.get("status");
+            if (ailmentSection != null) {
+                for (Ailment a : Ailment.ALL) { 
+                    ailments.addAilment(a, ailmentSection.getFloat(a.toString(), 0f));
+                }
+            } else {
+                for (Ailment a : Ailment.ALL) {
+                    ailments.addAilment(a, 0f);
+                }
             }
             
         }
