@@ -242,8 +242,7 @@ public enum WanderState implements UIState {
         
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
-            if ((telegram.message == Messages.Interface.Button && (int)telegram.extraInfo == Messages.Dungeon.Close) ||
-                telegram.message == Messages.Interface.Close){
+            if (telegram.message == Messages.Interface.Close){
                 entity.fader.addAction(
                     Actions.sequence(
                         Actions.addAction(Actions.alpha(0f, .3f), entity.messageWindow),

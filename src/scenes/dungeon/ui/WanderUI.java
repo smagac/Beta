@@ -202,6 +202,28 @@ public class WanderUI extends UI {
             group.setPosition(getWidth()/2f, getHeight()-50f, Align.bottom);
             addActor(group);
         }
+        
+        //add goddess menu button
+        {
+            Image sacrificeIcon = new Image(skin, playerService.getWorship());
+            sacrificeIcon.setSize(48, 48);
+            sacrificeIcon.setPosition(getWidth()-10, getHeight()-10, Align.topRight);
+            sacrificeIcon.addListener(new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (menu.isInState(WanderState.Wander)) {
+                        if (button == Buttons.LEFT) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
+                            return true;
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            addActor(sacrificeIcon);
+        }
+        
 
         fader = new Image(skin.getRegion("wfill"));
         fader.setScaling(Scaling.fill);
@@ -210,6 +232,7 @@ public class WanderUI extends UI {
         fader.addAction(Actions.alpha(0f));
         fader.act(0f);
         fader.setFillParent(true);
+        fader.setTouchable(Touchable.disabled);
         
         addActor(fader);
 
@@ -237,16 +260,6 @@ public class WanderUI extends UI {
             button.setWidth(150f);
             button.setHeight(48f);
             button.setPosition(messageWindow.getWidth()/2f, 0f, Align.center);
-            button.addListener(new InputListener(){
-                @Override
-                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    if (button == Buttons.LEFT || button == Buttons.RIGHT) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                        return true;
-                    }
-                    return false;
-                }
-            });
             messageWindow.addActor(button);
             
             addActor(messageWindow);
@@ -336,6 +349,12 @@ public class WanderUI extends UI {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
                     }
                     return true;
+                }
+                if (menu.isInState(WanderState.Dead) || menu.isInState(WanderState.Exit)) {
+                    if (button == Buttons.LEFT || button == Buttons.RIGHT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                        return true;
+                    }
                 }
                 return false;
             }
