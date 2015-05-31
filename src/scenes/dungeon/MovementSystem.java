@@ -7,12 +7,9 @@ import static scenes.dungeon.Direction.Up;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
-import java.util.Comparator;
-
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.CombatHandler.Result;
-import scenes.dungeon.CombatHandler.Turn;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
@@ -22,9 +19,7 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
-import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
-import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
@@ -244,7 +239,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             id.show();
         }
         
-        Result results = CombatHandler.fight(new Turn(attacker, opponent), player);
+        Result results = CombatHandler.fight(attacker, opponent, player);
         
         CombatNotify notification = new CombatNotify();
         notification.attacker = attacker;
@@ -257,6 +252,16 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         if (attacker == player){
             Combat combatProp = Combat.Map.get(opponent);
             combatProp.getAI().changeState(MovementAI.Agro);
+            
+            //apply any inflicted ailments
+            Array<Ailment> ailments = results.inflicted;
+            Health health = playerService.getAilments();
+            if (ailments != null) {
+                for (Ailment a : ailments) {
+                    health.addAilment(a);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, "You have been inflicted with " + a.toString());
+                }
+            }
         }
         else
         {

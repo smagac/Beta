@@ -4,11 +4,16 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.utils.Array;
+
+import core.datatypes.Ailment;
+import core.datatypes.Ailment.AilmentModifier;
 
 public class Combat extends Component {
     public static final ComponentMapper<Combat> Map = ComponentMapper.getFor(Combat.class);
     
     StateMachine<Entity> movementAI;
+    Ailment.AilmentModifier ailments;
     String die;
     float moveChance;
     float agroMoveChance;
@@ -18,6 +23,11 @@ public class Combat extends Component {
         this.moveChance = norm;
         this.agroMoveChance = agro;
         this.die = deathMessage;
+        this.ailments = new Ailment.AilmentModifier();
+    }
+    
+    public void addModifier(AilmentModifier modifier) {
+        this.ailments.merge(modifier);
     }
     
     public void initAI(StateMachine<Entity> sm){
@@ -43,5 +53,9 @@ public class Combat extends Component {
 
     public String getDeathMessage(String enemyName) {
         return String.format(die, enemyName);
+    }
+
+    public AilmentModifier getAilments() {
+        return ailments;
     }
 }

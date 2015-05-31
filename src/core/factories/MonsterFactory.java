@@ -21,9 +21,11 @@ import core.components.Lock;
 import core.components.Position;
 import core.components.Renderable;
 import core.components.Stats;
+import core.datatypes.Ailment;
 import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;
+import core.datatypes.Ailment.AilmentModifier;
 import core.datatypes.dungeon.Floor;
 import core.util.dungeon.Room;
 
@@ -118,6 +120,8 @@ public class MonsterFactory {
         // when calculating FOV
         final float density;
         
+        final AilmentModifier ailments;
+        
         MonsterTemplate(final JsonValue src) {
             name = src.name;
             hp = src.getInt("hp", 1);
@@ -138,6 +142,12 @@ public class MonsterFactory {
             type = src.getString("type", "rat");
             density = src.getFloat("density", 0f);
             hideName = src.getBoolean("hideName", false);
+            
+            ailments = new AilmentModifier();
+            for (Ailment a : Ailment.ALL) {
+                ailments.addAilment(a, src.getFloat(a.toString(), 0f));
+            }
+            
         }
 
         public int getHp(float floor) {
@@ -291,6 +301,7 @@ public class MonsterFactory {
         int modify = MathUtils.random(1, Math.max(1, depth/15));
         
         StatModifier[] mods;
+        AilmentModifier[] ailmentMods;
         if (boss) {
             String adj = AdjectiveFactory.getBossAdjective();
             
@@ -298,8 +309,11 @@ public class MonsterFactory {
             suffix = " " + adj;
             mods = new StatModifier[modify + 1];
             mods[0] = AdjectiveFactory.getModifier(adj);
+            ailmentMods = new AilmentModifier[modify + 1];
+            ailmentMods[0] = AdjectiveFactory.getAilment(adj);
         } else {
             mods = new StatModifier[modify];
+            ailmentMods = new AilmentModifier[modify + 1];
         }
         String[] adjs = new String[modify];
         
@@ -307,6 +321,7 @@ public class MonsterFactory {
             String adj = AdjectiveFactory.getAdjective();
             adjs[i] = adj;
             mods[n] = AdjectiveFactory.getModifier(adj);
+            ailmentMods[n] = AdjectiveFactory.getAilment(adj);
         }
         
         Stats s = new Stats(new int[]{
@@ -330,6 +345,12 @@ public class MonsterFactory {
         e.add(r);
 
         Combat c = new Combat(t.norm, t.agro, t.passive, t.die);
+        c.addModifier(t.ailments);
+        for (AilmentModifier am : ailmentMods) {
+            if (am != null) {
+                c.addModifier(am);
+            }
+        }
         e.add(c);
         
         if (item != null && (item instanceof Item || item instanceof Equipment.Piece)) {

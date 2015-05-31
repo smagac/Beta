@@ -1,5 +1,7 @@
 package core.datatypes;
 
+import com.badlogic.gdx.utils.ObjectFloatMap;
+
 /**
  * Enum of bad status effects that may be applied to an entity's health
  * @author nhydock
@@ -63,5 +65,37 @@ public final class Ailment {
     @Override
     public String toString() {
         return name;
+    }
+    
+    public static class AilmentModifier {
+        ObjectFloatMap<Ailment> chance;
+        
+        public AilmentModifier() {
+            chance = new ObjectFloatMap<Ailment>();
+        }
+        
+        public void addAilment(Ailment a, float rate) {
+            chance.put(a, rate);
+        }
+        
+        public float getChance(Ailment a) {
+            return chance.get(a, 0f);
+        }
+        
+        /**
+         * Merges another ailment modifier with this one, selecting the strongest
+         * values from both
+         * @param a
+         */
+        public void merge(AilmentModifier a) {
+            ObjectFloatMap.Entries<Ailment> e = a.chance.entries();
+            while (e.hasNext) {
+                ObjectFloatMap.Entry<Ailment> entry = e.next();
+                float val = chance.get(entry.key, entry.value);
+                if (val <= entry.value) {
+                    chance.put(entry.key, entry.value);
+                }
+            }
+        }
     }
 }

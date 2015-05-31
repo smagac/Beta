@@ -237,6 +237,16 @@ public class WanderUI extends UI {
             button.setWidth(150f);
             button.setHeight(48f);
             button.setPosition(messageWindow.getWidth()/2f, 0f, Align.center);
+            button.addListener(new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT || button == Buttons.RIGHT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                        return true;
+                    }
+                    return false;
+                }
+            });
             messageWindow.addActor(button);
             
             addActor(messageWindow);

@@ -3,13 +3,17 @@
         "hp" : "6", "str" : "11", "def" : "4", "spd" : "5", "exp" : "2",
         "maxhp" : "200", "maxstr" : "135", "maxdef" : "70", "maxexp" : "20", "maxpsd" : "35",
         "type" : "ogre",
-        "density" : ".8"
+        "density" : ".8",
+        "status" : {
+          "sprain" : ".2",
+          "arthritis" : ".05"
+        }
     },
     "bunny" : {
         "hp" : "3", "str" : "6", "def" : "2", "exp" : "1", "spd" : "15",
         "maxhp" : "70", "maxstr" : "110", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "45",
         "type" : "bunny",
-        "passive" : "true"
+        "passive" : "true",
         "density" : ".2"
     },
     "duck" : {
@@ -22,7 +26,10 @@
         "hp" : "3", "str" : "8", "def" : "3", "exp" : "1", "spd" : "15",
         "maxhp" : "99", "maxstr" : "105", "maxdef" : "80", "maxexp" : "9", "maxpsd" : "55",
         "type" : "duck",
-        "density" : ".2"
+        "density" : ".2",
+        "status" : {
+          "confuse" : ".24"
+        }
     },
     "ghost" : {
         "hp" : "10", "str" : "7", "def" : "0", "exp" : "1", "spd" : "35",
@@ -36,7 +43,10 @@
         "maxhp" : "250", "maxstr" : "112", "maxdef" : "75", "maxexp" : "15", "maxpsd" : "15",
         "type" : "ghost",
         "die" : "%s only wanted to be your friend",
-        "density" : ".6"
+        "density" : ".6",
+        "status" : {
+          "poison" : ".15"
+        }
     },
     "vampire" : {
         "hp" : "20", "str" : "8", "def" : "3", "exp" : "3", "spd" : "55",
@@ -47,12 +57,19 @@
     "spider" : {
         "hp" : "5", "str" : "8", "def" : "2", "exp" : "1", "spd" : "15",
         "maxhp" : "99", "maxstr" : "122", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "35",
-        "type" : "bug"
+        "type" : "bug",
+        "status" : {
+          "poison" : ".3",
+          "venom" : ".08"
+        }
     },
     "bug" : {
         "hp" : "4", "str" : "6", "def" : "3", "exp" : "1", "spd" : "5",
         "maxhp" : "80", "maxstr" : "110", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "25",
-        "type" : "bug"
+        "type" : "bug",
+        "stauts" : {
+          "poison" : ".15"
+        }
     },
     "elf" : {
         "hp" : "15", "str" : "6", "def" : "4", "exp" : "2", "spd" : "45",
@@ -64,7 +81,7 @@
     "goblin" : {
         "hp" : "7", "str" : "4", "def" : "3", "exp" : "1", "spd" : "8",
         "maxhp" : "115", "maxstr" : "110", "maxdef" : "72", "maxexp" : "10", "maxpsd" : "34",
-        "type" : "elf"
+        "type" : "elf",
         "density" : ".5"
     },
     "michael bay" : {
@@ -81,6 +98,10 @@
         "passive" : "true",
         "die" : "%s fled in search of beer",
         "density" : ".6",
+        "status" : {
+          "sprain" : ".18",
+          "arthritis" : ".05"
+        }
     },
     "plant" : {
         "hp" : "1", "str" : "17", "def" : "1", "exp" : "2", "spd" : "25",
@@ -92,12 +113,20 @@
         "hp" : "8", "str" : "7", "def" : "2", "exp" : "1", "spd" : "12",
         "maxhp" : "130", "maxstr" : "123", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "35",
         "type" : "snake",
-        "passive" : "true"
+        "passive" : "true",
+        "status" : {
+          "poison" : ".28",
+          "venom" : ".125"
+        }
     },
     "viper" : {
         "hp" : "11", "str" : "10", "def" : "0", "exp" : "1", "spd" : "10",
         "maxhp" : "160", "maxstr" : "130", "maxdef" : "50", "maxexp" : "10", "maxpsd" : "30",
-        "type" : "snake"
+        "type" : "snake",
+        "status" : {
+          "poison" : ".35",
+          "venom" : ".15"
+        }
     },
     "python" : {
         "hp" : "25", "str" : "10", "def" : "3", "exp" : "1", "spd" : "35",
@@ -108,13 +137,19 @@
     "rat" : {
         "hp" : "4", "str" : "4", "def" : "3", "exp" : "1", "spd" : "15",
         "maxhp" : "105", "maxstr" : "110", "maxdef" : "70", "maxexp" : "10", "maxpsd" : "45",
-        "type" : "rat"
+        "type" : "rat",
+        "status" : {
+          "poison" : ".165"
+        }
     },
     "mouse" : {
         "hp" : "1", "str" : "3", "def" : "0", "exp" : "1", "spd" : "5",
         "maxhp" : "75", "maxstr" : "105", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "65",
         "type" : "rat",
-        "passive" : "true"
+        "passive" : "true",
+        "status" : {
+          "poison" : ".09",
+        }
     },
     "horse" : {
         "hp" : "13", "str" : "9", "def" : "4", "exp" : "1", "spd" : "35",
@@ -126,7 +161,11 @@
     "cocatrice" : {
         "hp" : "19", "str" : "7", "def" : "3", "exp" : "2", "spd" : "10",
         "maxhp" : "210", "maxstr" : "155", "maxdef" : "75", "maxexp" : "30", "maxpsd" : "15",
-        "type" : "duck"
+        "type" : "duck",
+        "status" : {
+          "blind" : ".3",
+          "confuse" : ".175"
+        }
     },
     "alpaca" : {
         "hp" : "9", "str" : "5", "def" : "5", "exp" : "1", "spd" : "25",
@@ -141,6 +180,9 @@
         "type" : "horse",
         "passive" : "true",
         "density" : ".7",
+        "status" : {
+          "sprain" : ".15"
+        }
     },
     "housewife" : {
         "hp" : "10", "str" : "5", "def" : "5", "exp" : "1", "spd" : "10",

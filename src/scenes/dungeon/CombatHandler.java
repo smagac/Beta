@@ -2,6 +2,7 @@ package scenes.dungeon;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 
 import core.components.Combat;
 import core.components.Equipment;
@@ -9,6 +10,8 @@ import core.components.Lock;
 import core.components.Renderable;
 import core.components.Stats;
 import core.components.Groups.Monster;
+import core.datatypes.Ailment;
+import core.datatypes.Ailment.AilmentModifier;
 
 /**
  * Standard bump combat handling of calculations
@@ -17,20 +20,12 @@ import core.components.Groups.Monster;
  */
 class CombatHandler {
 
-    static class Turn {
-        public Turn(Entity a, Entity o) {
-            attacker = a;
-            opponent = o;
-        }
-        final Entity attacker;
-        final Entity opponent;
-    }
-    
     static class Result {
         int damage;
         int exp;
         boolean killed;
         boolean critical;
+        Array<Ailment> inflicted;
     }
     
     /**
@@ -39,21 +34,21 @@ class CombatHandler {
      * @param actor
      * @param opponent
      */
-    protected static Result fight(Turn turn, Entity player) {
+    protected static Result fight(final Entity attacker, final Entity opponent, Entity player) {
         Result result = new Result();
-        Stats aStats = Stats.Map.get(turn.attacker);
-        Stats bStats = Stats.Map.get(turn.opponent);
+        Stats aStats = Stats.Map.get(attacker);
+        Stats bStats = Stats.Map.get(opponent);
         Equipment equipment = Equipment.Map.get(player);
         
-        final float MULT = (turn.attacker == player) ? 2 : 1.25f;
+        final float MULT = (attacker == player) ? 2 : 1.25f;
 
         if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
             float chance = MathUtils.random(.8f, MULT);
             int str = aStats.getStrength();
             int def = bStats.getDefense();
-            if (turn.attacker == player) {
+            if (attacker == player) {
                 str += equipment.getSword().getPower();
-                if (!Monster.isObject(turn.opponent)) {
+                if (!Monster.isObject(opponent)) {
                     equipment.getSword().decay();
                 }
             }
@@ -72,8 +67,20 @@ class CombatHandler {
             }
             result.damage = (int)Math.max(0, (chance * str) - def);
 
-            if (turn.attacker == player) {
+            if (attacker == player) {
                 result.critical = chance > MULT * .8f && result.damage > 0;   
+            }
+            
+            //inflict status effects 
+            if (result.damage > 0 && attacker != player) {
+                Combat combat = Combat.Map.get(attacker);
+                result.inflicted = new Array<Ailment>();
+                AilmentModifier am = combat.getAilments();
+                for (Ailment a : Ailment.ALL) {
+                    if (MathUtils.randomBoolean(am.getChance(a))) {
+                        result.inflicted.add(a);
+                    }
+                }
             }
             
             bStats.hp = Math.max(0, bStats.hp - result.damage);

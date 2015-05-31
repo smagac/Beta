@@ -5,8 +5,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectSet;
 
 import core.DataDirs;
+import core.datatypes.Ailment.AilmentModifier;
+import core.datatypes.Ailment;
 import core.datatypes.StatModifier;
 
 public class AdjectiveFactory {
@@ -16,6 +19,7 @@ public class AdjectiveFactory {
     private static Array<String> bossAdjectives;
 
     private static ObjectMap<String, StatModifier> modifiers;
+    private static ObjectMap<String, AilmentModifier> ailments;
 
     private static boolean loaded;
 
@@ -30,12 +34,13 @@ public class AdjectiveFactory {
         allAdjectives = new Array<String>();
         bossAdjectives = new Array<String>();
         modifierMap = new ObjectMap<String, String>();
+        ailments = new ObjectMap<String, AilmentModifier>();
         JsonReader json = new JsonReader();
 
         // load items
         JsonValue jv = json.parse(Gdx.files.classpath(DataDirs.GameData + "modifiers.json"));
         for (JsonValue modifier : jv) {
-            if (modifier.name().equals("boss")) {
+            if (modifier.name().equals("boss") || modifier.name().equals("ailments")) {
                 continue;
             }
             JsonValue adjectives = modifier.get("adjectives");
@@ -60,6 +65,31 @@ public class AdjectiveFactory {
         for (String adj : bossData.get("adjectives").asStringArray()) {
             bossAdjectives.add(adj);
             modifierMap.put(adj, "boss");
+        }
+        
+        JsonValue ailmentData = jv.get("ailments");
+        for (Ailment ailment : Ailment.ALL) {
+            JsonValue adjectives = ailmentData.get(ailment.toString());
+            if (adjectives != null) {
+                for (JsonValue adj = adjectives.child(); adj.next() != null; adj = adj.next()) {
+                    String type = adj.name;
+                    float effectiveness = adj.asFloat();
+                    
+                    if (allAdjectives.contains(type, false)) {
+                        allAdjectives.add(type);
+                        modifierMap.put(type, "normal");
+                    }
+                    
+                    AilmentModifier mod;
+                    if (ailments.containsKey(type)) {
+                        mod = ailments.get(type);
+                    } else {
+                        mod = new AilmentModifier();
+                        ailments.put(type, mod);
+                    }
+                    mod.addAilment(ailment, effectiveness);
+                }
+            }
         }
 
         loaded = true;
@@ -93,5 +123,9 @@ public class AdjectiveFactory {
 
     public static StatModifier getModifier(String adjective) {
         return modifiers.get(getModifierType(adjective));
+    }
+    
+    public static AilmentModifier getAilment(String adjective) {
+        return ailments.get(adjective);
     }
 }

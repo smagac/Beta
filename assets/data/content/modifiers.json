@@ -3,7 +3,7 @@
     	hp: 1.2, str: 1.2, spd: .9,
     	adjectives : [
     		"silver-tongued", "hetero-normative", "ratchet", "burly", "grumpy", "tacky", "fake", "sporty",
-        	"atrocious", "monster", "religious", "miniature"
+        	"atrocious", "monster", "religious", "miniature", "grass-roots"
     	]
     },
     "gentle" : {
@@ -21,21 +21,21 @@
     "soft-core" : {
         def: .25, spd: .75,
     	adjectives : [
-    		"hipster", "home-grown", "fleece", "helpless", "extremely sad", "tear-free", 
+    		"hipster", "home-grown", "fleece", "helpless", "extremely sad", "tear-free",
     	]
     },
     "annoying" : {
         hp: 3, def: .4,
     	adjectives : [
     		"obnoxious", "bubblegum", "obtuse", "esoteric", "banal", "loud", "snobby", "pay-to-play",
-    		"DLC", "freemium", "lack of", "brown-nosing", 
-        
+    		"DLC", "freemium", "lack of", "brown-nosing",
+
     	]
     },
     "dangerous" : {
         hp: 2, str: 1.35, spd: 1.1,
     	adjectives : [
-    		"epic", "spectacular", "heroic", "jurassic", "nuclear", "concentrated", "illegal", "demonic", 
+    		"epic", "spectacular", "heroic", "jurassic", "nuclear", "concentrated", "illegal", "demonic",
     	]
     },
     "free-form" : {
@@ -48,7 +48,7 @@
         def: 1.1, spd: 1.2,
     	adjectives : [
     		"anime", "meguca", "slimy", "sony", "weeaboo", "intergalatic", "sexy", "japanese", "new world",
-    		"trading-card", 
+    		"trading-card",
     	]
     },
     "hard-core" : {
@@ -73,7 +73,7 @@
     "girly" : {
         def: .75, spd: 1.1,
     	adjectives : [
-    		"feminine", "moist", "IRL", "#hashtag", "bubbly", "plastic", "matching", 
+    		"feminine", "moist", "IRL", "#hashtag", "bubbly", "plastic", "matching",
     	]
     },
     "food" : {
@@ -93,5 +93,25 @@
     	adjectives : [
     		"angel", "demon", "boss", "war chief", "godfather", "kumicho"
     	]
+    },
+    "ailments" : {
+      "blind" : {
+        "blinding" : ".25", "shiny" : ".125"
+      },
+      "confuse" : {
+        "trap" : ".15", "confusing" : ".25", "odd" : ".12", "I Can't Believe It's Not" : ".185", "mythical" : ".1", "automagical" : ".115"
+      },
+      "poison" : {
+        "poisonous" : ".2", "spoiled" : ".12", "mercury" : ".25", "lead" : ".15", "vomit-inducing" : ".135"
+      },
+      "venom" : {
+        "venomous" : ".2", "mercury" : ".12", "lead" : ".05", "nuclear" : ".09"
+      },
+      "arthritis" : {
+        "american" : ".1", "retro" : ".12", "old" : ".15", "grumpy" : ".10", "grass-roots" : ".08"
+      },
+      "sprain" : {
+        "broken" : ".15", "slimy" : ".20", "obtuse" : ".15"
+      }
     }
 }
