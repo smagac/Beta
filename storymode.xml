@@ -22,5 +22,12 @@
             </manifest>
             <fileset dir="assets/"/>
         </jar>
+    	<copy file="README" tofile="dist/README" overwrite="true" />
+    	<copy file="LICENSE" tofile="dist/LICENSE" overwrite="true" />
+    	
+    	<java classpath="boogie.jar" classname="app.BuildHash">
+    		<arg value="dist/" />
+    		<arg value="dist/" />
+    	</java>
     </target>
 </project>
