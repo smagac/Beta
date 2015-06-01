@@ -184,7 +184,7 @@ public class DungeonParams {
         return new DungeonParams();
     }
 
-    public static DungeonParams loadFromSimpleData(String data) {
+    public static DungeonParams loadFromSimpleData(String data) throws Exception {
         DungeonParams params = null;
         try (Scanner reader = new Scanner(data)) {
             params = new DungeonParams(reader.nextLong(), FileType.valueOf(reader.next()), reader.nextInt());

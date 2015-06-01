@@ -10,6 +10,7 @@ import scenes.GameUI;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -84,7 +85,7 @@ public class TownUI extends GameUI {
     List<Quest> acceptedQuests;
 
     // download display
-    Group downloadWindow;
+    Window downloadWindow;
 
     Group goddessDialog;
     Label gMsg;
@@ -708,12 +709,17 @@ public class TownUI extends GameUI {
      * Make the popup display for the downloader
      */
     private void makeDownload() {
-        Group window = downloadWindow = super.makeWindow(skin, 600, 200, true);
-        Table table = new Table();
+        downloadWindow = new Window("", skin, "round");
+        downloadWindow.setKeepWithinStage(false);
+        downloadWindow.setSize(600, 200);
+        
 
         Label label = new Label("Downloading Daily Map", skin, "prompt");
-        table.add(label).expand().align(Align.center);
-        table.setFillParent(true);
+        label.setAlignment(Align.center);
+        label.setWrap(true);
+        label.setSize(550, 100);
+        label.setPosition(300, 140, Align.center);
+        label.setName("downloadLabel");
 
         Image spinner = new Image(skin, playerService.getWorship());
         spinner.setSize(32f, 32f);
@@ -721,13 +727,13 @@ public class TownUI extends GameUI {
         spinner.addAction(Actions.forever(Actions.rotateBy(-360f, 2f)));
 
         spinner.setAlign(Align.center);
-        spinner.setPosition(window.getX(Align.center), 60f, Align.center);
+        spinner.setPosition(downloadWindow.getX(Align.center), 50f, Align.center);
 
-        window.setPosition(getDisplayCenterX() - window.getWidth() / 2f, display.getHeight());
-        window.addActor(table);
-        window.addActor(spinner);
+        downloadWindow.setPosition(getDisplayCenterX(), getDisplayHeight() + 48f, Align.bottom);
+        downloadWindow.addActor(label);
+        downloadWindow.addActor(spinner);
 
-        display.addActor(window);
+        display.addActor(downloadWindow);
     }
 
     @Override
@@ -854,8 +860,7 @@ public class TownUI extends GameUI {
         questDetails.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
         saveWindow.addAction(Actions.moveTo(getDisplayCenterX() - saveWindow.getWidth() / 2, getDisplayHeight(),
                 .2f, Interpolation.circleOut));
-        downloadWindow.addAction(Actions.moveTo(getDisplayCenterX() - downloadWindow.getWidth() / 2,
-                getDisplayHeight(), .2f, Interpolation.circleOut));
+        downloadWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight() + 100f, Align.bottom, .2f, Interpolation.circleOut));
         setMessage("What're we doing next?");
 
         enableMenuInput();

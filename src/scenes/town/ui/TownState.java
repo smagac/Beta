@@ -533,12 +533,16 @@ enum TownState implements UIState {
 
         @Override
         public void enter(final TownUI entity) {
+            Label prompt = entity.downloadWindow.findActor("downloadLabel");
+            prompt.setText("Downloading Daily Map");
+            
             entity.downloadWindow.clearActions();
             entity.downloadWindow.addAction(
                    Actions.sequence(
-                       Actions.moveTo(
-                           entity.getDisplayCenterX() - entity.downloadWindow.getWidth()/2f, 
-                           entity.getDisplayCenterY() - entity.downloadWindow.getHeight()/2f, 
+                       Actions.moveToAligned(
+                           entity.getDisplayCenterX(), 
+                           entity.getDisplayCenterY(),
+                           Align.center,
                            .5f, Interpolation.circleOut),
                        Actions.run(new Runnable() {
                         
@@ -558,16 +562,30 @@ enum TownState implements UIState {
                                        while (scanner.hasNextLine()) {
                                            output += scanner.nextLine();
                                        }
-                                       Gdx.app.log("Daily Dungeon", output);
+                                       Gdx.app.debug("Daily Dungeon", output);
                                        dungeonData = output;
                        
-                                       scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                                        DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
+                                       scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                                        dungeon.setDungeon(params, null);
                                    }
-                                   catch (IOException e) {
-                                       e.printStackTrace();
-                                       entity.changeState(Explore);
+                                   catch (Exception e) {
+                                       Gdx.app.debug("Daily Dungeon", "Parse Failed", e);
+                                       
+                                       Label prompt = entity.downloadWindow.findActor("downloadLabel");
+                                       prompt.setText("Could not establish a connection/failed to download dungeon");
+                                       
+                                       entity.downloadWindow.addAction(
+                                           Actions.sequence(
+                                               Actions.delay(1),
+                                               Actions.run(new Runnable(){
+                                                   @Override
+                                                   public void run(){
+                                                       entity.changeState(Explore);
+                                                   }
+                                               })
+                                           )
+                                       );
                                    }  
                                 }
                                 
@@ -598,8 +616,7 @@ enum TownState implements UIState {
         public void exit(TownUI entity) {
             entity.downloadWindow.clearActions();
             entity.downloadWindow.addAction(
-                    Actions.moveTo(entity.getDisplayCenterX() - entity.downloadWindow.getWidth() / 2,
-                    entity.getDisplayHeight(), .2f, Interpolation.circleOut));
+                    Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayHeight(), Align.bottom, .5f, Interpolation.circleOut));
             
         }
 
