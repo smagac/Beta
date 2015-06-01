@@ -54,7 +54,7 @@ public class LevelUpDialog {
         focusGroup.setVisible(false);
 
         window = new Window("", skin, "square");
-        window.setSize(500, 450);
+        window.setSize(500, 400);
         window.setOrigin(Align.center);
         
         final Table table = new Table();
@@ -110,7 +110,7 @@ public class LevelUpDialog {
             focusGroup.add(ticker);
         }
 
-        table.add(pointLabel).expandX().fillX().colspan(3);
+        table.add(pointLabel).expandX().fillX().colspan(3).padBottom(40);
         window.addActor(table);
 
         final TextButton accept = new TextButton("START", skin);
