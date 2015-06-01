@@ -86,17 +86,16 @@ public interface Messages {
      */
     public static interface Dungeon {
         public static final int Movement = -1; //move the player
-        public static final int Assist = 0; //open up assist menu
-        public static final int Close = 0;  //close a prompt when it is present
-        public static final int Heal = 1;   //select assistance to open heal menu
-        public static final int Leave = 2;  //select assistance to open escape menu
+        public static final int Assist = 0x100B; //open up assist menu
+        public static final int Heal = 0x100C;   //select assistance to open heal menu
+        public static final int Leave = 0x100D;  //select assistance to open escape menu
     
         public static final int Sacrifice = 1; //choose to sacrifice items
     
         public static final int Dead = 0x1000; //notification that we've died
         public static final int Exit = 0x1001; //notification that we've escaped the dungeon
-        public static final int Refresh = 0x1003; //notification to the HUD to say that we need to update its display
-        public static final int Proceed = 0x1009; //we've escaped the dungeon by going as deep as we can go
+        public static final int Refresh = 0x1002; //notification to the HUD to say that we need to update its display
+        public static final int Proceed = 0x1003; //we've escaped the dungeon by going as deep as we can go
         
         public static final int FIGHT = 0x1004; //two entities are fighting
         public static final int KILLED = 0x1005; //an entity has been destroyed in combat
@@ -106,10 +105,10 @@ public interface Messages {
         
         //different kind of notify, this goes in the bottom right box of the log instead of popups
         public static final int Notify = 0x1008;
-        public static final int Action = 0x100A; 
+        public static final int Action = 0x1009; 
         
         //zoom in and out with the camera;
-        public static final int Zoom = 0x100C; 
+        public static final int Zoom = 0x100A; 
         
         public static final class CombatNotify {
             public Entity attacker;

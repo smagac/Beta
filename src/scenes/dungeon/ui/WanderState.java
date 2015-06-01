@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
+import core.common.Input;
 import core.datatypes.Inventory;
 import core.datatypes.quests.Quest;
 
@@ -134,7 +135,66 @@ public enum WanderState implements UIState {
             }
             return false;
         }
+        
+        @Override
+        public boolean keyDown(WanderUI entity, int keycode) {
 
+            if (Input.ACCEPT.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
+                return true;
+            }
+            
+            if (Input.CANCEL.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Zoom);
+                return true;
+            }
+            
+            if (Input.ACTION.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+                return true;
+            }
+            
+            Direction to = Direction.valueOf(keycode);
+            if (to != null) {
+                if (Input.ACTION.isPressed()){
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
+                } else {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                }
+                return true;
+            }
+            
+            return false;
+        }
+
+        @Override
+        public boolean keyUp(WanderUI entity, int keycode) {
+            Direction to = Direction.valueOf(keycode);
+            if (to != null) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+            }
+            return true;
+        }
+        
+        @Override
+        public boolean touchDown(WanderUI entity, float x, float y, int button) {
+            if (button == Buttons.LEFT) {
+                Direction to = Direction.valueOf(x, y, entity.getWidth(), entity.getHeight());
+                if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
+                } else {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                }
+            } else if (button == Buttons.RIGHT){
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+            }
+            return true;
+        }
+        
+        @Override
+        public void touchUp(WanderUI entity, float x, float y, int button){
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+        }
     },
     Assist("Return", "Heal Me", "Go Home") {
 
@@ -255,6 +315,24 @@ public enum WanderState implements UIState {
             }
             return false;
         }
+        
+        @Override
+        public boolean keyDown(WanderUI entity, int keycode) {
+            if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                return true;
+            }
+            return false;
+        }
+        
+        @Override
+        public boolean touchDown(WanderUI entity, float x, float y, int button) {
+            if (button == Buttons.LEFT || button == Buttons.RIGHT) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                return true;
+            }
+            return false;
+        }
     },
     /**
      * Player strategically left. Don't drop loot but still make fun of him
@@ -294,6 +372,23 @@ public enum WanderState implements UIState {
             return false;
         }
 
+        @Override
+        public boolean keyDown(WanderUI entity, int keycode) {
+            if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                return true;
+            }
+            return false;
+        }
+        
+        @Override
+        public boolean touchDown(WanderUI entity, float x, float y, int button) {
+            if (button == Buttons.LEFT || button == Buttons.RIGHT) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                return true;
+            }
+            return false;
+        }
     };
 
     private final String[] buttons;
@@ -305,6 +400,29 @@ public enum WanderState implements UIState {
     @Override
     public String[] defineButtons() {
         return buttons;
+    }
+    
+    public boolean touchDown(WanderUI entity, float x, float y, int button) {
+        if (button == Buttons.RIGHT){
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+            return true;
+        };
+        return false;
+    }
+    
+    public void touchUp(WanderUI entity, float x, float y, int button) {
+    }
+    
+    public boolean keyDown(WanderUI entity, int keycode) {
+        if (Input.CANCEL.match(keycode)) {
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean keyUp(WanderUI entity, int keycode) {
+        return false;
     }
     
     @Override

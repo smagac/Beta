@@ -64,7 +64,7 @@ import core.service.interfaces.IPlayerContainer;
 @SuppressWarnings("unchecked")
 public class WanderUI extends UI {
 
-    protected StateMachine menu;
+    protected StateMachine<WanderUI> menu;
     
     // logger
     Label message;
@@ -134,6 +134,7 @@ public class WanderUI extends UI {
     @Override
     public void init() {
         this.clear();
+        final WanderUI self = this;
         skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
 
         //user hud
@@ -290,47 +291,7 @@ public class WanderUI extends UI {
                     return false;
                 }
                 
-                if (menu.isInState(WanderState.Wander)) {
-                    if (evt.getTarget() != getRoot())
-                        return false;
-                    
-                    if (Input.ACCEPT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
-                        return true;
-                    }
-                    
-                    if (Input.CANCEL.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Zoom);
-                        return true;
-                    }
-                    
-                    if (Input.ACTION.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
-                        return true;
-                    }
-                    
-                    Direction to = Direction.valueOf(keycode);
-                    if (to != null) {
-                        if (Input.ACTION.isPressed()){
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
-                        } else {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
-                        }
-                        return true;
-                    }
-                }
-                if (menu.isInState(WanderState.Dead) || menu.isInState(WanderState.Exit)) {
-                    if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                        return true;
-                    }
-                }
-                if (Input.CANCEL.match(keycode)) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                    return true;
-                }
-                
-                return false;
+                return ((WanderState)menu.getCurrentState()).keyDown(self, keycode);
             }
 
             @Override
@@ -339,14 +300,7 @@ public class WanderUI extends UI {
                     return false;
                 }
                 
-                if (menu.isInState(WanderState.Wander)) {
-                    Direction to = Direction.valueOf(keycode);
-                    if (to != null) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
-                    }
-                    return true;
-                }
-                return false;
+                return ((WanderState)menu.getCurrentState()).keyUp(self, keycode);
             }
             
             @Override
@@ -355,41 +309,12 @@ public class WanderUI extends UI {
                     return false;
                 }
                 
-                if (menu.isInState(WanderState.Wander)) {
-                    if (button == Buttons.LEFT) {
-                        Direction to = Direction.valueOf(x, y, getWidth(), getHeight());
-                        if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
-                        } else {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
-                        }
-                    } else if (button == Buttons.RIGHT){
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
-                    }
-                    return true;
-                }
-                if (menu.isInState(WanderState.Assist) || 
-                    menu.isInState(WanderState.Sacrifice_Heal) ||
-                    menu.isInState(WanderState.Sacrifice_Leave )) {
-                    if (button == Buttons.RIGHT){
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                        return true;
-                    }
-                }
-                if (menu.isInState(WanderState.Dead) || menu.isInState(WanderState.Exit)) {
-                    if (button == Buttons.LEFT || button == Buttons.RIGHT) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                        return true;
-                    }
-                }
-                return false;
+                return ((WanderState)menu.getCurrentState()).touchDown(self, x, y, button);
             }
             
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
-                if (menu.isInState(WanderState.Wander)) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
-                }
+                ((WanderState)menu.getCurrentState()).touchUp(self, x, y, button);
             }
         });
     }
