@@ -12,6 +12,7 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.datatypes.Inventory;
@@ -71,7 +72,6 @@ public enum WanderState implements UIState {
                     }
                 }
                 else {
-                    Gdx.app.log("Wander", "Moving player");
                     final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
                     if (ms.movePlayer(direction)) {
                         ms.process();
@@ -237,6 +237,7 @@ public enum WanderState implements UIState {
                     )    
                 )
             );
+            entity.messageWindow.setTouchable(Touchable.childrenOnly);
             entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
         }
         
@@ -274,8 +275,8 @@ public enum WanderState implements UIState {
                     )    
                 )
             );
+            entity.messageWindow.setTouchable(Touchable.childrenOnly);
             entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
-
         }
 
         @Override

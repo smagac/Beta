@@ -233,7 +233,7 @@ public class SacrificeSubmenu {
         //start view as invisible
         menu.setColor(1f, 1f, 1f, 0f);
         menu.setOrigin(Align.center);
-        
+        menu.setTouchable(Touchable.disabled);
         
         menu.addListener(new InputListener() {
             @Override
@@ -347,6 +347,7 @@ public class SacrificeSubmenu {
                 Actions.run(InputDisabler.instance)
             )
         );
+        menu.setTouchable(Touchable.childrenOnly);
         healCard.setTouchable(Touchable.enabled);
         leaveCard.setTouchable(Touchable.enabled);
     }
@@ -444,6 +445,7 @@ public class SacrificeSubmenu {
                 Actions.run(InputDisabler.instance)
             )
         );
+        menu.setTouchable(Touchable.disabled);
     }
 
     /**

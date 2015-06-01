@@ -48,6 +48,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -318,7 +319,8 @@ public class BattleUI extends GameUI
 	}
 	
     private void makeDead() {
-        dialog = makeWindow(skin, 400, 250, true);
+        dialog = new Window("", skin, "square");
+        dialog.setSize(400, 250);
         Label message = new Label("You are dead.\n\nYou have dropped all your new loot.\nSucks to be you.", skin, "promptsm");
         message.setWrap(true);
         message.setAlignment(Align.center);

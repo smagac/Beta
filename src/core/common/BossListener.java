@@ -103,7 +103,7 @@ public class BossListener {
                 return true;
             }
             if (Gdx.input.isKeyJustPressed(Keys.F2)) {
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.LevelUp);
                 InputDisabler.clear();
                 return true;
             }

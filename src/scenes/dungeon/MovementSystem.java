@@ -292,7 +292,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 playerStats.exp += results.exp;
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                 if (playerStats.canLevelUp()) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.LevelUp);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.LevelUp);
                 }
                 ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
             }

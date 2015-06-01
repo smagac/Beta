@@ -9,6 +9,8 @@ import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
+import scenes.LevelUpDialog;
+import scenes.LevelUpDialog.LevelUpState;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.UI;
@@ -84,6 +86,7 @@ public class WanderUI extends UI {
     List<String> eventLog;
 
     SacrificeSubmenu sacrificeMenu;
+    LevelUpDialog levelUpDialog;
 
     private Label enemyLabel;
     private Label lootLabel;
@@ -107,7 +110,7 @@ public class WanderUI extends UI {
             Messages.Dungeon.Zoom,
             Messages.Dungeon.Heal,
             Messages.Dungeon.Leave,
-            Messages.Dungeon.LevelUp,
+            Messages.Player.LevelUp,
             Messages.Player.UpdateItem,
             Messages.Player.NewItem,
             Messages.Player.Equipment,
@@ -147,8 +150,9 @@ public class WanderUI extends UI {
             combatLog.setWidth(300f);
             combatLog.setHeight(100f);
             combatLog.setPosition(10, 50, Align.bottomLeft);
+            combatLog.setTouchable(Touchable.disabled);
             
-            combatLog.getItems().addAll("", "Test", "Test", "Test", "Test");
+            combatLog.getItems().addAll("", "", "", "", "");
             addActor(combatLog);
             
             Image icon = new Image(skin, "ogre");
@@ -168,8 +172,8 @@ public class WanderUI extends UI {
             eventLog.setWidth(300f);
             eventLog.setHeight(100f);
             eventLog.setPosition(getWidth()-10, 50, Align.bottomRight);
-            
-            eventLog.getItems().addAll("", "Test", "Test", "Test", "Test");
+            eventLog.setTouchable(Touchable.disabled);
+            eventLog.getItems().addAll("", "", "", "", "");
             addActor(eventLog);
             
             Image icon = new Image(skin, "loot");
@@ -216,7 +220,6 @@ public class WanderUI extends UI {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
                             return true;
                         }
-                        return true;
                     }
                     return false;
                 }
@@ -224,6 +227,13 @@ public class WanderUI extends UI {
             addActor(sacrificeIcon);
         }
         
+        //level up dialog
+        {
+            levelUpDialog = new LevelUpDialog(skin);
+            levelUpDialog.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+            addActor(levelUpDialog.getGroup());
+            addActor(levelUpDialog.getFocusGroup());
+        }
 
         fader = new Image(skin.getRegion("wfill"));
         fader.setScaling(Scaling.fill);
@@ -255,7 +265,7 @@ public class WanderUI extends UI {
             messageWindow.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
             messageWindow.setColor(1,1,1,0);
             messageWindow.addActor(window);
-            
+            messageWindow.setTouchable(Touchable.disabled);
             Button button = new TextButton("Return Home", skin, "bigpop");
             button.setWidth(150f);
             button.setHeight(48f);
@@ -276,6 +286,10 @@ public class WanderUI extends UI {
         addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
+                if (levelUpDialog.isVisible()) {
+                    return false;
+                }
+                
                 if (menu.isInState(WanderState.Wander)) {
                     if (evt.getTarget() != getRoot())
                         return false;
@@ -302,7 +316,6 @@ public class WanderUI extends UI {
                         } else {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                         }
-                        //Gdx.app.log("Wander", "moving player - " + to);
                         return true;
                     }
                 }
@@ -322,6 +335,10 @@ public class WanderUI extends UI {
 
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
+                if (levelUpDialog.isVisible()) {
+                    return false;
+                }
+                
                 if (menu.isInState(WanderState.Wander)) {
                     Direction to = Direction.valueOf(keycode);
                     if (to != null) {
@@ -331,12 +348,13 @@ public class WanderUI extends UI {
                 }
                 return false;
             }
-        });
-        
-        addListener(new InputListener() {
-           
+            
             @Override
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                if (levelUpDialog.isVisible()) {
+                    return false;
+                }
+                
                 if (menu.isInState(WanderState.Wander)) {
                     if (button == Buttons.LEFT) {
                         Direction to = Direction.valueOf(x, y, getWidth(), getHeight());
@@ -349,6 +367,14 @@ public class WanderUI extends UI {
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
                     }
                     return true;
+                }
+                if (menu.isInState(WanderState.Assist) || 
+                    menu.isInState(WanderState.Sacrifice_Heal) ||
+                    menu.isInState(WanderState.Sacrifice_Leave )) {
+                    if (button == Buttons.RIGHT){
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                        return true;
+                    }
                 }
                 if (menu.isInState(WanderState.Dead) || menu.isInState(WanderState.Exit)) {
                     if (button == Buttons.LEFT || button == Buttons.RIGHT) {
@@ -548,6 +574,19 @@ public class WanderUI extends UI {
             Stats stats = playerService.getPlayer().getComponent(Stats.class);
             hud.updateStats(stats);
             return true;
+        }
+        if (telegram.message == Messages.Player.LevelUp) {
+            LevelUpState.enter(levelUpDialog);
+            setKeyboardFocus(levelUpDialog.getGroup());
+            setScrollFocus(levelUpDialog.getGroup());
+            return true;
+        }
+        if (levelUpDialog.isVisible()) {
+            boolean val = LevelUpState.onMessage(levelUpDialog, telegram);
+            if (val) {
+                setKeyboardFocus(getRoot());
+            }
+            return val;
         }
         return menu.handleMessage(telegram);
     }

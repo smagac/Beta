@@ -49,6 +49,9 @@ public interface Messages {
 
         public static final int RemoveAilment = 0xffe8;
         
+        public static final int LevelUp = 0xffe9; //notification that we've leveled up
+        
+        
         public static final class ItemMsg {
             public Item item;
             public int amount;
@@ -92,7 +95,6 @@ public interface Messages {
     
         public static final int Dead = 0x1000; //notification that we've died
         public static final int Exit = 0x1001; //notification that we've escaped the dungeon
-        public static final int LevelUp = 0x1002; //notification that we've leveled up
         public static final int Refresh = 0x1003; //notification to the HUD to say that we need to update its display
         public static final int Proceed = 0x1009; //we've escaped the dungeon by going as deep as we can go
         

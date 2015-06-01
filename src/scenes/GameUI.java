@@ -5,6 +5,7 @@ import scene2d.InputDisabler;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.TabbedPane;
+import scenes.LevelUpDialog.LevelUpState;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.State;
@@ -103,14 +104,7 @@ public abstract class GameUI extends UI {
     protected Table notificationStack;
 
     // level up dialog
-    Group levelUpDialog;
-    int points;
-    private Label pointLabel;
-    LabeledTicker<Integer> strTicker;
-    LabeledTicker<Integer> defTicker;
-    LabeledTicker<Integer> spdTicker;
-    LabeledTicker<Integer> vitTicker;
-    FocusGroup levelUpGroup;
+    LevelUpDialog levelUpDialog;
     
     @Inject
     public IPlayerContainer playerService;
@@ -132,7 +126,7 @@ public abstract class GameUI extends UI {
             Messages.Interface.Close,   
             Messages.Interface.Button,
             TabbedPane.Messages.ChangeTabs,
-            Messages.Dungeon.LevelUp,
+            Messages.Player.LevelUp,
             Messages.Player.Progress,
             Messages.Player.Stats,
             Messages.Player.Time,
@@ -227,7 +221,11 @@ public abstract class GameUI extends UI {
             window.addActor(frame);
             addActor(window);
 
-            buildLevelUpDialog();
+            levelUpDialog = new LevelUpDialog(skin);
+            levelUpDialog.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+            levelUpDialog.getFocusGroup().addListener(focusListener);
+            addActor(levelUpDialog.getGroup());
+            addActor(levelUpDialog.getFocusGroup());
 
             // populate the window frame
             extend();
@@ -333,127 +331,6 @@ public abstract class GameUI extends UI {
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Time);
     }
     
-    private void setPoints(int points) {
-        this.points = points;
-        this.pointLabel.setText(String.format("Points %d", points));
-    }
-    
-    @SuppressWarnings("unchecked")
-    private void buildLevelUpDialog(){
-
-        levelUpGroup = new FocusGroup();
-        levelUpGroup.setVisible(false);
-
-        levelUpDialog = UI.makeWindow(skin, 500, 480, true);
-        levelUpDialog.setPosition(getWidth() / 2 - levelUpDialog.getWidth() / 2, getHeight());
-        levelUpDialog.setVisible(false);
-
-        final Table window = new Table();
-        window.setFillParent(true);
-        window.center().top().pack();
-
-        Label prompt = new Label("You've Leveled Up!", skin, "prompt");
-        prompt.setAlignment(Align.center);
-        window.add(prompt).expandX().fillX().padBottom(20).colspan(3);
-        window.row();
-
-        pointLabel = new Label("Points 0", skin, "prompt");
-        pointLabel.setAlignment(Align.center);
-
-        LabeledTicker[] tickers = new LabeledTicker[4];
-        tickers[0] = strTicker = new LabeledTicker<Integer>("Strength", new Integer[] { 0 }, skin);
-        tickers[1] = defTicker = new LabeledTicker<Integer>("Defense", new Integer[] { 0 }, skin);
-        tickers[2] = spdTicker = new LabeledTicker<Integer>("Speed", new Integer[] { 0 }, skin);
-        tickers[3] = vitTicker = new LabeledTicker<Integer>("Vitality", new Integer[] { 0 }, skin);
-        
-        for (final LabeledTicker<Integer> ticker : tickers) {
-            ticker.setLeftAction(new Runnable() {
-
-                @Override
-                public void run() {
-                    audio.playSfx(DataDirs.Sounds.tick);
-                    if (ticker.getValueIndex() > 0) {
-                        ticker.defaultLeftClick.run();
-                        setPoints(points + 1);
-                    }
-                }
-
-            });
-            ticker.setRightAction(new Runnable() {
-
-                @Override
-                public void run() {
-                    audio.playSfx(DataDirs.Sounds.tick);
-                    if (ticker.getValueIndex() < ticker.length() && points > 0) {
-                        ticker.defaultRightClick.run();
-                        setPoints(points - 1);
-                    }
-                }
-
-            });
-
-            window.center();
-            window.add(ticker).expandX().fillX().pad(0, 50f, 10f, 50f).colspan(3);
-            window.row();
-
-            levelUpGroup.add(ticker);
-        }
-
-        window.add(pointLabel).expandX().fillX().colspan(3);
-        levelUpDialog.addActor(window);
-
-        final TextButton accept = new TextButton("START", skin);
-        accept.align(Align.center);
-        accept.setSize(80, 32);
-        accept.pad(5);
-        accept.setPosition(levelUpDialog.getWidth() / 2 - accept.getWidth() / 2, 10f);
-
-        accept.addListener(new InputListener() {
-            @Override
-            public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                accept.setChecked(true);
-            }
-
-            @Override
-            public void exit(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                accept.setChecked(false);
-            }
-
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                if (points > 0) {
-                    audio.playSfx(DataDirs.Sounds.accept);
-                    return false;
-                }
-
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                return true;
-            }
-        });
-        levelUpDialog.addActor(accept);
-        levelUpDialog.addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent evt, int keycode) {
-                if (Input.DOWN.match(keycode)) {
-                    levelUpGroup.next();
-                    return true;
-                }
-                if (Input.UP.match(keycode)) {
-                    levelUpGroup.prev();
-                    return true;
-                }
-                if (Input.ACCEPT.match(keycode)) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                    return true;
-                }
-                return false;
-            }
-        });
-        levelUpGroup.addListener(focusListener);
-
-        addActor(levelUpDialog);
-        addActor(levelUpGroup);
-    }
 
     /**
      * Adds addition scene specific ui elements into the display
@@ -493,7 +370,7 @@ public abstract class GameUI extends UI {
      */
     private final FocusGroup focus() {
         if (levelUpDialog.isVisible()) {
-            return levelUpGroup;
+            return levelUpDialog.getFocusGroup();
         }
         else {
             return focusList();
@@ -714,8 +591,8 @@ public abstract class GameUI extends UI {
             pushNotification((String) msg.extraInfo);
             return true;
         }
-        if (msg.message == Messages.Dungeon.LevelUp) {
-            LevelUpState.enter(this);
+        if (msg.message == Messages.Player.LevelUp) {
+            LevelUpState.enter(levelUpDialog);
             return true;
         }
         if (msg.message == Messages.Player.Stats) {
@@ -733,7 +610,11 @@ public abstract class GameUI extends UI {
             return true;
         }
         if (levelUpDialog.isVisible()) {
-            return LevelUpState.onMessage(this, msg);
+            boolean val = LevelUpState.onMessage(levelUpDialog, msg);
+            if (val) {
+                resetFocus();
+            }
+            return val;
         }
         return menu.handleMessage(msg);
     }
@@ -777,101 +658,6 @@ public abstract class GameUI extends UI {
     
     public final float getDisplayCenterY() {
         return display.getHeight() /2f;
-    }
-    
-    /**
-     * Private level up state for GameUI.  Provides a shared way
-     * of for any GameUI to be capable of providing the level up dialog
-     * @author nhydock
-     *
-     */
-    private static class LevelUpState {
-        private static final int POINTS_REWARDED = 5;
-
-        public static void enter(final GameUI entity) {
-            entity.setPoints(POINTS_REWARDED);
-
-            Stats s = entity.playerService.getPlayer().getComponent(Stats.class);
-            Integer[] str = new Integer[POINTS_REWARDED + 1];
-            Integer[] def = new Integer[POINTS_REWARDED + 1];
-            Integer[] spd = new Integer[POINTS_REWARDED + 1];
-            Integer[] vit = new Integer[POINTS_REWARDED + 1];
-            for (int i = 0; i < POINTS_REWARDED + 1; i++) {
-                str[i] = s.getStrength() + i;
-                def[i] = s.getDefense() + i;
-                spd[i] = s.getEvasion() + i;
-                vit[i] = s.getVitality() + i;
-            }
-            ;
-
-            entity.strTicker.changeValues(str);
-            entity.defTicker.changeValues(def);
-            entity.spdTicker.changeValues(spd);
-            entity.vitTicker.changeValues(vit);
-
-            entity.levelUpDialog.setVisible(true);
-            entity.levelUpGroup.setVisible(true);
-            entity.levelUpDialog.addAction(
-                Actions.sequence(
-                    Actions.run(InputDisabler.instance),
-                    Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight() / 2 - entity.levelUpDialog.getHeight() / 2, .3f),
-                    Actions.run(InputDisabler.instance),
-                    Actions.run(new Runnable() {
-                        @Override
-                        public void run() {
-                            entity.resetFocus();
-                        }
-                    })
-                )
-            );
-            entity.levelUpDialog.setTouchable(Touchable.enabled);
-        }
-
-        public static void exit(final GameUI entity) {
-            entity.hidePointer();
-            InputDisabler.swap();
-            entity.levelUpDialog.addAction(
-                Actions.sequence(
-                    Actions.moveTo(entity.levelUpDialog.getX(), entity.getHeight(), .3f), 
-                    Actions.run(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            entity.levelUpDialog.setVisible(false);
-                            entity.levelUpGroup.setFocus(null);
-                            entity.resetFocus();
-                            InputDisabler.swap();
-                        }
-        
-                    })
-                )
-            );
-            entity.levelUpDialog.setTouchable(Touchable.disabled);
-            entity.playerService.getPlayer().getComponent(Stats.class).levelUp(
-                    new int[] { entity.strTicker.getValue(), entity.defTicker.getValue(), entity.spdTicker.getValue(),
-                            entity.vitTicker.getValue() });
-            entity.strTicker.setValue(0);
-            entity.defTicker.setValue(0);
-            entity.spdTicker.setValue(0);
-            entity.vitTicker.setValue(0);
-            entity.points = 0;
-            entity.audio.playSfx(DataDirs.Sounds.accept);
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-        }
-        
-        public static boolean onMessage(GameUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Interface.Close) {
-                if (entity.points > 0) {
-                    entity.audio.playSfx(DataDirs.Sounds.tick);
-                    return false;
-                }
-                else {
-                    exit(entity);
-                    return true;
-                }
-            }
-            return false;
-        }
     }
     
     public final void fadeOut(){
