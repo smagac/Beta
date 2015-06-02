@@ -1,6 +1,8 @@
 package scenes.dungeon.ui;
 
+import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
+import scene2d.ui.extras.LabeledTicker;
 import scenes.Messages;
 import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;
@@ -17,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import core.common.Input;
 import core.datatypes.Inventory;
+import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.quests.Quest;
 
 /**
@@ -33,6 +36,7 @@ public enum WanderState implements UIState {
 
         @Override
         public void enter(WanderUI entity) {
+            entity.display.addAction(Actions.alpha(1f, .2f));
             entity.sacrificeMenu.hide();
             entity.setKeyboardFocus(entity.getRoot());
         }
@@ -67,7 +71,7 @@ public enum WanderState implements UIState {
             if (telegram.message == Messages.Dungeon.Movement) {
                 Direction direction = (Direction) telegram.extraInfo;
                 if (direction == null) {
-                    Gdx.app.log("Wander", "Stopping player");
+                    //Gdx.app.log("Wander", "Stopping player");
                     if (Direction.valueOf(Gdx.input) != null) {
                         walkTimer = -1f;
                     }
@@ -385,6 +389,65 @@ public enum WanderState implements UIState {
         public boolean touchDown(WanderUI entity, float x, float y, int button) {
             if (button == Buttons.LEFT || button == Buttons.RIGHT) {
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                return true;
+            }
+            return false;
+        }
+    },
+    SelectFloor(){
+        @Override
+        public void enter(WanderUI entity) {
+            entity.display.addAction(Actions.alpha(0f));
+            entity.floorSelect.addAction(
+                Actions.sequence(
+                    Actions.run(InputDisabler.instance),
+                    Actions.alpha(0f),
+                    Actions.scaleTo(.5f, .5f),
+                    Actions.parallel(
+                        Actions.alpha(1f, .15f),
+                        Actions.scaleTo(1, 1, .2f, Interpolation.circleOut)
+                    ),
+                    Actions.run(InputDisabler.instance)
+                )
+            );
+            
+            LabeledTicker<Integer> ticker = entity.floorSelect.findActor("ticker");
+            entity.setKeyboardFocus(ticker);
+            entity.floorSelect.setTouchable(Touchable.enabled);
+        }
+        
+        @Override
+        public void exit(WanderUI entity) {
+            entity.floorSelect.addAction(
+                Actions.sequence(
+                    Actions.run(InputDisabler.instance),
+                    Actions.alpha(1f),
+                    Actions.scaleTo(1f, 1f),
+                    Actions.parallel(
+                        Actions.alpha(0f, .15f),
+                        Actions.scaleTo(4, 4, .2f, Interpolation.circleOut)
+                    ),
+                    Actions.run(InputDisabler.instance)
+                )
+            );
+            entity.floorSelect.setTouchable(Touchable.enabled);
+        }
+        
+        @Override
+        public boolean keyDown(WanderUI entity, int keycode) {
+            if (Input.ACCEPT.match(keycode) || Input.CANCEL.match(keycode)) {
+                LabeledTicker<Integer> ticker = entity.floorSelect.findActor("ticker");
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Warp, ticker.getValue());
+                return true;
+            }
+            return false;
+        }
+        
+        
+        @Override
+        public boolean onMessage(WanderUI entity, Telegram telegram) {
+            if (telegram.message == Messages.Dungeon.Warp) {
+                entity.changeState(Wander);
                 return true;
             }
             return false;

@@ -16,7 +16,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import core.datatypes.FileType;
 
 public class Dungeon implements Serializable {
-    Array<FloorData> floorData;
+    
     Array<Floor> floors = new Array<Floor>();
     IntMap<BossFloor> bossFloors = new IntMap<BossFloor>();
     int difficulty;
@@ -29,6 +29,10 @@ public class Dungeon implements Serializable {
     TiledMap tilemap;
     
     boolean prepared;
+    
+    private int deepest = 1;
+    long seed;
+    private Array<FloorData> floorData;
 
     public Dungeon() {
     }
@@ -43,14 +47,14 @@ public class Dungeon implements Serializable {
      *            - premade floors to register with the dungeon
      */
 
-    public Dungeon(DungeonParams params, Array<FloorData> data) {
+    public Dungeon(DungeonParams params) {
         this.type = params.getType();
         this.floors = new Array<Floor>();
         this.difficulty = params.getDifficulty();
-        this.floorData = data;
-        this.depth = data.size;
         this.environment = params.getTileset();
         this.filename = params.getFilename();
+        this.seed = params.getSeed();
+        
         genBossFloors();
     }
     
@@ -78,6 +82,14 @@ public class Dungeon implements Serializable {
         return filename;
     }
     
+    public int getDeepestTraversal(){
+        return deepest;
+    }
+    
+    public void setDeepestTraversal(int floor) {
+        deepest = floor;
+    }
+    
     public FileHandle getSrc() {
         return Gdx.files.absolute(filename);
     }
@@ -86,18 +98,18 @@ public class Dungeon implements Serializable {
     public void write(Json json) {
         json.writeValue("type", this.type.name());
         json.writeValue("difficulty", this.difficulty);
-        json.writeValue("floors", this.floorData);
+        json.writeValue("seed", this.seed);
         json.writeValue("environment", this.environment);
+        json.writeValue("deepest", this.deepest);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void read(Json json, JsonValue jsonData) {
         this.type = FileType.valueOf(jsonData.getString("type"));
         this.difficulty = jsonData.getInt("difficulty");
-        this.floorData = json.readValue(Array.class, jsonData.get("floors"));
-        this.depth = floorData.size;
+        this.seed = jsonData.getLong("seed");
         this.environment = jsonData.getString("environment");
+        this.deepest = jsonData.getInt("deepest");
         this.genBossFloors();
     }
 
@@ -117,6 +129,11 @@ public class Dungeon implements Serializable {
         return tileset;
     }
 
+    public void setData(Array<FloorData> floorData) {
+        this.floorData = floorData;
+        this.depth = floorData.size;
+    }
+    
     public TiledMap build(TiledMapTileSet tileset) {
         if (prepared) {
             return tilemap;
@@ -137,8 +154,8 @@ public class Dungeon implements Serializable {
             tilemap.getLayers().add(layer);
             floors.add(new Floor(layer, data));
         }
-        floorData.clear();
-        floorData = null;
+        this.floorData.clear();
+        this.floorData = null;
         
         this.tileset = tileset;
         prepared = true;

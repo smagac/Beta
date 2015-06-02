@@ -82,8 +82,8 @@ public class DungeonFactory {
     public static void writeCacheFile(DungeonParams params, Dungeon dungeon) {
         // ignore randomly created dungeons for caching because
         // they don't have a cache file
-        // also don't overwrite files that have already been cached
-        if (params.getCacheFile() != null && !params.isCached()) {
+        // also don't overwrite files that have already been cached unless they've been changed
+        if (params.getCacheFile() != null && (!params.isCached() || params.hasChanged())) {
             try (FileOutputStream out = new FileOutputStream(params.getCacheFile().file());
                     GZIPOutputStream gzip = new GZIPOutputStream(out);
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));) {
@@ -107,7 +107,7 @@ public class DungeonFactory {
      * @throws IOException
      * @return an array of the serial ids of the floors on the file system
      */
-    public static Dungeon create(DungeonParams params, float[] progress) {
+    public static Array<FloorData> create(DungeonParams params, float[] progress) {
         // make sure dungeon dir exists
         // Gdx.files.absolute(tmpDir).mkdirs();
         // make sure to create cache files one first create
@@ -155,7 +155,7 @@ public class DungeonFactory {
             fl.seeds = seeds;
             fl.floors = floors;
             fl.progress = progress;
-            fl.increment = (int)((1.0f / (float)depth) * 100);
+            fl.increment = (1.0f / (float)depth) * 100f;
             Thread t = new Thread(fl);
             threads.add(t);
         }
@@ -176,13 +176,12 @@ public class DungeonFactory {
             }
         }
         
-        Dungeon d = new Dungeon(params, floors);
-        return d;
+        return floors;
     }
     
     private static class FloorLoader implements Runnable {
         int difficulty;
-        int increment;
+        float increment;
         float[] progress;
         Array<FloorData> floors;
         int[] depth;

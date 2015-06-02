@@ -1,6 +1,7 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.Inject;
+import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.ParticleActor;
 import scenes.LevelUpDialog;
 import scenes.LevelUpDialog.LevelUpState;
@@ -47,6 +48,8 @@ public class WanderUI extends UI {
 
     protected StateMachine<WanderUI> menu;
     
+    Group display;
+    
     // logger
     Label message;
 
@@ -75,6 +78,8 @@ public class WanderUI extends UI {
     Group messageWindow;
 
     private HUD hud;
+
+    Window floorSelect;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -91,6 +96,7 @@ public class WanderUI extends UI {
             Messages.Dungeon.Zoom,
             Messages.Dungeon.Heal,
             Messages.Dungeon.Leave,
+            Messages.Dungeon.Warp,
             Messages.Player.LevelUp,
             Messages.Player.UpdateItem,
             Messages.Player.NewItem,
@@ -108,8 +114,8 @@ public class WanderUI extends UI {
     
     public WanderUI(AssetManager manager) {
         super(manager);
-
-        menu = new DefaultStateMachine<WanderUI>(this, WanderState.Wander);
+        
+        menu = new DefaultStateMachine<WanderUI>(this);
     }
     
     @Override
@@ -118,13 +124,15 @@ public class WanderUI extends UI {
         final WanderUI self = this;
         skin = shared.getResource(DataDirs.Home + "uiskin.json", Skin.class);
 
+        display = new Group();
+        
         //user hud
         hud = new HUD(skin);
         hud.updateStats(Stats.Map.get(playerService.getPlayer()));
         hud.updateProgress(dungeonService.getProgress());
         hud.getGroup().setPosition(getWidth()/2f, -8, Align.bottom);
         hud.updateAilments(null, false);
-        addActor(hud.getGroup());
+        display.addActor(hud.getGroup());
         
         //combat log
         {
@@ -144,9 +152,10 @@ public class WanderUI extends UI {
             enemyLabel.setPosition(42, 0, Align.bottomLeft);
             enemyLabel.setAlignment(Align.bottomLeft);
             
-            addActor(icon);
-            addActor(enemyLabel);
+            display.addActor(icon);
+            display.addActor(enemyLabel);
         }
+        display.addActor(combatLog);
         
         //event log
         {
@@ -165,9 +174,10 @@ public class WanderUI extends UI {
             lootLabel.setPosition(getWidth()-42, 0, Align.bottomRight);
             lootLabel.setAlignment(Align.bottomRight);
             
-            addActor(icon);
-            addActor(lootLabel);
+            display.addActor(icon);
+            display.addActor(lootLabel);
         }
+        display.addActor(eventLog);
         
         //create equipment hud
         {
@@ -186,7 +196,7 @@ public class WanderUI extends UI {
             
             group.setSize(176, swordBar.getActor().getHeight());
             group.setPosition(getWidth()/2f, getHeight()-50f, Align.bottom);
-            addActor(group);
+            display.addActor(group);
         }
         
         //add goddess menu button
@@ -206,17 +216,24 @@ public class WanderUI extends UI {
                     return false;
                 }
             });
-            addActor(sacrificeIcon);
+            display.addActor(sacrificeIcon);
         }
         
         //level up dialog
         {
             levelUpDialog = new LevelUpDialog(skin);
             levelUpDialog.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
-            addActor(levelUpDialog.getGroup());
-            addActor(levelUpDialog.getFocusGroup());
+            display.addActor(levelUpDialog.getGroup());
+            display.addActor(levelUpDialog.getFocusGroup());
         }
 
+        // goddess sacrifice view
+        sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu);
+        sacrificeMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+        display.addActor(sacrificeMenu.getGroup());
+        
+        addActor(display);
+        
         fader = new Image(skin.getRegion("wfill"));
         fader.setScaling(Scaling.fill);
         fader.setPosition(0, 0);
@@ -257,11 +274,55 @@ public class WanderUI extends UI {
             addActor(messageWindow);
         }
         
-        // goddess sacrifice view
-        sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu);
-        sacrificeMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
-        addActor(sacrificeMenu.getGroup());
-
+        //floor select
+        {
+            floorSelect = new Window("", skin, "square");
+            floorSelect.setSize(380, 400);
+            floorSelect.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+            floorSelect.setOrigin(Align.center);
+            
+            Label prompt = new Label("This dungeon feels oddly familiar to you.\n \nDo you wish to immediately descend deeper into it?", skin, "prompt");
+            prompt.setSize(360, 250);
+            prompt.setWrap(true);
+            prompt.setAlignment(Align.center);
+            prompt.setPosition(190, 260, Align.center);
+            floorSelect.addActor(prompt);
+            int deepest = dungeonService.getDungeon().getDeepestTraversal();
+            Integer[] vals = new Integer[deepest];
+            for (int n = 0, i = 1; i <= deepest; n++, i++) {
+                vals[n] = i;
+            }
+            LabeledTicker<Integer> ticker = new LabeledTicker<Integer>(null, vals, skin);
+            ticker.setPosition(190, 110, Align.center);
+            ticker.setName("ticker");
+            floorSelect.addActor(ticker);
+            
+            TextButton button = new TextButton("Warp", skin);
+            button.setSize(150, 48);
+            button.setPosition(190, 20, Align.bottom);
+            button.addListener(new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (levelUpDialog.isVisible()) {
+                        return false;
+                    }
+                    
+                    if (button == Buttons.LEFT) {
+                        LabeledTicker<Integer> ticker = floorSelect.findActor("ticker");
+                        System.out.println(ticker.getValue());
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Warp, ticker.getValue());
+                    }
+                    return false;
+                }
+            });
+            floorSelect.addActor(button);
+            
+            floorSelect.setTouchable(Touchable.disabled);
+            floorSelect.setColor(1, 1, 1, 0);
+            
+            addActor(floorSelect);
+        }
+        
         getRoot().setName("root");
         setKeyboardFocus(getRoot());
         // key listener for moving the character by pressing the arrow keys or WASD
@@ -298,6 +359,15 @@ public class WanderUI extends UI {
                 ((WanderState)menu.getCurrentState()).touchUp(self, x, y, button);
             }
         });
+        
+        if (dungeonService.getDungeon().getDeepestTraversal() > 1) {
+            menu.changeState(WanderState.SelectFloor);
+        } else {
+            menu.changeState(WanderState.Wander);
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Warp, 1);
+        }
+        
+        display.setColor(1,1,1,0);
     }
 
     @Override

@@ -35,6 +35,7 @@ import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
+import core.factories.DungeonFactory;
 import core.service.implementations.DungeonManager;
 import core.service.implementations.ScoreTracker;
 import core.service.implementations.ScoreTracker.NumberValues;
@@ -107,6 +108,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         
         input.addProcessor(wanderUI);
         input.addProcessor(rs.getStage());
+        
+        dungeonService.getProgress().deepest = dungeonService.getDungeon().getDeepestTraversal();
     }
 
     @Override
@@ -134,6 +137,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Dead);
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Leave);
         MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Exit);
+        MessageDispatcher.getInstance().addListener(this, Messages.Dungeon.Warp);
         
         ui = wanderUI;
         //input.addProcessor(wanderUI);
@@ -150,6 +154,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Dead);
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Leave);
         MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Exit);
+        MessageDispatcher.getInstance().removeListener(this, Messages.Dungeon.Warp);
         
         wanderUI.dispose();
         transition.dispose();
@@ -174,7 +179,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             return;
         }
         
-        if (depth > 1 && depth != p.depth) {
+        if (depth > 1 && depth != p.depth && p.depth > 0) {
             // prevent more monsters from respawning after clearing a floor so
             // then you can't just keep grinding on lower levels in a single dungeon run
             Floor floor = dungeonService.getDungeon().getFloor(p.depth);
@@ -182,6 +187,10 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             floor.loot = floor.loot - dungeonService.getProgress().lootFound;
         }
         descending = (depth > p.depth);
+        if (depth > p.deepest){
+            p.deepest = depth;
+            params.change();
+        }
         
         wanderUI.fadeOut(new Runnable(){
 
@@ -271,7 +280,6 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     @Override
     protected void init() {
-        wanderUI.init();
         ui = wanderUI;
         
         if (dungeonService.getDungeon() != null){
@@ -297,7 +305,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
                 public void run() {
                     prepareMap();
 
-                    setFloor(1);
+                    wanderUI.init();
                     
                     setAudio();
                 }
@@ -324,10 +332,14 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         if (msg.message == Messages.Dungeon.Dead && msg.extraInfo == playerService.getPlayer()) {
             dead();
+            dungeonService.getDungeon().setDeepestTraversal(dungeonService.getProgress().deepest);
+            DungeonFactory.writeCacheFile(params, dungeonService.getDungeon());
             return true;
         }
         if (msg.message == Messages.Dungeon.Exit) {
             leave();
+            dungeonService.getDungeon().setDeepestTraversal(dungeonService.getProgress().deepest);
+            DungeonFactory.writeCacheFile(params, dungeonService.getDungeon());
             return true;
         }
         if (msg.message == Messages.Dungeon.Proceed) {
@@ -347,6 +359,10 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         }
         if (msg.message == Messages.Dungeon.Ascend){
             setFloor(dungeonService.getProgress().prevFloor());
+            return true;
+        }
+        if (msg.message == Messages.Dungeon.Warp){
+            setFloor((int)msg.extraInfo);
             return true;
         }
         return false;

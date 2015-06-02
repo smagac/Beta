@@ -37,11 +37,14 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
 
             // if no dungeon could be loaded from cache, createa new one
             if (generatedDungeon == null) {
-                generatedDungeon = DungeonFactory.create(param.params, progress);
-
+                generatedDungeon = new Dungeon(param.params);
                 // try saving the dungeon to cache
                 DungeonFactory.writeCacheFile(param.params, generatedDungeon);
+            } else {
+                param.params.seed = generatedDungeon.seed;
             }
+            generatedDungeon.setData(DungeonFactory.create(param.params, progress));
+
         } else {
             generatedDungeon = param.generatedDungeon;
         }

@@ -22,13 +22,14 @@ import core.datatypes.FileType;
  *
  */
 public class DungeonParams {
+    long seed;
     private boolean cached;
-    private long seed;
     private FileType ext;
     private int difficulty;
     private FileHandle hashFile;
     private String fileName;
     private String type;
+    private boolean changed;
 
     /**
      * Generate Random Dungeon parameters
@@ -210,6 +211,15 @@ public class DungeonParams {
 
     public String getTileset() {
         return type;
+    }
+
+    public void change(){
+        changed = true;
+    }
+    
+    public boolean hasChanged() {
+        // TODO Auto-generated method stub
+        return changed;
     }
 
 }

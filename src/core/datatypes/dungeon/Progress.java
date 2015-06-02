@@ -10,6 +10,7 @@ public class Progress {
     public int totalLootFound;
 
     public int depth;
+    public int deepest;
     public int floors;
     public int healed;
     public int keys;

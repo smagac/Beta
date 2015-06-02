@@ -51,8 +51,6 @@ public class LabeledTicker<T> extends Table {
         super();
         this.values = values;
         index = 0;
-        label = new Label(name, skin, "prompt");
-        label.setAlignment(Align.left);
         left = new TextButton("<", skin, "big");
         left.pad(10);
         right = new TextButton(">", skin, "big");
@@ -66,8 +64,15 @@ public class LabeledTicker<T> extends Table {
         buttons.add(valueLabel).colspan(1).width(74f);
         buttons.add(right).colspan(1).width(48f);
 
-        add(label).colspan(1).expandX().fillX();
-        add(buttons).colspan(2).expandX().fillX();
+        if (name != null && name.trim().length() > 0) {
+            label = new Label(name, skin, "prompt");
+            label.setAlignment(Align.left);
+            
+            add(label).colspan(1).expandX().fillX();
+            add(buttons).colspan(2).expandX().fillX();
+        } else {
+            add(buttons).expandX().fillX();
+        }
 
         left.addListener(new InputListener() {
             @Override
