@@ -10,10 +10,9 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
+import core.components.Drop;
 import core.components.Identifier;
 import core.components.Stats;
-import core.components.Drop;
-
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;

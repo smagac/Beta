@@ -1,9 +1,7 @@
 package scenes;
 
 import github.nhydock.ssm.Inject;
-import scene2d.InputDisabler;
 import scene2d.ui.extras.FocusGroup;
-import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.TabbedPane;
 import scenes.LevelUpDialog.LevelUpState;
 
@@ -31,9 +29,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.IntSet;
 
 import core.DataDirs;

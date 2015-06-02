@@ -3,7 +3,6 @@ package scenes.town.ui;
 import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;

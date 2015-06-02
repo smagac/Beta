@@ -6,7 +6,6 @@ import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
-
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.CombatHandler.Result;
@@ -24,10 +23,10 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
 import core.components.Combat;
-import core.components.Groups;
-import core.components.Groups.Monster;
 import core.components.Drop;
 import core.components.Equipment;
+import core.components.Groups;
+import core.components.Groups.Monster;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;

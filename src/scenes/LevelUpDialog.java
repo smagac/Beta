@@ -1,6 +1,6 @@
 package scenes;
 
-import scene2d.InputDisabler;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
 
@@ -26,7 +26,6 @@ import core.common.Input;
 import core.components.Stats;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IPlayerContainer;
-import github.nhydock.ssm.ServiceManager;
 
 /**
  * Encapsulates the Level Up Dialog's actions and styling.
@@ -69,6 +68,7 @@ public class LevelUpDialog {
         pointLabel = new Label("Points 0", skin, "prompt");
         pointLabel.setAlignment(Align.center);
 
+        @SuppressWarnings("unchecked")
         LabeledTicker<Integer>[] tickers = new LabeledTicker[4];
         tickers[0] = strTicker = new LabeledTicker<Integer>("Strength", new Integer[] { 0 }, skin);
         tickers[1] = defTicker = new LabeledTicker<Integer>("Defense", new Integer[] { 0 }, skin);

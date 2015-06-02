@@ -7,9 +7,7 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
-import scenes.dungeon.Direction;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -21,8 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.AddAction;
-import com.badlogic.gdx.scenes.scene2d.actions.AddListenerAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -35,7 +31,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
-import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 
 import core.common.Input;
 import core.datatypes.Item;
@@ -70,6 +65,7 @@ public class SacrificeSubmenu {
     
     private Image pointer;
     
+    @SuppressWarnings("rawtypes")
     public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final StateMachine sm) {
         menu = new Group();
         menu.setWidth(720);

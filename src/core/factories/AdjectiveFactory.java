@@ -5,11 +5,10 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
 
 import core.DataDirs;
-import core.datatypes.Ailment.AilmentModifier;
 import core.datatypes.Ailment;
+import core.datatypes.Ailment.AilmentModifier;
 import core.datatypes.StatModifier;
 
 public class AdjectiveFactory {

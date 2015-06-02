@@ -1,57 +1,39 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.Inject;
-import scene2d.ui.ScrollOnChange;
-import scene2d.ui.extras.Card;
-import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ParticleActor;
-import scene2d.ui.extras.ScrollFocuser;
-import scene2d.ui.extras.ScrollFollower;
-import scene2d.ui.extras.TabbedPane;
-import scenes.GameUI;
 import scenes.LevelUpDialog;
 import scenes.LevelUpDialog.LevelUpState;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.UI;
-import scenes.dungeon.Direction;
 import scenes.dungeon.RenderSystem;
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.SnapshotArray;
 
 import core.DataDirs;
-import core.common.Input;
 import core.components.Combat;
 import core.components.Equipment;
 import core.components.Identifier;
@@ -61,7 +43,6 @@ import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 
-@SuppressWarnings("unchecked")
 public class WanderUI extends UI {
 
     protected StateMachine<WanderUI> menu;

@@ -6,10 +6,10 @@ import com.badlogic.gdx.utils.Array;
 
 import core.components.Combat;
 import core.components.Equipment;
+import core.components.Groups.Monster;
 import core.components.Lock;
 import core.components.Renderable;
 import core.components.Stats;
-import core.components.Groups.Monster;
 import core.datatypes.Ailment;
 import core.datatypes.Ailment.AilmentModifier;
 

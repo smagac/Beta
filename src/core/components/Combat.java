@@ -4,7 +4,6 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ai.fsm.StateMachine;
-import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.Ailment;
 import core.datatypes.Ailment.AilmentModifier;
