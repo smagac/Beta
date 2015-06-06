@@ -232,6 +232,7 @@ public class PlayerManager implements IPlayerContainer {
         this.player.add(r);
         this.player.add(new Groups.Player());
         this.player.add(new Position(0,0));
+        this.player.add(new Equipment());
         
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
         tracker.read(json, root.get("tracker"));

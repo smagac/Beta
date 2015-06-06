@@ -133,7 +133,7 @@ public class NewUI extends UI {
                             return true;
                         }
                         if (Input.ACCEPT.match(keycode)) {
-                            MessageDispatcher.getInstance().dispatchMessage(null, ui, Messages.Interface.Selected, slotFocus.getFocusedIndex());
+                            MessageDispatcher.getInstance().dispatchMessage(null, ui, Messages.Interface.Selected, slotFocus.getFocusedIndex() + 1);
                             return true;
                         }
 

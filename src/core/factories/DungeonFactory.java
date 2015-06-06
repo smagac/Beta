@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
@@ -84,7 +85,7 @@ public class DungeonFactory {
         // they don't have a cache file
         // also don't overwrite files that have already been cached unless they've been changed
         if (params.getCacheFile() != null && (!params.isCached() || params.hasChanged())) {
-            try (FileOutputStream out = new FileOutputStream(params.getCacheFile().file());
+            try (OutputStream out = params.getCacheFile().write(false);
                     GZIPOutputStream gzip = new GZIPOutputStream(out);
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));) {
 

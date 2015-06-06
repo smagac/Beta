@@ -561,7 +561,7 @@ enum TownState implements UIState {
                                        while (scanner.hasNextLine()) {
                                            output += scanner.nextLine();
                                        }
-                                       Gdx.app.debug("Daily Dungeon", output);
+                                       Gdx.app.log("Daily Dungeon", output);
                                        dungeonData = output;
                        
                                        DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
@@ -569,7 +569,7 @@ enum TownState implements UIState {
                                        dungeon.setDungeon(params, null);
                                    }
                                    catch (Exception e) {
-                                       Gdx.app.debug("Daily Dungeon", "Parse Failed", e);
+                                       Gdx.app.error("Daily Dungeon", "Parse Failed", e);
                                        
                                        Label prompt = entity.downloadWindow.findActor("downloadLabel");
                                        prompt.setText("Could not establish a connection/failed to download dungeon");

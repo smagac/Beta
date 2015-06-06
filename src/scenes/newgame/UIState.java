@@ -60,7 +60,7 @@ enum UIState implements State<NewUI> {
                     entity.audio.playSfx(DataDirs.Sounds.accept);
                     int index = (Integer)telegram.extraInfo;
                     Card card = entity.slots.findActor("slot " + index);
-                    SaveSummary summary = (SaveSummary) card.getUserObject();
+                    Object summary = card.getUserObject();
                     
                     if (summary == null) {
                         entity.sm.changeState(Create);

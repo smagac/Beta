@@ -431,6 +431,7 @@ public class Inventory implements Serializable {
         this.loot.putAll(all);
         required = (Array<Craftable>) json.readValue(Array.class, jsonData.get("craft"));
         refreshCrafts();
+        refreshRequirements();
         calcProgress();
     }
 }
