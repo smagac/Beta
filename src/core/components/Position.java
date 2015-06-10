@@ -43,6 +43,14 @@ public class Position extends Component {
         return (int) y;
     }
     
+    public int getCurrentX() {
+        return (int)x;
+    }
+    
+    public int getCurrentY() {
+        return (int)y;
+    }
+    
     public int getDestinationX() {
         return (int) destX;
     }

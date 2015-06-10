@@ -1,6 +1,7 @@
 package scenes.dungeon;
 
 import github.nhydock.ssm.Inject;
+import scene2d.ui.extras.ParticleActor;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.ui.WanderUI;
@@ -13,10 +14,12 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -40,6 +43,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import core.DataDirs;
 import core.components.Groups;
 import core.components.Identifier;
 import core.components.Position;
@@ -109,6 +113,13 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     static Vector2 v1 = new Vector2(0, 0);
     static Vector2 v2 = new Vector2(0, 0);
     boolean moved;
+    
+    ParticleActor dustParticle;
+    private static final float DUST_LIMIT = 1f;
+    private float dustTimer = DUST_LIMIT;
+    
+    private Array<ParticleActor> weatherSystem;
+    private Group weatherLayer;
     
     public RenderSystem() {
         addQueue = new Array<Actor>();
@@ -280,13 +291,19 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         }
         // adjust position to be aligned with tiles
         else if (p.hasChanged()) {
+            if (e == player) {
+                moved = true;
+                
+                if (dustTimer >= DUST_LIMIT) {
+                    dustParticle.setPosition((p.getCurrentX() + .5f) * SCALE, p.getCurrentY() * SCALE);
+                    dustParticle.addAction(Actions.run(new ParticleActor.ResetParticle(dustParticle)));
+                }
+                dustTimer = 0f;
+            }
+            
             r.getActor().clearActions();
             r.getActor().addAction(Actions.moveTo(p.getDestinationX() * SCALE, p.getDestinationY() * SCALE, MoveSpeed));
             p.update();
-            
-            if (e == player) {
-                moved = true;
-            }
         }
         
     }
@@ -315,7 +332,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         }
 
         stage.act(delta);
-
+        dustTimer += delta;
+        
         if (player != null) {
             Renderable r = renderMap.get(player);
             Actor a = r.getActor();
@@ -323,6 +341,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             camera.position.y = a.getY(Align.center);
             camera.zoom = 1f + (zoom.getColor().a);
             camera.update();
+            
+            weatherLayer.setPosition(a.getX(Align.center), a.getY(Align.center), Align.center);
         }
 
         if (invisible) {
@@ -354,14 +374,27 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         zoom.addAction(Actions.alpha(0f));
         stage.addActor(zoom);
         
+        //setup dust effect
+        {
+            ParticleEffect pe = new ParticleEffect();
+            pe.load(Gdx.files.internal(DataDirs.Particles + "dust.particle"), Gdx.files.internal(DataDirs.Home));
+            dustParticle = new ParticleActor(pe);
+            dustParticle.setPosition(v.getWorldWidth()/2f, v.getWorldHeight()/2f - 8f);
+        }
+        
         entityLayer = new Group();
         shadowLayer = new Group();
         damageNumbers = new Group();
+        weatherLayer = new Group();
+        weatherLayer.setSize(this.stage.getWidth(), this.stage.getHeight());
         entityLayer.setTouchable(Touchable.childrenOnly);
+        weatherLayer.setTouchable(Touchable.disabled);
         shadowLayer.setTouchable(Touchable.childrenOnly);
         damageNumbers.setTouchable(Touchable.disabled);
+        stage.addActor(dustParticle);
         stage.addActor(entityLayer);
         stage.addActor(shadowLayer);
+        stage.addActor(weatherLayer);
         stage.addActor(damageNumbers);
         
         // enemy stats
@@ -383,6 +416,20 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             stage.addActor(stats);
         }
 
+        //handle weather
+        {
+            weatherSystem = new Array<ParticleActor>();
+            for (float i = 0, x = 0; i < 6; i++, x += v.getWorldWidth()/5f){
+                ParticleEffect pe = new ParticleEffect();
+                pe.load(Gdx.files.internal(DataDirs.Particles + "sandstorm.particle"), Gdx.files.internal(DataDirs.Home));
+                
+                ParticleActor pa = new ParticleActor(pe);
+                pa.setPosition(x, v.getWorldHeight());
+                weatherSystem.add(pa);
+                weatherLayer.addActor(pa);
+                pa.start();
+            }
+        }
 
         shadows = new Image[SHADOW_RANGE[0]][SHADOW_RANGE[1]];
         for (int x = 0, rx = 0; x < SHADOW_RANGE[0]; x++, rx += SCALE) {
