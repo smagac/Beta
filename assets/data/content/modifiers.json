@@ -1,96 +1,95 @@
 {
     "aggressive" : {
-    	hp: 1.2, str: 1.2, spd: .9,
-    	adjectives : [
+    	"hp": 1.2, "str": 1.2, "spd": 0.9,
+    	"adjectives": [
     		"silver-tongued", "hetero-normative", "ratchet", "burly", "grumpy", "tacky", "fake", "sporty",
-        	"atrocious", "monster", "religious", "miniature", "grass-roots"
+        	"atrocious", "monster", "religious", "grass-roots"
     	]
     },
     "gentle" : {
-        hp: .8, str: .5, def: .8, spd: .8,
-    	adjectives : [
-    		"rainbow", "reduced sodium", "miniature", "woven", "butter", "soft-spoken"
+      "hp": 0.8, "str": 0.5, "def": 0.8, "spd": 0.8,
+    	"adjectives": [
+    		"rainbow", "reduced sodium", "miniature", "butter", "soft-spoken"
     	]
     },
     "poop-faced" : {
-        hp: .5, str: 1.1, def: .9,
-    	adjectives : [
-    		"french", "crap", "stupid", "baby", "cheap", "retro", "junior", "refurbished",
+        "hp": 0.5, "str": 1.1, "def": 0.9,
+    	"adjectives": [
+    		"french", "crap", "stupid", "baby", "cheap", "retro", "junior", "refurbished"
     	]
     },
     "soft-core" : {
-        def: .25, spd: .75,
-    	adjectives : [
-    		"hipster", "home-grown", "fleece", "helpless", "extremely sad", "tear-free",
+        "def": 0.25, "spd": 0.75,
+    	"adjectives": [
+    		"hipster", "home-grown", "fleece", "helpless", "extremely sad", "tear-free"
     	]
     },
     "annoying" : {
-        hp: 3, def: .4,
-    	adjectives : [
+        "hp": 3, "def": 0.4,
+    	"adjectives": [
     		"obnoxious", "bubblegum", "obtuse", "esoteric", "banal", "loud", "snobby", "pay-to-play",
-    		"DLC", "freemium", "lack of", "brown-nosing",
-
+    		"DLC", "freemium", "lack of", "brown-nosing"
     	]
     },
     "dangerous" : {
-        hp: 2, str: 1.35, spd: 1.1,
-    	adjectives : [
-    		"epic", "spectacular", "heroic", "jurassic", "nuclear", "concentrated", "illegal", "demonic",
+        "hp": 2, "str": 1.35, "spd": 1.1,
+    	"adjectives": [
+    		"epic", "heroic", "jurassic", "nuclear", "concentrated", "illegal", "demonic"
     	]
     },
     "free-form" : {
-        hp: 1.05, def: .9, spd: 1.5,
-    	adjectives : [
+        "hp": 1.05, "def": 0.9, "spd": 1.5,
+    	"adjectives": [
     		"jazz", "sassy", "baroque", "groovy", "studly", "polymorphic", "automagical", "symphonic"
     	]
     },
     "japan" : {
-        def: 1.1, spd: 1.2,
-    	adjectives : [
+        "def": 1.1, "spd": 1.2,
+    	"adjectives": [
     		"anime", "meguca", "slimy", "sony", "weeaboo", "intergalatic", "sexy", "japanese", "new world",
-    		"trading-card",
+    		"trading-card"
     	]
     },
     "hard-core" : {
-        str: 1.15, def: 1.15,
-    	adjectives : [
+        "str": 1.15, "def": 1.15,
+    	"adjectives": [
     		"bro", "american", "presidental", "magnanimous", "loyal", "baggy","abominable"
     	]
     },
     "awesome" : {
-        def: 1.1, spd: .9,
-    	adjectives : [
-    		"open-source", "booty", "cosmic", "legendary", "mythical", "spectacular",
+        "def": 1.1, "spd": 0.9,
+    	"adjectives": [
+    		"open-source", "booty", "cosmic", "legendary", "mythical", "spectacular"
     	]
     },
     "material" : {
-        def: 1.3,
-    	adjectives : [
-    		"hard", "wood", "metal", "glass", "tin","woven","plaid",  "metallic", "8-bit", "retro", "viscous",
+        "def": 1.3,
+    	"adjectives": [
+    		"hard", "wood", "metal", "glass", "tin","woven","plaid",  "metallic", "8-bit", "viscous",
     		"electronic"
     	]
     },
     "girly" : {
-        def: .75, spd: 1.1,
-    	adjectives : [
-    		"feminine", "moist", "IRL", "#hashtag", "bubbly", "plastic", "matching",
+        "def": 0.75, "spd": 1.1,
+    	"adjectives": [
+    		"feminine", "moist", "IRL", "#hashtag", "bubbly", "plastic", "matching"
     	]
     },
     "food" : {
-        hp: .8,
-    	adjectives : [
+        "hp": 0.8,
+    	"adjectives": [
     		"potato", "tomato", "salty", "buttery", "taste-less", "I Can't Believe It's Not", "cinnamon", "vomit-inducing",
     		"frozen"
     	]
     },
     "normal" : {
-    	adjectives : [
-    		"broken", "tantalizing","tenacious","second-place","expensive","ikea","banal","some","windy"
+    	"adjectives": [
+    		"broken", "tantalizing","tenacious","second-place","expensive","ikea","some","windy"
     	]
     },
     "boss" : {
-    	hp: 3.0, str: 2.0, def: 1.5, spd: .8, exp: 5.0,
-    	adjectives : [
+    	"hp": 3.0, "str": 2.0, "def": 1.5, "spd": 0.8,  "exp": 5.0,
+    	"adjectives": [
     		"angel", "demon", "boss", "war chief", "godfather", "kumicho"
     	]
     },
@@ -102,10 +101,10 @@
         "trap" : ".15", "confusing" : ".25", "odd" : ".12", "I Can't Believe It's Not" : ".185", "mythical" : ".1", "automagical" : ".115"
       },
       "poison" : {
-        "poisonous" : ".2", "spoiled" : ".12", "mercury" : ".25", "lead" : ".15", "vomit-inducing" : ".135"
+        "poisonous" : ".2", "spoiled" : ".12", "mercury" : ".25", "lead" : ".15", "vomit-inducing" : ".135", "venomous" : ".3"
       },
       "venom" : {
-        "venomous" : ".2", "mercury" : ".12", "lead" : ".05", "nuclear" : ".09"
+        "venomous" : ".1", "mercury" : ".12", "lead" : ".05", "nuclear" : ".09"
       },
       "arthritis" : {
         "american" : ".1", "retro" : ".12", "old" : ".15", "grumpy" : ".10", "grass-roots" : ".08"
