@@ -8,7 +8,7 @@ public enum Direction {
     Up(0, 1, core.common.Input.UP), 
     Down(0, -1, core.common.Input.DOWN), 
     Left(-1, 0, core.common.Input.LEFT), 
-    Right(0, 1, core.common.Input.RIGHT);
+    Right(1, 0, core.common.Input.RIGHT);
 
     private int[] move;
     private core.common.Input keys;

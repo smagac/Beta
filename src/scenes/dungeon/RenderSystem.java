@@ -1,6 +1,9 @@
 package scenes.dungeon;
 
+import java.util.Arrays;
+
 import github.nhydock.ssm.Inject;
+import scene2d.runnables.PlaySound;
 import scene2d.ui.extras.ParticleActor;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
@@ -109,9 +112,6 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     Group entityLayer;
     Entity player;
 
-    // temp vars used for hover effect
-    static Vector2 v1 = new Vector2(0, 0);
-    static Vector2 v2 = new Vector2(0, 0);
     boolean moved;
     
     ParticleActor dustParticle;
@@ -121,11 +121,17 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     private Array<ParticleActor> weatherSystem;
     private Group weatherLayer;
     
+    private Image targetCursor;
+    private int[] cursorLocation;
+    
+    private Group spellLayer;
+    
     public RenderSystem() {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
         this.layers = new int[] { 0 };
         fovSolver = new RippleFOV();
+        cursorLocation = new int[2];
     }
 
     public void setMap(TiledMap map) {
@@ -233,6 +239,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         final Image sprite = (Image) r.getActor();
         sprite.setSize(SCALE, SCALE);
         sprite.setPosition(p.getX() * SCALE, p.getY() * SCALE);
+        sprite.setUserObject(e);
         if (Groups.monsterType.matches(e)) {
             //Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
             sprite.addListener(new InputListener() {
@@ -382,19 +389,44 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             dustParticle.setPosition(v.getWorldWidth()/2f, v.getWorldHeight()/2f - 8f);
         }
         
+        //setup targeting cursor
+        {
+            targetCursor = new Image(skin, "cursor");
+            targetCursor.setSize(SCALE, SCALE);
+            targetCursor.setOrigin(Align.center);
+            targetCursor.setScale(1);
+            targetCursor.setVisible(false);
+            targetCursor.addAction(
+                    Actions.forever(
+                        Actions.sequence(
+                            Actions.scaleTo(1, 1), 
+                            Actions.scaleTo(.7f, .7f, .2f, Interpolation.circleIn), 
+                            Actions.scaleTo(1f, 1f, .2f, Interpolation.circleOut)
+                        )
+                    )
+                );
+            targetCursor.setTouchable(Touchable.disabled);
+        }
+        
         entityLayer = new Group();
         shadowLayer = new Group();
+        spellLayer = new Group();
         damageNumbers = new Group();
         weatherLayer = new Group();
         weatherLayer.setSize(this.stage.getWidth(), this.stage.getHeight());
+        spellLayer.setSize(this.stage.getWidth(), this.stage.getHeight());
+        
         entityLayer.setTouchable(Touchable.childrenOnly);
+        spellLayer.setTouchable(Touchable.disabled);
         weatherLayer.setTouchable(Touchable.disabled);
         shadowLayer.setTouchable(Touchable.childrenOnly);
         damageNumbers.setTouchable(Touchable.disabled);
         stage.addActor(dustParticle);
         stage.addActor(entityLayer);
+        stage.addActor(spellLayer);
         stage.addActor(shadowLayer);
         stage.addActor(weatherLayer);
+        stage.addActor(targetCursor);
         stage.addActor(damageNumbers);
         
         // enemy stats
@@ -479,15 +511,13 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         statsVis = e;
         
         Actor sprite = Renderable.Map.get(e).getActor();
-        v1.set(sprite.getWidth()/2f, sprite.getHeight());
-
-        Vector2 hv = sprite.localToStageCoordinates(v1);
-        stats.setPosition(hv.x, hv.y, Align.bottom);
-        stats.setColor(1, 1, 1, 0);
-        
+        Vector2 v = new Vector2(sprite.getWidth()/2f, sprite.getHeight());
+        sprite.localToStageCoordinates(v);
         stats.clearActions();
         stats.addAction(
             Actions.sequence(
+                Actions.moveToAligned(v.x, v.y, Align.bottom),
+                Actions.alpha(0f),
                 Actions.parallel(
                     Actions.alpha(1f, .2f),
                     Actions.moveBy(0, 6, .2f)
@@ -620,5 +650,97 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             }
         }
         return false;
+    }
+    
+    /**
+     * Toggles the visibility of the cursor and positions it on the player
+     */
+    public void toggleCursor() {
+        Position p = Position.Map.get(player);
+        cursorLocation[0] = p.getX();
+        cursorLocation[1] = p.getY();
+        targetCursor.setPosition(cursorLocation[0]*SCALE, cursorLocation[1]*SCALE);
+        targetCursor.setVisible(!targetCursor.isVisible());
+    }
+    
+    /**
+     * shift the position of the cursor
+     * @param d
+     */
+    public void moveCursor(Direction d) {
+        int[] cursorLocation = d.move(getCursorLocation());
+        moveCursor(cursorLocation);
+    }
+    
+    /**
+     * Checks if the cursor is over a target, and if it is then show its stats
+     */
+    private void cursorTargetHover(){
+        //show stats when cursor hovers over entity
+        Entity hover = null;
+        for (int i = 0; i < entities.size && hover == null; i++) {
+            Entity e = entities.get(i);
+            Position p = Position.Map.get(e);
+            if (p.getX() == cursorLocation[0] && p.getY() == cursorLocation[1]) {
+                hover = e;
+            }
+        }
+        
+        if (hover == null || hover == player) {
+            hideStats();
+        } else {
+            refreshStats(hover);
+            showStats(hover);
+        }
+    }
+
+    /**
+     * Get the location of the cursor  
+     * Used in determining which direction to fire a spell in
+     * @return a copy of the location point
+     */
+    public int[] getCursorLocation() {
+        return Arrays.copyOf(cursorLocation, 2);
+    }
+
+    /**
+     * Invokes particle system explosion along path of the spell
+     */
+    public void fireSpell(int[][] path) {
+        for (int i = 0; i < path.length && i <= 10; i++) {
+            int[] pos = path[i];
+            final ParticleEffect pe = new ParticleEffect();
+            pe.load(Gdx.files.internal(DataDirs.Particles + "spell.particle"), Gdx.files.internal(DataDirs.Home));
+            ParticleActor actor = new ParticleActor(pe);
+            actor.setPosition(pos[0] * SCALE, pos[1] * SCALE);
+            actor.start();
+            actor.addAction(Actions.sequence(Actions.delay(1f), Actions.run(new Runnable(){
+                @Override
+                public void run(){
+                    Gdx.app.log("Spell", "Explosion particle disposed");
+                    pe.dispose();
+                }
+            }), Actions.removeActor()));
+            spellLayer.addActor(actor);
+        }
+        (new PlaySound(DataDirs.Sounds.shimmer)).run();
+    }
+
+    /**
+     * Shifts the cursor to a new tile location as long as that tile is visible
+     * @param cursorLocation
+     */
+    public void moveCursor(int[] cursorLocation) {
+        Vector2 loc = new Vector2(cursorLocation[0]*SCALE, cursorLocation[1]*SCALE);
+        shadowLayer.stageToLocalCoordinates(loc);
+        if (shadowLayer.hit(loc.x, loc.y, true) != null){
+            return;
+        }
+        
+        this.cursorLocation[0] = cursorLocation[0];
+        this.cursorLocation[1] = cursorLocation[1];
+        targetCursor.setPosition(cursorLocation[0]*SCALE, cursorLocation[1]*SCALE);
+
+        cursorTargetHover();
     }
 }

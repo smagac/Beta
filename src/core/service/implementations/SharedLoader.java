@@ -27,6 +27,7 @@ public class SharedLoader implements ISharedResources {
         manager.load(DataDirs.Home + "wfill.png", Texture.class);
         manager.load(DataDirs.Home + "particle.png", Texture.class);
         manager.load(DataDirs.Home + "dargon.png", Texture.class);
+        manager.load(DataDirs.Home + "cursor.png", Texture.class);
         
         //load all small sound fx
         for (String path : DataDirs.Sounds.allSounds) {
@@ -52,6 +53,9 @@ public class SharedLoader implements ISharedResources {
         uiSkin.add("particle", new TextureRegion(particleTex), TextureRegion.class);
         Texture dargon = manager.get(DataDirs.Home + "dargon.png");
         uiSkin.add("dargon", dargon, Texture.class);
+        Texture cursor = manager.get(DataDirs.Home + "cursor.png");
+        uiSkin.add("cursor", cursor, Texture.class);
+        
         TextureAtlas dungeonSprites = manager.get(DataDirs.Home + "dungeon.atlas");
         uiSkin.addRegions(dungeonSprites);
         TextureAtlas battleSprites = manager.get(DataDirs.Home + "battle.atlas");

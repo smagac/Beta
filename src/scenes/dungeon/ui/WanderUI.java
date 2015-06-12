@@ -93,7 +93,7 @@ public class WanderUI extends UI {
             Messages.Dungeon.Refresh,
             Messages.Dungeon.Action,
             Messages.Dungeon.Assist,
-            Messages.Dungeon.Zoom,
+            Messages.Dungeon.Target,
             Messages.Dungeon.Heal,
             Messages.Dungeon.Leave,
             Messages.Dungeon.Warp,

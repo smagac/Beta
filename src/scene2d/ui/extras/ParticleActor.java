@@ -62,6 +62,7 @@ public class ParticleActor extends Actor {
     
     public void start() {
         running = true;
+        particle.start();
     }
     
     public void stop() {

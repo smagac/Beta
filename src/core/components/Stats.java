@@ -34,6 +34,8 @@ public class Stats extends Component implements Serializable {
      * Keep track of 
      */
     private Array<StatModifier> mods = new Array<StatModifier>();
+
+    private int spells;
     
     public Stats() { }
 
@@ -48,6 +50,7 @@ public class Stats extends Component implements Serializable {
         defense = baseStats[2];
         speed = baseStats[3];
         exp = baseStats[4];
+        spells = getMaxSpells();
         
         this.mods.addAll(mods);
         recalculate(true);
@@ -191,5 +194,38 @@ public class Stats extends Component implements Serializable {
         baseStats[2] = defense;
         baseStats[3] = speed;
         baseStats[4] = exp;
+
+        spells = getMaxSpells();
+    }
+
+    /**
+     * Calculates the amount of spells the player should have dependent on their level
+     * @param level
+     * @return available amount of spells
+     */
+    public int getMaxSpells() {
+        return (level / 5) + 3;
+    }
+    
+    public int getSpells() {
+        return spells;
+    }
+    
+    /**
+     * Uses a spell
+     */
+    public void castSpell() {
+        spells = Math.max(spells - 1, 0);
+    }
+    
+    /**
+     * Recharges a spell slot
+     */
+    public void recharge() {
+        spells = Math.min(spells + 1, getMaxSpells());
+    }
+
+    public boolean canCastSpell() {
+        return spells > 0;
     }
 }

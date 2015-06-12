@@ -289,6 +289,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             input.addProcessor(rs.getStage());
             input.addProcessor(wanderUI);
             
+            wanderUI.init();
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
             
             setAudio();

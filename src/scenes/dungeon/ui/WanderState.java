@@ -21,6 +21,10 @@ import core.common.Input;
 import core.datatypes.Inventory;
 import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.quests.Quest;
+import core.service.interfaces.IPlayerContainer;
+
+import github.nhydock.ssm.ServiceManager;
+import core.components.Position;
 
 /**
  * Handles state based ui menu logic and switching
@@ -94,9 +98,8 @@ public enum WanderState implements UIState {
                 }
                 return true;
             }
-            else if (telegram.message == Messages.Dungeon.Zoom) {
-                RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
-                rs.toggleZoom();
+            else if (telegram.message == Messages.Dungeon.Target) {
+                entity.changeState(Targeting);
                 return true;
             }
             else if (telegram.message == Messages.Dungeon.Action) {
@@ -149,7 +152,7 @@ public enum WanderState implements UIState {
             }
             
             if (Input.CANCEL.match(keycode)) {
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Zoom);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Target);
                 return true;
             }
             
@@ -165,6 +168,167 @@ public enum WanderState implements UIState {
                 } else {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                 }
+                return true;
+            }
+            
+            return false;
+        }
+
+        @Override
+        public boolean keyUp(WanderUI entity, int keycode) {
+            Direction to = Direction.valueOf(keycode);
+            if (to != null) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+            }
+            return true;
+        }
+        
+        @Override
+        public boolean touchDown(WanderUI entity, float x, float y, int button) {
+            if (button == Buttons.LEFT) {
+                Direction to = Direction.valueOf(x, y, entity.getWidth(), entity.getHeight());
+                if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
+                } else {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
+                }
+            } else if (button == Buttons.RIGHT){
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+            }
+            return true;
+        }
+        
+        @Override
+        public void touchUp(WanderUI entity, float x, float y, int button){
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+        }
+    },
+    Targeting("") {
+
+        private final Vector2 mousePos = new Vector2();
+        
+        //keeps track if the cursor has moved
+        private boolean moved = false;
+
+        @Override
+        public void enter(WanderUI entity) {
+            entity.display.addAction(Actions.alpha(1f, .2f));
+            entity.sacrificeMenu.hide();
+            entity.setKeyboardFocus(entity.getRoot());
+            
+            final RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
+            rs.toggleCursor();
+        }
+        
+        @Override
+        public void exit(WanderUI entity) {
+            final RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
+            rs.toggleCursor();
+        }
+
+
+        @Override
+        public void update(WanderUI entity) {
+        }
+
+        @Override
+        public boolean onMessage(WanderUI entity, Telegram telegram) {
+
+            if (telegram.message == Messages.Dungeon.Movement) {
+                Direction direction = (Direction) telegram.extraInfo;
+                if (direction == null) {
+                    return false;
+                }
+                else {
+                    final RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
+                    rs.moveCursor(direction);
+                    moved = true;
+                    return true;
+                }
+            }
+            else if (telegram.message == Messages.Dungeon.Target) {
+                final RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
+                IPlayerContainer playerService = ServiceManager.getService(IPlayerContainer.class);
+                Position p = Position.Map.get(playerService.getPlayer());
+                int[] cursorLoc = rs.getCursorLocation();
+                //lock to axis if moved
+                if (moved) {
+                    int xDistance = Math.abs(p.getX() - cursorLoc[0]);
+                    int yDistance = Math.abs(p.getX() - cursorLoc[1]);
+                
+                    //if already locked to an axis, just ignore and allow firing the spell
+                    if (xDistance == 0 || yDistance == 0) {
+                        moved = false;
+                    } 
+                    //lock to the nearest axis
+                    else {
+                        if (cursorLoc[0] < p.getX() && xDistance > yDistance) {
+                            cursorLoc[1] = p.getY();
+                            rs.moveCursor(cursorLoc);
+                        }
+                        else if (cursorLoc[0] > p.getX() && xDistance > yDistance) {
+                            cursorLoc[1] = p.getY();
+                            rs.moveCursor(cursorLoc);
+                        }
+                        else if (cursorLoc[1] < p.getY() && xDistance <= yDistance) {
+                            cursorLoc[0] = p.getX();
+                            rs.moveCursor(cursorLoc);
+                        }
+                        else if (cursorLoc[1] > p.getY() && xDistance <= yDistance) {
+                            cursorLoc[0] = p.getX();
+                            rs.moveCursor(cursorLoc);
+                        }
+                        moved = false;
+                        return true;
+                    }
+                }
+                
+                //do cool attacky stuff
+                final MovementSystem ms = entity.dungeonService.getEngine().getSystem(MovementSystem.class);
+                int[][] path = ms.fireSpell(cursorLoc);
+                if (path != null) {
+                    rs.fireSpell(path);
+                    return true;
+                }
+                return false;
+            }
+            else if (telegram.message == Messages.Interface.Close) {
+                entity.changeState(Wander);
+                return true;
+            }
+            else if (telegram.message == Messages.Dungeon.Assist) {
+                entity.changeState(Assist);
+                return true;
+            }
+            else if (telegram.message == Quest.Actions.Notify) {
+                String notification = telegram.extraInfo.toString();
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);
+            }
+            else if (telegram.message == Messages.Dungeon.Dead && telegram.extraInfo == entity.playerService.getPlayer()) {
+                entity.changeState(WanderState.Dead);
+            }
+            else if (telegram.message == Messages.Dungeon.Exit) {
+                entity.changeState(WanderState.Exit);
+            }
+            return false;
+        }
+        
+        @Override
+        public boolean keyDown(WanderUI entity, int keycode) {
+
+            if (Input.ACCEPT.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Target);
+                return true;
+            }
+            
+            if (Input.CANCEL.match(keycode)) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                return true;
+            }
+            
+            Direction to = Direction.valueOf(keycode);
+            if (to != null) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
                 return true;
             }
             

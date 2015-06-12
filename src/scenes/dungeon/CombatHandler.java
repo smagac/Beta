@@ -97,6 +97,39 @@ class CombatHandler {
         return result;
     }
     
+    /**
+     * Spell casting attack.  Spells deal with raw strength, so equipment has no effect.  They are
+     * unblockable and ignore the opponent's defense.
+     * @param attacker
+     * @param opponent
+     * @param player
+     * @return
+     */
+    protected static Result magic(final Entity attacker, final Entity opponent, Entity player) {
+        Result result = new Result();
+        Stats aStats = Stats.Map.get(attacker);
+        Stats bStats = Stats.Map.get(opponent);
+        
+        final float MULT = (attacker == player) ? 2 : 1.25f;
+
+        float chance = MathUtils.random(.8f, MULT);
+        int str = aStats.getStrength();
+        result.damage = (int)Math.max(0, (chance * str));
+
+        if (attacker == player) {
+            result.critical = chance > MULT * .8f && result.damage > 0;   
+        }
+        
+        bStats.hp = Math.max(0, bStats.hp - result.damage);
+        
+        if (bStats.hp <= 0) {
+            result.killed = true;
+            result.exp = bStats.exp;
+        }
+        
+        return result;
+    }
+    
     public static void markDead(Entity actor) {
         Renderable r = Renderable.Map.get(actor);
         r.setSpriteName("dead");

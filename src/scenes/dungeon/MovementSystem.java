@@ -4,6 +4,9 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
+
+import java.util.Arrays;
+
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
@@ -65,6 +68,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private Engine engine;
     @Inject public IDungeonContainer dungeonService;
     @Inject public IPlayerContainer playerService;
+    
+    private int spells;
     
     public void setMap(Floor floorData) {
         // set collision map
@@ -205,13 +210,18 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         return false;
     }
     
+    private void fight(Entity attacker, Entity opponent) {
+        fight(attacker, opponent, false);
+    }
+    
     /**
      * Make two entities fight
      * 
      * @param actor
      * @param opponent
+     * @param spell 
      */
-    private void fight(Entity attacker, Entity opponent) {
+    private void fight(Entity attacker, Entity opponent, boolean spell) {
         if (CombatHandler.isDead(attacker, player) || CombatHandler.isDead(opponent, player)){
             return;
         }
@@ -225,10 +235,27 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             return;
         }
         
+        Result results;
+        if (!spell) {
+            results = CombatHandler.fight(attacker, opponent, player);
+        } else {
+            results = CombatHandler.magic(attacker, opponent, player);
+        }
+        
+        CombatNotify notification = new CombatNotify();
+        notification.attacker = attacker;
+        notification.opponent = opponent;
+        notification.dmg = results.damage;
+        notification.critical = results.critical;
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
+        
+
         //animate fight
-        Position p = Position.Map.get(attacker);
-        Position p1 = Position.Map.get(opponent);
-        p.fight(p1.getX(), p1.getY());
+        if (!spell){
+            Position p = Position.Map.get(attacker);
+            Position p1 = Position.Map.get(opponent);
+            p.fight(p1.getX(), p1.getY());
+        }
         
         //show ids
         {
@@ -237,15 +264,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             id = Identifier.Map.get(opponent);
             id.show();
         }
-        
-        Result results = CombatHandler.fight(attacker, opponent, player);
-        
-        CombatNotify notification = new CombatNotify();
-        notification.attacker = attacker;
-        notification.opponent = opponent;
-        notification.dmg = results.damage;
-        notification.critical = results.critical;
-        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, notification);
         
         //agro enemies when hit
         if (attacker == player){
@@ -592,8 +610,11 @@ public class MovementSystem extends EntitySystem implements EntityListener {
          */
         else if (Groups.playerType.matches(entity)) {
             player = entity;
+            Stats stats = Stats.Map.get(player);
+            spells = stats.getSpells();
         }
     }
+    
 
     @Override
     public void entityRemoved(Entity entity) {
@@ -618,6 +639,70 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             return Messages.Dungeon.Ascend;
         }
         return -1;
+    }
+
+    /**
+     * Follows a path in a specified direction from the starting position
+     * @param dir - direction to follow
+     * @param position - the starting position
+     * @param action - function that may be performed with each step along the way
+     * @return the path followed
+     */
+    public int[][] followPath(Direction dir, int[] position, Runnable action) {
+        Array<int[]> path = new Array<int[]>(int[].class);
+        dir.move(position);
+        while (!isWall(position[0], position[1])) {
+            path.add(Arrays.copyOf(position, 2));
+            action.run();
+            dir.move(position);
+        }
+        return path.toArray();
+    }
+    
+    /**
+     * Casts a spell along a straight path towards a specified point along an axis.
+     * Spell effect continues until it hits a wall.
+     * @param cursorDirection
+     * @return the path the spell fired along.  Returns null if the spell could not be cast
+     */
+    public int[][] fireSpell(int[] cursorLocation) {
+        Stats stats = Stats.Map.get(player);
+        
+        if (!stats.canCastSpell()) {
+            return null;
+        }
+        
+        Position p = Position.Map.get(player);
+        int x = p.getX();
+        int y = p.getY();
+        final int[] position = {x, y};
+        Direction direction;
+        if (cursorLocation[0] < x) {
+            direction = Direction.Left;
+        }
+        else if (cursorLocation[0] > x) {
+            direction = Direction.Right;
+        }
+        else if (cursorLocation[1] < y) {
+            direction = Direction.Down;
+        }
+        else {
+            direction = Direction.Up;
+        }
+        
+        stats.castSpell();
+        //fire a spell along the calculated path
+        return followPath(direction, position, 
+            new Runnable(){
+                @Override
+                public void run(){
+                    Entity foe = checkFoe(position[0], position[1], player);
+                    if (foe != null) {
+                        fight(player, foe, true);
+                    }
+                }
+            }
+        );
     }
     
 }

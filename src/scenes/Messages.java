@@ -108,7 +108,7 @@ public interface Messages {
         public static final int Action = 0x1009; 
         
         //zoom in and out with the camera;
-        public static final int Zoom = 0x100A;
+        public static final int Target = 0x100A;
         public static final int Warp = 0x100E; 
         
         public static final class CombatNotify {
