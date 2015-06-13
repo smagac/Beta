@@ -22,8 +22,11 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -40,6 +43,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
@@ -118,7 +122,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     private static final float DUST_LIMIT = 1f;
     private float dustTimer = DUST_LIMIT;
     
-    private Array<ParticleActor> weatherSystem;
+    private TextureRegion weatherSystem;
     private Group weatherLayer;
     
     private Image targetCursor;
@@ -350,6 +354,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             camera.update();
             
             weatherLayer.setPosition(a.getX(Align.center), a.getY(Align.center), Align.center);
+            weatherSystem.scroll(2.7f*delta, .02f*delta);
         }
 
         if (invisible) {
@@ -450,17 +455,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
         //handle weather
         {
-            weatherSystem = new Array<ParticleActor>();
-            for (float i = 0, x = 0; i < 6; i++, x += v.getWorldWidth()/5f){
-                ParticleEffect pe = new ParticleEffect();
-                pe.load(Gdx.files.internal(DataDirs.Particles + "sandstorm.particle"), Gdx.files.internal(DataDirs.Home));
-                
-                ParticleActor pa = new ParticleActor(pe);
-                pa.setPosition(x, v.getWorldHeight());
-                weatherSystem.add(pa);
-                weatherLayer.addActor(pa);
-                pa.start();
-            }
+            Texture weather = new Texture(Gdx.files.internal(DataDirs.Weather + "sandstorm.png"));
+            weatherSystem = new TextureRegion(weather);
+            weather.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
+            Image image = new Image(new TiledDrawable(weatherSystem));
+            image.setFillParent(true);
+            weatherLayer.addActor(image);
         }
 
         shadows = new Image[SHADOW_RANGE[0]][SHADOW_RANGE[1]];

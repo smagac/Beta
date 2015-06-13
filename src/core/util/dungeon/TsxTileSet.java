@@ -20,7 +20,9 @@ public class TsxTileSet extends TiledMapTileSet {
     public static final int WALL = 0;
     public static final int FLOOR = 1;
     public static final int NULL = 2;
-    
+    public static final int DOWN = 5;
+    public static final int UP = 3;
+    public static final int[] ALL = {WALL, FLOOR, NULL, DOWN, UP};
     
     private XmlReader xml = new XmlReader();
     

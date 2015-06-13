@@ -96,11 +96,11 @@ public class BossFloor implements FloorData {
                 }
                 //down stairs
                 else if (tile == 3) {
-                    cell.setTile(tileset.getTile(5));
+                    cell.setTile(tileset.getTile(TsxTileSet.DOWN));
                 }
                 //up stairs
                 else if (tile == 4) {
-                    cell.setTile(tileset.getTile(3));
+                    cell.setTile(tileset.getTile(TsxTileSet.UP));
                 }
                 //null
                 else {

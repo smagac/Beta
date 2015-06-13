@@ -79,10 +79,10 @@ public class RandomFloorData implements Serializable, FloorData {
                     tile = tileset.getTile(TsxTileSet.WALL);
                 }
                 else if (tiles[x][y] == PathMaker.UP && !player.isHardcore()) {
-                    tile = tileset.getTile(3);
+                    tile = tileset.getTile(TsxTileSet.UP);
                 }
                 else if (tiles[x][y] == PathMaker.DOWN) {
-                    tile = tileset.getTile(5);
+                    tile = tileset.getTile(TsxTileSet.DOWN);
                 }
                 else {
                     tile = tileset.getTile(TsxTileSet.FLOOR);

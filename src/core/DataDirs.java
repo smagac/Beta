@@ -32,6 +32,7 @@ public final class DataDirs {
     public static final String Lore = GameData + "lore/";
     public static final String Particles = Home + "particles/";
     public static final String Backgrounds = Home + "backgrounds/";
+    public static final String Weather = Home + "weather/";
     
     /**
      * Allows getting a specified list of children in an internal directory
