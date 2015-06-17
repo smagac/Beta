@@ -115,9 +115,8 @@ public class TsxTileSet extends TiledMapTileSet {
     
         TextureRegion texture = imageResolver.getImage(image.path());
 
-        TiledMapTileSet tileset = new TiledMapTileSet();
-        MapProperties props = tileset.getProperties();
-        tileset.setName(name);
+        MapProperties props = this.getProperties();
+        this.setName(name);
         props.put("imagesource", imageSource);
         props.put("imagewidth", imageWidth);
         props.put("imageheight", imageHeight);
@@ -144,6 +143,11 @@ public class TsxTileSet extends TiledMapTileSet {
             loadProperties(tileProps, tile.getChildByName("properties"));
             
             putTile(id, t);
+        }
+
+        Element properties = element.getChildByName("properties");
+        if (properties != null) {
+            loadProperties(props, properties);
         }
     }
 }

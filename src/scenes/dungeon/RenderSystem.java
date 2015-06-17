@@ -28,9 +28,12 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -129,6 +132,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     private int[] cursorLocation;
     
     private Group spellLayer;
+    private float[] weatherSpeed;
     
     public RenderSystem() {
         addQueue = new Array<Actor>();
@@ -140,6 +144,25 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, (SCALE)/32f, batch);
+        
+        //handle weather
+        TiledMapTileSet tileset = dungeonService.getDungeon().getTileset();
+        MapProperties prop = tileset.getProperties();
+        System.out.println(prop.containsKey("weather"));
+        if (prop.containsKey("weather") && MathUtils.randomBoolean(.4f))
+        {
+            String[] val = ((String)prop.get("weather")).split(" ");
+            weatherSpeed = new float[2];
+            weatherSpeed[0] = Float.parseFloat(val[1]);
+            weatherSpeed[1] = Float.parseFloat(val[2]);
+            
+            Texture weather = new Texture(Gdx.files.internal(DataDirs.Weather + val[0]));
+            weatherSystem = new TextureRegion(weather);
+            weather.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
+            Image image = new Image(new TiledDrawable(weatherSystem));
+            image.setFillParent(true);
+            weatherLayer.addActor(image);
+        }
     }
     
     /**
@@ -353,8 +376,10 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             camera.zoom = 1f + (zoom.getColor().a);
             camera.update();
             
-            weatherLayer.setPosition(a.getX(Align.center), a.getY(Align.center), Align.center);
-            weatherSystem.scroll(2.7f*delta, .02f*delta);
+            if (weatherSystem != null) {
+                weatherLayer.setPosition(a.getX(Align.center), a.getY(Align.center), Align.center);
+                weatherSystem.scroll(weatherSpeed[0]*delta, weatherSpeed[1]*delta);
+            }
         }
 
         if (invisible) {
@@ -451,16 +476,6 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             stats.setBackground(skin.getDrawable("button_up"));
             stats.setTouchable(Touchable.disabled);
             stage.addActor(stats);
-        }
-
-        //handle weather
-        {
-            Texture weather = new Texture(Gdx.files.internal(DataDirs.Weather + "sandstorm.png"));
-            weatherSystem = new TextureRegion(weather);
-            weather.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-            Image image = new Image(new TiledDrawable(weatherSystem));
-            image.setFillParent(true);
-            weatherLayer.addActor(image);
         }
 
         shadows = new Image[SHADOW_RANGE[0]][SHADOW_RANGE[1]];

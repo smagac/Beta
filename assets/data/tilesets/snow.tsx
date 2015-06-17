@@ -33,4 +33,7 @@
    <property name="name" value="down"/>
   </properties>
  </tile>
+ <properties>
+  <property name="weather" value="blizzard.png .6 -.9"/>
+ </properties>
 </tileset>

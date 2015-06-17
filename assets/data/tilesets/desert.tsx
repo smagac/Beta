@@ -33,4 +33,7 @@
    <property name="name" value="down"/>
   </properties>
  </tile>
+ <properties>
+  <property name="weather" value="sandstorm.png 2.7 .02"/>
+ </properties>
 </tileset>

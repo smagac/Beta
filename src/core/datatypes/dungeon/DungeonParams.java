@@ -43,6 +43,8 @@ public class DungeonParams {
         this.fileName = null;
         this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
         this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length()-4);
+        
+        this.type = "snow";
     }
 
     private DungeonParams(long seed, FileType ext, int difficulty) {
