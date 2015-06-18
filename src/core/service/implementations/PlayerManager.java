@@ -31,7 +31,7 @@ import core.datatypes.Health;
 import core.datatypes.Inventory;
 import core.datatypes.QuestTracker;
 import core.datatypes.StatModifier;
-import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.implementations.PageFile.NumberValues;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
 
@@ -55,7 +55,7 @@ public class PlayerManager implements IPlayerContainer {
     private boolean made;
     
     @Inject public ISharedResources shared;
-    @Inject public ScoreTracker tracker;
+    @Inject public PageFile tracker;
     private Health health;
     
     public PlayerManager() {
@@ -197,7 +197,7 @@ public class PlayerManager implements IPlayerContainer {
             json.writeValue("date", df.format(Calendar.getInstance().getTime()));
             json.writeValue("inventory", inventory, Inventory.class);
             json.writeValue("stats", player.getComponent(Stats.class), Stats.class);
-            json.writeValue("tracker", tracker, ScoreTracker.class);
+            json.writeValue("tracker", tracker, PageFile.class);
             json.writeValue("quests", quests, QuestTracker.class);
             json.writeObjectEnd();
             js.close();

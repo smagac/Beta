@@ -20,8 +20,8 @@ import core.datatypes.quests.info.GatherInfo;
 import core.factories.AdjectiveFactory;
 import core.factories.CraftableFactory;
 import core.factories.ItemFactory;
-import core.service.implementations.ScoreTracker;
-import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.implementations.PageFile;
+import core.service.implementations.PageFile.NumberValues;
 import core.service.interfaces.IGame;
 
 public class Inventory implements Serializable {
@@ -230,7 +230,7 @@ public class Inventory implements Serializable {
         pickup(crafted);
         merge();
         
-        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Items_Crafted);
+        ServiceManager.getService(PageFile.class).increment(NumberValues.Items_Crafted);
 
         // count progress after making
         calcProgress();
@@ -329,7 +329,7 @@ public class Inventory implements Serializable {
         }
         
         for (Item i : sacrifices.keys()) {
-            ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Loot_Sacrificed, sacrifices.get(i, 0));
+            ServiceManager.getService(PageFile.class).increment(NumberValues.Loot_Sacrificed, sacrifices.get(i, 0));
         }
         
         return true;

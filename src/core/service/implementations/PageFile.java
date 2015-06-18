@@ -7,13 +7,21 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectSet;
 
-public final class ScoreTracker implements Serializable, Service {
+import core.datatypes.StatModifier;
+import core.factories.MonsterFactory;
+import core.factories.MonsterFactory.MonsterTemplate;
+
+public final class PageFile implements Serializable, Service {
     
     ObjectIntMap<NumberValues> numeric;
     ObjectMap<StringValues, ObjectIntMap<String>> strings;
+    ObjectSet<StatModifier> discoveredModifiers;
+    ObjectIntMap<MonsterTemplate> discoveredMonsters;
     
-    public ScoreTracker(){
+    
+    public PageFile(){
         numeric = new ObjectIntMap<NumberValues>();
         for (NumberValues nv : NumberValues.values()) {
             numeric.put(nv, 0);
@@ -23,6 +31,9 @@ public final class ScoreTracker implements Serializable, Service {
         for (StringValues sv : StringValues.values()) {
             strings.put(sv, new ObjectIntMap<String>());
         }
+        
+        discoveredMonsters = new ObjectIntMap<MonsterFactory.MonsterTemplate>();
+        discoveredModifiers = new ObjectSet<StatModifier>();
     }
     
     /**
@@ -251,36 +262,41 @@ public final class ScoreTracker implements Serializable, Service {
 
     @Override
     public void write(Json json) {
-        json.writeObjectStart("nv");
-        for (NumberValues s : NumberValues.values()) {
-            json.writeValue(s.name(), numeric.get(s, 0));
-        }
-        json.writeObjectEnd();
-        json.writeObjectStart("sv");
-        for (StringValues s : StringValues.values()) {
-            ObjectIntMap<String> counters = strings.get(s);
-            json.writeObjectStart(s.name());
-            for (String key : counters.keys()) {
-                json.writeValue(key, counters.get(key, 0), Integer.class);
-            }
-            json.writeObjectEnd();
-        }
-        json.writeObjectEnd();
+        json.writeValue("nv", numeric, ObjectIntMap.class);
+        json.writeValue("sv", strings, ObjectMap.class);
+        json.writeValue("monsters", discoveredMonsters, ObjectIntMap.class);
+        json.writeValue("modifiers", discoveredModifiers, ObjectSet.class);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void read(Json json, JsonValue jsonData) {
 
-        JsonValue nv = jsonData.get("nv");
-        for (NumberValues s : NumberValues.values()) {
-            numeric.put(s, nv.getInt(s.name(), 0));
+        {
+            ObjectIntMap val = json.readValue(ObjectIntMap.class, jsonData.get("numeric"));
+            if (val != null) {
+                numeric = val;
+            }
         }
-
-        JsonValue sv = jsonData.get("sv");
-        for (StringValues s : StringValues.values()) {
-            ObjectIntMap<String> counters = strings.get(s);
-            for (JsonValue val : sv.get(s.name())) {
-                counters.put(val.name, val.asInt());
+        
+        {
+            ObjectMap val = json.readValue(ObjectMap.class, jsonData.get("strings"));
+            if (val != null) {
+                strings = val;
+            }
+        }
+        
+        {
+            ObjectIntMap val = json.readValue(ObjectIntMap.class, jsonData.get("monsters"));
+            if (val != null) {
+                discoveredMonsters = val;
+            }
+        }
+        
+        {
+            ObjectSet val = json.readValue(ObjectSet.class, jsonData.get("modifiers"));
+            if (val != null) {
+                discoveredModifiers = val;
             }
         }
     }
@@ -297,22 +313,83 @@ public final class ScoreTracker implements Serializable, Service {
         
     }
 
+    /**
+     * Increments an occurence of a tracked number value
+     * @param key
+     *  Number value to increment
+     * @param val
+     *  amount to increase it by
+     */
     public void increment(NumberValues key, int val) {
         numeric.put(key, numeric.get(key, 0) + val);
     }
     
+    /**
+     * Decrements an occurence of a tracked number value
+     * @param key
+     *  Number value to increment
+     * @param val
+     *  amount to decrease it by
+     */
     public void decrement(NumberValues key, int val) {
         numeric.put(key, Math.max(0, numeric.get(key, 0) - val));
     }
     
+    /**
+     * Increments an occurence of a tracked string value
+     * @param key
+     *  String category
+     * @param val
+     *  Value to increment in the category
+     * @param val
+     *  amount to increase it by
+     */
     public void increment(StringValues key, String val, int amount) {
         ObjectIntMap<String> index = strings.get(key);
         index.put(val, index.get(val, 0) + amount);
     }
     
+    /**
+     * Increments an occurence of a tracked string value
+     * @param key
+     *  String category
+     * @param val
+     *  Value to increment in the category
+     * @param val
+     *  amount to increase it by
+     */
     public void decrement(StringValues key, String val, int amount) {
         ObjectIntMap<String> index = strings.get(key);
         index.put(val, Math.max(0, index.get(val, 0) - amount));
+    }
+    
+    /**
+     * Add a statmodifier to the records
+     * @param modifier
+     */
+    public void discover(StatModifier modifier) {
+        discoveredModifiers.add(modifier);
+    }
+    
+    /**
+     * Add a monster to the records.  If the monster was already in the records, what is saved is the
+     * deepest floor the monster has been encountered on.
+     * @param monster
+     *  The template of the monster discovered
+     * @param floor
+     *  The floor the monster was encountered on.
+     */
+    public void discover(MonsterTemplate monster, int floor) {
+        discoveredMonsters.put(monster, Math.max(discoveredMonsters.get(monster, 1), floor));
+    }
+    
+    /**
+     * Checks to see if the player has already discovered the specified modifier
+     * @param modifier
+     * @return
+     */
+    public boolean hasDiscovered(StatModifier modifier) {
+        return discoveredModifiers.contains(modifier);
     }
     
 }

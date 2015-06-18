@@ -16,7 +16,7 @@ import core.service.implementations.AudioManager;
 import core.service.implementations.ColorManager;
 import core.service.implementations.LoadScreen;
 import core.service.implementations.PlayerManager;
-import core.service.implementations.ScoreTracker;
+import core.service.implementations.PageFile;
 import core.service.implementations.SharedLoader;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
@@ -46,7 +46,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
     private AudioManager audioManager;
     private LoadScreen loadScreen;
     private ColorManager colorMode;
-    private ScoreTracker tracker;
+    private PageFile tracker;
     
     protected Storymode() {}
     
@@ -73,8 +73,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         ServiceManager.register(IColorMode.class, colorMode);
         loadScreen = new LoadScreen();
         ServiceManager.register(ILoader.class, loadScreen);
-        tracker = new ScoreTracker();
-        ServiceManager.register(ScoreTracker.class, tracker);
+        tracker = new PageFile();
+        ServiceManager.register(PageFile.class, tracker);
         
         audioManager = new AudioManager();
         audioManager.setBgmVol(InternalVolume[0]);

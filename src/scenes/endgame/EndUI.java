@@ -31,9 +31,9 @@ import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.common.Input;
-import core.service.implementations.ScoreTracker;
-import core.service.implementations.ScoreTracker.NumberValues;
-import core.service.implementations.ScoreTracker.StringValues;
+import core.service.implementations.PageFile;
+import core.service.implementations.PageFile.NumberValues;
+import core.service.implementations.PageFile.StringValues;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IPlayerContainer;
 
@@ -54,7 +54,7 @@ public class EndUI extends UI {
 
     @Inject public IPlayerContainer player;
     @Inject public IAudioManager audio;
-    @Inject public ScoreTracker tracker;
+    @Inject public PageFile tracker;
 
     private Group stats;
 
@@ -204,7 +204,7 @@ public class EndUI extends UI {
             t.setFillParent(true);
             t.pad(16f).padTop(0).padBottom(32f);
             t.bottom();
-            for (NumberValues val : ScoreTracker.NumberValues.values()) {
+            for (NumberValues val : PageFile.NumberValues.values()) {
                 Label title = new Label(val.toString(), skin);
                 Label value = new Label(tracker.toString(val), skin);
 
@@ -218,7 +218,7 @@ public class EndUI extends UI {
             t.add().expandX().height(16f);
             t.row();
 
-            for (StringValues val : ScoreTracker.StringValues.values()) {
+            for (StringValues val : PageFile.StringValues.values()) {
                 Label title = new Label(val.toString(), skin);
                 Label value = new Label("" + tracker.max(val), skin);
 

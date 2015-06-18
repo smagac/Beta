@@ -82,7 +82,7 @@ public class MonsterFactory {
      * @author nhydock
      *
      */
-    private static class MonsterTemplate {
+    public static class MonsterTemplate {
         // base name of the monster
         final String name;
 
@@ -176,6 +176,10 @@ public class MonsterFactory {
         public int getExp(float floor) {
             return (int) MathUtils.lerp(exp, maxexp, floor / 100f);
         }
+        
+        public String toString() {
+            return name;
+        }
 
     }
 
@@ -191,6 +195,15 @@ public class MonsterFactory {
      */
     public static String randomSpecies() {
         return allMonsters.keys().toArray().random();
+    }
+    
+    /**
+     * Get the template of a monster type by its name
+     * @param name
+     * @return
+     */
+    public static MonsterTemplate getMonster(String name) {
+        return allMonsters.get(name);
     }
 
     private final FileType area;

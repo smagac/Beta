@@ -40,8 +40,8 @@ import core.datatypes.Health;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
-import core.service.implementations.ScoreTracker;
-import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.implementations.PageFile;
+import core.service.implementations.PageFile.NumberValues;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 
@@ -311,7 +311,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 if (playerStats.canLevelUp()) {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.LevelUp);
                 }
-                ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
+                ServiceManager.getService(PageFile.class).increment(NumberValues.Monsters_Killed);
             }
             
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
@@ -448,7 +448,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                         engine.removeEntity(e);
                     }
                     else {
-                        ServiceManager.getService(ScoreTracker.class).increment(NumberValues.Monsters_Killed);
+                        ServiceManager.getService(PageFile.class).increment(NumberValues.Monsters_Killed);
                         CombatHandler.markDead(e);
 
                         dungeonService.getProgress().monstersKilled++;

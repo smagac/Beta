@@ -37,9 +37,9 @@ import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
 import core.factories.DungeonFactory;
 import core.service.implementations.DungeonManager;
-import core.service.implementations.ScoreTracker;
-import core.service.implementations.ScoreTracker.NumberValues;
-import core.service.implementations.ScoreTracker.StringValues;
+import core.service.implementations.PageFile;
+import core.service.implementations.PageFile.NumberValues;
+import core.service.implementations.PageFile.StringValues;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.ISharedResources;
@@ -56,7 +56,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
     public IDungeonContainer dungeonService;
     
     @Inject
-    public ScoreTracker tracker;
+    public PageFile tracker;
 
     private boolean descending;
 
