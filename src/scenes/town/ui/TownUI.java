@@ -2,10 +2,10 @@ package scenes.town.ui;
 
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
-import scene2d.ui.extras.TableUtils;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
@@ -36,8 +36,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.ObjectIntMap.Keys;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
@@ -70,7 +68,7 @@ public class TownUI extends GameUI {
     List<Craftable> craftList;
     List<Craftable> todayList;
     ScrollPane lootPane;
-    Table lootList;
+    ItemList lootList;
     Table requirementList;
 
     // quest display
@@ -417,14 +415,15 @@ public class TownUI extends GameUI {
         craftSubmenu.setPosition(display.getWidth(), 0);
         display.addActor(craftSubmenu);
 
-        lootList = new Table();
+        lootList = new ItemList(skin);
+        lootList.setItems(playerService.getInventory().getLoot());
         
-        lootPane = new ScrollPane(lootList, skin);
+        lootPane = new ScrollPane(lootList.getList(), skin);
         lootPane.setHeight(display.getHeight() / 2);
         lootPane.setScrollingDisabled(true, false);
         lootPane.setScrollBarPositions(true, false);
         lootPane.setFadeScrollBars(false);
-        lootPane.setScrollbarsOnTop(true);
+        lootPane.setScrollbarsOnTop(false);
         lootPane.addListener(new ScrollFocuser(lootPane));
 
         TextButton lootLabel = new TextButton("My Loot", skin, "tab");
@@ -447,84 +446,18 @@ public class TownUI extends GameUI {
             }
         });
 
-        ObjectIntMap<Item> loot = playerService.getInventory().getLoot();
-        lootRecords = new ObjectMap<Item, Array<Label>>();
-        lootRows = new Array<Item>();
-        Keys<Item> keys = loot.keys();
-        if (loot.size == 0) {
-            lootList.center();
+        if (lootList.getItems().size == 0) {
+            lootList.getList().center();
             Label l = new Label("Looks like you don't have any loot!  You should go exploring", ui.getSkin());
             l.setWrap(true);
             l.setAlignment(Align.center);
-            lootList.add(l).expandX().fillX();
-        } else {
-            expandInventory();
-            
-            for (Item item : keys) {
-                addItem(item, loot.get(item, 1));
-            }
-            
+            lootList.getList().add(l).expandX().fillX();
         }
         
         display.addActor(lootSubmenu);
 
         craftGroup = new FocusGroup(buttonList, lootPane, craftMenu);
         craftGroup.addListener(focusListener);
-    }
-
-    /**
-     * Adds a new item row to the loot list
-     * @param item
-     * @param amount
-     */
-    private void addItem(Item item, int amount){
-        if (lootRows.size <= 0) {
-            expandInventory();
-        }
-        
-        Array<Label> row = new Array<Label>();
-        Label l = new Label(item.toString(), getSkin(), "smaller");
-        l.setAlignment(Align.left);
-        lootList.add(l).expandX().fillX();
-        Label i = new Label(String.valueOf(amount), getSkin(), "smaller");
-        i.setAlignment(Align.right);
-        lootList.add(i).width(30f);
-        lootList.row();
-        row.add(l);
-        row.add(i);
-        lootRecords.put(item, row);
-        lootRows.add(item);
-        
-        lootList.pack();
-    }
-    
-    /**
-     * Modifies a single row in the loot list
-     * @param item
-     * @param amount
-     */
-    private void modifyItem(Item item, Integer amount) {
-        if (amount > 0) {
-            Array<Label> record = lootRecords.get(item);
-            record.get(1).setText(amount.toString());
-        } else {
-            int row = lootRows.indexOf(item, true);
-            TableUtils.removeTableRow(lootList, row, 2);
-            lootRows.removeIndex(row);
-            lootRecords.remove(item);
-        }
-    }
-    
-    /**
-     * Preps the loot list for holding items
-     */
-    protected void expandInventory() {
-        lootList.setWidth(lootPane.getWidth());
-        lootList.pad(10f);
-        lootList.clear();
-        lootList.top().left();
-
-        lootList.setTouchable(Touchable.disabled);
     }
     
     /**
@@ -873,13 +806,13 @@ public class TownUI extends GameUI {
         }
         if (telegram.message == Messages.Player.NewItem) {
             ItemMsg msg = (ItemMsg)telegram.extraInfo;
-            addItem(msg.item, msg.amount);
+            lootList.updateLabel(msg.item, msg.amount);
             return true;
         }
         if (telegram.message == Messages.Player.UpdateItem || 
             telegram.message == Messages.Player.RemoveItem ) {
             ItemMsg msg = (ItemMsg)telegram.extraInfo;
-            modifyItem(msg.item, msg.amount);
+            lootList.updateLabel(msg.item, msg.amount);
             return true;
         }
         return super.handleMessage(telegram);

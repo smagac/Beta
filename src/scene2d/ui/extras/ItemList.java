@@ -229,7 +229,7 @@ public class ItemList {
         }
     }
     
-    public Actor getList() {
+    public Table getList() {
         return list;
     }
     
