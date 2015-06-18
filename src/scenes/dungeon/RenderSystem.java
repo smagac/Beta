@@ -1,6 +1,7 @@
 package scenes.dungeon;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import github.nhydock.ssm.Inject;
 import scene2d.runnables.PlaySound;
@@ -62,6 +63,7 @@ import core.components.Stats;
 import core.datatypes.Ailment;
 import core.datatypes.Health;
 import core.datatypes.dungeon.Floor;
+import core.datatypes.dungeon.Weather;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
@@ -125,14 +127,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     private static final float DUST_LIMIT = 1f;
     private float dustTimer = DUST_LIMIT;
     
-    private TextureRegion weatherSystem;
-    private Group weatherLayer;
+    private Weather weather;
     
     private Image targetCursor;
     private int[] cursorLocation;
     
     private Group spellLayer;
-    private float[] weatherSpeed;
     
     public RenderSystem() {
         addQueue = new Array<Actor>();
@@ -148,20 +148,20 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         //handle weather
         TiledMapTileSet tileset = dungeonService.getDungeon().getTileset();
         MapProperties prop = tileset.getProperties();
-        System.out.println(prop.containsKey("weather"));
-        if (prop.containsKey("weather") && MathUtils.randomBoolean(.4f))
-        {
-            String[] val = ((String)prop.get("weather")).split(" ");
-            weatherSpeed = new float[2];
-            weatherSpeed[0] = Float.parseFloat(val[1]);
-            weatherSpeed[1] = Float.parseFloat(val[2]);
-            
-            Texture weather = new Texture(Gdx.files.internal(DataDirs.Weather + val[0]));
-            weatherSystem = new TextureRegion(weather);
-            weather.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-            Image image = new Image(new TiledDrawable(weatherSystem));
-            image.setFillParent(true);
-            weatherLayer.addActor(image);
+        Iterator<String> keys = prop.getKeys();
+        while (keys.hasNext() && weather == null) {
+            String key = keys.next();
+            if (key.startsWith("weather_")) {
+                String value = ((String)prop.get(key));
+                String[] args = value.split(" ");
+                Weather w = Weather.load(args);
+                if (MathUtils.randomBoolean(w.getChance())) {
+                    weather = w;
+                    weather.getActor().setSize(stage.getWidth(), stage.getHeight());
+                    weather.init();
+                    stage.getRoot().addActorAfter(shadowLayer, weather.getActor());
+                }
+            }
         }
     }
     
@@ -376,9 +376,9 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             camera.zoom = 1f + (zoom.getColor().a);
             camera.update();
             
-            if (weatherSystem != null) {
-                weatherLayer.setPosition(a.getX(Align.center), a.getY(Align.center), Align.center);
-                weatherSystem.scroll(weatherSpeed[0]*delta, weatherSpeed[1]*delta);
+            if (weather != null) {
+                weather.update(delta);
+                weather.getActor().setPosition(a.getX(Align.center), a.getY(Align.center), Align.center);
             }
         }
 
@@ -442,20 +442,16 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         shadowLayer = new Group();
         spellLayer = new Group();
         damageNumbers = new Group();
-        weatherLayer = new Group();
-        weatherLayer.setSize(this.stage.getWidth(), this.stage.getHeight());
         spellLayer.setSize(this.stage.getWidth(), this.stage.getHeight());
         
         entityLayer.setTouchable(Touchable.childrenOnly);
         spellLayer.setTouchable(Touchable.disabled);
-        weatherLayer.setTouchable(Touchable.disabled);
         shadowLayer.setTouchable(Touchable.childrenOnly);
         damageNumbers.setTouchable(Touchable.disabled);
         stage.addActor(dustParticle);
         stage.addActor(entityLayer);
         stage.addActor(spellLayer);
         stage.addActor(shadowLayer);
-        stage.addActor(weatherLayer);
         stage.addActor(targetCursor);
         stage.addActor(damageNumbers);
         

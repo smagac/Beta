@@ -34,6 +34,7 @@
   </properties>
  </tile>
  <properties>
-  <property name="weather" value="blizzard.png .6 -.9"/>
+  <property name="weather_strong" value=".2 blizzard.png .6 -.9"/>
+  <property name="weather_weak" value=".4 snow.particle 0 1 .25 1 .5 1 .75 1 1 1" />
  </properties>
 </tileset>
