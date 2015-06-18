@@ -5,7 +5,7 @@
   <properties>
    <property name="block" value="true"/>
    <property name="name" value="wall"/>
-   <property name="name" value=".4"/>
+   <property name="density" value=".4"/>
   </properties>
  </tile>
  <tile id="1">

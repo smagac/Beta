@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset name="snow" tilewidth="32" tileheight="32">
+<tileset name="desert" tilewidth="32" tileheight="32">
  <image source="data/tilesets/desert.png" width="96" height="96"/>
  <tile id="0">
   <properties>
    <property name="block" value="true"/>
    <property name="name" value="wall"/>
-   <property name="name" value=".3"/>
+   <property name="density" value=".3"/>
   </properties>
  </tile>
  <tile id="1">
@@ -34,6 +34,6 @@
   </properties>
  </tile>
  <properties>
-  <property name="weather" value="sandstorm.png 2.7 .02"/>
+  <property name="weather" value=".35 sandstorm.png 2.7 .02"/>
  </properties>
 </tileset>
