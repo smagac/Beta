@@ -1,6 +1,4 @@
-package scenes.dungeon.ui;
-
-import scene2d.ui.extras.TableUtils;
+package scene2d.ui.extras;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -23,7 +21,7 @@ import core.datatypes.Item;
  * @author nhydock
  *
  */
-class ItemList {
+public class ItemList {
     Label.LabelStyle hoverStyle;
     Label.LabelStyle normalStyle;
     
@@ -222,11 +220,21 @@ class ItemList {
      * @param item
      */
     public void swap(Item item) {
-        int amount = items.get(item, 0);
-        if (amount > 0) {
-            updateLabel(item, amount - 1);
-            swap.updateLabel(item, swap.items.get(item, 0) + 1);
+        if (swap != null) {
+            int amount = items.get(item, 0);
+            if (amount > 0) {
+                updateLabel(item, amount - 1);
+                swap.updateLabel(item, swap.items.get(item, 0) + 1);
+            }
         }
+    }
+    
+    public Actor getList() {
+        return list;
+    }
+    
+    public ObjectIntMap<Item> getItems() {
+        return items;
     }
     
     /**

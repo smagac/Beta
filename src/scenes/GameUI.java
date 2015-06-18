@@ -107,8 +107,6 @@ public abstract class GameUI extends UI {
     @Inject
     public IPlayerContainer playerService;
 
-    protected StateMachine menu;
-    
     private int seconds = 0;
     
     private Image fsFader;
@@ -357,7 +355,7 @@ public abstract class GameUI extends UI {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
         }
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, index);
-        menu.update();
+        stateMachine.update();
         refreshButtons();
     }
     
@@ -614,25 +612,7 @@ public abstract class GameUI extends UI {
             }
             return val;
         }
-        return menu.handleMessage(msg);
-    }
-
-    /**
-     * Allow changing the state of the UI
-     * 
-     * @param state
-     */
-    @SuppressWarnings("unchecked")
-    public final void changeState(State state) {
-        menu.changeState(state);
-    }
-    
-    /**
-     * Fetch the currently active state of the UI
-     * @return
-     */
-    public final State getCurrentState() {
-        return menu.getCurrentState();
+        return stateMachine.handleMessage(msg);
     }
 
     /**
@@ -658,12 +638,38 @@ public abstract class GameUI extends UI {
         return display.getHeight() /2f;
     }
     
-    public final void fadeOut(){
+    public final void fadeIn() {
+        fadeIn(1f);
+    }
+    
+    public final void fadeIn(float speed){
         fsFader.clearActions();
-        fsFader.addAction(Actions.alpha(1f, 1f));
+        fsFader.addAction(Actions.alpha(0f, speed));
+    }
+    
+    public final Action fadeInAction(){
+        return fadeInAction(1f);
+    }
+    
+    public final Action fadeInAction(float speed){
+        return Actions.addAction(Actions.alpha(0f, speed), fsFader);
+    }
+    
+    public final void fadeOut(){
+        fadeOut(1f);
+    }
+    
+    
+    public final void fadeOut(float speed){
+        fsFader.clearActions();
+        fsFader.addAction(Actions.alpha(1f, speed));
     }
     
     public final Action fadeOutAction(){
-        return Actions.addAction(Actions.alpha(1f, 1f), fsFader);
+        return fadeOutAction(1f);
+    }
+    
+    public final Action fadeOutAction(float speed){
+        return Actions.addAction(Actions.alpha(1f, speed), fsFader);
     }
 }

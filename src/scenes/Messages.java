@@ -62,12 +62,11 @@ public interface Messages {
      * TOWN (mainly just menu item index recognition)
      */
     public static interface Town {
-        public static final int Sleep = 0;
+        public static final int Home = 0;
         public static final int Explore = 1;
         public static final int Craft = 2;
         public static final int Quest = 3;
-        public static final int Save = 4;
-
+        
         public static final int Close = 0;
         public static final int Make = 1;
         public static final int Accept = 1;
@@ -79,6 +78,10 @@ public interface Messages {
         
         public static final int CompleteQuest = 1;
         public static final int AcceptQuest = 1;
+        
+        public static final int Save = 0;
+        public static final int Sleep = 1;
+        public static final int PageFile = 2;
     }
     
     /*

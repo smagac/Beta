@@ -129,7 +129,7 @@ public class BattleUI extends GameUI
     private ChangeListener updateStatWindow = new ChangeListener(){
         @Override
         public void changed(ChangeEvent event, Actor actor) {
-            if (menu.getCurrentState() != CombatStates.MODIFY)
+            if (stateMachine.getCurrentState() != CombatStates.MODIFY)
                 return;
             
             if (!(actor instanceof Button)) {
@@ -217,7 +217,7 @@ public class BattleUI extends GameUI
     public BattleUI(AssetManager manager)
 	{
 		super(manager);
-		menu = new DefaultStateMachine<BattleUI>(this);
+		stateMachine = new DefaultStateMachine<BattleUI>(this);
 		combat = new CombatHandler();
 	}
 	
@@ -298,13 +298,13 @@ public class BattleUI extends GameUI
                        return false;
                    }
     
-                   if (menu.getCurrentState() == CombatStates.MODIFY){
+                   if (stateMachine.getCurrentState() == CombatStates.MODIFY){
                        if (Input.ACCEPT.match(keycode)) {
                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button);
                            return true;
                        }
                    }
-                   else if (menu.getCurrentState() == CombatStates.Heal) {
+                   else if (stateMachine.getCurrentState() == CombatStates.Heal) {
                        if (Input.ACCEPT.match(keycode)) {
                            Item item = (Item) lootButtons.getChecked().getUserObject();
                            swapItem(item, true);
@@ -473,7 +473,7 @@ public class BattleUI extends GameUI
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 
                 if (button == Buttons.LEFT) {
-                    if (l.isChecked() && menu.getCurrentState() == CombatStates.Heal) {
+                    if (l.isChecked() && stateMachine.getCurrentState() == CombatStates.Heal) {
                         swapItem(item, true);
                     } else {
                         l.setChecked(true);
@@ -1214,7 +1214,7 @@ public class BattleUI extends GameUI
 	@Override
 	public boolean handleMessage(Telegram msg) {
 	    if (msg.message == Messages.Battle.VICTORY) {
-	        if (menu.getCurrentState() == CombatStates.DEAD) {
+	        if (stateMachine.getCurrentState() == CombatStates.DEAD) {
 	            return false;
 	        }
 	        changeState(CombatStates.VICTORY);
@@ -1266,14 +1266,14 @@ public class BattleUI extends GameUI
 	protected FocusGroup focusList()
 	{
 	    //all focusable things in this ui don't have the pointer on them
-	    if (menu.getCurrentState() == CombatStates.Heal) {
+	    if (stateMachine.getCurrentState() == CombatStates.Heal) {
             return sacrificeGroup;
         }
         hidePointer();
-	    if (menu.getCurrentState() == CombatStates.MANUAL) {
+	    if (stateMachine.getCurrentState() == CombatStates.MANUAL) {
 	        return manualFocus;
 	    }
-	    if (menu.getCurrentState() == CombatStates.MODIFY) {
+	    if (stateMachine.getCurrentState() == CombatStates.MODIFY) {
 	        return itemFocus;
 	    }
 	    return mainFocus;

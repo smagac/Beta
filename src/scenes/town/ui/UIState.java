@@ -1,5 +1,7 @@
 package scenes.town.ui;
 
+import scenes.GameUI;
+
 import com.badlogic.gdx.ai.fsm.State;
 
 /**
@@ -8,6 +10,6 @@ import com.badlogic.gdx.ai.fsm.State;
  * @author nhydock
  *
  */
-interface UIState extends State<TownUI> {
+interface UIState<E extends GameUI> extends State<E> {
     public String[] defineButtons();
 }

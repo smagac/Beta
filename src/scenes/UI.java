@@ -4,6 +4,8 @@ import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.fsm.State;
+import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
@@ -45,6 +47,8 @@ public abstract class UI extends Stage implements Telegraph {
 
     private IntSet messages;
     
+    protected StateMachine stateMachine;
+    
     public UI(AssetManager manager) {
         super(viewport);
         this.manager = manager;
@@ -59,6 +63,10 @@ public abstract class UI extends Stage implements Telegraph {
         messages = new IntSet();
         listenTo(messages);
         listen();
+    }
+    
+    public final StateMachine getStateMachine(){
+        return stateMachine;
     }
     
     protected void listenTo(IntSet messages){}
@@ -246,4 +254,25 @@ public abstract class UI extends Stage implements Telegraph {
         update(delta);
         super.act(delta);
     }
+    
+
+    /**
+     * Allow changing the state of the UI
+     * 
+     * @param state
+     */
+    @SuppressWarnings("unchecked")
+    public final void changeState(State state) {
+        stateMachine.changeState(state);
+    }
+    
+    
+    /**
+     * Fetch the currently active state of the UI
+     * @return
+     */
+    public final State getCurrentState() {
+        return stateMachine.getCurrentState();
+    }
+
 }

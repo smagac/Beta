@@ -4,6 +4,7 @@ import scene2d.InputDisabler;
 import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
@@ -78,13 +79,13 @@ public class SacrificeSubmenu {
             itemSubmenu.setHeight(400f);
 
             lootList = new ItemList(skin);
-            lootList.list.setTouchable(Touchable.childrenOnly);
+            lootList.getList().setTouchable(Touchable.childrenOnly);
             if (playerService.isHardcore()) {
                 lootList.setItems(playerService.getInventory().getTmpLoot());
             } else {
                 lootList.setItems(playerService.getInventory().getLoot());    
             }
-            lootPane = new ScrollPane(lootList.list, skin);
+            lootPane = new ScrollPane(lootList.getList(), skin);
             lootPane.setWidth(240f);
             lootPane.setHeight(400f);
             lootPane.setScrollingDisabled(true, false);
@@ -102,12 +103,12 @@ public class SacrificeSubmenu {
             itemSubmenu.addActor(pane);
             
             sacrificeList = new ItemList(skin);
-            sacrificeList.list.setTouchable(Touchable.childrenOnly);
+            sacrificeList.getList().setTouchable(Touchable.childrenOnly);
             
             lootList.setSwapList(sacrificeList);
             sacrificeList.setSwapList(lootList);
             
-            sacrificePane = new ScrollPane(sacrificeList.list, skin);
+            sacrificePane = new ScrollPane(sacrificeList.getList(), skin);
             sacrificePane.setWidth(240f);
             sacrificePane.setHeight(200f);
             sacrificePane.setScrollingDisabled(true, false);
@@ -212,13 +213,13 @@ public class SacrificeSubmenu {
             menu.addActor(leaveCard);
         }
         
-        focus = new FocusGroup(lootList.list, sacrificeList.list, sacrificeButton);
-        focus.setFocus(lootList.list);
+        focus = new FocusGroup(lootList.getList(), sacrificeList.getList(), sacrificeButton);
+        focus.setFocus(lootList.getList());
         
         ScrollOnChange lootPaneScroller = new ScrollOnChange(lootPane);
         ScrollOnChange sacrificePaneScroller = new ScrollOnChange(sacrificePane);
-        lootList.list.addListener(lootPaneScroller);
-        sacrificeList.list.addListener(sacrificePaneScroller);
+        lootList.getList().addListener(lootPaneScroller);
+        sacrificeList.getList().addListener(sacrificePaneScroller);
         
         menu.addActor(focus);
         
@@ -247,27 +248,27 @@ public class SacrificeSubmenu {
                 else if (sm.getCurrentState() == WanderState.Sacrifice_Heal || sm.getCurrentState() == WanderState.Sacrifice_Leave) {
                     if (Input.ACTION.match(keycode)) {
                         focus.next(true);
-                        if (focus.getFocused() == sacrificeList.list) {
+                        if (focus.getFocused() == sacrificeList.getList()) {
                             pointer.setVisible(true);
                             sacrificeButton.setChecked(false);
                             Pool<Vector2> pool = Pools.get(Vector2.class);
                             Vector2 pos = pool.obtain();
-                            pos.x = sacrificeList.list.getParent().getX(Align.topLeft);
-                            pos.y = sacrificeList.list.getParent().getY(Align.topLeft);
-                            sacrificeList.list.getParent().localToAscendantCoordinates(menu, pos);
+                            pos.x = sacrificeList.getList().getParent().getX(Align.topLeft);
+                            pos.y = sacrificeList.getList().getParent().getY(Align.topLeft);
+                            sacrificeList.getList().getParent().localToAscendantCoordinates(menu, pos);
                             
                             pointer.setPosition(pos.x, pos.y, Align.right);
                             
                             pool.free(pos);
                         }
-                        else if (focus.getFocused() == lootList.list) {
+                        else if (focus.getFocused() == lootList.getList()) {
                             pointer.setVisible(true);
                             sacrificeButton.setChecked(false);
                             Pool<Vector2> pool = Pools.get(Vector2.class);
                             Vector2 pos = pool.obtain();
-                            pos.x = lootList.list.getParent().getX(Align.topLeft);
-                            pos.y = lootList.list.getParent().getY(Align.topLeft);
-                            lootList.list.getParent().localToAscendantCoordinates(menu, pos);
+                            pos.x = lootList.getList().getParent().getX(Align.topLeft);
+                            pos.y = lootList.getList().getParent().getY(Align.topLeft);
+                            lootList.getList().getParent().localToAscendantCoordinates(menu, pos);
                             
                             pointer.setPosition(pos.x, pos.y, Align.right);
                             
@@ -425,9 +426,9 @@ public class SacrificeSubmenu {
         clearActions();
         
         //any items still in the sacrifice pool will be returned to the item list
-        for (Item i : sacrificeList.items.keys()) {
-            int amount = sacrificeList.items.get(i, 0);
-            lootList.updateLabel(i, lootList.items.get(i, 0) + amount);
+        for (Item i : sacrificeList.getItems().keys()) {
+            int amount = sacrificeList.getItems().get(i, 0);
+            lootList.updateLabel(i, lootList.getItems().get(i, 0) + amount);
         }
         sacrificeList.clear();
         
@@ -449,7 +450,7 @@ public class SacrificeSubmenu {
      * @return ObjectIntMap indicating how many of each item is to be sacrificed
      */
     public ObjectIntMap<Item> getSacrifice() {
-        return sacrificeList.items;
+        return sacrificeList.getItems();
     }
 
     /**

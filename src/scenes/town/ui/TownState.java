@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import scene2d.InputDisabler;
+import scene2d.runnables.ChangeState;
 import scene2d.runnables.PlayBGM;
 import scene2d.runnables.PlaySound;
 import scene2d.ui.extras.TabbedPane;
@@ -36,8 +37,8 @@ import core.datatypes.Inventory;
 import core.datatypes.QuestTracker.Reward;
 import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.quests.Quest;
-import core.service.implementations.ScoreTracker;
-import core.service.implementations.ScoreTracker.NumberValues;
+import core.service.implementations.PageFile;
+import core.service.implementations.PageFile.NumberValues;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
 
 /**
@@ -46,8 +47,8 @@ import core.service.interfaces.IPlayerContainer.SaveSummary;
  * @author nhydock
  *
  */
-enum TownState implements UIState {
-    Main("Sleep", "Explore", "Craft", "Quest", "Save") {
+enum TownState implements UIState<TownUI> {
+    Main("Home", "Explore", "Craft", "Quest") {
         
         @Override
         public void enter(TownUI ui) {
@@ -65,16 +66,14 @@ enum TownState implements UIState {
                 int button = (int)t.extraInfo;
                 
                 switch (button) {
-                    case Messages.Town.Sleep:
-                        ui.changeState(Sleep); break;
+                    case Messages.Town.Home:
+                        ui.changeState(Home); break;
                     case Messages.Town.Explore:
                         ui.changeState(Explore); break;
                     case Messages.Town.Craft:
                         ui.changeState(Craft); break;
                     case Messages.Town.Quest:
                         ui.changeState(QuestMenu); break;
-                    case Messages.Town.Save:
-                        ui.changeState(Save); break;
                     default:
                         return false;
                 }
@@ -167,7 +166,7 @@ enum TownState implements UIState {
                 }
 
                 if (c != null) {
-                    int count = ServiceManager.getService(ScoreTracker.class).get(NumberValues.Items_Crafted);
+                    int count = ServiceManager.getService(PageFile.class).get(NumberValues.Items_Crafted);
                     boolean made = ui.playerService.getInventory().makeItem(c);
                     ui.setMessage((made) ? "Crafted an item!" : "Not enough materials");
                     populateLoot(ui);
@@ -299,34 +298,29 @@ enum TownState implements UIState {
         @Override
         public void enter(final TownUI ui) {
             ui.setMessage("Good night!");
-            ui.sleepImg.addAction(Actions.sequence(
-                    Actions.moveTo(32f, ui.getDisplayHeight() / 2 - ui.sleepImg.getHeight() / 2, .3f),
-                    Actions.moveTo(ui.getDisplayWidth() / 2 - ui.sleepImg.getWidth() / 2, ui.getDisplayHeight() / 2
-                            - ui.sleepImg.getHeight() / 2, .5f)));
-            ui.exploreImg.addAction(Actions.moveTo(ui.getDisplayWidth(), 118f, .8f));
-            ui.craftImg.addAction(Actions.moveTo(ui.getDisplayWidth(), 0f, .8f));
 
             ui.getDisplay().addAction(
-                    Actions.sequence(Actions.delay(1f), Actions.alpha(0f, .5f), Actions.delay(.4f),
-                            Actions.run(new Runnable() {
+                Actions.sequence(
+                    ui.fadeOutAction(.4f),
+                    Actions.delay(.4f),
+                    Actions.run(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    ui.playerService.rest();
-                                    ui.todayList.setItems(ui.playerService.getInventory().getTodaysCrafts());
+                        @Override
+                        public void run() {
+                            ui.playerService.rest();
+                            ui.todayList.setItems(ui.playerService.getInventory().getTodaysCrafts());
 
-                                    MessageDispatcher.getInstance().dispatchMessage(0, null,
-                                            ui.playerService.getQuestTracker(), Quest.Actions.Advance);
-                                }
+                            MessageDispatcher.getInstance().dispatchMessage(0, null,
+                                    ui.playerService.getQuestTracker(), Quest.Actions.Advance);
+                        }
 
-                            }), Actions.alpha(1f, .5f), Actions.delay(.3f), Actions.run(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    ui.changeState(TownState.Main);
-                                }
-
-                            })));
+                    }), 
+                    ui.fadeInAction(.4f), 
+                    Actions.delay(.4f), 
+                    Actions.run(new ChangeState(ui.getStateMachine(), TownState.Home))
+                )
+            );
+                        
             ui.refreshButtons();
             ui.setFocus(null);
         }
@@ -801,6 +795,69 @@ enum TownState implements UIState {
             }
         }
 
+    }, Home ("Save Game", "Sleep", "Access PageFile") {
+
+        @Override
+        public void enter(TownUI entity) {
+            entity.sleepImg.addAction(
+                Actions.sequence(
+                    Actions.moveToAligned(0, entity.getDisplayCenterY(), Align.left, .2f),
+                    Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY(), Align.center, .3f),
+                    Actions.addAction(
+                        Actions.moveToAligned(0f, entity.getDisplayCenterY()-20, Align.left, .4f),
+                        entity.saveImg
+                    ),
+                    Actions.addAction(
+                        Actions.moveToAligned(entity.getDisplayWidth(), entity.getDisplayCenterY()-20, Align.right, .4f),
+                        entity.dictImg
+                    )
+                )
+            );
+            entity.exploreImg.addAction(Actions.scaleTo(.8f, .8f, .6f));
+            entity.exploreImg.addAction(Actions.moveBy(80f, 10f, .5f));
+            entity.craftImg.addAction(Actions.moveBy(entity.craftImg.getHeight(), 0, .2f));
+            
+            entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
+        }
+
+        @Override
+        public boolean onMessage(TownUI ui, Telegram t) {
+            if (t.message == Messages.Interface.Button) {
+                int button = (int)t.extraInfo;
+                
+                switch (button) {
+                    case Messages.Town.Sleep:
+                        ui.changeState(Sleep); break;
+                    case Messages.Town.Save:
+                        ui.changeState(Save); break;
+                    case Messages.Town.PageFile:
+                        ui.changeState(PageFile); break;
+                    default:
+                        return false;
+                }
+                return true;
+            }
+            if (t.message == Messages.Interface.Close) {
+                ui.changeState(Main);
+            }
+
+            return false;
+        }
+        
+    }, PageFile () {
+
+        @Override
+        public void enter(TownUI entity) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public boolean onMessage(TownUI ui, Telegram t) {
+
+            return false;
+        }
+        
     };
 
     final String[] buttons;

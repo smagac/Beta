@@ -102,6 +102,8 @@ public class TownUI extends GameUI {
     FocusGroup formFocus;
     FocusGroup defaultFocus;
     private FocusGroup exploreGroup;
+    Image saveImg;
+    Image dictImg;
 
     @Override
     protected void listenTo(IntSet messages)
@@ -113,7 +115,7 @@ public class TownUI extends GameUI {
     public TownUI(AssetManager manager) {
         super(manager);
 
-        menu = new DefaultStateMachine<TownUI>(this, TownState.Main);
+        stateMachine = new DefaultStateMachine<TownUI>(this, TownState.Main);
     }
 
     private void makeMain() {
@@ -130,14 +132,13 @@ public class TownUI extends GameUI {
             back.setTouchable(Touchable.disabled);
 
             exploreImg.setSize(front.getWidth(), front.getHeight());
-            exploreImg.setPosition(display.getWidth() / 2 - exploreImg.getWidth() / 2,
-                    display.getHeight() - exploreImg.getHeight());
+            exploreImg.setPosition(display.getWidth() / 2, display.getHeight(), Align.top);
             exploreImg.setTouchable(Touchable.enabled);
             exploreImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        if (menu.isInState(TownState.Main)) {
+                        if (stateMachine.isInState(TownState.Main)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Explore);
                             audio.playSfx(DataDirs.Sounds.accept);
                         }
@@ -146,23 +147,29 @@ public class TownUI extends GameUI {
                     return false;
                 }
             });
-
+            exploreImg.setOrigin(Align.center);
+            
             display.addActor(exploreImg);
         }
 
-        // sleep icon
+        // sleep/home icon
         {
             sleepImg = new Image(skin.getRegion("sleep"));
-            sleepImg.setPosition(0f, 0f);
+            sleepImg.setPosition(0f, 0, Align.bottomLeft);
             sleepImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
 
-                        if (menu.isInState(TownState.Main)) {
+                        if (stateMachine.isInState(TownState.Main)) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Home);
+                            audio.playSfx(DataDirs.Sounds.accept);
+                        }
+                        if (stateMachine.isInState(TownState.Home)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Sleep);
                             audio.playSfx(DataDirs.Sounds.accept);
                         }
+                        
                         return true;
                     }
                     return false;
@@ -174,12 +181,12 @@ public class TownUI extends GameUI {
         // craft icon
         {
             craftImg = new Image(skin.getRegion("craft"));
-            craftImg.setPosition(display.getWidth() - craftImg.getWidth(), 0);
+            craftImg.setPosition(display.getWidth(), 0, Align.bottomRight);
             craftImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        if (menu.isInState(TownState.Main)) {
+                        if (stateMachine.isInState(TownState.Main)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Craft);
                             audio.playSfx(DataDirs.Sounds.accept);
                         }
@@ -197,6 +204,52 @@ public class TownUI extends GameUI {
             character.setSize(96f, 96f);
             character.setPosition(display.getWidth() / 2 - character.getWidth() / 2, 18f);
             display.addActor(character);
+        }
+    }
+    
+    /**
+     * create the home submenu, where you can save, rest, or look at your data
+     */
+    private void makeHome() {
+        // sleep icon
+        {
+            saveImg = new Image(skin.getRegion("sleep"));
+            saveImg.setPosition(0f, 0, Align.topLeft);
+            saveImg.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+
+                        if (stateMachine.isInState(TownState.Main)) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Save);
+                            audio.playSfx(DataDirs.Sounds.accept);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            display.addActor(saveImg);
+        }
+        
+        //save icon
+        {
+            dictImg = new Image(skin.getRegion("craft"));
+            dictImg.setPosition(display.getWidth(), 0, Align.topRight);
+            dictImg.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        if (stateMachine.isInState(TownState.Main)) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.PageFile);
+                            audio.playSfx(DataDirs.Sounds.accept);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            display.addActor(dictImg);
         }
     }
 
@@ -624,7 +677,7 @@ public class TownUI extends GameUI {
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (ui.menu.isInState(TownState.Save)) {
+                if (ui.stateMachine.isInState(TownState.Save)) {
                     ui.showPointer(formFocus.getFocused(), Align.left, Align.center);
                 }
             }
@@ -738,6 +791,7 @@ public class TownUI extends GameUI {
     @Override
     public void extend() {
         makeMain();
+        makeHome();
         makeCraft();
         makeExplore();
         makeQuest();
@@ -807,7 +861,7 @@ public class TownUI extends GameUI {
 
     @Override
     protected void extendAct(float delta) {
-        menu.update();
+        stateMachine.update();
     }
 
     @Override
@@ -845,10 +899,13 @@ public class TownUI extends GameUI {
         questDetails.clearActions();
         questSubmenu.clearActions();
         downloadWindow.clearActions();
+        saveImg.clearActions();
+        dictImg.clearActions();
 
         saveWindow.clearActions();
 
         exploreImg.addAction(Actions.moveTo(getDisplayCenterX() - exploreImg.getWidth() / 2, 118f, .8f));
+        exploreImg.addAction(Actions.scaleTo(1f, 1f, .6f));
         sleepImg.addAction(Actions.moveTo(0, 0, .8f));
         craftImg.addAction(Actions.moveTo(getDisplayWidth() - craftImg.getWidth(), 0, .8f));
         character.addAction(Actions.moveTo(getDisplayCenterX() - character.getWidth() / 2, 18f, .8f));
@@ -857,11 +914,14 @@ public class TownUI extends GameUI {
         fileBrowser.addAction(Actions.moveTo(0, -fileBrowser.getHeight(), .3f));
         questSubmenu.addAction(Actions.moveTo(-questSubmenu.getWidth(), 0, .3f));
         questDetails.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
-        saveWindow.addAction(Actions.moveTo(getDisplayCenterX() - saveWindow.getWidth() / 2, getDisplayHeight(),
-                .2f, Interpolation.circleOut));
+        saveWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight(),Align.bottom,.2f, Interpolation.circleOut));
         downloadWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight() + 100f, Align.bottom, .2f, Interpolation.circleOut));
+        dictImg.addAction(Actions.moveToAligned(getDisplayWidth(),0,Align.topRight,.4f));
+        saveImg.addAction(Actions.moveToAligned(0,0,Align.topLeft,.4f));
+        
         setMessage("What're we doing next?");
-
+        
+        
         enableMenuInput();
         refreshButtons();
 
@@ -870,22 +930,26 @@ public class TownUI extends GameUI {
 
     @Override
     public String[] defineButtons() {
-        return ((UIState) menu.getCurrentState()).defineButtons();
+        return ((UIState) stateMachine.getCurrentState()).defineButtons();
     }
 
     @Override
     protected FocusGroup focusList() {
-        if (menu.isInState(TownState.Craft)) {
+        if (stateMachine.isInState(TownState.Craft)) {
             return craftGroup;
         }
-        else if (menu.isInState(TownState.Explore)) {
+        else if (stateMachine.isInState(TownState.Explore)) {
             return exploreGroup;
         }
-        else if (menu.isInState(TownState.Save)) {
+        else if (stateMachine.isInState(TownState.Save)) {
             return formFocus;
         }
-        else if (menu.isInState(TownState.QuestMenu)) {
+        else if (stateMachine.isInState(TownState.QuestMenu)) {
             return questGroup;
+        }
+        else if (stateMachine.isInState(TownState.PageFile)) {
+            //TODO make focusgroup for pagefile view
+            return null;
         }
         return defaultFocus;
     }
