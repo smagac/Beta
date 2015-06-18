@@ -54,7 +54,7 @@ public class AdjectiveFactory {
         modifiers = new ObjectMap<String, StatModifier>();
         for (JsonValue mod : jv) {
             String modName = mod.name();
-            StatModifier modifier = new StatModifier(mod.getFloat("hp", 1.0f), mod.getFloat("str", 1.0f), mod.getFloat(
+            StatModifier modifier = new StatModifier(modName, mod.getFloat("hp", 1.0f), mod.getFloat("str", 1.0f), mod.getFloat(
                     "def", 1.0f), mod.getFloat("spd", 1.0f));
 
             modifiers.put(modName, modifier);

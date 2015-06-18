@@ -1,7 +1,12 @@
 package core.service.implementations;
 
-import github.nhydock.ssm.Service;
+import java.util.Iterator;
 
+import github.nhydock.ssm.Service;
+import github.nhydock.ssm.ServiceManager;
+
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
@@ -10,14 +15,16 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
 
 import core.datatypes.StatModifier;
+import core.factories.AdjectiveFactory;
 import core.factories.MonsterFactory;
 import core.factories.MonsterFactory.MonsterTemplate;
+import core.service.interfaces.IGame;
 
 public final class PageFile implements Serializable, Service {
     
     ObjectIntMap<NumberValues> numeric;
     ObjectMap<StringValues, ObjectIntMap<String>> strings;
-    ObjectSet<StatModifier> discoveredModifiers;
+    ObjectSet<String> discoveredModifiers;
     ObjectIntMap<MonsterTemplate> discoveredMonsters;
     
     
@@ -33,7 +40,19 @@ public final class PageFile implements Serializable, Service {
         }
         
         discoveredMonsters = new ObjectIntMap<MonsterFactory.MonsterTemplate>();
-        discoveredModifiers = new ObjectSet<StatModifier>();
+        discoveredModifiers = new ObjectSet<String>();
+        
+        if (ServiceManager.getService(IGame.class).debug()){
+            //debug add modifiers and monsters to test pagefile view
+            for (int i = 0; i < 10; i++){
+                discover(AdjectiveFactory.getAdjective());
+            }
+            
+            for (int i = 0; i < 5; i++){
+                discover(MonsterFactory.getMonster(MonsterFactory.randomSpecies()), MathUtils.random(99));
+            }
+            
+        }
     }
     
     /**
@@ -367,7 +386,7 @@ public final class PageFile implements Serializable, Service {
      * Add a statmodifier to the records
      * @param modifier
      */
-    public void discover(StatModifier modifier) {
+    public void discover(String modifier) {
         discoveredModifiers.add(modifier);
     }
     
@@ -388,8 +407,17 @@ public final class PageFile implements Serializable, Service {
      * @param modifier
      * @return
      */
-    public boolean hasDiscovered(StatModifier modifier) {
+    public boolean hasDiscovered(String modifier) {
         return discoveredModifiers.contains(modifier);
+    }
+
+    public Array<String> getDiscoveredModifiers() {
+        Array<String> modifiers = new Array<String>();
+        Iterator<String> i = discoveredModifiers.iterator();
+        while (i.hasNext()) {
+            modifiers.add(i.next());
+        }
+        return modifiers;
     }
     
 }

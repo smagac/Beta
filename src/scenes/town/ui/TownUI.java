@@ -1,6 +1,7 @@
 package scenes.town.ui;
 
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
@@ -44,6 +45,7 @@ import core.common.Input;
 import core.datatypes.Craftable;
 import core.datatypes.Item;
 import core.datatypes.quests.Quest;
+import core.service.implementations.PageFile;
 import core.service.interfaces.IPlayerContainer;
 import core.service.interfaces.IPlayerContainer.SaveSummary;
 
@@ -102,6 +104,7 @@ public class TownUI extends GameUI {
     private FocusGroup exploreGroup;
     Image saveImg;
     Image dictImg;
+    private PageFileWindow pageFile;
 
     @Override
     protected void listenTo(IntSet messages)
@@ -249,6 +252,10 @@ public class TownUI extends GameUI {
             });
             display.addActor(dictImg);
         }
+        
+        pageFile = new PageFileWindow(skin, ServiceManager.getService(PageFile.class));
+        pageFile.getWindow().setPosition(getDisplayCenterX(), getDisplayCenterY(), Align.center);
+        display.addActor(pageFile.getWindow());
     }
 
     /**
@@ -721,6 +728,7 @@ public class TownUI extends GameUI {
         display.addActor(downloadWindow);
     }
 
+    
     @Override
     public void extend() {
         makeMain();
