@@ -27,7 +27,6 @@ public final class PageFile implements Serializable, Service {
     ObjectSet<String> discoveredModifiers;
     ObjectIntMap<MonsterTemplate> discoveredMonsters;
     
-    
     public PageFile(){
         numeric = new ObjectIntMap<NumberValues>();
         for (NumberValues nv : NumberValues.values()) {
@@ -41,18 +40,6 @@ public final class PageFile implements Serializable, Service {
         
         discoveredMonsters = new ObjectIntMap<MonsterFactory.MonsterTemplate>();
         discoveredModifiers = new ObjectSet<String>();
-        
-        if (ServiceManager.getService(IGame.class).debug()){
-            //debug add modifiers and monsters to test pagefile view
-            for (int i = 0; i < 10; i++){
-                discover(AdjectiveFactory.getAdjective());
-            }
-            
-            for (int i = 0; i < 5; i++){
-                discover(MonsterFactory.getMonster(MonsterFactory.randomSpecies()), MathUtils.random(99));
-            }
-            
-        }
     }
     
     /**
@@ -65,6 +52,20 @@ public final class PageFile implements Serializable, Service {
 
         for (StringValues sv : StringValues.values()) {
             strings.get(sv).clear();
+        }
+        
+        discoveredModifiers.clear();
+        discoveredMonsters.clear();
+        if (ServiceManager.getService(IGame.class).debug()){
+            //debug add modifiers and monsters to test pagefile view
+            for (int i = 0; i < 20; i++){
+                discover(AdjectiveFactory.getAdjective());
+            }
+            
+            for (int i = 0; i < 20; i++){
+                discover(MonsterFactory.getMonster(MonsterFactory.randomSpecies()), MathUtils.random(99));
+            }
+            
         }
     }
 
@@ -243,6 +244,7 @@ public final class PageFile implements Serializable, Service {
         Loot_Sacrificed,
         Files_Explored,
         Deepest_Floor_Traveled,
+        Quests_Completed,
         Largest_File("kb");
 
         private String tag;
@@ -253,6 +255,7 @@ public final class PageFile implements Serializable, Service {
         }
 
         NumberValues(String tag) {
+            this();
             this.tag = tag;
         }
 
@@ -264,7 +267,8 @@ public final class PageFile implements Serializable, Service {
     }
 
     public static enum StringValues {
-        Favourite_File_Type;
+        Favourite_File_Type,
+        Most_Slain;
 
         private String name;
         
@@ -418,6 +422,14 @@ public final class PageFile implements Serializable, Service {
             modifiers.add(i.next());
         }
         return modifiers;
+    }
+
+    public int get(MonsterTemplate monster) {
+        return discoveredMonsters.get(monster, 0);
+    }
+
+    public Array<MonsterTemplate> getDiscoveredMonsters() {
+        return discoveredMonsters.keys().toArray();
     }
     
 }

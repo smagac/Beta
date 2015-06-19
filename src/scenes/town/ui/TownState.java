@@ -18,6 +18,7 @@ import scenes.Messages;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Net.HttpResponse;
+import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.files.FileHandle;
@@ -485,8 +486,8 @@ enum TownState implements UIState<TownUI> {
             }
 
             ui.saveWindow.addAction(Actions.sequence(
-                    Actions.moveTo(ui.getDisplayWidth() / 2 - ui.saveWindow.getWidth() / 2, ui.getDisplayHeight() / 2
-                            - ui.saveWindow.getHeight() / 2, .3f, Interpolation.circleOut), Actions.run(new Runnable() {
+                    Actions.moveToAligned(ui.getDisplayCenterX(), ui.getDisplayCenterY(), Align.center, .3f, Interpolation.circleOut), 
+                    Actions.run(new Runnable() {
 
                         @Override
                         public void run() {
@@ -501,18 +502,23 @@ enum TownState implements UIState<TownUI> {
         }
 
         @Override
-        public void exit(TownUI ui) {
+        public void exit(final TownUI ui) {
+            ui.saveWindow.addAction(
+                Actions.sequence(
+                    Actions.moveToAligned(ui.getDisplayCenterX(), ui.getDisplayHeight(), Align.bottom, .3f, Interpolation.circleOut)
+                )
+            );
         }
 
         @Override
         public boolean onMessage(TownUI ui, Telegram telegram) {
             if (telegram.message == Messages.Interface.Selected) {
                 ui.playerService.save((Integer) telegram.extraInfo + 1);
-                ui.changeState(Main);
+                ui.changeState(Home);
             }
             else {
                 ui.audio.playSfx(DataDirs.Sounds.tick);
-                ui.changeState(Main);
+                ui.changeState(Home);
             }
             return true;
         }
@@ -799,25 +805,28 @@ enum TownState implements UIState<TownUI> {
 
         @Override
         public void enter(TownUI entity) {
-            entity.sleepImg.addAction(
-                Actions.sequence(
-                    Actions.moveToAligned(0, entity.getDisplayCenterY(), Align.left, .2f),
-                    Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY(), Align.center, .3f),
-                    Actions.addAction(
-                        Actions.moveToAligned(0f, entity.getDisplayCenterY()-20, Align.left, .4f),
-                        entity.saveImg
-                    ),
-                    Actions.addAction(
-                        Actions.moveToAligned(entity.getDisplayWidth(), entity.getDisplayCenterY()-20, Align.right, .4f),
-                        entity.dictImg
+            State prev = entity.getStateMachine().getPreviousState();
+            if (prev != PageFile && prev != Sleep && prev != Save) {
+                entity.sleepImg.addAction(
+                    Actions.sequence(
+                        Actions.moveToAligned(0, entity.getDisplayCenterY(), Align.left, .2f),
+                        Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY(), Align.center, .3f),
+                        Actions.addAction(
+                            Actions.moveToAligned(0f, entity.getDisplayCenterY()-20, Align.left, .4f),
+                            entity.saveImg
+                        ),
+                        Actions.addAction(
+                            Actions.moveToAligned(entity.getDisplayWidth(), entity.getDisplayCenterY()-20, Align.right, .4f),
+                            entity.dictImg
+                        )
                     )
-                )
-            );
-            entity.exploreImg.addAction(Actions.scaleTo(.8f, .8f, .6f));
-            entity.exploreImg.addAction(Actions.moveBy(80f, 10f, .5f));
-            entity.craftImg.addAction(Actions.moveBy(entity.craftImg.getHeight(), 0, .2f));
-            
-            entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
+                );
+                entity.exploreImg.addAction(Actions.scaleTo(.8f, .8f, .6f));
+                entity.exploreImg.addAction(Actions.moveBy(80f, 10f, .5f));
+                entity.craftImg.addAction(Actions.moveBy(entity.craftImg.getHeight(), 0, .2f));
+                
+                entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
+            }
         }
 
         @Override
@@ -844,17 +853,32 @@ enum TownState implements UIState<TownUI> {
             return false;
         }
         
-    }, PageFile () {
+    }, PageFile ("Close") {
 
         @Override
         public void enter(TownUI entity) {
-            // TODO Auto-generated method stub
-            
+            entity.pageFile.getWindow().addAction(
+                Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY(), Align.center, .4f, Interpolation.circleOut)
+            );
         }
+        
+        @Override
+        public void exit(TownUI entity) {
+            entity.pageFile.getWindow().addAction(
+                Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayHeight(), Align.bottom, .4f, Interpolation.circleOut)
+            );
+        }
+
 
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
 
+            if (t.message == Messages.Interface.Close || 
+                t.message == Messages.Interface.Button && (int)t.extraInfo == 0){
+                ui.changeState(Home);
+                return true;
+            }
+            
             return false;
         }
         

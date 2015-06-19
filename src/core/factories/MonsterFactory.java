@@ -176,6 +176,10 @@ public class MonsterFactory {
         public int getExp(float floor) {
             return (int) MathUtils.lerp(exp, maxexp, floor / 100f);
         }
+
+        public String getType() {
+            return type;
+        }
         
         public String toString() {
             return name;

@@ -1,5 +1,7 @@
 package core.datatypes;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
@@ -13,6 +15,7 @@ import core.datatypes.quests.Quest;
 import core.datatypes.quests.Quest.Actions;
 import core.datatypes.quests.Quest.QuestFactory;
 import core.factories.AdjectiveFactory;
+import core.service.implementations.PageFile;
 
 public class QuestTracker implements Telegraph, Serializable {
 
@@ -133,6 +136,7 @@ public class QuestTracker implements Telegraph, Serializable {
     public boolean complete(Quest q) {
         if (!q.hasExpired() && q.isDone()) {
             activeQuests.removeValue(q, true);
+            ServiceManager.getService(PageFile.class).increment(PageFile.NumberValues.Quests_Completed);
             return true;
         }
         return false;

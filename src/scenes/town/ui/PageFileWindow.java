@@ -1,9 +1,13 @@
 package scenes.town.ui;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -13,14 +17,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
+import core.components.Stats;
 import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
 import core.factories.MonsterFactory.MonsterTemplate;
 import core.service.implementations.PageFile;
+import core.service.implementations.PageFile.NumberValues;
+import core.service.implementations.PageFile.StringValues;
 import core.service.interfaces.IPlayerContainer;
+import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
 
 public class PageFileWindow {
@@ -28,29 +37,36 @@ public class PageFileWindow {
     Group pane;
     
     TabbedPane window;
-    List<MonsterTemplate> monsterList;
     Group stats;
     
     ModifierPane modifierList;
+    MonsterPane monsterList;
+    StatusPane statusPane;
     
-    public PageFileWindow(final Skin skin, PageFile pf) {
+    public PageFileWindow(final Skin skin, IPlayerContainer player, PageFile pf) {
         
         pane = new Group();
-        pane.setSize(400, 300);
+        pane.setSize(600, 300);
         
         modifierList = new ModifierPane(skin, pf.getDiscoveredModifiers());
-        modifierList.window.setSize(400f, 300f);
+        monsterList = new MonsterPane(skin, pf.getDiscoveredMonsters());
+        statusPane = new StatusPane(skin, player, pf);
         
         ButtonGroup<Button> tabs = new ButtonGroup<Button>();
         TextButton modTab = new TextButton("Modifiers", skin, "tab");
-        modTab.setUserObject(modifierList.window);
+        modTab.setUserObject(modifierList.pane);
         tabs.add(modTab);
         
         TextButton monTab = new TextButton("Monsters", skin, "tab");
+        monTab.setUserObject(monsterList.window);
+        tabs.add(monTab);
+        
         TextButton statTab = new TextButton("Status", skin, "tab");
+        statTab.setUserObject(statusPane.window);
+        tabs.add(statTab);
         
         window = new TabbedPane(tabs, false);
-        window.setSize(200, 300);
+        window.setSize(600, 300);
         pane.addActor(window);
     }
     
@@ -58,60 +74,272 @@ public class PageFileWindow {
         return pane;
     }
     
-    private class ModifierPane {
-        String statFormat = "%10s %.2f%%";
+    private static class ModifierPane {
+        Group pane;
+        ScrollPane frame;
         
-        ScrollPane window;
-        
-        private Label adjective;
-        private Label stats;
+        private static final String fmt = "%.2f%%";
         
         ModifierPane(Skin skin, Array<String> modifiers) {
+            final String size = "list";
+            
+            Table header = new Table(skin);
+            header.setBackground(skin.getTiledDrawable("fill"));
+            header.top().left();
+            header.pad(10f).padTop(1f).padRight(16f);
+            header.row();
+            //construct header
+            header.add("Adjective", size).width(100f).align(Align.center).expandX().fillX();
+            header.add("Type", size).width(75f).align(Align.center).expandX().fillX();
+            header.add("Health", size).align(Align.left).expandX().fillX();
+            header.add("Strength", size).align(Align.left).expandX().fillX();
+            header.add("Defense", size).align(Align.left).expandX().fillX();
+            header.add("Speed", size).align(Align.left).expandX().fillX();
+            
             Table table = new Table(skin);
-            
-            final String size = "smaller";
-            final String fmt = "%.2f%%";
-            
-            table.setFillParent(true);
+            table.pad(10f);
+            table.padTop(20f);
             table.top().left();
             table.row();
-            //construct header
-            table.add("Adjective", size).colspan(2);
-            table.add("Type", size);
-            table.add("Health", size);
-            table.add("Strength", size);
-            table.add("Defense", size);
-            table.add("Speed", size);
             
             //construct table
             for (String adj : modifiers) {
                 StatModifier mod = AdjectiveFactory.getModifier(adj);
                 
                 table.row();
-                table.add(adj, size).colspan(2);
-                table.add(mod.type, size);
-                table.add(String.format(fmt, adjustValue(mod.hp)), size);
-                table.add(String.format(fmt, adjustValue(mod.str)), size);
-                table.add(String.format(fmt, adjustValue(mod.def)), size);
-                table.add(String.format(fmt, adjustValue(mod.spd)), size);
+                table.add(adj, size).width(100f).align(Align.left).expandX().fillX();
+                table.add(mod.type, size).width(75f).expandX().fillX();
+                table.add(adjustValue(mod.hp), size).expandX().fillX();
+                table.add(adjustValue(mod.str), size).expandX().fillX();
+                table.add(adjustValue(mod.def), size).expandX().fillX();
+                table.add(adjustValue(mod.spd), size).expandX().fillX();
             }
             
-            window = new ScrollPane(table, skin);
-            window.setFillParent(true);
+            frame = new ScrollPane(table, skin);
+            frame.setScrollbarsOnTop(false);
+            frame.setFadeScrollBars(false);
+            frame.setScrollBarPositions(false, true);
+            frame.setFillParent(true);
+            
+            pane = new Group();
+           
+            pane.addActor(frame);
+            pane.addActor(header);
+            header.setWidth(584f);
+            header.setHeight(24f);
+            header.setPosition(1, 270f, Align.topLeft);
+            
         }
         
-        float adjustValue(float stat) {
-            return (stat - 1f) * 100f;
+        String adjustValue(float stat) {
+            float val = (stat - 1f) * 100f;
+            return (val == 0f)?"---":((val > 0)?"+":"")+String.format(fmt, val);
+        }
+    }
+
+    private static class MonsterPane {
+        Group window;
+        private Skin skin;
+        private List<MonsterTemplate> monsterList;
+        
+        private Image sprite;
+        private Label name;
+        private Label type;
+        private Label statsA, statsB;
+        
+        MonsterPane(Skin skin, Array<MonsterTemplate> monsters) {
+            this.skin = skin;
+            
+            window = new Window("", skin, "pane");
+            window.setSize(600f, 270f);
+            
+            monsterList = new List<MonsterTemplate>(skin);
+            monsterList.setItems(monsters);
+            monsterList.addListener(new ChangeListener(){
+
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    MonsterTemplate temp = monsterList.getSelected();
+                    if (temp != null)
+                    {
+                        setMonster(temp);
+                    }
+                }
+                
+            });
+            
+            ScrollPane pane = new ScrollPane(monsterList, skin, "log");
+            pane.setScrollBarPositions(false, true);
+            pane.setFadeScrollBars(false);
+            pane.setScrollbarsOnTop(false);
+            pane.setPosition(4, 8, Align.bottomLeft);
+            pane.setHeight(260f);
+            pane.setWidth(190f);
+            window.addActor(pane);
+            
+            Window details = new Window("", skin, "pane");
+            details.setSize(400f, 270f);
+            details.setPosition(200f, 0f);
+            
+            sprite = new Image();
+            sprite.setSize(64f, 64f);
+            sprite.setPosition(40f, 250f, Align.topLeft);
+            details.addActor(sprite);
+            
+            name = new Label("", skin, "prompt");
+            name.setAlignment(Align.topLeft);
+            name.setPosition(130f, 250f, Align.topLeft);
+            details.addActor(name);
+            
+            type = new Label("", skin, "promptsm");
+            type.setAlignment(Align.topLeft);
+            type.setPosition(130f, 218f, Align.topLeft);
+            details.addActor(type);
+            
+            statsA = new Label("", skin, "small");
+            statsA.setAlignment(Align.topLeft);
+            statsA.setPosition(40f, 180f, Align.topLeft);
+            details.addActor(statsA);
+            
+            statsB = new Label("", skin, "small");
+            statsB.setAlignment(Align.topLeft);
+            statsB.setPosition(220f, 180f, Align.topLeft);
+            details.addActor(statsB);
+            
+            window.addActor(details);
+            
         }
         
-        void setModifier(String adj, StatModifier mod) {
-            adjective.setText(adj + "\n" + mod.type);
-            stats.setText(
-                String.format(statFormat, "HP:", adjustValue(mod.hp)) + "\n" +
-                String.format(statFormat, "Strength:", adjustValue(mod.str)) + "\n" +
-                String.format(statFormat, "Defense:", adjustValue(mod.def)) + "\n" + 
-                String.format(statFormat, "Speed:", adjustValue(mod.spd))
+        public void setMonster(MonsterTemplate monster){
+            int depth = ServiceManager.getService(PageFile.class).get(monster);
+            sprite.setDrawable(skin, monster.getType());
+            name.setText(monster.toString());
+            type.setText(monster.getType());
+            
+            statsA.setText(
+                "Level 1\n \n" +
+                "Health: "    + monster.getHp(1) + "\n" +
+                "Strength:  " + monster.getStr(1) + "\n" +
+                "Defense:   " + monster.getDef(1) + "\n" +
+                "Speed:     " + monster.getSpd(1) + "\n"
             );
+            
+            statsB.setText(
+                "Level " + depth + "\n \n" +
+                "Health:    " + monster.getHp(depth) + "\n" +
+                "Strength:  " + monster.getStr(depth) + "\n" +
+                "Defense:   " + monster.getDef(depth) + "\n" +
+                "Speed:     " + monster.getSpd(depth) + "\n"
+            );
+        }
+    }
+
+    private static class StatusPane {
+        Window window;
+        
+        StatusPane(Skin skin, IPlayerContainer service, PageFile tracker){
+
+            window = new Window("", skin, "pane");
+            window.setSize(600f, 270f);
+            
+            Image sprite = new Image(skin, service.getGender());
+            sprite.setSize(64, 64);
+            sprite.setPosition(20, 260, Align.topLeft);
+            window.addActor(sprite);
+            
+            Stats stats = Stats.Map.get(service.getPlayer());
+            Label level = new Label("Level: " + stats.getLevel(), skin, "prompt");
+            level.setAlignment(Align.topLeft);
+            level.setPosition(100, 260, Align.topLeft);
+            window.addActor(level);
+            
+            Label exp = new Label(String.format("exp: %d/%d", stats.exp, stats.nextExp), skin, "small");
+            exp.setAlignment(Align.topLeft);
+            exp.setPosition(100, 220, Align.topLeft);
+            window.addActor(exp);
+            
+            //stats
+            {
+                Table statTable = new Table(skin);
+                statTable.pad(8f).padTop(50f).padBottom(10f).padRight(16f);
+                statTable.top();
+                
+                String[] cat = {"Strength", "Defense", "Vitality", "Speed"};
+                int[] val = {stats.getStrength(), stats.getDefense(), stats.getVitality(), (int)stats.getSpeed()};
+                
+                for (int i = 0; i < cat.length; i++)
+                {
+                    Label title = new Label(cat[i], skin, "small");
+                    Label value = new Label(String.valueOf(val[i]), skin, "small");
+
+                    title.setAlignment(Align.left);
+                    value.setAlignment(Align.right);
+                    statTable.add(title).expandX().fillX();
+                    statTable.add(value).expandX().fillX();
+                    statTable.row();
+                }
+
+                statTable.setSize(220f, 80f);
+                statTable.setPosition(150f, 220f, Align.top);
+                window.addActor(statTable);
+            }
+            
+            {
+                Table header = new Table(skin);
+
+                Label score = new Label(String.format("Score: %09d", tracker.score()), skin, "small");
+                score.setAlignment(Align.center);
+                header.top();
+                header.add(score).expandX().fillX();
+                header.row();
+                Label rank = new Label(tracker.rank(), skin, "promptsm");
+                rank.setAlignment(Align.center);
+                header.add(rank).expandX().fillX();
+
+                header.setSize(300f, 50f);
+                header.setPosition(300f, 260f, Align.topLeft);
+                
+                Table scoring = new Table(skin);
+                scoring.setSize(290f, 210f);
+                scoring.pad(8f).padTop(50f).padBottom(10f);
+                scoring.bottom();
+                for (NumberValues val : PageFile.NumberValues.values()) {
+                    Label title = new Label(val.toString(), skin, "smaller");
+                    Label value = new Label(tracker.toString(val), skin, "smaller");
+
+                    scoring.row().expandX();
+                    title.setAlignment(Align.left);
+                    value.setAlignment(Align.right);
+                    scoring.add(title).width(200f);
+                    scoring.add(value).expandX().fillX();
+                }
+
+                scoring.add().expandX().height(16f);
+                scoring.row();
+
+                scoring.setPosition(310f, 10f, Align.bottomLeft);
+
+                Table stringScoring = new Table(skin);
+                stringScoring.setSize(290f, 120f);
+                stringScoring.pad(8f).padBottom(10f);
+                stringScoring.bottom();
+                for (StringValues val : PageFile.StringValues.values()) {
+                    Label title = new Label(val.toString(), skin, "smaller");
+                    Label value = new Label(String.format("%d", tracker.max(val)), skin, "smaller");
+
+                    stringScoring.row();
+                    title.setAlignment(Align.left);
+                    value.setAlignment(Align.right);
+                    stringScoring.add(title).width(200f);
+                    stringScoring.add(value).expandX().fillX();
+                }
+
+                stringScoring.setPosition(10f, 10f, Align.bottomLeft);
+                
+                window.addActor(header);
+                window.addActor(scoring);
+                window.addActor(stringScoring);
+            }
         }
     }
 }

@@ -104,7 +104,7 @@ public class TownUI extends GameUI {
     private FocusGroup exploreGroup;
     Image saveImg;
     Image dictImg;
-    private PageFileWindow pageFile;
+    PageFileWindow pageFile;
 
     @Override
     protected void listenTo(IntSet messages)
@@ -253,8 +253,8 @@ public class TownUI extends GameUI {
             display.addActor(dictImg);
         }
         
-        pageFile = new PageFileWindow(skin, ServiceManager.getService(PageFile.class));
-        pageFile.getWindow().setPosition(getDisplayCenterX(), getDisplayCenterY(), Align.center);
+        pageFile = new PageFileWindow(skin, playerService, ServiceManager.getService(PageFile.class));
+        pageFile.getWindow().setPosition(getDisplayCenterX(), getDisplayHeight(), Align.bottom);
         display.addActor(pageFile.getWindow());
     }
 
@@ -842,6 +842,7 @@ public class TownUI extends GameUI {
         downloadWindow.clearActions();
         saveImg.clearActions();
         dictImg.clearActions();
+        pageFile.getWindow().clearActions();
 
         saveWindow.clearActions();
 
@@ -859,7 +860,7 @@ public class TownUI extends GameUI {
         downloadWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight() + 100f, Align.bottom, .2f, Interpolation.circleOut));
         dictImg.addAction(Actions.moveToAligned(getDisplayWidth(),0,Align.topRight,.4f));
         saveImg.addAction(Actions.moveToAligned(0,0,Align.topLeft,.4f));
-        
+        pageFile.getWindow().addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight(), Align.bottom, .3f));
         setMessage("What're we doing next?");
         
         
