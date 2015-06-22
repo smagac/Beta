@@ -70,4 +70,12 @@ public class Identifier extends Component {
         modifiers.removeValue(adj, false);
         buildName();
     }
+    
+    /**
+     * Get the front-most modifier used for identification
+     * @return
+     */
+    public String getModifier() {
+        return modifiers.first();
+    }
 }

@@ -373,6 +373,13 @@ public class Inventory implements Serializable {
      * THE DUNGEON W/O DYING
      */
     public void merge() {
+        //optimally only attempt to unlock new items
+        PageFile pf = ServiceManager.getService(PageFile.class);
+        for (Item item : tmp.keys()){
+            String mod = item.adj;
+            pf.discover(mod, false);
+        }
+        
         tmp.clear();
         loot.clear();
         loot.putAll(all);

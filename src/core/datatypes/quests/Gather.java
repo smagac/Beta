@@ -14,7 +14,7 @@ import core.factories.ItemFactory;
  * 
  * @author nhydock
  */
-class Gather extends Quest {
+public class Gather extends Quest {
 
     private String item;
     private int need;

@@ -12,9 +12,7 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
 
-import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
 import core.factories.MonsterFactory;
 import core.factories.MonsterFactory.MonsterTemplate;
@@ -24,7 +22,7 @@ public final class PageFile implements Serializable, Service {
     
     ObjectIntMap<NumberValues> numeric;
     ObjectMap<StringValues, ObjectIntMap<String>> strings;
-    ObjectSet<String> discoveredModifiers;
+    ObjectMap<String, Boolean> discoveredModifiers;
     ObjectIntMap<MonsterTemplate> discoveredMonsters;
     
     public PageFile(){
@@ -39,7 +37,7 @@ public final class PageFile implements Serializable, Service {
         }
         
         discoveredMonsters = new ObjectIntMap<MonsterFactory.MonsterTemplate>();
-        discoveredModifiers = new ObjectSet<String>();
+        discoveredModifiers = new ObjectMap<String, Boolean>();
     }
     
     /**
@@ -59,7 +57,7 @@ public final class PageFile implements Serializable, Service {
         if (ServiceManager.getService(IGame.class).debug()){
             //debug add modifiers and monsters to test pagefile view
             for (int i = 0; i < 20; i++){
-                discover(AdjectiveFactory.getAdjective());
+                discover(AdjectiveFactory.getAdjective(), MathUtils.randomBoolean());
             }
             
             for (int i = 0; i < 20; i++){
@@ -288,7 +286,7 @@ public final class PageFile implements Serializable, Service {
         json.writeValue("nv", numeric, ObjectIntMap.class);
         json.writeValue("sv", strings, ObjectMap.class);
         json.writeValue("monsters", discoveredMonsters, ObjectIntMap.class);
-        json.writeValue("modifiers", discoveredModifiers, ObjectSet.class);
+        json.writeValue("modifiers", discoveredModifiers, ObjectMap.class);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -317,7 +315,7 @@ public final class PageFile implements Serializable, Service {
         }
         
         {
-            ObjectSet val = json.readValue(ObjectSet.class, jsonData.get("modifiers"));
+            ObjectMap val = json.readValue(ObjectMap.class, jsonData.get("modifiers"));
             if (val != null) {
                 discoveredModifiers = val;
             }
@@ -387,11 +385,14 @@ public final class PageFile implements Serializable, Service {
     }
     
     /**
-     * Add a statmodifier to the records
+     * Add a statmodifier to the records.  Modifiers can be identified by having
+     * an item with that modifier in your inventory.  Their stats can only be unlocked
+     * by slaying a monster with that modifier attached to it.
      * @param modifier
+     * @param unlock
      */
-    public void discover(String modifier) {
-        discoveredModifiers.add(modifier);
+    public void discover(String modifier, boolean unlock) {
+        discoveredModifiers.put(modifier, discoveredModifiers.get(modifier, false) || unlock);
     }
     
     /**
@@ -412,12 +413,21 @@ public final class PageFile implements Serializable, Service {
      * @return
      */
     public boolean hasDiscovered(String modifier) {
-        return discoveredModifiers.contains(modifier);
+        return discoveredModifiers.containsKey(modifier);
+    }
+    
+    /**
+     * Checks to see if the player has already discovered the unlocked the details of the modifier
+     * @param modifier
+     * @return
+     */
+    public boolean hasUnlocked(String modifier) {
+        return discoveredModifiers.get(modifier, false);
     }
 
     public Array<String> getDiscoveredModifiers() {
         Array<String> modifiers = new Array<String>();
-        Iterator<String> i = discoveredModifiers.iterator();
+        Iterator<String> i = discoveredModifiers.keys().iterator();
         while (i.hasNext()) {
             modifiers.add(i.next());
         }

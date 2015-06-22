@@ -16,7 +16,6 @@ public class FloorFactory {
      * @param ts
      */
     public static ImmutableArray<Entity> populate(FloorParam params, int[] progress) {
-        ItemFactory itemFactory = new ItemFactory(params.type);
         MonsterFactory monsterFactory = new MonsterFactory(params.type);
 
         Floor floor = params.floor;
@@ -34,15 +33,15 @@ public class FloorFactory {
         Array<Entity> entities = new Array<Entity>();
         // add monsters to rooms
         // monster count is anywhere between 5-20 on easy and 25-100 on hard
-        monsterFactory.makeMonsters(entities, monsters, itemFactory, floor);
+        monsterFactory.makeMonsters(entities, monsters, floor);
         progress[0] = 75;
 
         // forcibly add some loot monsters
-        monsterFactory.makeTreasure(entities, itemFactory, floor);
+        monsterFactory.makeTreasure(entities, floor);
         progress[0] = 85;
         
         // add doors onto the floor
-        monsterFactory.placeDoors(entities, itemFactory, floor);
+        monsterFactory.placeDoors(entities, floor);
         progress[0] = 95;
         
         // add keys onto the floor

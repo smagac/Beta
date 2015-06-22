@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
 import core.datatypes.FileType;
+import core.factories.ItemFactory;
 
 public class Dungeon implements Serializable {
     
@@ -33,6 +34,7 @@ public class Dungeon implements Serializable {
     private int deepest = 1;
     long seed;
     private Array<FloorData> floorData;
+    private ItemFactory itemFactory;
 
     public Dungeon() {
     }
@@ -54,6 +56,7 @@ public class Dungeon implements Serializable {
         this.environment = params.getTileset();
         this.filename = params.getFilename();
         this.seed = params.getSeed();
+        this.itemFactory = new ItemFactory(this.type);
         
         genBossFloors();
     }
@@ -88,6 +91,10 @@ public class Dungeon implements Serializable {
     
     public void setDeepestTraversal(int floor) {
         deepest = floor;
+    }
+    
+    public ItemFactory getItemFactory(){
+        return itemFactory;
     }
     
     public FileHandle getSrc() {

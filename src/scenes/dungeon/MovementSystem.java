@@ -40,6 +40,8 @@ import core.datatypes.Health;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.quests.Quest;
+import core.factories.MonsterFactory;
+import core.factories.MonsterFactory.MonsterTemplate;
 import core.service.implementations.PageFile;
 import core.service.implementations.PageFile.NumberValues;
 import core.service.interfaces.IDungeonContainer;
@@ -68,8 +70,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private Engine engine;
     @Inject public IDungeonContainer dungeonService;
     @Inject public IPlayerContainer playerService;
-    
-    private int spells;
     
     public void setMap(Floor floorData) {
         // set collision map
@@ -189,9 +189,22 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             Drop drop = Drop.Map.get(actor);
             if (drop.reward instanceof Item) {
                 Item item = (Item)drop.reward;
-                ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
+                if (item == Item.Placeholder){
+                    //calculate chance of getting an objective item based on current depth of the player
+                    int depth = dungeonService.getProgress().depth;
+                    float rareChance = .08f*(depth/5f);
+                    
+                    if (MathUtils.randomBoolean(rareChance)) {
+                        item = dungeonService.getDungeon().getItemFactory().createObjective(playerService);
+                    } else {
+                        item = dungeonService.getDungeon().getItemFactory().createItem();
+                    }
+                }
+                if (item != null){
+                    ServiceManager.getService(IPlayerContainer.class).getInventory().pickup(item);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
+                }
                 actor.remove(Drop.class);
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Notify, String.format("Obtained %s", item.fullname()));
             }
             else if (drop.reward instanceof Equipment.Piece) {
                 Equipment.Piece piece = (Equipment.Piece)drop.reward;
@@ -302,7 +315,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             else if (opponent != player) {
                 CombatHandler.markDead(opponent);
                 dungeonService.getProgress().monstersKilled++;
-                String name = Identifier.Map.get(opponent).toString();
+                Identifier id = Identifier.Map.get(opponent); 
+                String name = id.toString();
                 MessageDispatcher.getInstance().dispatchMessage(null, Quest.Actions.Hunt, name);
                 
                 Stats playerStats = Stats.Map.get(player);
@@ -312,6 +326,14 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.LevelUp);
                 }
                 ServiceManager.getService(PageFile.class).increment(NumberValues.Monsters_Killed);
+                
+                //unlock monster profile
+                int floor = dungeonService.getProgress().depth;
+                MonsterTemplate monster = MonsterFactory.getMonster(id.getType());
+                ServiceManager.getService(PageFile.class).discover(monster, floor);
+                
+                //unlock adjective
+                ServiceManager.getService(PageFile.class).discover(id.getModifier(), true);
             }
             
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
@@ -610,8 +632,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
          */
         else if (Groups.playerType.matches(entity)) {
             player = entity;
-            Stats stats = Stats.Map.get(player);
-            spells = stats.getSpells();
         }
     }
     

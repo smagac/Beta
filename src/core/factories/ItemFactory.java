@@ -1,14 +1,21 @@
 package core.factories;
 
+import java.util.Iterator;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectSet;
 
 import core.DataDirs;
+import core.datatypes.Craftable;
 import core.datatypes.FileType;
 import core.datatypes.Item;
+import core.datatypes.quests.Quest.QuestFactory;
+import core.datatypes.quests.*;
+import core.service.interfaces.IPlayerContainer;
 
 public final class ItemFactory {
     protected static Array<String> items;
@@ -88,7 +95,46 @@ public final class ItemFactory {
         areaLoot.addAll(lootLocations.get(FileType.Other));
     }
 
+    /**
+     * Generates a random item
+     * @return
+     */
     public Item createItem() {
         return new Item(areaLoot.random(), AdjectiveFactory.getAdjective());
+    }
+    
+    /**
+     * Create an item from this factory with a priority on being an item that assists
+     * in reaching an objective of either a required craft or gather quest.
+     * @param playerService
+     * @return
+     */
+    public Item createObjective(IPlayerContainer playerService) {
+        Array<String> objectiveTypes = new Array<String>();
+        
+        for (Craftable c : playerService.getInventory().getRequiredCrafts()){
+            objectiveTypes.addAll(c.getRequirementTypes());
+        }
+        
+        for (Quest q : playerService.getQuestTracker().getAcceptedQuests()){
+            if (q instanceof Gather) {
+                objectiveTypes.add(q.getObjective());
+            }
+        }
+        
+        //only create loot that can be made by this factory
+        Iterator<String> types = objectiveTypes.iterator();
+        while (types.hasNext()) {
+            String type = types.next();
+            if (!areaLoot.contains(type, false)) {
+                types.remove();
+            }
+        }
+        
+        if (objectiveTypes.size == 0) {
+            return createItem();
+        } else {
+            return new Item(objectiveTypes.random(), AdjectiveFactory.getAdjective());
+        }
     }
 }

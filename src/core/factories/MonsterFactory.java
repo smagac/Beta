@@ -181,6 +181,7 @@ public class MonsterFactory {
             return type;
         }
         
+        @Override
         public String toString() {
             return name;
         }
@@ -238,7 +239,7 @@ public class MonsterFactory {
      * @return an array of all the monsters that have just been created and
      *         added to the world
      */
-    public void makeMonsters(Array<Entity> entities, int size, ItemFactory lootMaker, core.datatypes.dungeon.Floor floor) {
+    public void makeMonsters(Array<Entity> entities, int size, core.datatypes.dungeon.Floor floor) {
 
         Array<MonsterTemplate> selection = new Array<MonsterTemplate>();
         selection.addAll(MonsterFactory.monsters.get(area));
@@ -254,7 +255,7 @@ public class MonsterFactory {
             // don't allow loot chests to be bosses
             while (t.name.equals(Monster.Loot) || t.name.equals(Monster.Door));
             
-            Entity monster = create(t, lootMaker.createItem(), floor.depth, true);
+            Entity monster = create(t, Item.Placeholder, floor.depth, true);
             monster.add(new Boss());
             monster.add(new Position((int)floor.rooms.get(0).x, (int)floor.rooms.get(0).y));
 
@@ -277,7 +278,7 @@ public class MonsterFactory {
             Object reward;
             float chance = MathUtils.random();
             if (chance < .4) {
-                reward = lootMaker.createItem();
+                reward = Item.Placeholder;
             } else if (chance < .785) {
                 reward = Equipment.getRandomPiece(floor.depth);
             }
@@ -421,7 +422,7 @@ public class MonsterFactory {
      * @param lootMaker
      * @param depth
      */
-    public void makeTreasure(Array<Entity> entities, ItemFactory lootMaker, Floor floor) {
+    public void makeTreasure(Array<Entity> entities, Floor floor) {
         if (floor.isBossFloor)
             return;
         
@@ -443,10 +444,10 @@ public class MonsterFactory {
                 // low chance of chest actually being a mimic
                 Entity monster;
                 if (MathUtils.randomBoolean(.02f + (floor.depth / 300f))) {
-                    monster = create(mimic, lootMaker.createItem(), floor.depth, false);
+                    monster = create(mimic, Item.Placeholder, floor.depth, false);
                 }
                 else {
-                    monster = create(treasure, lootMaker.createItem(), floor.depth, false);
+                    monster = create(treasure, Item.Placeholder, floor.depth, false);
                 }
                 
                 //pick a tile to spawn the entity on
@@ -482,7 +483,7 @@ public class MonsterFactory {
      * @param entities
      * @param f
      */
-    public void placeDoors(Array<Entity> entities, ItemFactory lootMaker, Floor floor){
+    public void placeDoors(Array<Entity> entities, Floor floor){
         MonsterTemplate t = allMonsters.get(Monster.Door);
         MonsterTemplate mimic = allMonsters.get("domimic");
         
@@ -515,7 +516,7 @@ public class MonsterFactory {
             
             Entity door;
             if (MathUtils.randomBoolean(.02f + (floor.depth / 300f))) {
-                door = create(mimic, lootMaker.createItem(), floor.depth, false);
+                door = create(mimic, Item.Placeholder, floor.depth, false);
             }
             else {
                 door = create(t, null, floor.depth, false);

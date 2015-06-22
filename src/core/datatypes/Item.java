@@ -5,6 +5,8 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class Item implements Comparable<Item>, Serializable {
+    public static final Item Placeholder = new Item();
+    
     String adj;
     String name;
 
