@@ -1266,7 +1266,7 @@ public class BattleUI extends GameUI
 	    if (stateMachine.getCurrentState() == CombatStates.Heal) {
             return sacrificeGroup;
         }
-        hidePointer();
+        pointer.setVisible(false);
 	    if (stateMachine.getCurrentState() == CombatStates.MANUAL) {
 	        return manualFocus;
 	    }

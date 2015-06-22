@@ -1,4 +1,4 @@
-package scenes.dungeon.ui;
+package scenes;
 
 import scene2d.InputDisabler;
 import scene2d.ui.ScrollOnChange;
@@ -7,7 +7,7 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
-import scenes.Messages;
+import scenes.dungeon.ui.WanderState;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -58,7 +58,7 @@ public class SacrificeSubmenu {
     private Image pointer;
     
     @SuppressWarnings("rawtypes")
-    public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final StateMachine sm) {
+    public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final StateMachine sm, final UI parent) {
         window = new Group();
         window.setWidth(500);
         window.setHeight(400);
@@ -200,7 +200,19 @@ public class SacrificeSubmenu {
         window.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
-                if (sm.getCurrentState() == WanderState.Assist && window.isVisible()) {
+                if (window.isVisible()) {
+                    if (Input.ACTION.match(keycode)) {
+                        focus.next(true);
+                        if (focus.getFocused() != sacrificeButton){
+                            parent.getPointer().setPosition(focus.getFocused(), Align.topLeft);
+                            parent.getPointer().setVisible(true);
+                            sacrificeButton.setChecked(false);
+                        } else {
+                            parent.getPointer().setVisible(false);
+                            sacrificeButton.setChecked(true);
+                        }
+                        return true;
+                    }
                     if (event.getTarget() != focus.getFocused()) {
                         focus.getFocused().fire(event);
                     }
@@ -273,5 +285,13 @@ public class SacrificeSubmenu {
         window.clearActions();
         sacrificeButton.setTouchable(Touchable.disabled);
         window.setTouchable(Touchable.disabled);
+    }
+
+    public Actor getFocus() {
+        return focus.getFocused();
+    }
+
+    public void updateLabel(Item item, int amount) {
+        lootList.updateLabel(item, amount);
     }
 }

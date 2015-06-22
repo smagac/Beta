@@ -2,6 +2,7 @@ package scenes;
 
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.Pointer;
 import scene2d.ui.extras.TabbedPane;
 import scenes.LevelUpDialog.LevelUpState;
 
@@ -80,7 +81,7 @@ public abstract class GameUI extends UI {
 
             Actor focused = focus().getFocused();
             if (focused == buttonList || focused instanceof Button || focused == null) {
-                hidePointer();
+                pointer.setVisible(false);
                 if (focused instanceof Button) {
                     ((Button)focused).setChecked(true);
                 } else if (focused == buttonList && buttons.getButtons().size > 0) {
@@ -88,7 +89,8 @@ public abstract class GameUI extends UI {
                 }
             }
             else {
-                showPointer(focus().getFocused(), Align.topLeft);
+                pointer.setPosition(focus().getFocused(), Align.topLeft);
+                pointer.setVisible(true);
             }
 
             setFocus(focus().getFocused());
@@ -259,7 +261,7 @@ public abstract class GameUI extends UI {
                     if (Input.ACCEPT.match(keycode)) {
                         audio.playSfx(DataDirs.Sounds.accept);
                         triggerAction(getIndex());
-                        hidePointer();
+                        pointer.setVisible(false);
                         return true;
                     }
                     return false;
@@ -277,7 +279,7 @@ public abstract class GameUI extends UI {
 
                 if (Input.CANCEL.match(keycode)) {
                     triggerAction(-1);
-                    hidePointer();
+                    pointer.setVisible(false);
                     return true;
                 }
                 if (focus() == null) {
@@ -298,7 +300,7 @@ public abstract class GameUI extends UI {
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                 if (button == Buttons.RIGHT) {
                     triggerAction(-1);
-                    hidePointer();
+                    getPointer().setVisible(false);
                     return true;
                 }
                 return false;
@@ -307,9 +309,9 @@ public abstract class GameUI extends UI {
         
         calculateScissors(displayBounds, tmpBound);
 
-        pointer = new Image(skin.getDrawable("pointer"));
+        pointer = new Pointer(skin);
         addActor(pointer);
-        hidePointer();
+        pointer.setVisible(false);
 
         act(0);
         

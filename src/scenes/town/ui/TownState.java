@@ -493,7 +493,8 @@ enum TownState implements UIState<TownUI> {
                         public void run() {
                             ui.setFocus(ui.saveWindow);
                             ui.formFocus.setFocus(ui.formFocus.getActors().first());
-                            ui.showPointer(ui.saveSlots.first(), Align.left);
+                            ui.getPointer().setPosition(ui.saveSlots.first(), Align.left);
+                            ui.getPointer().setVisible(true);
                         }
 
                     })));
@@ -801,11 +802,12 @@ enum TownState implements UIState<TownUI> {
             }
         }
 
-    }, Home ("Save Game", "Sleep", "Access PageFile") {
+    }, 
+    Home ("Save Game", "Sleep", "Access PageFile") {
 
         @Override
         public void enter(TownUI entity) {
-            entity.hidePointer();
+            entity.getPointer().setVisible(false);
             State prev = entity.getStateMachine().getPreviousState();
             if (prev != PageFile && prev != Sleep && prev != Save) {
                 entity.sleepImg.addAction(
@@ -855,7 +857,8 @@ enum TownState implements UIState<TownUI> {
             return false;
         }
         
-    }, PageFile ("Close") {
+    }, 
+    PageFile ("Close") {
 
         @Override
         public void enter(TownUI entity) {

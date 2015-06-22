@@ -78,7 +78,7 @@ enum UIState implements State<NewUI> {
 
             @Override
             public void enter(final NewUI entity) {
-                entity.hidePointer();
+                entity.getPointer().setVisible(false);
                 entity.createFrame.addAction(
                     Actions.sequence(
                         Actions.run(InputDisabler.instance),
@@ -107,7 +107,7 @@ enum UIState implements State<NewUI> {
 
             @Override
             public void exit(NewUI entity) {
-                entity.hidePointer();
+                entity.getPointer().setVisible(false);;
                 entity.createFrame.setTouchable(Touchable.disabled);
                 entity.createFrame.addAction(
                     Actions.sequence(

@@ -3,7 +3,9 @@ package scenes.dungeon.ui;
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.ParticleActor;
+import scene2d.ui.extras.Pointer;
 import scenes.LevelUpDialog;
+import scenes.SacrificeSubmenu;
 import scenes.LevelUpDialog.LevelUpState;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
@@ -236,7 +238,7 @@ public class WanderUI extends UI {
         }
 
         // goddess sacrifice view
-        sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu);
+        sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu, this);
         assistMenu = new AssistMenu(skin, sacrificeMenu);
         assistMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
         display.addActor(assistMenu.getGroup());
@@ -336,9 +338,9 @@ public class WanderUI extends UI {
             addActor(floorSelect);
         }
         
-        pointer = new Image(skin.getDrawable("pointer"));
+        pointer = new Pointer(skin);
         addActor(pointer);
-        hidePointer();
+        pointer.setVisible(false);
 
         getRoot().setName("root");
         setKeyboardFocus(getRoot());
@@ -531,7 +533,7 @@ public class WanderUI extends UI {
         if (telegram.message == Messages.Player.UpdateItem || 
             telegram.message == Messages.Player.NewItem) {
             Messages.Player.ItemMsg msg = (Messages.Player.ItemMsg)telegram.extraInfo;
-            sacrificeMenu.lootList.updateLabel(msg.item, msg.amount);
+            sacrificeMenu.updateLabel(msg.item, msg.amount);
             return true;
         }
         if (telegram.message == Messages.Player.Equipment) {

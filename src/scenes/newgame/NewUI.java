@@ -4,6 +4,7 @@ import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
+import scene2d.ui.extras.Pointer;
 import scenes.Messages;
 import scenes.UI;
 
@@ -335,7 +336,8 @@ public class NewUI extends UI {
                 Actor a = createFocus.getFocused();
                 setKeyboardFocus(a);
 
-                showPointer(a, Align.left);
+                pointer.setPosition(a, Align.left);
+                pointer.setVisible(true);
             }
         });
         
@@ -387,8 +389,8 @@ public class NewUI extends UI {
 
         act();
 
-        pointer = new Image(skin.getDrawable("pointer"));
-        hidePointer();
+        pointer = new Pointer(skin);
+        pointer.setVisible(false);
         addActor(pointer);
         addListener(new InputListener(){
             @Override

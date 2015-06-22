@@ -64,7 +64,7 @@ public enum WanderState implements UIState {
         public void enter(WanderUI entity) {
             entity.display.addAction(Actions.alpha(1f, .2f));
             entity.setKeyboardFocus(entity.getRoot());
-            entity.hidePointer();
+            entity.getPointer().setVisible(false);
         }
 
         @Override
@@ -408,6 +408,8 @@ public enum WanderState implements UIState {
                 heal = true;
                 entity.assistMenu.showHeal(cost);
                 entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
+                entity.getPointer().setPosition(entity.sacrificeMenu.getFocus(), Align.topLeft);
+                entity.getPointer().setVisible(true);
                 return true;
             }
             else if (telegram.message == Messages.Dungeon.Leave) {
@@ -415,6 +417,8 @@ public enum WanderState implements UIState {
                 heal = false;
                 entity.assistMenu.showEscape(cost);
                 entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
+                entity.getPointer().setPosition(entity.sacrificeMenu.getFocus(), Align.topLeft);
+                entity.getPointer().setVisible(true);
                 return true;
             } 
             else if (telegram.message == Messages.Dungeon.Sacrifice) {
@@ -449,20 +453,6 @@ public enum WanderState implements UIState {
                     return true;
                 }
             }
-            else
-            {
-                if (Input.ACTION.match(keycode)) {
-                    entity.sacrificeMenu.focus.next(true);
-                    if (entity.sacrificeMenu.focus.getFocused() != entity.sacrificeMenu.sacrificeButton){
-                        entity.showPointer(entity.sacrificeMenu.focus.getFocused(), Align.topLeft);
-                        entity.sacrificeMenu.sacrificeButton.setChecked(false);
-                    } else {
-                        entity.hidePointer();
-                        entity.sacrificeMenu.sacrificeButton.setChecked(true);
-                    }
-                    return true;
-                }
-            }
             if (Input.CANCEL.match(keycode)){
                 entity.changeState(Wander);
                 return true;
@@ -475,6 +465,9 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.trainingMenu.show();
+            entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
+            entity.getPointer().setPosition(entity.sacrificeMenu.getFocus(), Align.topLeft);
+            entity.getPointer().setVisible(true);
         }
 
         @Override
@@ -499,18 +492,6 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean keyDown(WanderUI entity, int keycode){
-            
-            if (Input.ACTION.match(keycode)) {
-                entity.sacrificeMenu.focus.next(true);
-                if (entity.sacrificeMenu.focus.getFocused() != entity.sacrificeMenu.sacrificeButton){
-                    entity.showPointer(entity.sacrificeMenu.focus.getFocused(), Align.topLeft);
-                    entity.sacrificeMenu.sacrificeButton.setChecked(false);
-                } else {
-                    entity.hidePointer();
-                    entity.sacrificeMenu.sacrificeButton.setChecked(true);
-                }
-                return true;
-            }
             if (Input.CANCEL.match(keycode)){
                 entity.changeState(Wander);
                 return true;

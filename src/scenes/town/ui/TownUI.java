@@ -622,7 +622,8 @@ public class TownUI extends GameUI {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (ui.stateMachine.isInState(TownState.Save)) {
-                    ui.showPointer(formFocus.getFocused(), Align.left);
+                    ui.getPointer().setPosition(formFocus.getFocused(), Align.left);
+                    ui.getPointer().setVisible(true);
                 }
             }
 
@@ -871,7 +872,7 @@ public class TownUI extends GameUI {
         enableMenuInput();
         refreshButtons();
 
-        hidePointer();
+        pointer.setVisible(false);
     }
 
     @Override

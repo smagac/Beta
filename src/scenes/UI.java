@@ -1,5 +1,6 @@
 package scenes;
 
+import scene2d.ui.extras.Pointer;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
@@ -39,7 +40,7 @@ public abstract class UI extends Stage implements Telegraph {
     
     protected Skin skin;
     protected AssetManager manager;
-    protected Image pointer;
+    protected Pointer pointer;
     protected final Image fill;
 
     @Inject public ISharedResources shared;
@@ -182,44 +183,6 @@ public abstract class UI extends Stage implements Telegraph {
         getViewport().update(width, height, true);
     }
 
-    /**
-     * Positions the pointer next to an actor
-     * 
-     * @param focus
-     * @param center
-     */
-    public void showPointer(Actor focus, int alignment) {
-        Vector2 v = new Vector2();
-        focus.localToStageCoordinates(v);
-        float xOffset = 0, yOffset = 0;
-        if ((alignment & Align.left) == Align.left) {
-            xOffset = -pointer.getWidth();
-        }
-        else if ((alignment & Align.center) == Align.center) {
-            xOffset = focus.getWidth() / 2 - pointer.getWidth() / 2;
-        }
-        else if ((alignment & Align.right) == Align.right) {
-            xOffset = focus.getWidth() + pointer.getWidth();
-        }
-
-        if ((alignment & Align.top) == Align.top) {
-            yOffset = focus.getHeight() - pointer.getHeight();
-        }
-        else if ((alignment & Align.center) == Align.center) {
-            yOffset = focus.getHeight() / 2 - pointer.getHeight() / 2;
-        }
-        else if ((alignment & Align.bottom) == Align.bottom) {
-            yOffset = 0;
-        }
-
-        pointer.setPosition(v.x + xOffset, v.y + yOffset);
-        pointer.setScale(((alignment & Align.right) == Align.right) ? -1 : 1, 1);
-        pointer.setVisible(true);
-    }
-
-    public void hidePointer() {
-        pointer.setVisible(false);
-    }
 
     @Override
     public void dispose() {
@@ -255,6 +218,9 @@ public abstract class UI extends Stage implements Telegraph {
         super.act(delta);
     }
     
+    public Pointer getPointer(){
+        return pointer;
+    }
 
     /**
      * Allow changing the state of the UI
