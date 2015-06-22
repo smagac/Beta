@@ -224,7 +224,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     @Override
     public boolean debug() {
-        return true;
+        return false;
     }
 
 }
