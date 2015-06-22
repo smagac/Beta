@@ -2,8 +2,11 @@ package scenes.town.ui;
 
 import github.nhydock.ssm.ServiceManager;
 
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -18,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
+import core.common.Input;
 import core.components.Stats;
 import core.datatypes.StatModifier;
 import core.factories.AdjectiveFactory;
@@ -26,7 +30,9 @@ import core.service.implementations.PageFile;
 import core.service.implementations.PageFile.NumberValues;
 import core.service.implementations.PageFile.StringValues;
 import core.service.interfaces.IPlayerContainer;
+import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
+import scenes.Messages;
 
 public class PageFileWindow {
 
@@ -64,6 +70,53 @@ public class PageFileWindow {
         window = new TabbedPane(tabs, false);
         window.setSize(600, 300);
         pane.addActor(window);
+        
+        pane.addListener(new InputListener(){
+            @Override
+            public boolean keyDown(InputEvent evt, int keycode){
+                if (Input.LEFT.match(keycode)){
+                    window.prevTab();
+                    return true;
+                }
+                if (Input.RIGHT.match(keycode)){
+                    window.nextTab();
+                    return true;
+                }
+                if (Input.UP.match(keycode)){
+                    if (window.getOpenTab() == modifierList.pane){
+                        float y = modifierList.frame.getScrollY();
+                        y = Math.max(0, y-20);
+                        modifierList.frame.setScrollY(y);
+                    } else if (window.getOpenTab() == monsterList.window){
+                        if (monsterList.monsterList.getItems().size > 0) {
+                            int selected = monsterList.monsterList.getSelectedIndex();
+                            selected = Math.max(0, selected-1);
+                            monsterList.monsterList.setSelectedIndex(selected);
+                        }
+                    }
+                    return true;
+                }
+                if (Input.DOWN.match(keycode)){
+                    if (window.getOpenTab() == modifierList.pane){
+                        float y = modifierList.frame.getScrollY();
+                        y = Math.min(modifierList.frame.getMaxY(), y+20);
+                        modifierList.frame.setScrollY(y);
+                    } else if (window.getOpenTab() == monsterList.window){
+                        if (monsterList.monsterList.getItems().size > 0) {
+                            int selected = monsterList.monsterList.getSelectedIndex();
+                            selected = Math.min(monsterList.monsterList.getItems().size-1, selected+1);
+                            monsterList.monsterList.setSelectedIndex(selected);
+                        }
+                    }
+                    return true;
+                }
+                if (Input.CANCEL.match(keycode)){
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
     
     public Actor getWindow(){
@@ -179,6 +232,7 @@ public class PageFileWindow {
             pane.setPosition(4, 8, Align.bottomLeft);
             pane.setHeight(260f);
             pane.setWidth(190f);
+            pane.addListener(new ScrollFollower(pane, monsterList));
             window.addActor(pane);
             
             Window details = new Window("", skin, "pane");

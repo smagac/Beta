@@ -115,6 +115,20 @@ public class TabbedPane extends Table {
         return this.buttons.getButtons().indexOf(this.buttons.getChecked(), true);
     }
     
+    public void prevTab(){
+        int index = buttons.getCheckedIndex();
+        index = Math.max(0, index-1);
+        
+        buttons.getButtons().get(index).setChecked(true);
+    }
+    
+    public void nextTab(){
+        int index = buttons.getCheckedIndex();
+        index = Math.min(buttons.getButtons().size-1, index+1);
+                
+        buttons.getButtons().get(index).setChecked(true);
+    }
+    
     /**
      * Get the user object assigned to the tab that is open, as that is
      * what we identify the tabbed content with.

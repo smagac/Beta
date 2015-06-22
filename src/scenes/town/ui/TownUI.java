@@ -105,6 +105,7 @@ public class TownUI extends GameUI {
     Image saveImg;
     Image dictImg;
     PageFileWindow pageFile;
+    private FocusGroup pageFileFocus;
 
     @Override
     protected void listenTo(IntSet messages)
@@ -256,6 +257,9 @@ public class TownUI extends GameUI {
         pageFile = new PageFileWindow(skin, playerService, ServiceManager.getService(PageFile.class));
         pageFile.getWindow().setPosition(getDisplayCenterX(), getDisplayHeight(), Align.bottom);
         display.addActor(pageFile.getWindow());
+        
+        pageFileFocus = new FocusGroup(pageFile.getWindow());
+        pageFileFocus.setFocus(pageFile.getWindow());
     }
 
     /**
@@ -890,8 +894,7 @@ public class TownUI extends GameUI {
             return questGroup;
         }
         else if (stateMachine.isInState(TownState.PageFile)) {
-            //TODO make focusgroup for pagefile view
-            return null;
+            return pageFileFocus;
         }
         return defaultFocus;
     }

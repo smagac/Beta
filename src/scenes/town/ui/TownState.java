@@ -861,6 +861,7 @@ enum TownState implements UIState<TownUI> {
             entity.pageFile.getWindow().addAction(
                 Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY(), Align.center, .4f, Interpolation.circleOut)
             );
+            entity.resetFocus();
         }
         
         @Override
