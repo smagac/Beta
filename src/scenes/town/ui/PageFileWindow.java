@@ -4,7 +4,6 @@ import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -16,8 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
-import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
@@ -29,7 +26,6 @@ import core.service.implementations.PageFile;
 import core.service.implementations.PageFile.NumberValues;
 import core.service.implementations.PageFile.StringValues;
 import core.service.interfaces.IPlayerContainer;
-import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.TabbedPane;
 
 public class PageFileWindow {
@@ -48,7 +44,7 @@ public class PageFileWindow {
         pane = new Group();
         pane.setSize(600, 300);
         
-        modifierList = new ModifierPane(skin, pf.getDiscoveredModifiers());
+        modifierList = new ModifierPane(skin, pf.getDiscoveredModifiers(), pf);
         monsterList = new MonsterPane(skin, pf.getDiscoveredMonsters());
         statusPane = new StatusPane(skin, player, pf);
         
@@ -80,7 +76,7 @@ public class PageFileWindow {
         
         private static final String fmt = "%.2f%%";
         
-        ModifierPane(Skin skin, Array<String> modifiers) {
+        ModifierPane(Skin skin, Array<String> modifiers, PageFile pf) {
             final String size = "list";
             
             Table header = new Table(skin);
@@ -105,14 +101,22 @@ public class PageFileWindow {
             //construct table
             for (String adj : modifiers) {
                 StatModifier mod = AdjectiveFactory.getModifier(adj);
-                
                 table.row();
                 table.add(adj, size).width(100f).align(Align.left).expandX().fillX();
-                table.add(mod.type, size).width(75f).expandX().fillX();
-                table.add(adjustValue(mod.hp), size).expandX().fillX();
-                table.add(adjustValue(mod.str), size).expandX().fillX();
-                table.add(adjustValue(mod.def), size).expandX().fillX();
-                table.add(adjustValue(mod.spd), size).expandX().fillX();
+                
+                if (pf.hasUnlocked(adj)){
+                    table.add(mod.type, size).width(75f).expandX().fillX();
+                    table.add(adjustValue(mod.hp), size).expandX().fillX();
+                    table.add(adjustValue(mod.str), size).expandX().fillX();
+                    table.add(adjustValue(mod.def), size).expandX().fillX();
+                    table.add(adjustValue(mod.spd), size).expandX().fillX();
+                } else {
+                    table.add("???", size).width(75f).expandX().fillX();
+                    table.add("???", size).expandX().fillX();
+                    table.add("???", size).expandX().fillX();
+                    table.add("???", size).expandX().fillX();
+                    table.add("???", size).expandX().fillX();
+                }
             }
             
             frame = new ScrollPane(table, skin);
