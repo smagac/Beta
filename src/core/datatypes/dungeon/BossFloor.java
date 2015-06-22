@@ -1,5 +1,7 @@
 package core.datatypes.dungeon;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -9,6 +11,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
 import core.DataDirs;
+import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.Room;
 import core.util.dungeon.TsxTileSet;
 
@@ -81,7 +84,8 @@ public class BossFloor implements FloorData {
     @Override
     public TiledMapTileLayer paintLayer(TiledMapTileSet tileset, int width, int height) {
         TiledMapTileLayer layer = new TiledMapTileLayer(tiles[0].length, tiles.length, width, height);
-
+        IPlayerContainer player = ServiceManager.getService(IPlayerContainer.class);
+        
         for (int col = 0; col < tiles.length; col++) {
             for (int row = 0; row < tiles[0].length; row++) {
                 Cell cell = new Cell();
@@ -99,7 +103,7 @@ public class BossFloor implements FloorData {
                     cell.setTile(tileset.getTile(TsxTileSet.DOWN));
                 }
                 //up stairs
-                else if (tile == 4) {
+                else if (tile == 4 && !player.isHardcore()) {
                     cell.setTile(tileset.getTile(TsxTileSet.UP));
                 }
                 //null

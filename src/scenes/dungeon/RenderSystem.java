@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.runnables.PlaySound;
 import scene2d.ui.extras.ParticleActor;
 import scenes.Messages;
@@ -22,12 +23,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -47,7 +47,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
@@ -64,6 +63,7 @@ import core.datatypes.Ailment;
 import core.datatypes.Health;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.Weather;
+import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
@@ -134,6 +134,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     
     private Group spellLayer;
     
+    Sound footsteps;
+    
     public RenderSystem() {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
@@ -162,6 +164,12 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                     stage.getRoot().addActorAfter(shadowLayer, weather.getActor());
                 }
             }
+        }
+        
+        FileHandle footstepsFile = Gdx.files.internal(DataDirs.Sounds.Footsteps + dungeonService.getDungeon().getEnvironment() + ".wav");
+        System.out.println(footstepsFile.path());
+        if (footstepsFile.exists()){
+            footsteps = Gdx.audio.newSound(footstepsFile);
         }
     }
     
@@ -333,6 +341,10 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                     dustParticle.addAction(Actions.run(new ParticleActor.ResetParticle(dustParticle)));
                 }
                 dustTimer = 0f;
+                
+                if (footsteps != null){
+                    ServiceManager.getService(IAudioManager.class).playSfx(footsteps);
+                }
             }
             
             r.getActor().clearActions();

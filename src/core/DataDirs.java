@@ -26,6 +26,7 @@ public final class DataDirs {
         public static final String explode = sfx + "explode.wav";
         
         public static final String[] allSounds = {tick, hit, hit2, deflect, shimmer, accept, dead, charge, blast, transition, explode};
+        public static final String Footsteps = sfx + "footsteps/";
     }
     
     public static final String Tilesets = Home + "tilesets/";
