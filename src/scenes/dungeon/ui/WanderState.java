@@ -290,6 +290,7 @@ public enum WanderState implements UIState {
                 int[][] path = ms.fireSpell(cursorLoc);
                 if (path != null) {
                     rs.fireSpell(path);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
                     return true;
                 }
                 return false;

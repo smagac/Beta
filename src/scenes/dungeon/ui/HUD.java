@@ -32,6 +32,8 @@ public class HUD {
     private Group ailmentList;
     private ObjectMap<String, Icon> ailments;
     
+    private Label spells;
+    
     private class Icon {
         Image icon;
         boolean visible;
@@ -93,12 +95,12 @@ public class HUD {
                 window.addActor(label);
                 
                 hpStats = new Label("10/10", skin, "promptsm");
-                hpStats.setPosition(290, 45, Align.bottomRight);
+                hpStats.setPosition(250, 45, Align.bottomRight);
                 hpStats.setAlignment(Align.bottomRight);
                 window.addActor(hpStats);
                 
                 hpBar = new ProgressBar(0.0f, 1.0f, .01f, false, skin, "simple");
-                hpBar.setSize(280, 10);
+                hpBar.setSize(240, 10);
                 hpBar.setPosition(10, 36);
                 hpBar.setValue(1f);
                 window.addActor(hpBar);
@@ -111,7 +113,7 @@ public class HUD {
                 window.addActor(label);
                 
                 expStats = new Label("0/10", skin, "smaller");
-                expStats.setPosition(290, 20, Align.bottomRight);
+                expStats.setPosition(250, 20, Align.bottomRight);
                 expStats.setAlignment(Align.bottomRight);
                 window.addActor(expStats);
                 
@@ -120,6 +122,19 @@ public class HUD {
                 expBar.setPosition(10, 12);
                 expBar.setValue(0f);
                 window.addActor(expBar);
+            }
+            
+            //spells
+            {
+                Image image = new Image(skin, "magic");
+                image.setSize(32, 32);
+                image.setPosition(274, 30, Align.bottom);
+                window.addActor(image);
+                
+                Label label = spells = new Label("0", skin, "promptsm");
+                label.setPosition(274, 10, Align.bottom);
+                label.setAlignment(Align.bottom);
+                window.addActor(label);
             }
             
             container.addActor(window);
@@ -165,6 +180,8 @@ public class HUD {
         
         hpBar.setValue(s.hp/(float)s.maxhp);
         expBar.setValue(s.getExp()/s.nextExp);
+        
+        spells.setText(String.valueOf(s.getSpells()));
     }
     
     public void updateProgress(Progress progress) {
