@@ -4,6 +4,9 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 
+import core.datatypes.npc.NPC;
+import core.datatypes.npc.Trainer;
+
 /**
  * Simple grouping identifier for monsters
  * 
@@ -15,7 +18,7 @@ public class Groups {
     public static final Family monsterType = Family.all(Monster.class).get();
     public static final Family bossType = Family.all(Boss.class).get();
     public static final Family playerType = Family.all(Player.class).get();
-    
+    public static final Family npcType = Family.all(NPC.class).get();
     
     public static class Monster extends Component {
 

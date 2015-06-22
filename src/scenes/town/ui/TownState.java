@@ -493,7 +493,7 @@ enum TownState implements UIState<TownUI> {
                         public void run() {
                             ui.setFocus(ui.saveWindow);
                             ui.formFocus.setFocus(ui.formFocus.getActors().first());
-                            ui.showPointer(ui.saveSlots.first(), Align.left, Align.center);
+                            ui.showPointer(ui.saveSlots.first(), Align.left);
                         }
 
                     })));
@@ -828,6 +828,7 @@ enum TownState implements UIState<TownUI> {
                 
                 entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
             }
+            entity.refreshButtons();
         }
 
         @Override

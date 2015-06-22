@@ -39,6 +39,7 @@ import core.datatypes.Ailment;
 import core.datatypes.Health;
 import core.datatypes.Item;
 import core.datatypes.dungeon.Floor;
+import core.datatypes.npc.NPC;
 import core.datatypes.quests.Quest;
 import core.factories.MonsterFactory;
 import core.factories.MonsterFactory.MonsterTemplate;
@@ -58,9 +59,6 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private boolean[][] collision;
     private int[] start, end;
     private int[] nextMove = new int[2];
-
-    ComponentMapper<Monster> monsterMap = ComponentMapper.getFor(Monster.class);
-    ComponentMapper<Stats> statMap = ComponentMapper.getFor(Stats.class);
 
     Entity player;
     Array<Entity> monsters = new Array<Entity>();
@@ -235,6 +233,17 @@ public class MovementSystem extends EntitySystem implements EntityListener {
      * @param spell 
      */
     private void fight(Entity attacker, Entity opponent, boolean spell) {
+        //if the opponent is an NPC, interact with it
+        if (Groups.npcType.matches(opponent)) {
+            if (spell){
+                return;
+            }
+            NPC npc = NPC.Map.get(opponent);
+            npc.interact();
+            return;
+        }
+        
+        
         if (CombatHandler.isDead(attacker, player) || CombatHandler.isDead(opponent, player)){
             return;
         }
@@ -246,7 +255,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
         } else if (Groups.bossType.matches(attacker)) {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, attacker);
             return;
-        }
+        } 
         
         Result results;
         if (!spell) {
@@ -319,12 +328,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
                 String name = id.toString();
                 MessageDispatcher.getInstance().dispatchMessage(null, Quest.Actions.Hunt, name);
                 
-                Stats playerStats = Stats.Map.get(player);
-                playerStats.exp += results.exp;
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-                if (playerStats.canLevelUp()) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.LevelUp);
-                }
                 ServiceManager.getService(PageFile.class).increment(NumberValues.Monsters_Killed);
                 
                 //unlock monster profile

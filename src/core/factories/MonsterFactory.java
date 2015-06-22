@@ -16,6 +16,7 @@ import core.components.Drop;
 import core.components.Equipment;
 import core.components.Groups.Boss;
 import core.components.Groups.Monster;
+import core.components.Groups;
 import core.components.Identifier;
 import core.components.Lock;
 import core.components.Position;
@@ -27,6 +28,8 @@ import core.datatypes.FileType;
 import core.datatypes.Item;
 import core.datatypes.StatModifier;
 import core.datatypes.dungeon.Floor;
+import core.datatypes.npc.NPC;
+import core.datatypes.npc.Trainer;
 import core.util.dungeon.Room;
 
 /**
@@ -308,6 +311,10 @@ public class MonsterFactory {
 
             entities.add(monster);
         }
+        
+        //if (MathUtils.randomBoolean((floor.depth*2.5f) / 100f)){
+            makeVillager(entities, floor);
+        //}
     }
 
     /**
@@ -554,5 +561,36 @@ public class MonsterFactory {
             key.add(new Position(tile));
             entities.add(key);
         }
+    }
+    
+    public void makeVillager(Array<Entity> entities, Floor floor) {
+        Entity villager = new Entity();
+        villager.add(new Renderable("villager"));
+        
+        //pick a tile to spawn the entity on
+        int[] tile = null;
+        do
+        {
+            tile = floor.getOpenTile();
+            
+            //make sure we don't spawn a key on top of anything else
+            for (int n = 0; n < entities.size && tile != null; n++) {
+                Entity e = entities.get(n);
+                Position p = Position.Map.get(e);
+                if (tile[0] == p.getX() && tile[1] == p.getY()) {
+                    tile = null;
+                }
+            }
+        } while (tile == null);
+        
+        villager.add(new Position(tile));
+        villager.add(new Groups.Monster());
+        Trainer t = new Trainer(Stats.Stat.values()[MathUtils.random(Stats.Stat.values().length-1)]);
+        villager.add(new NPC(t));
+        Identifier id = new Identifier(t.getTrainingType().name(), "Trainer", AdjectiveFactory.getAdjective());
+        villager.add(id);
+        villager.add(new Combat(0, 0, true, "Villager has been mercilessly slain"));
+        villager.add(new Stats());
+        entities.add(villager);
     }
 }

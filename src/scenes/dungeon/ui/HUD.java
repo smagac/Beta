@@ -23,9 +23,6 @@ public class HUD {
     private Label hpStats;
     private ProgressBar hpBar;
     
-    private Label expStats;
-    private ProgressBar expBar;
-    
     private Label keys;
     private Label depth;
     
@@ -90,38 +87,20 @@ public class HUD {
             
             //hp
             {
-                Label label = new Label("HP:", skin, "promptsm");
-                label.setPosition(10, 45, Align.bottomLeft);
+                Label label = new Label("HP:", skin, "prompt");
+                label.setPosition(12, 30, Align.bottomLeft);
                 window.addActor(label);
                 
-                hpStats = new Label("10/10", skin, "promptsm");
-                hpStats.setPosition(250, 45, Align.bottomRight);
+                hpStats = new Label("10/10", skin, "prompt");
+                hpStats.setPosition(240, 30, Align.bottomRight);
                 hpStats.setAlignment(Align.bottomRight);
                 window.addActor(hpStats);
                 
                 hpBar = new ProgressBar(0.0f, 1.0f, .01f, false, skin, "simple");
-                hpBar.setSize(240, 10);
-                hpBar.setPosition(10, 36);
+                hpBar.setSize(240, 20);
+                hpBar.setPosition(10, 10);
                 hpBar.setValue(1f);
                 window.addActor(hpBar);
-            }
-            
-            //exp
-            {
-                Label label = new Label("exp:", skin, "smaller");
-                label.setPosition(10, 20, Align.bottomLeft);
-                window.addActor(label);
-                
-                expStats = new Label("0/10", skin, "smaller");
-                expStats.setPosition(250, 20, Align.bottomRight);
-                expStats.setAlignment(Align.bottomRight);
-                window.addActor(expStats);
-                
-                expBar = new ProgressBar(0.0f, 1.0f, .01f, false, skin, "simple");
-                expBar.setSize(280, 6);
-                expBar.setPosition(10, 12);
-                expBar.setValue(0f);
-                window.addActor(expBar);
             }
             
             //spells
@@ -176,10 +155,7 @@ public class HUD {
     public void updateStats(Stats s) {
         // update stats
         hpStats.setText(String.format("%d/%d", s.hp, s.maxhp));
-        expStats.setText(String.format("%d/%d", s.exp, s.nextExp));
-        
         hpBar.setValue(s.hp/(float)s.maxhp);
-        expBar.setValue(s.getExp()/s.nextExp);
         
         spells.setText(String.valueOf(s.getSpells()));
     }

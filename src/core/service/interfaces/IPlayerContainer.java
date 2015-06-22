@@ -29,6 +29,8 @@ public interface IPlayerContainer extends Service {
     public String getGender();
 
     public String getWorship();
+    
+    public int getDaysElapsed();
 
     public SaveSummary summary(int slot);
 

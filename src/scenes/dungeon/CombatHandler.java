@@ -22,7 +22,6 @@ class CombatHandler {
 
     static class Result {
         int damage;
-        int exp;
         boolean killed;
         boolean critical;
         Array<Ailment> inflicted;
@@ -91,7 +90,6 @@ class CombatHandler {
         
         if (bStats.hp <= 0) {
             result.killed = true;
-            result.exp = bStats.exp;
         }
         
         return result;
@@ -124,7 +122,6 @@ class CombatHandler {
         
         if (bStats.hp <= 0) {
             result.killed = true;
-            result.exp = bStats.exp;
         }
         
         return result;

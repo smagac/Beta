@@ -13,7 +13,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -30,8 +30,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 
 import core.common.Input;
 import core.datatypes.Item;
@@ -46,38 +44,27 @@ import core.service.interfaces.IPlayerContainer;
  */
 public class SacrificeSubmenu {
     
-    private static final String HEALFMT = "So you'd like me to heal you?\n \n%d loot recovers hp\n%d loot cures ailments.";
-    private static final String LEAVEFMT = "Each floor deep you are costs another piece of loot.\n \nYou're currently %d floors deep.";
-    
-    private Group menu;
-    private Group itemSubmenu;
+    private Group window;
     
     ItemList lootList;
     private ScrollPane lootPane;
-    ItemList sacrificeList;
+    private ItemList sacrificeList;
     private ScrollPane sacrificePane;
-    
-    private Card healCard;
-    private Card leaveCard;
     
     FocusGroup focus;
     private Label prompt;
-    private TextButton sacrificeButton;
+    TextButton sacrificeButton;
     
     private Image pointer;
     
     @SuppressWarnings("rawtypes")
     public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final StateMachine sm) {
-        menu = new Group();
-        menu.setWidth(720);
-        menu.setHeight(400);
+        window = new Group();
+        window.setWidth(500);
+        window.setHeight(400);
         
         // loot List
         {
-            itemSubmenu = new Group();
-            itemSubmenu.setWidth(500f);
-            itemSubmenu.setHeight(400f);
-
             lootList = new ItemList(skin);
             lootList.getList().setTouchable(Touchable.childrenOnly);
             if (playerService.isHardcore()) {
@@ -99,8 +86,8 @@ public class SacrificeSubmenu {
             TabbedPane pane = new TabbedPane(new ButtonGroup<Button>(label), false);
             pane.setWidth(240f);
             pane.setHeight(400f);
-            pane.setPosition(0f, itemSubmenu.getHeight(), Align.topLeft);
-            itemSubmenu.addActor(pane);
+            pane.setPosition(0f, window.getHeight(), Align.topLeft);
+            window.addActor(pane);
             
             sacrificeList = new ItemList(skin);
             sacrificeList.getList().setTouchable(Touchable.childrenOnly);
@@ -122,12 +109,11 @@ public class SacrificeSubmenu {
             pane = new TabbedPane(new ButtonGroup<Button>(label), false);
             pane.setWidth(240f);
             pane.setHeight(180f);
-            pane.setPosition(260f, itemSubmenu.getHeight(), Align.topLeft);
-            itemSubmenu.addActor(pane);
+            pane.setPosition(260f, window.getHeight(), Align.topLeft);
+            window.addActor(pane);
             
             
-            itemSubmenu.addAction(Actions.alpha(0f));
-            menu.addActor(itemSubmenu);
+            window.addAction(Actions.alpha(0f));
         }
 
         //buttons for sacrificing
@@ -155,10 +141,15 @@ public class SacrificeSubmenu {
                     }
                     return false;
                 }
+                
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor){
+                    sacrificeButton.setChecked(true);
+                    focus.setFocus(sacrificeButton);
+                }
             });
             sacrificeButton.setTouchable(Touchable.enabled);
             
-            itemSubmenu.addActor(sacrificeButton);
+            window.addActor(sacrificeButton);
         }
         
         //Goddess prompt
@@ -183,119 +174,41 @@ public class SacrificeSubmenu {
             worship.setPosition(190f, 70f, Align.center);
             promptGroup.addActor(worship);
             
-            itemSubmenu.addActor(promptGroup);
+            window.addActor(promptGroup);
         }
         
-        //cards for choosing menu
-        {
-            healCard = new Card(skin, "Heal", "Sacrifice items to recover all of your hp and/or status ailments", "god");
-            healCard.setPosition(getWidth()/2f - 20, getHeight()/2f, Align.right);
-            healCard.setName("healName");
-            healCard.addListener(new InputListener(){
-                @Override
-                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Heal);
-                    return true;
-                }
-            });
-            menu.addActor(healCard);
-            
-            leaveCard = new Card(skin, "Escape", "Sacrifice items to instantly escape from this dungeon with all of your loot", "up");
-            leaveCard.setPosition(getWidth()/2f + 20, getHeight()/2f, Align.left);
-            leaveCard.setName("leaveName");
-            leaveCard.addListener(new InputListener(){
-                @Override
-                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Leave);
-                    return true;
-                }
-            });
-            menu.addActor(leaveCard);
-        }
         
         focus = new FocusGroup(lootList.getList(), sacrificeList.getList(), sacrificeButton);
         focus.setFocus(lootList.getList());
+        window.addActor(focus);
         
         ScrollOnChange lootPaneScroller = new ScrollOnChange(lootPane);
         ScrollOnChange sacrificePaneScroller = new ScrollOnChange(sacrificePane);
         lootList.getList().addListener(lootPaneScroller);
         sacrificeList.getList().addListener(sacrificePaneScroller);
         
-        menu.addActor(focus);
-        
         pointer = new Image(skin, "pointer");
         pointer.setVisible(false);
-        menu.addActor(pointer);
+        window.addActor(pointer);
         
         //start view as invisible
-        menu.setColor(1f, 1f, 1f, 0f);
-        menu.setOrigin(Align.center);
-        menu.setTouchable(Touchable.disabled);
+        window.setColor(1f, 1f, 1f, 0f);
+        window.setOrigin(Align.center);
+        window.setTouchable(Touchable.disabled);
+        window.setVisible(false);
         
-        menu.addListener(new InputListener() {
+        window.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
-                if (sm.getCurrentState() == WanderState.Assist) {
-                    if (Input.LEFT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Heal);
-                        return true;
-                    }
-                    if (Input.RIGHT.match(keycode)) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Leave);
-                        return true;
-                    }
-                }
-                else if (sm.getCurrentState() == WanderState.Sacrifice_Heal || sm.getCurrentState() == WanderState.Sacrifice_Leave) {
-                    if (Input.ACTION.match(keycode)) {
-                        focus.next(true);
-                        if (focus.getFocused() == sacrificeList.getList()) {
-                            pointer.setVisible(true);
-                            sacrificeButton.setChecked(false);
-                            Pool<Vector2> pool = Pools.get(Vector2.class);
-                            Vector2 pos = pool.obtain();
-                            pos.x = sacrificeList.getList().getParent().getX(Align.topLeft);
-                            pos.y = sacrificeList.getList().getParent().getY(Align.topLeft);
-                            sacrificeList.getList().getParent().localToAscendantCoordinates(menu, pos);
-                            
-                            pointer.setPosition(pos.x, pos.y, Align.right);
-                            
-                            pool.free(pos);
-                        }
-                        else if (focus.getFocused() == lootList.getList()) {
-                            pointer.setVisible(true);
-                            sacrificeButton.setChecked(false);
-                            Pool<Vector2> pool = Pools.get(Vector2.class);
-                            Vector2 pos = pool.obtain();
-                            pos.x = lootList.getList().getParent().getX(Align.topLeft);
-                            pos.y = lootList.getList().getParent().getY(Align.topLeft);
-                            lootList.getList().getParent().localToAscendantCoordinates(menu, pos);
-                            
-                            pointer.setPosition(pos.x, pos.y, Align.right);
-                            
-                            pool.free(pos);
-                        }
-                        else if (focus.getFocused() == sacrificeButton) {
-                            pointer.setVisible(false);
-                            sacrificeButton.setChecked(true);
-                        }
-                    }
-                    else if (event.getTarget() != focus.getFocused()) {
+                if (sm.getCurrentState() == WanderState.Assist && window.isVisible()) {
+                    if (event.getTarget() != focus.getFocused()) {
                         focus.getFocused().fire(event);
                     }
                     return true;
                 }
-                
                 return false;
             }
         });
-    }
-    
-    private float getWidth() {
-        return menu.getWidth();
-    }
-    
-    private float getHeight() {
-        return menu.getHeight();
     }
 
     /**
@@ -303,146 +216,40 @@ public class SacrificeSubmenu {
      * @return a group actor
      */
     public Group getGroup(){
-        return menu;
+        return window;
     }
     
-    /**
-     * Show initial state with cards
-     */
-    public void show() {
-        clearActions();
-        menu.addAction(
-            Actions.sequence(
-                Actions.scaleTo(.7f, .7f),
-                Actions.alpha(0f),
-                Actions.run(InputDisabler.instance),
-                Actions.addAction(
-                    Actions.parallel(
-                        Actions.alpha(1f),
-                        Actions.moveToAligned(getWidth()/2f - 20, getHeight()/2f, Align.right)
-                    ),
-                    healCard
-                ),
-                Actions.addAction(
-                    Actions.parallel(
-                        Actions.alpha(1f),
-                        Actions.moveToAligned(getWidth()/2f + 20, getHeight()/2f, Align.left)
-                    ), 
-                    leaveCard
-                ),
-                Actions.addAction(
-                    Actions.parallel(
-                            Actions.moveToAligned(200, getHeight()/2f, Align.left),
-                            Actions.alpha(0f)
-                    ),
-                    itemSubmenu
-                ),
-                Actions.parallel(
-                        Actions.alpha(1f, .15f),
-                        Actions.scaleTo(1f, 1f, .25f, Interpolation.circleOut)
-                ),
-                Actions.run(InputDisabler.instance)
-            )
-        );
-        menu.setTouchable(Touchable.childrenOnly);
-        healCard.setTouchable(Touchable.enabled);
-        leaveCard.setTouchable(Touchable.enabled);
-    }
-    
-    /**
-     * Show all elements and prompt associated with healing
-     */
-    public void showHeal(int cost) {
-        clearActions();
-        
-        menu.addAction(
-            Actions.sequence(
-                Actions.run(InputDisabler.instance),
-                Actions.addAction(
-                    Actions.moveToAligned(0, getHeight()/2f, Align.left, .3f, Interpolation.circleOut),
-                    healCard
-                ),
-                Actions.addAction(
-                    Actions.alpha(0f, .15f),
-                    leaveCard
-                ),
-                Actions.delay(.25f),
-                showItems(),
-                Actions.run(InputDisabler.instance)
-            )
-        );
-
-        sacrificeButton.setTouchable(Touchable.enabled);
-        itemSubmenu.setTouchable(Touchable.enabled);
-        
-        prompt.setText(String.format(HEALFMT, cost, cost * 2));
-    }
-    
-    /**
-     * Show all elements and prompt associated with escaping
-     */
-    public void showEscape(int cost) {
-        clearActions();
-        
-        menu.addAction(
-            Actions.sequence(
-                Actions.run(InputDisabler.instance),
-                Actions.addAction(
-                    Actions.moveToAligned(0, getHeight()/2f, Align.left, .3f, Interpolation.circleOut),
-                    leaveCard
-                ),
-                Actions.addAction(
-                    Actions.alpha(0f, .15f),
-                    healCard
-                ),
-                Actions.delay(.25f),
-                showItems(),
-                Actions.run(InputDisabler.instance)
-            )
-        );
-        
-        sacrificeButton.setTouchable(Touchable.enabled);
-        itemSubmenu.setTouchable(Touchable.enabled);
-        
-        prompt.setText(String.format(LEAVEFMT, cost));
+    public void setPrompt(String msg){
+        this.prompt.setText(msg);
     }
     
     /**
      * Show the item lists
      */
-    private Action showItems() {
+    public Action show() {
+        sacrificeButton.setTouchable(Touchable.enabled);
+        window.setTouchable(Touchable.enabled);
+        focus.setFocus(focus.getActors().first());
+        
         return Actions.addAction(
-                Actions.parallel(
-                    Actions.moveBy(20f, 0, .2f, Interpolation.circleOut),
-                    Actions.alpha(1f, .15f)
-                ), itemSubmenu
+                Actions.sequence(
+                    Actions.visible(true),
+                    Actions.parallel(
+                        Actions.moveBy(20f, 0, .2f, Interpolation.circleOut),
+                        Actions.alpha(1f, .15f)
+                    )
+                )
+                , window
             );
     }
     
-    /**
-     * Hide all elements
-     */
-    public void hide() {
-        clearActions();
-        
+    public void reset(){
         //any items still in the sacrifice pool will be returned to the item list
         for (Item i : sacrificeList.getItems().keys()) {
             int amount = sacrificeList.getItems().get(i, 0);
             lootList.updateLabel(i, lootList.getItems().get(i, 0) + amount);
         }
         sacrificeList.clear();
-        
-        menu.addAction(
-            Actions.sequence(
-                Actions.run(InputDisabler.instance),
-                Actions.parallel(
-                        Actions.alpha(0f, .2f),
-                        Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
-                ),
-                Actions.run(InputDisabler.instance)
-            )
-        );
-        menu.setTouchable(Touchable.disabled);
     }
 
     /**
@@ -463,14 +270,8 @@ public class SacrificeSubmenu {
     }
     
     private void clearActions(){
-        healCard.clearActions();
-        leaveCard.clearActions();
-        itemSubmenu.clearActions();
-        menu.clearActions();
-        
-        healCard.setTouchable(Touchable.disabled);
-        leaveCard.setTouchable(Touchable.disabled);
+        window.clearActions();
         sacrificeButton.setTouchable(Touchable.disabled);
-        itemSubmenu.setTouchable(Touchable.disabled);
+        window.setTouchable(Touchable.disabled);
     }
 }

@@ -13,176 +13,190 @@ armor
   index: -1
 bug
   rotate: false
-  xy: 36, 40
+  xy: 70, 74
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 bunny
   rotate: false
-  xy: 70, 74
+  xy: 104, 108
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 character
   rotate: false
-  xy: 104, 108
+  xy: 20, 6
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 male
   rotate: false
-  xy: 104, 108
+  xy: 20, 6
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-dead
+cursor
   rotate: false
   xy: 2, 92
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-door
+dead
   rotate: false
   xy: 2, 58
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-duck
-  rotate: false
-  xy: 20, 6
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-dude
-  rotate: false
-  xy: 54, 40
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-elf
-  rotate: false
-  xy: 88, 74
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-female
-  rotate: false
-  xy: 38, 22
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-ghost
-  rotate: false
-  xy: 38, 4
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-girl
-  rotate: false
-  xy: 56, 22
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-gnome
-  rotate: false
-  xy: 56, 4
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-header
+door
   rotate: false
   xy: 36, 92
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-horse
+duck
   rotate: false
-  xy: 72, 56
+  xy: 70, 56
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-key
+dude
+  rotate: false
+  xy: 38, 6
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+elf
+  rotate: false
+  xy: 70, 38
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+female
+  rotate: false
+  xy: 88, 74
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+ghost
+  rotate: false
+  xy: 88, 56
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+girl
+  rotate: false
+  xy: 88, 38
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+gnome
+  rotate: false
+  xy: 56, 6
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+header
   rotate: false
   xy: 2, 24
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-loot
-  rotate: false
-  xy: 90, 56
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-ogre
-  rotate: false
-  xy: 74, 38
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-opened
-  rotate: false
-  xy: 36, 58
-  size: 32, 32
-  orig: 32, 32
-  offset: 0, 0
-  index: -1
-plant
+horse
   rotate: false
   xy: 74, 20
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-rat
+key
   rotate: false
-  xy: 92, 38
-  size: 16, 16
-  orig: 16, 16
+  xy: 36, 58
+  size: 32, 32
+  orig: 32, 32
   offset: 0, 0
   index: -1
-shield
-  rotate: false
-  xy: 92, 20
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-snake
+loot
   rotate: false
   xy: 74, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-sword
+ogre
+  rotate: false
+  xy: 92, 20
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+opened
+  rotate: false
+  xy: 70, 92
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+plant
   rotate: false
   xy: 92, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
+rat
+  rotate: false
+  xy: 110, 90
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+shield
+  rotate: false
+  xy: 110, 72
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+snake
+  rotate: false
+  xy: 110, 54
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+sword
+  rotate: false
+  xy: 110, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 up
   rotate: false
-  xy: 70, 92
+  xy: 36, 24
   size: 32, 32
   orig: 32, 32
+  offset: 0, 0
+  index: -1
+villager
+  rotate: false
+  xy: 110, 18
+  size: 16, 16
+  orig: 16, 16
   offset: 0, 0
   index: -1

@@ -311,11 +311,6 @@ public class PageFileWindow {
             level.setPosition(100, 260, Align.topLeft);
             window.addActor(level);
             
-            Label exp = new Label(String.format("exp: %d/%d", stats.exp, stats.nextExp), skin, "small");
-            exp.setAlignment(Align.topLeft);
-            exp.setPosition(100, 220, Align.topLeft);
-            window.addActor(exp);
-            
             //stats
             {
                 Table statTable = new Table(skin);
@@ -383,7 +378,7 @@ public class PageFileWindow {
                 stringScoring.bottom();
                 for (StringValues val : PageFile.StringValues.values()) {
                     Label title = new Label(val.toString(), skin, "smaller");
-                    Label value = new Label(String.format("%d", tracker.max(val)), skin, "smaller");
+                    Label value = new Label(String.format("%s", tracker.max(val)), skin, "smaller");
 
                     stringScoring.row();
                     title.setAlignment(Align.left);

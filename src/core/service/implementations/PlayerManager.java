@@ -52,6 +52,8 @@ public class PlayerManager implements IPlayerContainer {
     private String goddess;
     private String character;
 
+    private int daysElapsed;
+    
     private boolean made;
     
     @Inject public ISharedResources shared;
@@ -96,9 +98,9 @@ public class PlayerManager implements IPlayerContainer {
      */
     @Override
     public void rest() {
-        recover();
         tracker.increment(NumberValues.Times_Slept);
-
+        daysElapsed++;
+        recover();
         // new quests each day
         getInventory().refreshCrafts();
     }
@@ -192,6 +194,7 @@ public class PlayerManager implements IPlayerContainer {
             json.writeValue("time", time);
             json.writeValue("difficulty", difficulty);
             json.writeValue("hardcore", hardcore);
+            json.writeValue("days", daysElapsed);
 
             DateFormat df = DateFormat.getDateInstance();
             json.writeValue("date", df.format(Calendar.getInstance().getTime()));
@@ -233,6 +236,7 @@ public class PlayerManager implements IPlayerContainer {
         this.player.add(new Groups.Player());
         this.player.add(new Position(0,0));
         this.player.add(new Equipment());
+        this.daysElapsed = root.getInt("days", 1);
         
         this.quests = json.readValue(QuestTracker.class, root.get("quests"));
         tracker.read(json, root.get("tracker"));
@@ -296,6 +300,8 @@ public class PlayerManager implements IPlayerContainer {
         // reset game clock
         time = 0f;
 
+        daysElapsed = 1;
+        
         character = (gender) ? "male" : "female";
         goddess = (gender) ? "goddess" : "god";
         
@@ -334,5 +340,10 @@ public class PlayerManager implements IPlayerContainer {
     @Override
     public Health getAilments() {
         return health;
+    }
+
+    @Override
+    public int getDaysElapsed() {
+        return daysElapsed;
     }
 }

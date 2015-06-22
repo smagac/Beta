@@ -188,32 +188,32 @@ public abstract class UI extends Stage implements Telegraph {
      * @param focus
      * @param center
      */
-    public void showPointer(Actor focus, int hAlignment, int vAlignment) {
+    public void showPointer(Actor focus, int alignment) {
         Vector2 v = new Vector2();
         focus.localToStageCoordinates(v);
         float xOffset = 0, yOffset = 0;
-        if (hAlignment == Align.left) {
+        if ((alignment & Align.left) == Align.left) {
             xOffset = -pointer.getWidth();
         }
-        else if (hAlignment == Align.center) {
+        else if ((alignment & Align.center) == Align.center) {
             xOffset = focus.getWidth() / 2 - pointer.getWidth() / 2;
         }
-        else if (hAlignment == Align.right) {
+        else if ((alignment & Align.right) == Align.right) {
             xOffset = focus.getWidth() + pointer.getWidth();
         }
 
-        if (vAlignment == Align.top) {
+        if ((alignment & Align.top) == Align.top) {
             yOffset = focus.getHeight() - pointer.getHeight();
         }
-        else if (vAlignment == Align.center) {
+        else if ((alignment & Align.center) == Align.center) {
             yOffset = focus.getHeight() / 2 - pointer.getHeight() / 2;
         }
-        else if (vAlignment == Align.bottom) {
+        else if ((alignment & Align.bottom) == Align.bottom) {
             yOffset = 0;
         }
 
         pointer.setPosition(v.x + xOffset, v.y + yOffset);
-        pointer.setScale((hAlignment == Align.right) ? -1 : 1, 1);
+        pointer.setScale(((alignment & Align.right) == Align.right) ? -1 : 1, 1);
         pointer.setVisible(true);
     }
 

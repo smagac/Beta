@@ -165,4 +165,12 @@ public interface Messages {
             public int exp;
         }
     }
+
+    //messages that can be sent out by NPCs
+    public static interface NPC {
+        /**
+         * Message used to identify interaction with a trainer npc
+         */
+        public static final int TRAINER = 0x3001;
+    }
 }

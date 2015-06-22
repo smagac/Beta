@@ -56,7 +56,7 @@ public abstract class GameUI extends UI {
     private static final String statFormat = "Crafting Completed %d/%d";
     private static final String levelFormat = "Level %d";
     private static final String hpFormat = "HP: %3d/%3d";
-    private static final String expFormat = "EXP: %3d/%3d";
+    private static final String dayFormat = "Day %03d";
     private static final String time = "Time: %03d:%02d:%02d";
     
     private Label craftingStats;
@@ -88,7 +88,7 @@ public abstract class GameUI extends UI {
                 }
             }
             else {
-                showPointer(focus().getFocused(), Align.left, Align.top);
+                showPointer(focus().getFocused(), Align.topLeft);
             }
 
             setFocus(focus().getFocused());
@@ -97,7 +97,7 @@ public abstract class GameUI extends UI {
     };
 
     private Label hpStats;
-    private Label expStats;
+    private Label dayStats;
 
     protected Table notificationStack;
 
@@ -158,7 +158,7 @@ public abstract class GameUI extends UI {
             craftingStats = new Label(statFormat, skin, "promptsm");
             levelStats = new Label(levelFormat, skin, "promptsm");
             hpStats = new Label(hpFormat, skin, "promptsm");
-            expStats = new Label(expFormat, skin, "promptsm");
+            dayStats = new Label(dayFormat, skin, "promptsm");
             timeStats = new Label("Time: 000:00:00", skin, "promptsm");
 
             craftingStats.setPosition(40f, 54f);
@@ -166,14 +166,14 @@ public abstract class GameUI extends UI {
 
             levelStats.setAlignment(Align.left);
             hpStats.setAlignment(Align.center);
-            expStats.setAlignment(Align.right);
+            dayStats.setAlignment(Align.right);
 
             Table group = new Table();
             group.pad(10f);
             group.row().bottom().left();
             group.add(levelStats).expandX().fillX();
             group.add(hpStats).expandX().fillX();
-            group.add(expStats).expandX().fillX();
+            group.add(dayStats).expandX().fillX();
             group.setWidth(320f);
             group.setHeight(20f);
             group.setPosition(32f, 32f);
@@ -587,16 +587,12 @@ public abstract class GameUI extends UI {
             pushNotification((String) msg.extraInfo);
             return true;
         }
-        if (msg.message == Messages.Player.LevelUp) {
-            LevelUpState.enter(levelUpDialog);
-            return true;
-        }
         if (msg.message == Messages.Player.Stats) {
             // update stats
             Stats s = playerService.getPlayer().getComponent(Stats.class);
             levelStats.setText(String.format(levelFormat, s.getLevel()));
             hpStats.setText(String.format(hpFormat, s.hp, s.maxhp));
-            expStats.setText(String.format(expFormat, s.exp, s.nextExp));
+            dayStats.setText(String.format(dayFormat, playerService.getDaysElapsed()));
             return true;
         }
         if (msg.message == Messages.Player.Progress) {

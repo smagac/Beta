@@ -622,7 +622,7 @@ public class TownUI extends GameUI {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (ui.stateMachine.isInState(TownState.Save)) {
-                    ui.showPointer(formFocus.getFocused(), Align.left, Align.center);
+                    ui.showPointer(formFocus.getFocused(), Align.left);
                 }
             }
 

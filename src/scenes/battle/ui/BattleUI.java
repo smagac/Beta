@@ -1221,9 +1221,6 @@ public class BattleUI extends GameUI
 	        
 	        VictoryResults results = (VictoryResults)msg.extraInfo;
 
-            Stats playerStats = playerService.getPlayer().getComponent(Stats.class);
-            playerStats.exp += 5;
-            
             Inventory inv = playerService.getInventory();
             inv.pickup(results.reward);
             inv.pickup(results.bonus, results.bonusCount);

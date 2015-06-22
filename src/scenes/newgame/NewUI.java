@@ -335,7 +335,7 @@ public class NewUI extends UI {
                 Actor a = createFocus.getFocused();
                 setKeyboardFocus(a);
 
-                showPointer(a, Align.left, Align.center);
+                showPointer(a, Align.left);
             }
         });
         

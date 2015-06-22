@@ -16,6 +16,11 @@ import core.datatypes.StatModifier;
  *
  */
 public class Stats extends Component implements Serializable {
+
+    public static enum Stat {
+        STRENGTH, DEFENSE, SPEED, VITALITY;
+    }
+    
     public static final ComponentMapper<Stats> Map = ComponentMapper.getFor(Stats.class);
 
     private int level;
@@ -24,8 +29,6 @@ public class Stats extends Component implements Serializable {
     private int strength;
     private int defense;
     private int speed;
-    public int exp;
-    public int nextExp;
     public boolean hidden;
 
     private int[] baseStats;
@@ -37,11 +40,10 @@ public class Stats extends Component implements Serializable {
 
     private int spells;
     
-    public Stats() { }
+    public Stats() { hp = 1; maxhp = 1; }
 
     public Stats(int[] values, StatModifier[] mods) {
         level = 1;
-        nextExp = 10;
         baseStats = values;
         
         maxhp = baseStats[0];
@@ -49,7 +51,6 @@ public class Stats extends Component implements Serializable {
         strength = baseStats[1];
         defense = baseStats[2];
         speed = baseStats[3];
-        exp = baseStats[4];
         spells = getMaxSpells();
         
         this.mods.addAll(mods);
@@ -100,6 +101,19 @@ public class Stats extends Component implements Serializable {
         return level;
     }
 
+    public void levelUp(Stat stat){
+        switch(stat){
+            case STRENGTH:
+                strength++; break;
+            case VITALITY:
+                maxhp += 2; hp = maxhp; break;
+            case SPEED:
+                speed++; break;
+            case DEFENSE:
+                defense++; break;
+        }
+    }
+    
     public int getStrength() {
         return strength;
     }
@@ -121,22 +135,6 @@ public class Stats extends Component implements Serializable {
     }
 
     /**
-     * The amount of experience points the entity currently has
-     * @return if it's a player, it returns their current amount, if the entity is an enemy, it returns the amount
-     *         that they are going to reward the player with.
-     */
-    public float getExp() {
-        return exp;
-    }
-
-    /**
-     * @return true if the entity has enough experience points accumulated to level up
-     */
-    public boolean canLevelUp() {
-        return exp >= nextExp;
-    }
-
-    /**
      * Level up an entity, setting its stats to the provided list
      * @param stats - new stats of the entity after level up
      */
@@ -146,8 +144,6 @@ public class Stats extends Component implements Serializable {
         defense = stats[1];
         speed = stats[2];
         maxhp = stats[3] * 2;
-        exp = 0;
-        nextExp = level * 10;
         
         hp = maxhp;
     }
@@ -173,28 +169,24 @@ public class Stats extends Component implements Serializable {
         json.writeValue("spd", speed);
         json.writeValue("mhp", maxhp);
         json.writeValue("hp", hp);
-        json.writeValue("exp", exp);
         json.writeValue("lvl", level);
     }
 
     @Override
     public void read(Json json, JsonValue jsonData) {
         level = jsonData.getInt("lvl");
-        nextExp = level * 10;
         strength = jsonData.getInt("str");
         defense = jsonData.getInt("def");
         speed = jsonData.getInt("spd");
         maxhp = jsonData.getInt("mhp");
         hp = jsonData.getInt("hp");
-        exp = jsonData.getInt("exp");
         
         baseStats = new int[5];
         baseStats[0] = maxhp;
         baseStats[1] = strength;
         baseStats[2] = defense;
         baseStats[3] = speed;
-        baseStats[4] = exp;
-
+        
         spells = getMaxSpells();
     }
 

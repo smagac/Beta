@@ -18,6 +18,7 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -70,6 +71,7 @@ public class WanderUI extends UI {
     List<String> combatLog;
     List<String> eventLog;
 
+    AssistMenu assistMenu;
     SacrificeSubmenu sacrificeMenu;
     LevelUpDialog levelUpDialog;
 
@@ -81,6 +83,8 @@ public class WanderUI extends UI {
     private HUD hud;
 
     Window floorSelect;
+
+    TrainMenu trainingMenu;
     
     @Override
     protected void listenTo(IntSet messages) {
@@ -98,6 +102,8 @@ public class WanderUI extends UI {
             Messages.Dungeon.Heal,
             Messages.Dungeon.Leave,
             Messages.Dungeon.Warp,
+            Messages.Dungeon.Sacrifice,
+            Messages.NPC.TRAINER,
             Messages.Player.LevelUp,
             Messages.Player.UpdateItem,
             Messages.Player.NewItem,
@@ -117,6 +123,7 @@ public class WanderUI extends UI {
         super(manager);
         
         menu = new DefaultStateMachine<WanderUI>(this);
+        menu.setGlobalState(WanderState.Global);
     }
     
     @Override
@@ -230,8 +237,13 @@ public class WanderUI extends UI {
 
         // goddess sacrifice view
         sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu);
-        sacrificeMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
-        display.addActor(sacrificeMenu.getGroup());
+        assistMenu = new AssistMenu(skin, sacrificeMenu);
+        assistMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+        display.addActor(assistMenu.getGroup());
+        
+        trainingMenu = new TrainMenu(skin, sacrificeMenu);
+        trainingMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+        display.addActor(trainingMenu.getGroup());
         
         addActor(display);
         
@@ -324,6 +336,10 @@ public class WanderUI extends UI {
             addActor(floorSelect);
         }
         
+        pointer = new Image(skin.getDrawable("pointer"));
+        addActor(pointer);
+        hidePointer();
+
         getRoot().setName("root");
         setKeyboardFocus(getRoot());
         // key listener for moving the character by pressing the arrow keys or WASD
@@ -585,5 +601,4 @@ public class WanderUI extends UI {
     public void changeState(WanderState assist) {
         menu.changeState(assist);
     }
-    
 }

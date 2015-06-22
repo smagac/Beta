@@ -17,6 +17,9 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pools;
 
 import core.common.Input;
 import core.datatypes.Inventory;
@@ -25,6 +28,8 @@ import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
 import github.nhydock.ssm.ServiceManager;
 import core.components.Position;
+import core.components.Stats;
+import core.datatypes.npc.Trainer;
 
 /**
  * Handles state based ui menu logic and switching
@@ -33,6 +38,23 @@ import core.components.Position;
  *
  */
 public enum WanderState implements UIState {
+    Global(){
+
+        @Override
+        public boolean onMessage(WanderUI entity, Telegram telegram) {
+            if (telegram.message == Quest.Actions.Notify) {
+                String notification = telegram.extraInfo.toString();
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);
+            }
+            else if (telegram.message == Messages.Dungeon.Dead && telegram.extraInfo == entity.playerService.getPlayer()) {
+                entity.changeState(WanderState.Dead);
+            }
+            else if (telegram.message == Messages.Dungeon.Exit) {
+                entity.changeState(WanderState.Exit);
+            }
+            return false;
+        }
+    },
     Wander("Request Assistance") {
 
         private float walkTimer = -1f;
@@ -41,8 +63,8 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.display.addAction(Actions.alpha(1f, .2f));
-            entity.sacrificeMenu.hide();
             entity.setKeyboardFocus(entity.getRoot());
+            entity.hidePointer();
         }
 
         @Override
@@ -130,16 +152,13 @@ public enum WanderState implements UIState {
                 entity.changeState(Assist);
                 return true;
             }
-            else if (telegram.message == Quest.Actions.Notify) {
-                String notification = telegram.extraInfo.toString();
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Notify, notification);
+            else if (telegram.message == Messages.NPC.TRAINER) {
+                Trainer trainer = (Trainer)telegram.extraInfo;
+                entity.trainingMenu.setTrainer(trainer);
+                entity.changeState(Train);
+                return true;
             }
-            else if (telegram.message == Messages.Dungeon.Dead && telegram.extraInfo == entity.playerService.getPlayer()) {
-                entity.changeState(WanderState.Dead);
-            }
-            else if (telegram.message == Messages.Dungeon.Exit) {
-                entity.changeState(WanderState.Exit);
-            }
+            
             return false;
         }
         
@@ -215,7 +234,7 @@ public enum WanderState implements UIState {
         @Override
         public void enter(WanderUI entity) {
             entity.display.addAction(Actions.alpha(1f, .2f));
-            entity.sacrificeMenu.hide();
+            entity.assistMenu.hide();
             entity.setKeyboardFocus(entity.getRoot());
             
             final RenderSystem rs = entity.dungeonService.getEngine().getSystem(RenderSystem.class);
@@ -367,87 +386,138 @@ public enum WanderState implements UIState {
             rs.moveCursor(mousePos);
         }
     },
-    Assist("Return", "Heal Me", "Go Home") {
+    Assist() {
 
+        int cost;
+        boolean heal;
+        
         @Override
         public void enter(WanderUI entity) {
-            entity.sacrificeMenu.show();
-            entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
+            entity.assistMenu.show();
+        }
+
+        @Override
+        public void exit(WanderUI entity) {
+            entity.assistMenu.hide();
         }
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
             if (telegram.message == Messages.Dungeon.Heal) {
-                entity.changeState(Sacrifice_Heal);
+                cost = entity.dungeonService.getProgress().healed + 1;
+                heal = true;
+                entity.assistMenu.showHeal(cost);
+                entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
                 return true;
             }
             else if (telegram.message == Messages.Dungeon.Leave) {
-                entity.changeState(Sacrifice_Leave);
+                cost = entity.dungeonService.getProgress().depth;
+                heal = false;
+                entity.assistMenu.showEscape(cost);
+                entity.setKeyboardFocus(entity.sacrificeMenu.getGroup());
                 return true;
-            }
-            entity.changeState(Wander);
+            } 
+            else if (telegram.message == Messages.Dungeon.Sacrifice) {
+                if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), cost)) {
+                    if (heal){
+                        if (Inventory.getSumOfItems(entity.sacrificeMenu.getSacrifice()) >= cost * 2) {
+                            entity.playerService.getAilments().reset();
+                        }
+                        entity.sacrificeMenu.sacrifice();
+                        entity.playerService.recover();
+                        entity.dungeonService.getProgress().healed = cost;
+                        entity.changeState(Wander);
+                    } else {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
+                        entity.changeState(Exit);
+                    }
+                    return true;
+                }
+            } 
             return false;
         }
 
-    },
-    Sacrifice_Heal("I've changed my mind", "Sacrifice Your Loot") {
+        @Override
+        public boolean keyDown(WanderUI entity, int keycode){
+            if (!entity.sacrificeMenu.getGroup().isVisible()) {
+                if (Input.LEFT.match(keycode)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Heal);
+                    return true;
+                }
+                if (Input.RIGHT.match(keycode)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Leave);
+                    return true;
+                }
+            }
+            else
+            {
+                if (Input.ACTION.match(keycode)) {
+                    entity.sacrificeMenu.focus.next(true);
+                    if (entity.sacrificeMenu.focus.getFocused() != entity.sacrificeMenu.sacrificeButton){
+                        entity.showPointer(entity.sacrificeMenu.focus.getFocused(), Align.topLeft);
+                        entity.sacrificeMenu.sacrificeButton.setChecked(false);
+                    } else {
+                        entity.hidePointer();
+                        entity.sacrificeMenu.sacrificeButton.setChecked(true);
+                    }
+                    return true;
+                }
+            }
+            if (Input.CANCEL.match(keycode)){
+                entity.changeState(Wander);
+                return true;
+            }
+            return false;
+        }
+        
+    }, Train() {
 
         @Override
         public void enter(WanderUI entity) {
-            int healCost = entity.dungeonService.getProgress().healed + 1;
-            
-            entity.sacrificeMenu.showHeal(healCost);
+            entity.trainingMenu.show();
+        }
+
+        @Override
+        public void exit(WanderUI entity) {
+            entity.trainingMenu.hide();
         }
 
         @Override
         public boolean onMessage(WanderUI entity, Telegram telegram) {
             if (telegram.message == Messages.Dungeon.Sacrifice) {
-                
-                int healCost = entity.dungeonService.getProgress().healed + 1;
-                if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), healCost)) {
-                    if (Inventory.getSumOfItems(entity.sacrificeMenu.getSacrifice()) >= healCost * 2) {
-                        entity.playerService.getAilments().reset();
-                    }
+                Stats stats = entity.playerService.getPlayer().getComponent(Stats.class);
+                if (entity.trainingMenu.getTrainer().sacrifice(entity.sacrificeMenu.getSacrifice(), stats)) {
+                    entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), 0);
+                    entity.trainingMenu.getTrainer().train(stats);
                     entity.sacrificeMenu.sacrifice();
-                    entity.playerService.recover();
-                    entity.dungeonService.getProgress().healed = healCost;
                     entity.changeState(Wander);
                     return true;
                 }
-            }
-            else {
-                entity.changeState(Wander);
-            }
+            } 
             return false;
         }
 
-    },
-    Sacrifice_Leave("I've changed my mind", "Sacrifice Your Loot") {
-
         @Override
-        public void enter(WanderUI entity) {
-            int fleeCost = entity.dungeonService.getProgress().depth;
+        public boolean keyDown(WanderUI entity, int keycode){
             
-            entity.sacrificeMenu.showEscape(fleeCost);
-        }
-
-        @Override
-        public boolean onMessage(WanderUI entity, Telegram telegram) {
-
-            if (telegram.message == Messages.Dungeon.Sacrifice) {
-                int fleeCost = entity.dungeonService.getProgress().depth;
-                if (entity.playerService.getInventory().sacrifice(entity.sacrificeMenu.getSacrifice(), fleeCost)) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Exit);
-                    entity.changeState(Exit);
-                    return true;
+            if (Input.ACTION.match(keycode)) {
+                entity.sacrificeMenu.focus.next(true);
+                if (entity.sacrificeMenu.focus.getFocused() != entity.sacrificeMenu.sacrificeButton){
+                    entity.showPointer(entity.sacrificeMenu.focus.getFocused(), Align.topLeft);
+                    entity.sacrificeMenu.sacrificeButton.setChecked(false);
+                } else {
+                    entity.hidePointer();
+                    entity.sacrificeMenu.sacrificeButton.setChecked(true);
                 }
+                return true;
             }
-            else {
+            if (Input.CANCEL.match(keycode)){
                 entity.changeState(Wander);
+                return true;
             }
             return false;
         }
-
+        
     },
     /**
      * Player is dead. drop loot and make fun of him
