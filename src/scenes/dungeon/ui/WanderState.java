@@ -8,6 +8,7 @@ import scenes.dungeon.Direction;
 import scenes.dungeon.MovementSystem;
 import scenes.dungeon.RenderSystem;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -22,7 +23,6 @@ import core.datatypes.Inventory;
 import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.quests.Quest;
 import core.service.interfaces.IPlayerContainer;
-
 import github.nhydock.ssm.ServiceManager;
 import core.components.Position;
 
@@ -194,6 +194,8 @@ public enum WanderState implements UIState {
                 }
             } else if (button == Buttons.RIGHT){
                 MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+            } else if (button == Buttons.MIDDLE){
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Target);
             }
             return true;
         }
@@ -337,31 +339,31 @@ public enum WanderState implements UIState {
 
         @Override
         public boolean keyUp(WanderUI entity, int keycode) {
-            Direction to = Direction.valueOf(keycode);
-            if (to != null) {
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
-            }
-            return true;
+            return false;
         }
         
         @Override
         public boolean touchDown(WanderUI entity, float x, float y, int button) {
             if (button == Buttons.LEFT) {
-                Direction to = Direction.valueOf(x, y, entity.getWidth(), entity.getHeight());
-                if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action, to);
-                } else {
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement, to);
-                }
-            } else if (button == Buttons.RIGHT){
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Action);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Target);
+                return true;
+            } else if (button == Buttons.MIDDLE){
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
             }
             return true;
         }
         
         @Override
         public void touchUp(WanderUI entity, float x, float y, int button){
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
+            
+        }
+         
+        @Override
+        public void mouseMoved(WanderUI entity, Vector2 mousePos) {
+            Engine e = entity.dungeonService.getEngine();
+            RenderSystem rs = e.getSystem(RenderSystem.class);
+            
+            rs.moveCursor(mousePos);
         }
     },
     Assist("Return", "Heal Me", "Go Home") {
@@ -650,6 +652,10 @@ public enum WanderState implements UIState {
     
     public boolean keyUp(WanderUI entity, int keycode) {
         return false;
+    }
+    
+    public void mouseMoved(WanderUI entity, Vector2 mousePos) {
+        
     }
     
     @Override

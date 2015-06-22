@@ -17,6 +17,7 @@ import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -357,6 +358,14 @@ public class WanderUI extends UI {
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
                 ((WanderState)menu.getCurrentState()).touchUp(self, x, y, button);
+                
+            }
+            
+            @Override
+            public boolean mouseMoved(InputEvent evt, float x, float y){
+                Vector2 v = stageToScreenCoordinates(new Vector2(x, y));
+                ((WanderState)menu.getCurrentState()).mouseMoved(self, v);
+                return false;
             }
         });
         

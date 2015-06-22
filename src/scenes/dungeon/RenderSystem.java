@@ -754,4 +754,23 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
         cursorTargetHover();
     }
+    
+    /**
+     * Shifts the cursor to a new tile location based on the position of the mouse
+     * on the screen
+     * @param cursorLocation
+     */
+    public void moveCursor(Vector2 mouse){
+        stage.screenToStageCoordinates(mouse);
+        
+        Vector2 loc = new Vector2(mouse);
+        shadowLayer.stageToLocalCoordinates(loc);
+        if (shadowLayer.hit(loc.x, loc.y, true) != null){
+            return;
+        }
+
+        this.cursorLocation[0] = (int)(mouse.x/SCALE);
+        this.cursorLocation[1] = (int)(mouse.y/SCALE);
+        targetCursor.setPosition(cursorLocation[0]*SCALE, cursorLocation[1]*SCALE);
+    }
 }
