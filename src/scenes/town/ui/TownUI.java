@@ -214,7 +214,7 @@ public class TownUI extends GameUI {
     private void makeHome() {
         // sleep icon
         {
-            saveImg = new Image(skin.getRegion("sleep"));
+            saveImg = new Image(skin.getRegion("savedata"));
             saveImg.setPosition(0f, 0, Align.topLeft);
             saveImg.addListener(new InputListener() {
                 @Override
@@ -235,7 +235,7 @@ public class TownUI extends GameUI {
         
         //save icon
         {
-            dictImg = new Image(skin.getRegion("craft"));
+            dictImg = new Image(skin.getRegion("pagefile"));
             dictImg.setPosition(display.getWidth(), 0, Align.topRight);
             dictImg.addListener(new InputListener() {
                 @Override

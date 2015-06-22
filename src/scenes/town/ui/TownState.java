@@ -805,6 +805,7 @@ enum TownState implements UIState<TownUI> {
 
         @Override
         public void enter(TownUI entity) {
+            entity.hidePointer();
             State prev = entity.getStateMachine().getPreviousState();
             if (prev != PageFile && prev != Sleep && prev != Save) {
                 entity.sleepImg.addAction(

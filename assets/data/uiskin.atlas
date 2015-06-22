@@ -6,7 +6,7 @@ filter: Nearest,Nearest
 repeat: none
 3dbutton_down
   rotate: false
-  xy: 544, 347
+  xy: 536, 524
   size: 12, 12
   split: 3, 8, 3, 8
   orig: 12, 12
@@ -14,7 +14,7 @@ repeat: none
   index: -1
 3dbutton_up
   rotate: false
-  xy: 558, 355
+  xy: 614, 594
   size: 12, 12
   split: 3, 8, 3, 8
   orig: 12, 12
@@ -22,29 +22,22 @@ repeat: none
   index: -1
 window6
   rotate: false
-  xy: 558, 355
+  xy: 614, 594
   size: 12, 12
   split: 3, 8, 3, 8
   orig: 12, 12
   offset: 0, 0
   index: -1
-audio
-  rotate: false
-  xy: 774, 787
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
 big
   rotate: false
-  xy: 2, 789
+  xy: 2, 540
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
   index: -1
 button_down
   rotate: false
-  xy: 584, 370
+  xy: 550, 539
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -52,7 +45,7 @@ button_down
   index: -1
 button_up
   rotate: false
-  xy: 2, 2
+  xy: 82, 97
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -60,112 +53,70 @@ button_up
   index: -1
 character
   rotate: false
-  xy: 518, 309
+  xy: 550, 554
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 male
   rotate: false
-  xy: 518, 309
+  xy: 550, 554
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 checkbox-checked
   rotate: false
-  xy: 800, 801
+  xy: 2, 50
   size: 18, 18
   orig: 18, 18
   offset: 0, 0
   index: -1
 checkbox-unchecked
   rotate: false
-  xy: 872, 865
+  xy: 44, 92
   size: 18, 18
   orig: 18, 18
   offset: 0, 0
   index: -1
-compressed
-  rotate: false
-  xy: 872, 885
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
-craft
-  rotate: false
-  xy: 516, 661
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
 dmg
   rotate: false
-  xy: 2, 429
+  xy: 2, 180
   size: 512, 32
   orig: 512, 32
   offset: 0, 0
   index: -1
-executable
-  rotate: false
-  xy: 518, 327
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
-explore
-  rotate: false
-  xy: 2, 103
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-explore_back
-  rotate: false
-  xy: 516, 403
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
 fader
   rotate: false
-  xy: 584, 385
+  xy: 614, 626
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 female
   rotate: false
-  xy: 2, 17
+  xy: 640, 652
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 god
   rotate: false
-  xy: 28, 51
+  xy: 2, 32
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 goddess
   rotate: false
-  xy: 62, 85
+  xy: 22, 52
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
-image
-  rotate: false
-  xy: 558, 369
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
 list
   rotate: false
-  xy: 774, 733
+  xy: 565, 544
   size: 8, 8
   split: 2, 2, 2, 2
   orig: 8, 8
@@ -173,35 +124,28 @@ list
   index: -1
 mouse
   rotate: false
-  xy: 774, 761
+  xy: 614, 644
   size: 24, 24
   orig: 24, 24
   offset: 0, 0
   index: -1
-other
-  rotate: false
-  xy: 2, 35
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
 pointer
   rotate: false
-  xy: 2, 69
+  xy: 516, 538
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 pointersm
   rotate: false
-  xy: 774, 743
+  xy: 44, 74
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 progback
   rotate: false
-  xy: 800, 773
+  xy: 97, 102
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -209,7 +153,7 @@ progback
   index: -1
 tag
   rotate: false
-  xy: 800, 773
+  xy: 97, 102
   size: 8, 8
   split: 3, 3, 3, 3
   orig: 8, 8
@@ -217,7 +161,7 @@ tag
   index: -1
 progfront
   rotate: false
-  xy: 838, 811
+  xy: 516, 475
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -225,7 +169,7 @@ progfront
   index: -1
 scroll-knob
   rotate: false
-  xy: 838, 811
+  xy: 516, 475
   size: 8, 8
   split: 1, 1, 1, 1
   orig: 8, 8
@@ -233,99 +177,92 @@ scroll-knob
   index: -1
 prompt_sm
   rotate: false
-  xy: 2, 463
+  xy: 2, 214
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 scroll
   rotate: false
-  xy: 898, 887
+  xy: 676, 658
   size: 10, 10
   orig: 10, 10
   offset: 0, 0
   index: -1
 selected
   rotate: false
-  xy: 872, 837
+  xy: 601, 562
   size: 8, 8
   split: 2, 2, 2, 2
   orig: 8, 8
   offset: 0, 0
   index: -1
-sleep
-  rotate: false
-  xy: 260, 103
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
 small
   rotate: false
-  xy: 2, 659
+  xy: 2, 410
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
   index: -1
 smaller
   rotate: false
-  xy: 2, 395
+  xy: 2, 146
   size: 512, 32
   orig: 512, 32
   offset: 0, 0
   index: -1
 smallest
   rotate: false
-  xy: 2, 361
+  xy: 2, 112
   size: 512, 32
   orig: 512, 32
   offset: 0, 0
   index: -1
 status_arthritis
   rotate: false
-  xy: 800, 783
+  xy: 64, 94
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 status_blind
   rotate: false
-  xy: 820, 803
+  xy: 516, 500
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 status_confuse
   rotate: false
-  xy: 872, 847
+  xy: 568, 554
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 status_poison
   rotate: false
-  xy: 918, 901
+  xy: 614, 608
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 status_sprain
   rotate: false
-  xy: 518, 291
+  xy: 658, 652
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 status_toxic
   rotate: false
-  xy: 602, 385
+  xy: 2, 14
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 tab_down
   rotate: false
-  xy: 28, 36
+  xy: 516, 485
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -333,7 +270,7 @@ tab_down
   index: -1
 tab_up
   rotate: false
-  xy: 46, 54
+  xy: 586, 557
   size: 13, 13
   split: 6, 6, 6, 6
   orig: 13, 13
@@ -341,28 +278,21 @@ tab_up
   index: -1
 titlefnt
   rotate: false
-  xy: 2, 529
+  xy: 2, 280
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
   index: -1
-video
-  rotate: false
-  xy: 36, 69
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
 window
   rotate: false
-  xy: 774, 821
+  xy: 516, 572
   size: 96, 96
   orig: 96, 96
   offset: 0, 0
   index: -1
 window2
   rotate: false
-  xy: 516, 361
+  xy: 2, 70
   size: 40, 40
   split: 16, 23, 16, 23
   pad: 16, 7, 16, 7
@@ -371,7 +301,7 @@ window2
   index: -1
 window3
   rotate: false
-  xy: 62, 73
+  xy: 2, 2
   size: 10, 10
   split: 4, 5, 4, 5
   pad: 4, 1, 4, 1
@@ -380,7 +310,7 @@ window3
   index: -1
 window4
   rotate: false
-  xy: 898, 899
+  xy: 516, 518
   size: 18, 18
   split: 6, 11, 6, 11
   orig: 18, 18
@@ -388,7 +318,7 @@ window4
   index: -1
 window5
   rotate: false
-  xy: 80, 91
+  xy: 550, 527
   size: 10, 10
   split: 4, 5, 4, 5
   pad: 4, 1, 4, 1
