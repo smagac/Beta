@@ -1,5 +1,7 @@
 package scene2d.ui.extras;
 
+import java.util.prefs.BackingStoreException;
+
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -9,6 +11,7 @@ import com.badlogic.gdx.utils.Align;
 
 public class Card extends Group {
     
+    private Image background;
     private Label content;
     private Label title;
 
@@ -21,7 +24,7 @@ public class Card extends Group {
     
     public Card(Skin skin, String titleText, String contentText, String iconName) {
         this.skin = skin;
-        Image background = new Image(skin, "window4");
+        background = new Image(skin, "window4");
         background.setSize(200, 400);
         background.setTouchable(Touchable.disabled);
         addActor(background);
@@ -88,5 +91,10 @@ public class Card extends Group {
         } else {
             icon.setDrawable(skin, iconName);
         }
+    }
+    
+    public void setHeight(float size){
+        super.setHeight(size);
+        background.setHeight(size);
     }
 }

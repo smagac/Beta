@@ -9,8 +9,8 @@ import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 import scenes.Messages;
-import scenes.SacrificeSubmenu;
 import scenes.Messages.Player.ItemMsg;
+import scenes.town.ui.SacrificeSubmenu;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
@@ -43,6 +43,7 @@ import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.common.Input;
+import core.components.Stats;
 import core.datatypes.Craftable;
 import core.datatypes.Item;
 import core.datatypes.quests.Quest;
@@ -355,8 +356,8 @@ public class TownUI extends GameUI {
             
             sacrificeMenu = new SacrificeSubmenu(skin, playerService, this);
             trainingMenu = new TrainMenu(skin, sacrificeMenu);
-            trainingMenu.getGroup().setPosition(getWidth()*.5f, getHeight()*.5f, Align.center);
-            addActor(trainingMenu.getGroup());
+            trainingMenu.getGroup().setPosition(getDisplayCenterX(), getDisplayCenterY(), Align.center);
+            display.addActor(trainingMenu.getGroup());
             
             trainingFocus = new FocusGroup(trainingMenu.getGroup());
         }
@@ -929,6 +930,9 @@ public class TownUI extends GameUI {
             lootList.updateLabel(msg.item, msg.amount);
             sacrificeMenu.updateLabel(msg.item, msg.amount);
             return true;
+        }
+        if (telegram.message == Messages.Player.Stats){
+            pageFile.updateStats(Stats.Map.get(playerService.getPlayer()));
         }
         return super.handleMessage(telegram);
     }

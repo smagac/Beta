@@ -1,4 +1,4 @@
-package scenes;
+package scenes.dungeon.ui;
 
 import scene2d.InputDisabler;
 import scene2d.ui.ScrollOnChange;
@@ -6,8 +6,11 @@ import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
+import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
-import scenes.dungeon.ui.WanderState;
+import scenes.Messages;
+import scenes.UI;
+import scenes.Messages.Dungeon;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -42,7 +45,7 @@ import core.service.interfaces.IPlayerContainer;
  * @author nhydock
  *
  */
-public class SacrificeSubmenu {
+class SacrificeSubmenu {
     
     private Group window;
     
@@ -141,7 +144,7 @@ public class SacrificeSubmenu {
                     }
                     return false;
                 }
-                
+                @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor){
                     sacrificeButton.setChecked(true);
                     focus.setFocus(sacrificeButton);

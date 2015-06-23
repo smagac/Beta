@@ -5,7 +5,6 @@ import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.Pointer;
 import scenes.LevelUpDialog;
-import scenes.SacrificeSubmenu;
 import scenes.LevelUpDialog.LevelUpState;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;

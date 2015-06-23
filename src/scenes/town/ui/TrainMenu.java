@@ -28,7 +28,7 @@ import scene2d.InputDisabler;
 import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scenes.Messages;
-import scenes.SacrificeSubmenu;
+import scenes.town.ui.SacrificeSubmenu;
 
 public class TrainMenu {
 
@@ -83,8 +83,8 @@ public class TrainMenu {
     
     public TrainMenu(Skin skin, SacrificeSubmenu sacrificeSubmenu){
         menu = new Group();
-        menu.setWidth(800);
-        menu.setHeight(400);
+        menu.setWidth(700);
+        menu.setHeight(350);
         
         cardGroup = new FocusGroup();
         //cards for displaying the description
@@ -93,10 +93,12 @@ public class TrainMenu {
             for (int i = 0; i < Stat.values().length; i++){
                 Stat s = Stat.values()[i];
                 Card card = new Card(skin, s.name());
-                card.setPosition(getWidth()*.25f*i, getHeight()/2f, Align.left);
+                card.setPosition(getWidth()*.25f*i, 0, Align.left);
                 card.setUserObject(new Trainer(s));
                 card.addListener(click);
                 card.setOrigin(Align.center);
+                card.setHeight(350);
+                card.setScale(.75f);
                 menu.addActor(card);
                 cards.add(card);
                 cardGroup.add(card);
@@ -124,11 +126,11 @@ public class TrainMenu {
         }
         
         if (selectedCard != null){
-            selectedCard.addAction(Actions.moveTo(selectedCard.getX(), 0, .15f));
+            selectedCard.addAction(Actions.scaleTo(.75f, .75f, .15f));
         }
         
         a.clearActions();
-        a.addAction(Actions.sequence(Actions.moveTo(a.getX(), 0), Actions.moveBy(0, 20f, .15f, Interpolation.circleOut)));
+        a.addAction(Actions.scaleTo(1f, 1f, .15f));
         selectedCard = a;
     }
     
@@ -174,13 +176,13 @@ public class TrainMenu {
                 Actions.parallel(
                     Actions.moveToAligned(getWidth()*.25f*i, 0, Align.bottomLeft), 
                     Actions.alpha(1f),
-                    Actions.scaleTo(1f, 1f)
+                    Actions.scaleTo(.75f, .75f)
                 )
             );
         }
         menu.addAction(
             Actions.sequence(
-                Actions.scaleTo(.7f, .7f),
+                Actions.scaleTo(.5f, .5f),
                 Actions.alpha(0f),
                 Actions.run(InputDisabler.instance),
                 Actions.addAction(

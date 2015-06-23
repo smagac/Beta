@@ -295,6 +295,11 @@ public class PageFileWindow {
     private static class StatusPane {
         Window window;
         
+        Label strengthLabel;
+        Label defenseLabel;
+        Label speedLabel;
+        Label vitalityLabel;
+        
         StatusPane(Skin skin, IPlayerContainer service, PageFile tracker){
 
             window = new Window("", skin, "pane");
@@ -317,13 +322,10 @@ public class PageFileWindow {
                 statTable.pad(8f).padTop(50f).padBottom(10f).padRight(16f);
                 statTable.top();
                 
-                String[] cat = {"Strength", "Defense", "Vitality", "Speed"};
-                int[] val = {stats.getStrength(), stats.getDefense(), stats.getVitality(), (int)stats.getSpeed()};
-                
-                for (int i = 0; i < cat.length; i++)
+                //strength
                 {
-                    Label title = new Label(cat[i], skin, "small");
-                    Label value = new Label(String.valueOf(val[i]), skin, "small");
+                    Label title = new Label("Strength", skin, "small");
+                    Label value = strengthLabel = new Label(String.valueOf(stats.getStrength()), skin, "small");
 
                     title.setAlignment(Align.left);
                     value.setAlignment(Align.right);
@@ -332,6 +334,42 @@ public class PageFileWindow {
                     statTable.row();
                 }
 
+                //defense
+                {
+                    Label title = new Label("Defense", skin, "small");
+                    Label value = defenseLabel = new Label(String.valueOf(stats.getDefense()), skin, "small");
+
+                    title.setAlignment(Align.left);
+                    value.setAlignment(Align.right);
+                    statTable.add(title).expandX().fillX();
+                    statTable.add(value).expandX().fillX();
+                    statTable.row();
+                }
+
+                //Vitality
+                {
+                    Label title = new Label("Vitality", skin, "small");
+                    Label value = vitalityLabel = new Label(String.valueOf(stats.getVitality()), skin, "small");
+
+                    title.setAlignment(Align.left);
+                    value.setAlignment(Align.right);
+                    statTable.add(title).expandX().fillX();
+                    statTable.add(value).expandX().fillX();
+                    statTable.row();
+                }
+
+                //Speed
+                {
+                    Label title = new Label("Speed", skin, "small");
+                    Label value = speedLabel = new Label(String.valueOf((int)stats.getSpeed()), skin, "small");
+
+                    title.setAlignment(Align.left);
+                    value.setAlignment(Align.right);
+                    statTable.add(title).expandX().fillX();
+                    statTable.add(value).expandX().fillX();
+                    statTable.row();
+                }
+                
                 statTable.setSize(220f, 80f);
                 statTable.setPosition(150f, 220f, Align.top);
                 window.addActor(statTable);
@@ -394,5 +432,16 @@ public class PageFileWindow {
                 window.addActor(stringScoring);
             }
         }
+        
+        public void updateStats(Stats s){
+            strengthLabel.setText(String.valueOf(s.getStrength()));
+            defenseLabel.setText(String.valueOf(s.getDefense()));
+            vitalityLabel.setText(String.valueOf(s.getVitality()));
+            speedLabel.setText(String.valueOf((int)s.getSpeed()));
+        }
+    }
+
+    public void updateStats(Stats s) {
+        statusPane.updateStats(s);
     }
 }

@@ -37,17 +37,15 @@ public class ItemList {
      */
     InputListener hoverListener = new InputListener() {
         @Override
-        public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-            Item item = (Item)event.getTarget().getUserObject();
-            selectItem(item);
-
-            index = order.indexOf(item, true);
-        };
-        
-        @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
             Item item = (Item)event.getTarget().getUserObject();
-            swap(item);
+            int i = order.indexOf(item, true);;
+            if (i == index){
+                swap(item);
+            } else {
+                selectItem(item);
+                index = i;
+            }
             return true;
         };
     };

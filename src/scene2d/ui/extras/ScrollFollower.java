@@ -18,7 +18,7 @@ public class ScrollFollower extends ChangeListener {
     @Override
     public void changed(ChangeEvent event, Actor actor) {
         float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + pane.getHeight() / 2);
-        pane.scrollTo(0, list.getHeight() - y, pane.getWidth(), pane.getHeight());
+        pane.setScrollY(y);
     }
 
 }

@@ -26,7 +26,6 @@ import core.service.interfaces.IPlayerContainer;
 import scene2d.InputDisabler;
 import scene2d.ui.extras.Card;
 import scenes.Messages;
-import scenes.SacrificeSubmenu;
 
 public class TrainMenu {
 
