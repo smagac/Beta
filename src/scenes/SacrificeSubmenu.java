@@ -58,7 +58,7 @@ public class SacrificeSubmenu {
     private Image pointer;
     
     @SuppressWarnings("rawtypes")
-    public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final StateMachine sm, final UI parent) {
+    public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final UI parent) {
         window = new Group();
         window.setWidth(500);
         window.setHeight(400);

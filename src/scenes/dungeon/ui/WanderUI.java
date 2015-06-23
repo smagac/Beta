@@ -238,7 +238,7 @@ public class WanderUI extends UI {
         }
 
         // goddess sacrifice view
-        sacrificeMenu = new SacrificeSubmenu(skin, playerService, menu, this);
+        sacrificeMenu = new SacrificeSubmenu(skin, playerService, this);
         assistMenu = new AssistMenu(skin, sacrificeMenu);
         assistMenu.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
         display.addActor(assistMenu.getGroup());

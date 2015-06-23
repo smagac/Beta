@@ -9,6 +9,7 @@ import scene2d.ui.extras.ScrollFollower;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 import scenes.Messages;
+import scenes.SacrificeSubmenu;
 import scenes.Messages.Player.ItemMsg;
 
 import com.badlogic.gdx.Input.Buttons;
@@ -52,11 +53,12 @@ import core.service.interfaces.IPlayerContainer.SaveSummary;
 @SuppressWarnings("unchecked")
 public class TownUI extends GameUI {
 
-    Image sleepImg;
-    Group exploreImg;
-    Image craftImg;
     Image character;
 
+    Group town;
+    Group home;
+    Group main;
+    
     // explore display
     FileBrowser fileBrowser;
     
@@ -65,13 +67,12 @@ public class TownUI extends GameUI {
     Table craftSubmenu;
     Table lootSubmenu;
     TabbedPane craftMenu;
-    ObjectMap<Item, Array<Label>> lootRecords;
-    Array<Item> lootRows;
     List<Craftable> craftList;
     List<Craftable> todayList;
     ScrollPane lootPane;
     ItemList lootList;
     Table requirementList;
+    private ButtonGroup<Button> craftTabs;
 
     // quest display
     private FocusGroup questGroup;
@@ -83,6 +84,10 @@ public class TownUI extends GameUI {
     List<Quest> availableQuests;
     List<Quest> acceptedQuests;
 
+    // training display
+    SacrificeSubmenu sacrificeMenu;
+    TrainMenu trainingMenu;
+    
     // download display
     Window downloadWindow;
 
@@ -91,8 +96,6 @@ public class TownUI extends GameUI {
     Image miniGoddess;
 
     Image fader;
-    
-    private ButtonGroup<Button> craftTabs;
 
     @Inject
     public IPlayerContainer playerService;
@@ -102,16 +105,15 @@ public class TownUI extends GameUI {
     FocusGroup formFocus;
     FocusGroup defaultFocus;
     private FocusGroup exploreGroup;
-    Image saveImg;
-    Image dictImg;
     PageFileWindow pageFile;
     private FocusGroup pageFileFocus;
+    private FocusGroup trainingFocus;
 
     @Override
     protected void listenTo(IntSet messages)
     {
         super.listenTo(messages);
-        messages.addAll(Messages.Player.NewItem, Messages.Player.RemoveItem, Messages.Player.UpdateItem);
+        messages.addAll(Messages.Player.NewItem, Messages.Player.RemoveItem, Messages.Player.UpdateItem, Messages.Dungeon.Sacrifice);
     }
     
     public TownUI(AssetManager manager) {
@@ -121,9 +123,13 @@ public class TownUI extends GameUI {
     }
 
     private void makeMain() {
+        main = new Group();
+        main.setSize(getDisplayWidth(), getDisplayHeight());
+        display.addActor(main);
+        
         // explore icon
         {
-            exploreImg = new Group();
+            Group exploreImg = new Group();
             Image back = new Image(skin.getRegion("explore_back"));
             Image front = new Image(skin.getRegion("explore"));
             exploreImg.addActor(back);
@@ -151,14 +157,14 @@ public class TownUI extends GameUI {
             });
             exploreImg.setOrigin(Align.center);
             
-            display.addActor(exploreImg);
+            main.addActor(exploreImg);
         }
 
         // sleep/home icon
         {
-            sleepImg = new Image(skin.getRegion("sleep"));
-            sleepImg.setPosition(0f, 0, Align.bottomLeft);
-            sleepImg.addListener(new InputListener() {
+            Image homeImg = new Image(skin.getRegion("home"));
+            homeImg.setPosition(0f, 0, Align.bottomLeft);
+            homeImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
@@ -167,29 +173,25 @@ public class TownUI extends GameUI {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Home);
                             audio.playSfx(DataDirs.Sounds.accept);
                         }
-                        if (stateMachine.isInState(TownState.Home)) {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Sleep);
-                            audio.playSfx(DataDirs.Sounds.accept);
-                        }
                         
                         return true;
                     }
                     return false;
                 }
             });
-            display.addActor(sleepImg);
+            main.addActor(homeImg);
         }
 
-        // craft icon
+        // town icon
         {
-            craftImg = new Image(skin.getRegion("craft"));
-            craftImg.setPosition(display.getWidth(), 0, Align.bottomRight);
-            craftImg.addListener(new InputListener() {
+            Image townImg = new Image(skin.getRegion("town"));
+            townImg.setPosition(display.getWidth(), 0, Align.bottomRight);
+            townImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
                         if (stateMachine.isInState(TownState.Main)) {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Craft);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Town);
                             audio.playSfx(DataDirs.Sounds.accept);
                         }
                         return true;
@@ -197,7 +199,7 @@ public class TownUI extends GameUI {
                     return false;
                 }
             });
-            display.addActor(craftImg);
+            main.addActor(townImg);
         }
 
         // draw you
@@ -213,45 +215,67 @@ public class TownUI extends GameUI {
      * create the home submenu, where you can save, rest, or look at your data
      */
     private void makeHome() {
+        home = new Group();
+        home.setSize(getDisplayWidth(), getDisplayHeight());
+        home.setPosition(0, 0, Align.bottomRight);
+        display.addActor(home);
+        
         // sleep icon
         {
-            saveImg = new Image(skin.getRegion("savedata"));
-            saveImg.setPosition(0f, 0, Align.topLeft);
+            Image sleepImg = new Image(skin, "sleep");
+            
+            sleepImg.setPosition(display.getWidth() / 2, display.getHeight(), Align.top);
+            sleepImg.setTouchable(Touchable.enabled);
+            sleepImg.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Sleep);
+                        audio.playSfx(DataDirs.Sounds.accept);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            sleepImg.setOrigin(Align.center);
+            
+            home.addActor(sleepImg);
+        }
+        
+        // save icon
+        {
+            Image saveImg = new Image(skin.getRegion("savedata"));
+            saveImg.setPosition(0f, 40, Align.bottomLeft);
             saveImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-
-                        if (stateMachine.isInState(TownState.Main)) {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Save);
-                            audio.playSfx(DataDirs.Sounds.accept);
-                        }
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Save);
+                        audio.playSfx(DataDirs.Sounds.accept);
                         return true;
                     }
                     return false;
                 }
             });
-            display.addActor(saveImg);
+            home.addActor(saveImg);
         }
         
-        //save icon
+        //pagefile icon
         {
-            dictImg = new Image(skin.getRegion("pagefile"));
-            dictImg.setPosition(display.getWidth(), 0, Align.topRight);
+            Image dictImg = new Image(skin.getRegion("pagefile"));
+            dictImg.setPosition(display.getWidth(), 40, Align.bottomRight);
             dictImg.addListener(new InputListener() {
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
-                        if (stateMachine.isInState(TownState.Main)) {
-                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.PageFile);
-                            audio.playSfx(DataDirs.Sounds.accept);
-                        }
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.PageFile);
+                        audio.playSfx(DataDirs.Sounds.accept);
                         return true;
                     }
                     return false;
                 }
             });
-            display.addActor(dictImg);
+            home.addActor(dictImg);
         }
         
         pageFile = new PageFileWindow(skin, playerService, ServiceManager.getService(PageFile.class));
@@ -262,6 +286,81 @@ public class TownUI extends GameUI {
         pageFileFocus.setFocus(pageFile.getWindow());
     }
 
+    
+    /**
+     * create the home submenu, where you can save, rest, or look at your data
+     */
+    private void makeTown() {
+        town = new Group();
+        town.setSize(getDisplayWidth(), getDisplayHeight());
+        town.setPosition(getDisplayWidth(), 0, Align.bottomLeft);
+        display.addActor(town);
+        
+        // Craft icon
+        {
+            Image craftImg = new Image(skin, "craft");
+            
+            craftImg.setPosition(display.getWidth() / 2, display.getHeight(), Align.top);
+            craftImg.setTouchable(Touchable.enabled);
+            craftImg.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Craft);
+                        audio.playSfx(DataDirs.Sounds.accept);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            craftImg.setOrigin(Align.center);
+            
+            town.addActor(craftImg);
+        }
+        
+        // quest icon
+        {
+            Image questImg = new Image(skin.getRegion("quest"));
+            questImg.setPosition(0f, 40, Align.bottomLeft);
+            questImg.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Quest);
+                        audio.playSfx(DataDirs.Sounds.accept);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            town.addActor(questImg);
+        }
+        
+        //train icon
+        {
+            Image trainImg = new Image(skin.getRegion("train"));
+            trainImg.setPosition(display.getWidth(), 40, Align.bottomRight);
+            trainImg.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Train);
+                        audio.playSfx(DataDirs.Sounds.accept);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            town.addActor(trainImg);
+            
+            sacrificeMenu = new SacrificeSubmenu(skin, playerService, this);
+            trainingMenu = new TrainMenu(skin, sacrificeMenu);
+            trainingMenu.getGroup().setPosition(getWidth()*.5f, getHeight()*.5f, Align.center);
+            addActor(trainingMenu.getGroup());
+            
+            trainingFocus = new FocusGroup(trainingMenu.getGroup());
+        }
+    }
     /**
      * create craft submenu layout
      */
@@ -738,6 +837,7 @@ public class TownUI extends GameUI {
     public void extend() {
         makeMain();
         makeHome();
+        makeTown();
         makeCraft();
         makeExplore();
         makeQuest();
@@ -820,12 +920,14 @@ public class TownUI extends GameUI {
         if (telegram.message == Messages.Player.NewItem) {
             ItemMsg msg = (ItemMsg)telegram.extraInfo;
             lootList.updateLabel(msg.item, msg.amount);
+            sacrificeMenu.updateLabel(msg.item, msg.amount);
             return true;
         }
         if (telegram.message == Messages.Player.UpdateItem || 
             telegram.message == Messages.Player.RemoveItem ) {
             ItemMsg msg = (ItemMsg)telegram.extraInfo;
             lootList.updateLabel(msg.item, msg.amount);
+            sacrificeMenu.updateLabel(msg.item, msg.amount);
             return true;
         }
         return super.handleMessage(telegram);
@@ -835,9 +937,9 @@ public class TownUI extends GameUI {
      * restores the original positions of all the images
      */
     void restore() {
-        exploreImg.clearActions();
-        sleepImg.clearActions();
-        craftImg.clearActions();
+        main.clearActions();
+        home.clearActions();
+        town.clearActions();
         character.clearActions();
         lootSubmenu.clearActions();
         craftSubmenu.clearActions();
@@ -845,26 +947,19 @@ public class TownUI extends GameUI {
         questDetails.clearActions();
         questSubmenu.clearActions();
         downloadWindow.clearActions();
-        saveImg.clearActions();
-        dictImg.clearActions();
         pageFile.getWindow().clearActions();
 
         saveWindow.clearActions();
 
-        exploreImg.addAction(Actions.moveTo(getDisplayCenterX() - exploreImg.getWidth() / 2, 118f, .8f));
-        exploreImg.addAction(Actions.scaleTo(1f, 1f, .6f));
-        sleepImg.addAction(Actions.moveTo(0, 0, .8f));
-        craftImg.addAction(Actions.moveTo(getDisplayWidth() - craftImg.getWidth(), 0, .8f));
+        main.addAction(Actions.moveTo(0, 0, .8f));
+        home.addAction(Actions.moveToAligned(0, 0, Align.bottomRight, .6f));
+        town.addAction(Actions.moveToAligned(getDisplayWidth(), 0, Align.bottomLeft, .6f));
         character.addAction(Actions.moveTo(getDisplayCenterX() - character.getWidth() / 2, 18f, .8f));
         lootSubmenu.addAction(Actions.moveTo(-lootSubmenu.getWidth(), 0, .3f));
         craftSubmenu.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
         fileBrowser.addAction(Actions.moveTo(0, -fileBrowser.getHeight(), .3f));
-        questSubmenu.addAction(Actions.moveTo(-questSubmenu.getWidth(), 0, .3f));
-        questDetails.addAction(Actions.moveTo(getDisplayWidth(), 0, .3f));
         saveWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight(),Align.bottom,.2f, Interpolation.circleOut));
         downloadWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight() + 100f, Align.bottom, .2f, Interpolation.circleOut));
-        dictImg.addAction(Actions.moveToAligned(getDisplayWidth(),0,Align.topRight,.4f));
-        saveImg.addAction(Actions.moveToAligned(0,0,Align.topLeft,.4f));
         pageFile.getWindow().addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight(), Align.bottom, .3f));
         setMessage("What're we doing next?");
         
@@ -896,6 +991,9 @@ public class TownUI extends GameUI {
         }
         else if (stateMachine.isInState(TownState.PageFile)) {
             return pageFileFocus;
+        }
+        else if (stateMachine.isInState(TownState.Train)){
+            return trainingFocus;
         }
         return defaultFocus;
     }

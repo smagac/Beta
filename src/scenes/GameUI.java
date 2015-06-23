@@ -123,6 +123,7 @@ public abstract class GameUI extends UI {
             Messages.Interface.Selected, 
             Messages.Interface.Close,   
             Messages.Interface.Button,
+            Messages.Interface.Focus,
             TabbedPane.Messages.ChangeTabs,
             Messages.Player.LevelUp,
             Messages.Player.Progress,
@@ -241,7 +242,7 @@ public abstract class GameUI extends UI {
         }
 
         String[] butt = defineButtons();
-        if (butt != null) {
+        if (butt != null && butt.length > 0) {
             window.addActor(buttonList);
 
             buttonList.addListener(new InputListener() {
@@ -404,7 +405,7 @@ public abstract class GameUI extends UI {
      * @param butt
      */
     private final void setButtons(final String... butt) {
-        if (butt == null) {
+        if (butt == null || butt.length == 0) {
             disableMenuInput();
             buttonList.clearChildren();
             buttons = null;
@@ -602,6 +603,9 @@ public abstract class GameUI extends UI {
             Inventory i = playerService.getInventory();
             craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
             return true;
+        }
+        if (msg.message == Messages.Interface.Focus) {
+            setKeyboardFocus((Actor)msg.extraInfo);
         }
         if (levelUpDialog.isVisible()) {
             boolean val = LevelUpState.onMessage(levelUpDialog, msg);

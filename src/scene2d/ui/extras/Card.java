@@ -1,6 +1,7 @@
 package scene2d.ui.extras;
 
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -22,18 +23,21 @@ public class Card extends Group {
         this.skin = skin;
         Image background = new Image(skin, "window4");
         background.setSize(200, 400);
+        background.setTouchable(Touchable.disabled);
         addActor(background);
         
         if (iconName != null) {
             icon = new Image(skin, iconName);
             icon.setSize(96, 96);
             icon.setPosition(100, 280, Align.center);
+            icon.setTouchable(Touchable.disabled);
             addActor(icon);
         }
         
         title = new Label(titleText, skin, "prompt");
         title.setPosition(100, 200, Align.center);
         title.setAlignment(Align.center);
+        title.setTouchable(Touchable.disabled);
         addActor(title);
         
         if (contentText != null) {
@@ -42,10 +46,12 @@ public class Card extends Group {
             content.setPosition(20, 0);
             content.setSize(150, 260);
             content.setWrap(true);
+            content.setTouchable(Touchable.disabled);
             addActor(content);
         }
         
         setSize(200, 400);
+        this.setTouchable(Touchable.enabled);
     }
     
     public void setTitle(String text){

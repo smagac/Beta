@@ -26,6 +26,8 @@ public interface Messages {
         
         // used when a button is highlighted
         public static final int Button = 0xfff3;
+
+        public static final int Focus = 0xfff4;
     }
     
     public static interface Player {
@@ -64,8 +66,7 @@ public interface Messages {
     public static interface Town {
         public static final int Home = 0;
         public static final int Explore = 1;
-        public static final int Craft = 2;
-        public static final int Quest = 3;
+        public static final int Town = 2;
         
         public static final int Close = 0;
         public static final int Make = 1;
@@ -82,6 +83,10 @@ public interface Messages {
         public static final int Save = 0;
         public static final int Sleep = 1;
         public static final int PageFile = 2;
+        
+        public static final int Quest = 0;
+        public static final int Craft = 1;
+        public static final int Train = 2;
     }
     
     /*

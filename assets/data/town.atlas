@@ -4,87 +4,79 @@ size: 1024,1024
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-audio
-  rotate: false
-  xy: 2, 36
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
-compressed
-  rotate: false
-  xy: 260, 294
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
 craft
   rotate: false
-  xy: 2, 586
+  xy: 2, 518
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-executable
-  rotate: false
-  xy: 518, 552
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
 explore
   rotate: false
-  xy: 2, 328
+  xy: 2, 260
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 explore_back
   rotate: false
-  xy: 260, 586
+  xy: 260, 518
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-image
-  rotate: false
-  xy: 776, 810
-  size: 24, 32
-  orig: 24, 32
-  offset: 0, 0
-  index: -1
-other
+home
   rotate: false
   xy: 2, 2
-  size: 24, 32
-  orig: 24, 32
+  size: 256, 256
+  orig: 256, 256
   offset: 0, 0
   index: -1
 pagefile
   rotate: false
-  xy: 2, 70
+  xy: 260, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+quest
+  rotate: false
+  xy: 518, 518
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 savedata
   rotate: false
-  xy: 260, 328
+  xy: 260, 2
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 sleep
   rotate: false
-  xy: 518, 586
+  xy: 518, 260
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-video
+town
   rotate: false
-  xy: 28, 36
-  size: 24, 32
-  orig: 24, 32
+  xy: 518, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+
+town2.png
+size: 512,512
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+train
+  rotate: false
+  xy: 2, 2
+  size: 256, 256
+  orig: 256, 256
   offset: 0, 0
   index: -1
