@@ -332,29 +332,33 @@ public class WanderUI extends UI {
         addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                return ((WanderState)stateMachine.getCurrentState()).keyDown(self, keycode);
+                return (!evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).keyDown(self, keycode);
             }
 
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
-                return ((WanderState)stateMachine.getCurrentState()).keyUp(self, keycode);
+                return (!evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).keyUp(self, keycode);
             }
             
             @Override
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                return ((WanderState)stateMachine.getCurrentState()).touchDown(self, x, y, button);
+                return (!evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).touchDown(self, x, y, button);
             }
             
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
-                ((WanderState)stateMachine.getCurrentState()).touchUp(self, x, y, button);
+                if (!evt.isHandled()){
+                    ((WanderState)stateMachine.getCurrentState()).touchUp(self, x, y, button);
+                }
                 
             }
             
             @Override
             public boolean mouseMoved(InputEvent evt, float x, float y){
-                Vector2 v = stageToScreenCoordinates(new Vector2(x, y));
-                ((WanderState)stateMachine.getCurrentState()).mouseMoved(self, v);
+                if (!evt.isHandled()){
+                    Vector2 v = stageToScreenCoordinates(new Vector2(x, y));
+                    ((WanderState)stateMachine.getCurrentState()).mouseMoved(self, v);
+                }
                 return false;
             }
         });
