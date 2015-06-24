@@ -31,6 +31,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap;
 
@@ -59,6 +61,8 @@ class SacrificeSubmenu {
     TextButton sacrificeButton;
     
     private Image pointer;
+
+    private Runnable resetFocus;
     
     @SuppressWarnings("rawtypes")
     public SacrificeSubmenu(Skin skin, IPlayerContainer playerService, final UI parent) {
@@ -206,6 +210,7 @@ class SacrificeSubmenu {
                 if (window.isVisible()) {
                     if (Input.ACTION.match(keycode)) {
                         focus.next(true);
+                        focus.getFocused().getStage().setKeyboardFocus(focus.getFocused());
                         if (focus.getFocused() != sacrificeButton){
                             parent.getPointer().setPosition(focus.getFocused(), Align.topLeft);
                             parent.getPointer().setVisible(true);
@@ -216,12 +221,29 @@ class SacrificeSubmenu {
                         }
                         return true;
                     }
-                    if (event.getTarget() != focus.getFocused()) {
-                        focus.getFocused().fire(event);
-                    }
-                    return true;
                 }
                 return false;
+            }
+        });
+        
+
+        resetFocus = new Runnable(){
+
+            @Override
+            public void run() {
+                focus.setFocus(focus.getActors().first());
+                
+            }
+            
+        };
+        
+        focus.addListener(new ChangeListener() {
+            
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                focus.getFocused().getStage().setKeyboardFocus(focus.getFocused());
+                parent.getPointer().setPosition(focus.getFocused(), Align.topLeft);
+                parent.getPointer().setVisible(true);
             }
         });
     }
@@ -252,7 +274,8 @@ class SacrificeSubmenu {
                     Actions.parallel(
                         Actions.moveBy(20f, 0, .2f, Interpolation.circleOut),
                         Actions.alpha(1f, .15f)
-                    )
+                    ),
+                    Actions.run(resetFocus)
                 )
                 , window
             );

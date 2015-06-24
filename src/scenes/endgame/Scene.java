@@ -1,18 +1,19 @@
 package scenes.endgame;
 
-import github.nhydock.ssm.SceneManager;
+import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 
 import core.DataDirs;
+import core.service.interfaces.IGame;
 
 public class Scene extends scenes.Scene<EndUI> {
 
     @Override
     public void extend(float delta) {
         if (ui.isDone()) {
-            SceneManager.switchToScene("title");
+            ServiceManager.getService(IGame.class).softReset();
             return;
         }
 

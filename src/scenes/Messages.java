@@ -98,7 +98,7 @@ public interface Messages {
         public static final int Heal = 0x100C;   //select assistance to open heal menu
         public static final int Leave = 0x100D;  //select assistance to open escape menu
     
-        public static final int Sacrifice = 1; //choose to sacrifice items
+        public static final int Sacrifice = 0x100F; //choose to sacrifice items
     
         public static final int Dead = 0x1000; //notification that we've died
         public static final int Exit = 0x1001; //notification that we've escaped the dungeon

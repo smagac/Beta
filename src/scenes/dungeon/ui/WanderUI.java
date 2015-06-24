@@ -49,8 +49,6 @@ import core.service.interfaces.IPlayerContainer;
 
 public class WanderUI extends UI {
 
-    protected StateMachine<WanderUI> menu;
-    
     Group display;
     
     // logger
@@ -74,8 +72,7 @@ public class WanderUI extends UI {
 
     AssistMenu assistMenu;
     SacrificeSubmenu sacrificeMenu;
-    LevelUpDialog levelUpDialog;
-
+    
     private Label enemyLabel;
     private Label lootLabel;
 
@@ -123,8 +120,8 @@ public class WanderUI extends UI {
     public WanderUI(AssetManager manager) {
         super(manager);
         
-        menu = new DefaultStateMachine<WanderUI>(this);
-        menu.setGlobalState(WanderState.Global);
+        stateMachine = new DefaultStateMachine<WanderUI>(this);
+        stateMachine.setGlobalState(WanderState.Global);
     }
     
     @Override
@@ -216,7 +213,7 @@ public class WanderUI extends UI {
             sacrificeIcon.addListener(new InputListener(){
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    if (menu.isInState(WanderState.Wander)) {
+                    if (stateMachine.isInState(WanderState.Wander)) {
                         if (button == Buttons.LEFT) {
                             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Assist);
                             return true;
@@ -228,14 +225,6 @@ public class WanderUI extends UI {
             display.addActor(sacrificeIcon);
         }
         
-        //level up dialog
-        {
-            levelUpDialog = new LevelUpDialog(skin);
-            levelUpDialog.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
-            display.addActor(levelUpDialog.getGroup());
-            display.addActor(levelUpDialog.getFocusGroup());
-        }
-
         // goddess sacrifice view
         sacrificeMenu = new SacrificeSubmenu(skin, playerService, this);
         assistMenu = new AssistMenu(skin, sacrificeMenu);
@@ -317,10 +306,6 @@ public class WanderUI extends UI {
             button.addListener(new InputListener(){
                 @Override
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    if (levelUpDialog.isVisible()) {
-                        return false;
-                    }
-                    
                     if (button == Buttons.LEFT) {
                         LabeledTicker<Integer> ticker = floorSelect.findActor("ticker");
                         System.out.println(ticker.getValue());
@@ -347,49 +332,37 @@ public class WanderUI extends UI {
         addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                if (levelUpDialog.isVisible()) {
-                    return false;
-                }
-                
-                return ((WanderState)menu.getCurrentState()).keyDown(self, keycode);
+                return ((WanderState)stateMachine.getCurrentState()).keyDown(self, keycode);
             }
 
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
-                if (levelUpDialog.isVisible()) {
-                    return false;
-                }
-                
-                return ((WanderState)menu.getCurrentState()).keyUp(self, keycode);
+                return ((WanderState)stateMachine.getCurrentState()).keyUp(self, keycode);
             }
             
             @Override
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                if (levelUpDialog.isVisible()) {
-                    return false;
-                }
-                
-                return ((WanderState)menu.getCurrentState()).touchDown(self, x, y, button);
+                return ((WanderState)stateMachine.getCurrentState()).touchDown(self, x, y, button);
             }
             
             @Override
             public void touchUp(InputEvent evt, float x, float y, int pointer, int button) {
-                ((WanderState)menu.getCurrentState()).touchUp(self, x, y, button);
+                ((WanderState)stateMachine.getCurrentState()).touchUp(self, x, y, button);
                 
             }
             
             @Override
             public boolean mouseMoved(InputEvent evt, float x, float y){
                 Vector2 v = stageToScreenCoordinates(new Vector2(x, y));
-                ((WanderState)menu.getCurrentState()).mouseMoved(self, v);
+                ((WanderState)stateMachine.getCurrentState()).mouseMoved(self, v);
                 return false;
             }
         });
         
         if (dungeonService.getDungeon().getDeepestTraversal() > 1) {
-            menu.changeState(WanderState.SelectFloor);
+            stateMachine.changeState(WanderState.SelectFloor);
         } else {
-            menu.changeState(WanderState.Wander);
+            stateMachine.changeState(WanderState.Wander);
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Warp, 1);
         }
         
@@ -400,7 +373,7 @@ public class WanderUI extends UI {
     public void update(float delta) {
         if (dungeonService.getProgress().depth > 0) {
             dungeonService.getEngine().getSystem(RenderSystem.class).update(delta);
-            menu.update();
+            stateMachine.update();
         }
     }
     
@@ -577,29 +550,12 @@ public class WanderUI extends UI {
             hud.updateStats(stats);
             return true;
         }
-        if (telegram.message == Messages.Player.LevelUp) {
-            LevelUpState.enter(levelUpDialog);
-            setKeyboardFocus(levelUpDialog.getGroup());
-            setScrollFocus(levelUpDialog.getGroup());
-            return true;
-        }
-        if (levelUpDialog.isVisible()) {
-            boolean val = LevelUpState.onMessage(levelUpDialog, telegram);
-            if (val) {
-                setKeyboardFocus(getRoot());
-            }
-            return val;
-        }
-        return menu.handleMessage(telegram);
+        return stateMachine.handleMessage(telegram);
     }
 
     @Override
     protected void load() {
         // TODO Auto-generated method stub
         
-    }
-
-    public void changeState(WanderState assist) {
-        menu.changeState(assist);
     }
 }

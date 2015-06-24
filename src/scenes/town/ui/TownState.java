@@ -96,6 +96,7 @@ enum TownState implements UIState<TownUI> {
                 entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
             }
             entity.refreshButtons();
+            entity.resetFocus();
         }
 
         @Override

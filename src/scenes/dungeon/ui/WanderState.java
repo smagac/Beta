@@ -48,9 +48,11 @@ public enum WanderState implements UIState {
             }
             else if (telegram.message == Messages.Dungeon.Dead && telegram.extraInfo == entity.playerService.getPlayer()) {
                 entity.changeState(WanderState.Dead);
+                return true;
             }
             else if (telegram.message == Messages.Dungeon.Exit) {
                 entity.changeState(WanderState.Exit);
+                return true;
             }
             return false;
         }
@@ -224,7 +226,7 @@ public enum WanderState implements UIState {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Movement);
         }
     },
-    Targeting("") {
+    Targeting() {
 
         private final Vector2 mousePos = new Vector2();
         
@@ -460,7 +462,8 @@ public enum WanderState implements UIState {
             return false;
         }
         
-    }, Train() {
+    }, 
+    Train() {
 
         @Override
         public void enter(WanderUI entity) {

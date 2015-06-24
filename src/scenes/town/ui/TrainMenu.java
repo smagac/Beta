@@ -42,6 +42,14 @@ public class TrainMenu {
     
     private Trainer trainer;
     
+    private Runnable resetFocus = new Runnable() {
+        
+        @Override
+        public void run() {
+            select(cards.first());
+        }
+    };
+    
     private InputListener click = new InputListener(){
         @Override
         public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor){
@@ -104,7 +112,6 @@ public class TrainMenu {
                 cardGroup.add(card);
             }
         }
-        cardGroup.setFocus(cardGroup.getActors().first());
 
         submenu = sacrificeSubmenu;
         submenu.getGroup().setVisible(false);
@@ -115,6 +122,7 @@ public class TrainMenu {
         menu.setColor(1f, 1f, 1f, 0f);
         menu.setOrigin(Align.center);
         menu.setTouchable(Touchable.disabled);
+        
     }
 
     protected void select(Card a){
@@ -180,6 +188,7 @@ public class TrainMenu {
                 )
             );
         }
+
         menu.addAction(
             Actions.sequence(
                 Actions.scaleTo(.5f, .5f),
@@ -187,7 +196,7 @@ public class TrainMenu {
                 Actions.run(InputDisabler.instance),
                 Actions.addAction(
                     Actions.parallel(
-                            Actions.moveToAligned(200, getHeight()/2f, Align.left),
+                            Actions.moveToAligned(170, getHeight()/2f, Align.left),
                             Actions.alpha(0f),
                             Actions.visible(false)
                     ),
@@ -197,6 +206,7 @@ public class TrainMenu {
                         Actions.alpha(1f, .15f),
                         Actions.scaleTo(1f, 1f, .25f, Interpolation.circleOut)
                 ),
+                Actions.run(resetFocus),
                 Actions.run(InputDisabler.instance),
                 Actions.touchable(Touchable.childrenOnly)
             )
