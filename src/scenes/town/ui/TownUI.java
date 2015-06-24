@@ -208,14 +208,6 @@ public class TownUI extends GameUI {
             });
             main.addActor(townImg);
         }
-
-        // draw you
-        {
-            character = new Image(skin.getRegion(playerService.getGender()));
-            character.setSize(96f, 96f);
-            character.setPosition(display.getWidth() / 2 - character.getWidth() / 2, 18f);
-            display.addActor(character);
-        }
     }
     
     /**
@@ -284,13 +276,6 @@ public class TownUI extends GameUI {
             });
             home.addActor(dictImg);
         }
-        
-        pageFile = new PageFileWindow(skin, playerService, ServiceManager.getService(PageFile.class));
-        pageFile.getWindow().setPosition(getDisplayCenterX(), getDisplayHeight(), Align.bottom);
-        display.addActor(pageFile.getWindow());
-        
-        pageFileFocus = new FocusGroup(pageFile.getWindow());
-        pageFileFocus.setFocus(pageFile.getWindow());
     }
 
     
@@ -359,13 +344,6 @@ public class TownUI extends GameUI {
                 }
             });
             town.addActor(trainImg);
-            
-            sacrificeMenu = new SacrificeSubmenu(skin, playerService, this);
-            trainingMenu = new TrainMenu(skin, sacrificeMenu);
-            trainingMenu.getGroup().setPosition(getDisplayCenterX(), getDisplayCenterY(), Align.center);
-            display.addActor(trainingMenu.getGroup());
-            
-            trainingFocus = new FocusGroup(trainingMenu.getGroup());
         }
     }
     /**
@@ -839,15 +817,44 @@ public class TownUI extends GameUI {
         display.addActor(downloadWindow);
     }
 
+    private void makeTraining() {
+
+        sacrificeMenu = new SacrificeSubmenu(skin, playerService, this);
+        trainingMenu = new TrainMenu(skin, sacrificeMenu);
+        trainingMenu.getGroup().setPosition(getDisplayCenterX(), getDisplayCenterY(), Align.center);
+        display.addActor(trainingMenu.getGroup());
+        
+        trainingFocus = new FocusGroup(trainingMenu.getGroup());
+    }
+    
+    private void makePagefile() {
+        pageFile = new PageFileWindow(skin, playerService, ServiceManager.getService(PageFile.class));
+        pageFile.getWindow().setPosition(getDisplayCenterX(), getDisplayHeight(), Align.bottom);
+        display.addActor(pageFile.getWindow());
+        
+        pageFileFocus = new FocusGroup(pageFile.getWindow());
+        pageFileFocus.setFocus(pageFile.getWindow());
+    }
     
     @Override
     public void extend() {
         makeMain();
         makeHome();
         makeTown();
+        
+        //draw you
+        {
+            character = new Image(skin.getRegion(playerService.getGender()));
+            character.setSize(96f, 96f);
+            character.setPosition(display.getWidth() / 2 - character.getWidth() / 2, 18f);
+            display.addActor(character);
+        }
+        
         makeCraft();
         makeExplore();
         makeQuest();
+        makeTraining();
+        makePagefile();
         makeSave();
         makeDownload();
 
