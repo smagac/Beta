@@ -332,17 +332,17 @@ public class WanderUI extends UI {
         addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                return (!evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).keyDown(self, keycode);
+                return (evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).keyDown(self, keycode);
             }
 
             @Override
             public boolean keyUp(InputEvent evt,  int keycode) {
-                return (!evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).keyUp(self, keycode);
+                return (evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).keyUp(self, keycode);
             }
             
             @Override
             public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                return (!evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).touchDown(self, x, y, button);
+                return (evt.isHandled())?true:((WanderState)stateMachine.getCurrentState()).touchDown(self, x, y, button);
             }
             
             @Override

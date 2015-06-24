@@ -735,7 +735,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             final ParticleEffect pe = new ParticleEffect();
             pe.load(Gdx.files.internal(DataDirs.Particles + "spell.particle"), Gdx.files.internal(DataDirs.Home));
             ParticleActor actor = new ParticleActor(pe);
-            actor.setPosition(pos[0] * SCALE, pos[1] * SCALE);
+            actor.setPosition(pos[0] * SCALE + (SCALE*.5f), pos[1] * SCALE);
             actor.start();
             actor.addAction(Actions.sequence(Actions.delay(1f), Actions.run(new Runnable(){
                 @Override

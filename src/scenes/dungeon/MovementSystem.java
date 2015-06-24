@@ -250,10 +250,14 @@ public class MovementSystem extends EntitySystem implements EntityListener {
 
         // if one of the actors is a boss, invoke a boss fight
         if (Groups.bossType.matches(opponent)) {
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, opponent);
+            if (!spell) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, opponent);
+            }
             return;
         } else if (Groups.bossType.matches(attacker)) {
-            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, attacker);
+            if (!spell) {
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.FIGHT, attacker);
+            }
             return;
         } 
         
