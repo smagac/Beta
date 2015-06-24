@@ -19,6 +19,7 @@ import core.common.Input;
 import core.datatypes.Item;
 import core.service.interfaces.IPlayerContainer;
 import scene2d.InputDisabler;
+import scene2d.runnables.SendMessage;
 import scene2d.ui.extras.Card;
 import scenes.Messages;
 

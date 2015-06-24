@@ -232,7 +232,9 @@ class SacrificeSubmenu {
             @Override
             public void run() {
                 focus.setFocus(focus.getActors().first());
-                
+                focus.getFocused().getStage().setKeyboardFocus(focus.getFocused());
+                parent.getPointer().setPosition(focus.getFocused(), Align.topLeft);
+                parent.getPointer().setVisible(true);
             }
             
         };

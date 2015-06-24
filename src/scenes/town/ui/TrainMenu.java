@@ -152,8 +152,8 @@ public class TrainMenu {
             card.addAction(Actions.moveToAligned(0, 0, Align.bottomLeft, .2f, Interpolation.circleOut));
             IPlayerContainer playerService = ServiceManager.getService(IPlayerContainer.class);
             Stats stats = Stats.Map.get(playerService.getPlayer());
-            submenu.setPrompt("For " + trainer.calcPoints(stats) + " items you can improve your " + trainer.getTrainingType().name() + " with Muscle God Cena." 
-                              +".\n \nHe says he'd really like " + trainer.getBonus());
+            submenu.setPrompt("For " + trainer.calcPoints(stats) + " items you can improve your " + trainer.getTrainingType().name() 
+                              + ".\n\nThe Aztec Gods of Gains say they'd really like some " + trainer.getBonus());
             menu.addAction(Actions.sequence(Actions.run(InputDisabler.instance), submenu.show(), Actions.delay(.2f), Actions.run(InputDisabler.instance)));
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Focus, submenu.getGroup());
         }
