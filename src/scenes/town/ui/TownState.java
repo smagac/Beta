@@ -296,7 +296,7 @@ enum TownState implements UIState<TownUI> {
             return false;
         }
     },
-    Explore("Return", "Explore Dungeon", "Random Dungeon", "Daily Dungeon") {
+    Explore("Random Dungeon", "Daily Dungeon") {
 
         @Override
         public void enter(TownUI ui) {
@@ -326,13 +326,14 @@ enum TownState implements UIState<TownUI> {
                 ui.changeState(Main);
                 return true;
             }
-            else if (t.message != Messages.Interface.Button) {
-                return false;
+            
+            
+            int button = -1;
+            if (t.extraInfo != null && t.message == Messages.Interface.Button){
+                button = (int)t.extraInfo; 
             }
             
-            int button = (int)t.extraInfo;
-            
-            if (button == Messages.Town.Explore || button == Messages.Town.Random) {
+            if (t.message == Messages.Town.SelectDungeon || button == Messages.Town.Random) {
                 if (ui.playerService.getPlayer().getComponent(Stats.class).hp <= 0) {
                     ui.setMessage("You need to rest first!");
                 }
@@ -340,7 +341,7 @@ enum TownState implements UIState<TownUI> {
                     DungeonParams params;
                     FileHandle f = null;
                     // load selected file dungeon
-                    if (button == Messages.Town.Explore) {
+                    if (t.message == Messages.Town.SelectDungeon) {
                         FileHandle file = ui.fileBrowser.getSelectedFile();
                         if (file != null) {
                             params = DungeonParams.loadDataFromFile(file);

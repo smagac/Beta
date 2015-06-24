@@ -5,8 +5,10 @@ import java.io.FileFilter;
 import java.util.Comparator;
 
 import scene2d.ui.extras.TabbedPane;
+import scenes.Messages;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -148,7 +150,11 @@ public class FileBrowser extends Group {
                         currentFolderContents.prevFile();
                     }
                     else if (Input.ACCEPT.match(keycode)) {
-                        changeFolder(currentFolderContents.currentFile);
+                        if (currentFolderContents.currentFile.isDirectory()){
+                            changeFolder(currentFolderContents.currentFile);
+                        } else {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Town.SelectDungeon);
+                        }
                     }
                 } else {
                     if (Input.DOWN.match(keycode)) {
@@ -156,6 +162,9 @@ public class FileBrowser extends Group {
                     }
                     else if (Input.UP.match(keycode)) {
                         historyContents.prevFile();
+                    }
+                    else if (Input.ACCEPT.match(keycode)) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Town.SelectDungeon);
                     }
                 }
                 
@@ -177,7 +186,7 @@ public class FileBrowser extends Group {
                 if (frame.getOpenTabIndex() == 0) {
                     filePane.scrollTo(0, actor.getY(), 1, actor.getHeight());
                 } else {
-                    historyPane.scrollTo(0, actor.getY(), 1, actor.getHeight());
+                    filePane.scrollTo(0, actor.getY(), 1, actor.getHeight());
                 }
             }
         });
@@ -197,8 +206,10 @@ public class FileBrowser extends Group {
         currentFolder = folder;
     
         currentFolderContents.setFiles(folder.list(NoHidden.instance), currentFolder);
-        
         url.setText(folder.file().getAbsolutePath());
+        
+        currentFolderContents.first();
+        filePane.setScrollY(0);
     }
 
     /**
@@ -271,6 +282,13 @@ public class FileBrowser extends Group {
         
         
         
+        public void first() {
+            currentIndex = 0;
+            selectFile(files.get(currentIndex));
+        }
+
+
+
         public void nextFile() {
             if (files.size > 0) {
                 currentIndex++;
@@ -412,7 +430,11 @@ public class FileBrowser extends Group {
             FileHandle file = (FileHandle)event.getTarget().getUserObject();
             
             if (file == list.currentFile) {
-                browser.changeFolder(file);
+                if (file.isDirectory()){
+                    browser.changeFolder(file);
+                } else {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Town.SelectDungeon);
+                }
             } else {
                 list.selectFile(file);
             }

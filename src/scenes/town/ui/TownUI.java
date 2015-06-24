@@ -114,7 +114,13 @@ public class TownUI extends GameUI {
     protected void listenTo(IntSet messages)
     {
         super.listenTo(messages);
-        messages.addAll(Messages.Player.NewItem, Messages.Player.RemoveItem, Messages.Player.UpdateItem, Messages.Dungeon.Sacrifice);
+        messages.addAll(
+            Messages.Player.NewItem, 
+            Messages.Player.RemoveItem, 
+            Messages.Player.UpdateItem,
+            Messages.Town.SelectDungeon,
+            Messages.Dungeon.Sacrifice
+        );
     }
     
     public TownUI(AssetManager manager) {
@@ -582,7 +588,7 @@ public class TownUI extends GameUI {
         fileBrowser.init();
         display.addActor(fileBrowser);
         
-        exploreGroup = new FocusGroup(buttonList, fileBrowser);
+        exploreGroup = new FocusGroup(fileBrowser, buttonList);
         exploreGroup.addListener(focusListener);
     }
 

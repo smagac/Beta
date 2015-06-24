@@ -72,8 +72,9 @@ public interface Messages {
         public static final int Make = 1;
         public static final int Accept = 1;
         
-        public static final int Random = 2;
-        public static final int DailyDungeon = 3;
+        public static final int Random = 0;
+        public static final int DailyDungeon = 1;
+        public static final int SelectDungeon = 2;
 
         public static final int CancelDownload = 0;
         
