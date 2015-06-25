@@ -40,11 +40,14 @@ You can press a Direction key or click around the character to move them in that
 
 Hovering your mouse over any enemy sprite will show you their name and current amount of HP.
 
-Doors inhibit your field of view and entry into rooms.  By gathering keys, you can simply open treasure chests or doors with no fear of being attacked by a mimic, or you can bash them right in.  Pressing the ACTION button will use a key on a door or treasure chest adjacent to the character.
+Doors inhibit your field of view and entry into rooms.  By gathering keys, you can simply open treasure chests or doors with no fear of being attacked by a mimic, or you can bash them right in.  Holding the ACTION button and pressing in the Direction of the entity you wish to unlock will use a key if it's a treasure chest or door type.
 
 Ascending or Descending requires the player to be standing on a staircase and pressing the ACTION button.  Ascending while on the first floor of a dungeon will result in leaving the dungeon with no penalty, much like sacrificing to escape.
 
 Players may also gather equipment while dungeoning.  Enemies have a chance of dropping either a sword, shield, or piece of armor.  Equipment will automatically be put on upon stepping on the drop icon.  They all have durability values and a power bonus for your character.  Once a piece of equipment breaks, it no longer grants its power rating.  Equipment is reset with each dungeon.
+
+Spell casting enables the player to send out an attack that streams in a straight path, hurting all enemies in its path, penetrating their defense.  The amount of spells available is limited by how many mana potions you naturally have, which recharge over time.
+To cast a spell you must press Cancel or Middle Click to enter Targeting mode.  Targeting mode allows you to move a cursor anywhere within your FOV.  Enemies highlighted by the targeting cursor will show their stats.  Spells can only be cast perpendicularly to the character, so the cursor will lock to an axis first when attempting to cast a spell.
 
 ## Sleeping
 Sleeping has two main functions.  It advances the game time by a day, and it fully heals you.  You are technically capable of going through multiple dungeons in a single "day" if you balance your way of going through them.
@@ -96,10 +99,13 @@ Sounds used from freesound.org
 		8-bit coin
 		8-bit shimmer
 		8-bit bump
-	deathbygeko
-		boss fight
-	hgavin
-		Whoosh.wav
+	deathbygeko - boss fight
+	hgavin - Whoosh.wav
+	Dymewiz - footsteps (snow)_02.WAV
+	Phil25 - Stone Steps
+	ceberation - Footsteps on leaves.wav
+	aglinder - Footsteps Dirt 02
+	FableVision_Studios - Sandy Footsteps (foley)
 
 Also featuring sounds recorded from Sonic & Knuckles
 	
