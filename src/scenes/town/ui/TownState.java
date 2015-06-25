@@ -236,7 +236,7 @@ enum TownState implements UIState<TownUI> {
 
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
-            if (t.message == Messages.Town.Make || t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Make) {
+            if (t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Make) {
                 Craftable c;
                 if (ui.craftMenu.getOpenTabIndex() == 0) {
                     c = ui.craftList.getSelected();

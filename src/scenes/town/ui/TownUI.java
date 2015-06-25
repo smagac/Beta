@@ -486,6 +486,9 @@ public class TownUI extends GameUI {
                 if (Input.UP.match(keycode)) {
                     l.setSelectedIndex(Math.max(0, l.getSelectedIndex() - 1));
                 }
+                if (Input.ACCEPT.match(keycode)) {
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.Make);
+                }
 
                 return false;
             }
@@ -551,7 +554,7 @@ public class TownUI extends GameUI {
         
         display.addActor(lootSubmenu);
 
-        craftGroup = new FocusGroup(buttonList, lootPane, craftMenu);
+        craftGroup = new FocusGroup(lootPane, craftMenu);
         craftGroup.addListener(focusListener);
     }
     

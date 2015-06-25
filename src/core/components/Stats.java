@@ -112,6 +112,7 @@ public class Stats extends Component implements Serializable {
             case DEFENSE:
                 defense++; break;
         }
+        level++;
     }
     
     public int getStrength() {
