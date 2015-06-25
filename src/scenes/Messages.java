@@ -68,9 +68,8 @@ public interface Messages {
         public static final int Explore = 1;
         public static final int Town = 2;
         
-        public static final int Close = 0;
-        public static final int Make = 1;
-        public static final int Accept = 1;
+        public static final int Make = 0;
+        public static final int Accept = 0;
         
         public static final int Random = 0;
         public static final int DailyDungeon = 1;
@@ -78,8 +77,8 @@ public interface Messages {
 
         public static final int CancelDownload = 0;
         
-        public static final int CompleteQuest = 1;
-        public static final int AcceptQuest = 1;
+        public static final int CompleteQuest = 0;
+        public static final int AcceptQuest = 0;
         
         public static final int Save = 0;
         public static final int Sleep = 1;

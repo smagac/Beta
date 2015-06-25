@@ -28,6 +28,7 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
     bigpop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },
 	list: {font: smaller, fontColor: white},
 	tab: { down: tab_down, up: tab_up, checked: tab_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
+	huge: { down: 3dbutton_down, up: window4, checked: 3dbutton_down, font: prompt, fontColor: white, downFontColor: black, checkedFontColor: black}
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: { background: window6, vScrollKnob: scroll-knob },

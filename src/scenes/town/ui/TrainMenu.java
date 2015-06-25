@@ -69,7 +69,7 @@ public class TrainMenu {
         @Override
         public boolean keyDown(InputEvent evt, int keycode){
             System.out.println(keycode);
-            if (!submenu.getGroup().isVisible()){
+            if (!submenu.getGroup().isVisible() && menu.isVisible()){
                 if (Input.LEFT.match(keycode)){
                     cardGroup.prev();
                     select((Card)cardGroup.getFocused());
@@ -122,7 +122,7 @@ public class TrainMenu {
         menu.setColor(1f, 1f, 1f, 0f);
         menu.setOrigin(Align.center);
         menu.setTouchable(Touchable.disabled);
-        
+        menu.setVisible(false);
     }
 
     protected void select(Card a){
@@ -191,14 +191,17 @@ public class TrainMenu {
 
         menu.addAction(
             Actions.sequence(
+                Actions.visible(true),
                 Actions.scaleTo(.5f, .5f),
                 Actions.alpha(0f),
                 Actions.run(InputDisabler.instance),
                 Actions.addAction(
-                    Actions.parallel(
-                            Actions.moveToAligned(170, getHeight()/2f, Align.left),
-                            Actions.alpha(0f),
-                            Actions.visible(false)
+                    Actions.sequence(
+                        Actions.parallel(
+                                Actions.moveToAligned(170, getHeight()/2f, Align.left),
+                                Actions.alpha(0f)
+                        ),
+                        Actions.visible(false)
                     ),
                     submenu.getGroup()
                 ),
@@ -232,6 +235,7 @@ public class TrainMenu {
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
                 ),
+                Actions.visible(false),
                 Actions.addAction(Actions.visible(false), submenu.getGroup()),
                 Actions.run(InputDisabler.instance)
             )

@@ -48,9 +48,11 @@ enum UIState implements State<NewUI> {
             @Override
             public void exit(NewUI entity) {
                 entity.slots.addAction(
-                    Actions.alpha(0f, .8f)
+                    Actions.sequence(
+                        Actions.touchable(Touchable.disabled),
+                        Actions.alpha(0f, .5f)
+                    )
                 );
-                entity.slots.setTouchable(Touchable.disabled);
             }
 
             @Override
@@ -60,6 +62,10 @@ enum UIState implements State<NewUI> {
                     entity.audio.playSfx(DataDirs.Sounds.accept);
                     int index = (Integer)telegram.extraInfo;
                     Card card = entity.slots.findActor("slot " + index);
+                    if (card == null){
+                        entity.sm.changeState(Create);
+                        return true;
+                    }
                     Object summary = card.getUserObject();
                     
                     if (summary == null) {
@@ -83,21 +89,19 @@ enum UIState implements State<NewUI> {
                     Actions.sequence(
                         Actions.run(InputDisabler.instance),
                         Actions.alpha(0f),
-                        Actions.delay(1.5f),
+                        Actions.delay(.8f),
                         Actions.alpha(1f, .3f), 
                         Actions.run(new Runnable() {
                             @Override
                             public void run() {
                                 entity.createFocus.setFocus(entity.number);
-                                entity.createFrame.setTouchable(Touchable.enabled);
-                                entity.setKeyboardFocus(entity.createFocus);
+                                entity.createFrame.setTouchable(Touchable.childrenOnly);
                             }
                         }),
                         Actions.run(InputDisabler.instance)
                     )
                 );
                 
-                entity.act();
             }
 
             @Override

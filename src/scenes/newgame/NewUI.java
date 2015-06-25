@@ -50,6 +50,7 @@ public class NewUI extends UI {
     FocusGroup createFocus;
 
     Group slots;
+    private Button newGameButton;
     private FocusGroup slotFocus;
 
     Scene parent;
@@ -82,10 +83,36 @@ public class NewUI extends UI {
         // create load data dialog
         {
             slots = new Group();
-            slots.setSize(620, 400);
+            slots.setSize(620, 500);
             slots.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
             slots.setColor(1,1,1,0);
 
+            //new game button
+            {
+                Button button = newGameButton = new TextButton("New Game", skin, "huge");
+                button.setSize(620f, 80);
+                button.setPosition(0, 500, Align.topLeft);
+                button.addListener(new InputListener() {
+                    @Override
+                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor){
+                        newGameButton.setChecked(true);
+                        slotFocus.unfocus();
+                    }
+                    
+                    @Override
+                    public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                        if (button == Buttons.LEFT) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, ui, Messages.Interface.Selected, 0);
+                            return true;
+                        }
+                        return false;
+                    }
+                    
+                });
+                slots.addActor(button);
+            }            
+            
+            
             FocusGroup focus = slotFocus = new FocusGroup();
 
             for (int x = 0, i = 1; i <= 3; i++, x += 210) {
@@ -133,6 +160,11 @@ public class NewUI extends UI {
                             slotFocus.prev(true);
                             return true;
                         }
+                        if (Input.UP.match(keycode)) {
+                            newGameButton.setChecked(true);
+                            slotFocus.unfocus();
+                            return true;
+                        }
                         if (Input.ACCEPT.match(keycode)) {
                             MessageDispatcher.getInstance().dispatchMessage(null, ui, Messages.Interface.Selected, slotFocus.getFocusedIndex() + 1);
                             return true;
@@ -151,6 +183,7 @@ public class NewUI extends UI {
                         card.clearActions();
                         if (card == slotFocus.getFocused()) {
                             card.addAction(Actions.moveTo(card.getX(), 20, .15f, Interpolation.circleOut));
+                            newGameButton.setChecked(false);
                         } else {
                             card.addAction(Actions.moveTo(card.getX(), 0, .15f, Interpolation.circleOut));
                         }
@@ -210,7 +243,7 @@ public class NewUI extends UI {
 
         // Gender
         {
-            Table table = new Table();
+            final Table table = new Table();
             prompt = new Label("Gender", skin, "prompt");
             prompt.setAlignment(Align.left);
             table.add(prompt).expandX().fillX();
@@ -231,6 +264,11 @@ public class NewUI extends UI {
             createFocus.add(table);
 
             table.addListener(new InputListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor){
+                    createFocus.setFocus(table);
+                }
+                
                 @Override
                 public boolean keyDown(InputEvent evt, int keycode) {
                     boolean hit = false;
@@ -256,6 +294,11 @@ public class NewUI extends UI {
             createFocus.add(hardcore);
             hardcore.addListener(new InputListener(){
                 @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor){
+                    createFocus.setFocus(hardcore);
+                }
+                
+                @Override
                 public boolean keyDown(InputEvent event, int keycode) {
                     if (Input.ACCEPT.match(keycode)) {
                         hardcore.toggle();
@@ -280,6 +323,7 @@ public class NewUI extends UI {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     accept.setChecked(true);
+                    createFocus.setFocus(accept);
                 }
                 
                 @Override
@@ -309,20 +353,17 @@ public class NewUI extends UI {
             createFocus.add(accept);
         }
         
-        createFocus.addListener(new InputListener() {
+        createFrame.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent evt, int keycode) {
-                boolean hit = false;
 
                 if (Input.DOWN.match(keycode)) {
-                    hit = true;
                     createFocus.next();
                 }
                 if (Input.UP.match(keycode)) {
-                    hit = true;
                     createFocus.prev();
                 }
-                return hit;
+                return false;
             }
         });
 

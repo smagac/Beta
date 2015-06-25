@@ -163,7 +163,7 @@ enum TownState implements UIState<TownUI> {
         }
         
     }, 
-    Craft("Cancel", "Make Item") {
+    Craft("Make Item") {
         
         private void populateLoot(TownUI ui) {
             int index = 0;
@@ -236,7 +236,7 @@ enum TownState implements UIState<TownUI> {
 
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
-            if (t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Make) {
+            if (t.message == Messages.Town.Make || t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Make) {
                 Craftable c;
                 if (ui.craftMenu.getOpenTabIndex() == 0) {
                     c = ui.craftList.getSelected();
@@ -288,9 +288,7 @@ enum TownState implements UIState<TownUI> {
                 Craftable c = (Craftable) t.extraInfo;
                 refreshRequirements(c, ui);
             }
-            else if (t.message == Messages.Interface.Close || 
-                     (t.message == Messages.Interface.Button && (int)t.extraInfo == Messages.Town.Close)) {
-                
+            else if (t.message == Messages.Interface.Close) {
                 ui.changeState(Town);
             }
             return false;
@@ -360,7 +358,7 @@ enum TownState implements UIState<TownUI> {
                     return true;
                 }
             }
-            else if (button == Messages.Town.Close) {
+            else if (t.message == Messages.Interface.Close) {
                 ui.changeState(Main);
                 return true;
             }
@@ -709,8 +707,8 @@ enum TownState implements UIState<TownUI> {
         }
 
     },
-    QuestMenu("Return", "Complete Quest") {
-        private String[] buttons2 = {"Return", "Accept Quest"};
+    QuestMenu("Complete Quest") {
+        private String[] buttons2 = {"Accept Quest"};
         boolean completeView = false;
 
         @Override
@@ -746,7 +744,7 @@ enum TownState implements UIState<TownUI> {
             );
             ui.setMessage("Let's help people!");
             ui.refreshButtons();
-            ui.setFocus(ui.getButtonList());
+            ui.resetFocus();
         }
         
         @Override
@@ -833,38 +831,46 @@ enum TownState implements UIState<TownUI> {
                 Quest selected;
                 if (!completeView) {
                     selected = ui.availableQuests.getSelected();
-                    ui.playerService.getQuestTracker().accept(selected);
-                    ui.availableQuests.getItems().removeValue(selected, true);
-                    ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
+                    if (selected != null){
+                        ui.playerService.getQuestTracker().accept(selected);
+                        ui.availableQuests.getItems().removeValue(selected, true);
+                        ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
+                        ui.audio.playSfx(DataDirs.Sounds.accept);
+                    } else {
+                        ui.audio.playSfx(DataDirs.Sounds.tick);
+                    }
                 }
                 // don't try to accept quests that have already been accepted
                 else {
                     selected = ui.acceptedQuests.getSelected();
-                    boolean completed = ui.playerService.getQuestTracker().complete(selected);
-                    if (!completed) {
-                        ui.setMessage("You can't complete that quest yet");
+                    if (selected != null){
+                        boolean completed = ui.playerService.getQuestTracker().complete(selected);
+                        if (!completed) {
+                            ui.setMessage("You can't complete that quest yet");
+                            ui.audio.playSfx(DataDirs.Sounds.tick);
+                        }
+                        else {
+                            ui.audio.playSfx(DataDirs.Sounds.accept);
+                            // reward the player for completing the quest
+                            Inventory inv = ui.playerService.getInventory();
+                            Craftable craftable = inv.getRequiredCrafts().random();
+    
+                            Reward reward = ui.playerService.getQuestTracker().getReward(craftable);
+    
+                            inv.pickup(reward.item, reward.count);
+                            String[] message = {
+                                    "As a reward for your hard work, the folk you helped out left you with this...",
+                                    String.format("Received %d %s", reward.count, reward.item) 
+                            };
+                            Object info = telegram.extraInfo;
+                            telegram.extraInfo = message;
+                            GoddessDialog.onMessage(ui, telegram);
+                            telegram.extraInfo = info;
+                            
+                            ui.changeState(GoddessDialog);
+                        }
+                        ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
                     }
-                    else {
-                        // reward the player for completing the quest
-                        Inventory inv = ui.playerService.getInventory();
-                        Craftable craftable = inv.getRequiredCrafts().random();
-
-                        Reward reward = ui.playerService.getQuestTracker().getReward(craftable);
-
-                        inv.pickup(reward.item, reward.count);
-                        String[] message = {
-                                "As a reward for your hard work, the folk you helped out left you with this...",
-                                String.format("Received %d %s", reward.count, reward.item) 
-                        };
-                        Object info = telegram.extraInfo;
-                        telegram.extraInfo = message;
-                        GoddessDialog.onMessage(ui, telegram);
-                        telegram.extraInfo = info;
-                        
-                        ui.changeState(GoddessDialog);
-                    }
-                    ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
-                    return true;
                 }
 
                 return true;
@@ -886,10 +892,11 @@ enum TownState implements UIState<TownUI> {
                 ui.refreshButtons();
                 return true;
             }
-            else {
+            else if (telegram.message == Messages.Interface.Close) {
                 ui.changeState(Town);
                 return true;
             }
+            return false;
         }
 
     }, 

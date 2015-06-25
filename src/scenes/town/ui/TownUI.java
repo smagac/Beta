@@ -678,6 +678,10 @@ public class TownUI extends GameUI {
                 if (Input.UP.match(keycode)) {
                     l.setSelectedIndex(Math.max(0, l.getSelectedIndex() - 1));
                 }
+                
+                if (Input.ACCEPT.match(keycode)){
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, Messages.Town.AcceptQuest);
+                }
 
                 return false;
             }
@@ -685,7 +689,7 @@ public class TownUI extends GameUI {
 
         display.addActor(questSubmenu);
 
-        questGroup = new FocusGroup(buttonList, questMenu);
+        questGroup = new FocusGroup(questMenu);
         questGroup.addListener(focusListener);
     }
 
