@@ -136,6 +136,22 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     
     Sound footsteps;
     
+    private InputListener statHover = new InputListener() {
+
+        @Override
+        public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
+            Actor actor = evt.getListenerActor();
+            Entity e = (Entity)actor.getUserObject();
+            refreshStats(e);
+            showStats(actor, e);
+        }
+
+        @Override
+        public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor) {
+            hideStats();
+        }
+    };
+    
     public RenderSystem() {
         addQueue = new Array<Actor>();
         removeQueue = new Array<Actor>();
@@ -276,20 +292,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         sprite.setPosition(p.getX() * SCALE, p.getY() * SCALE);
         sprite.setUserObject(e);
         if (Groups.monsterType.matches(e)) {
-            //Gdx.app.log("[Entity]", "Entity is monster, adding hover controls");
-            sprite.addListener(new InputListener() {
-
-                @Override
-                public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                    refreshStats(e);
-                    showStats(e);
-                }
-
-                @Override
-                public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor) {
-                    hideStats();
-                }
-            });
+            sprite.addListener(statHover);
         }
 
         addQueue.add(sprite);
@@ -526,14 +529,13 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
      * Pops up the message box with the actor's stats in it
      * @param e
      */
-    void showStats(Entity e) {
+    void showStats(Actor sprite, Entity e) {
         if (statsVis != null || Identifier.Map.get(e).hidden()) {
             return;
         }
         
         statsVis = e;
         
-        Actor sprite = Renderable.Map.get(e).getActor();
         Vector2 v = new Vector2(sprite.getWidth()/2f, sprite.getHeight());
         sprite.localToStageCoordinates(v);
         stats.clearActions();
@@ -684,6 +686,10 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
         cursorLocation[1] = p.getY();
         targetCursor.setPosition(cursorLocation[0]*SCALE, cursorLocation[1]*SCALE);
         targetCursor.setVisible(!targetCursor.isVisible());
+        
+        if (!targetCursor.isVisible()){
+            hideStats();
+        }
     }
     
     /**
@@ -713,7 +719,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
             hideStats();
         } else {
             refreshStats(hover);
-            showStats(hover);
+            showStats(Renderable.Map.get(hover).getActor(), hover);
         }
     }
 
