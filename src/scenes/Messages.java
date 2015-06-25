@@ -178,4 +178,10 @@ public interface Messages {
          */
         public static final int TRAINER = 0x3001;
     }
+    
+
+    public static interface PageFile {
+        public static final int Changed = 0xffd0;
+    }
+    
 }

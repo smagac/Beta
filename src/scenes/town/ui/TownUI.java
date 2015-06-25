@@ -12,6 +12,7 @@ import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
 import scenes.town.ui.SacrificeSubmenu;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -119,7 +120,8 @@ public class TownUI extends GameUI {
             Messages.Player.RemoveItem, 
             Messages.Player.UpdateItem,
             Messages.Town.SelectDungeon,
-            Messages.Dungeon.Sacrifice
+            Messages.Dungeon.Sacrifice,
+            Messages.PageFile.Changed
         );
     }
     
@@ -952,7 +954,15 @@ public class TownUI extends GameUI {
             return true;
         }
         if (telegram.message == Messages.Player.Stats){
-            pageFile.updateStats(Stats.Map.get(playerService.getPlayer()));
+            pageFile.statusPane.updateStats(Stats.Map.get(playerService.getPlayer()));
+        }
+        if (telegram.message == Messages.PageFile.Changed){
+            if (telegram.extraInfo instanceof PageFile.NumberValues){
+                pageFile.statusPane.updateScore((PageFile.NumberValues)telegram.extraInfo);
+            }
+            if (telegram.extraInfo instanceof PageFile.StringValues){
+                pageFile.statusPane.updateScore((PageFile.StringValues)telegram.extraInfo);
+            }
         }
         return super.handleMessage(telegram);
     }

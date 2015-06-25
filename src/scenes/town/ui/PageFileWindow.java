@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import core.common.Input;
 import core.components.Stats;
@@ -36,14 +37,13 @@ import scenes.Messages;
 
 public class PageFileWindow {
 
-    Group pane;
+    final Group pane;
     
-    TabbedPane window;
-    Group stats;
+    final TabbedPane window;
     
-    ModifierPane modifierList;
-    MonsterPane monsterList;
-    StatusPane statusPane;
+    final ModifierPane modifierList;
+    final MonsterPane monsterList;
+    final StatusPane statusPane;
     
     public PageFileWindow(final Skin skin, IPlayerContainer player, PageFile pf) {
         
@@ -292,13 +292,22 @@ public class PageFileWindow {
         }
     }
 
-    private static class StatusPane {
+    static class StatusPane {
+        private static final String ScoreFormat = "Score: %09d";
+        
         Window window;
         
         Label strengthLabel;
         Label defenseLabel;
         Label speedLabel;
         Label vitalityLabel;
+        
+        ObjectMap<PageFile.NumberValues, Label> numericLabels;
+        ObjectMap<PageFile.StringValues, Label> stringLabels;
+
+        private Label score;
+
+        private Label rank;
         
         StatusPane(Skin skin, IPlayerContainer service, PageFile tracker){
 
@@ -378,12 +387,12 @@ public class PageFileWindow {
             {
                 Table header = new Table(skin);
 
-                Label score = new Label(String.format("Score: %09d", tracker.score()), skin, "small");
+                score = new Label(String.format(ScoreFormat, tracker.score()), skin, "small");
                 score.setAlignment(Align.center);
                 header.top();
                 header.add(score).expandX().fillX();
                 header.row();
-                Label rank = new Label(tracker.rank(), skin, "promptsm");
+                rank = new Label(tracker.rank(), skin, "promptsm");
                 rank.setAlignment(Align.center);
                 header.add(rank).expandX().fillX();
 
@@ -394,10 +403,12 @@ public class PageFileWindow {
                 scoring.setSize(290f, 210f);
                 scoring.pad(8f).padTop(50f).padBottom(10f);
                 scoring.bottom();
+                
+                numericLabels = new ObjectMap<PageFile.NumberValues, Label>();
                 for (NumberValues val : PageFile.NumberValues.values()) {
                     Label title = new Label(val.toString(), skin, "smaller");
                     Label value = new Label(tracker.toString(val), skin, "smaller");
-
+                    numericLabels.put(val, value);
                     scoring.row().expandX();
                     title.setAlignment(Align.left);
                     value.setAlignment(Align.right);
@@ -414,10 +425,11 @@ public class PageFileWindow {
                 stringScoring.setSize(290f, 120f);
                 stringScoring.pad(8f).padBottom(10f);
                 stringScoring.bottom();
+                stringLabels = new ObjectMap<PageFile.StringValues, Label>();
                 for (StringValues val : PageFile.StringValues.values()) {
                     Label title = new Label(val.toString(), skin, "smaller");
                     Label value = new Label(String.format("%s", tracker.max(val)), skin, "smaller");
-
+                    stringLabels.put(val, value);
                     stringScoring.row();
                     title.setAlignment(Align.left);
                     value.setAlignment(Align.right);
@@ -439,9 +451,21 @@ public class PageFileWindow {
             vitalityLabel.setText(String.valueOf(s.getVitality()));
             speedLabel.setText(String.valueOf((int)s.getSpeed()));
         }
-    }
-
-    public void updateStats(Stats s) {
-        statusPane.updateStats(s);
+        
+        public void updateScore(PageFile.NumberValues val) {
+            PageFile pf = ServiceManager.getService(PageFile.class);
+            Label label = numericLabels.get(val);
+            label.setText(String.valueOf(pf.get(val)));
+            score.setText(String.format(ScoreFormat, pf.score()));
+            rank.setText(pf.rank());
+        }
+        
+        public void updateScore(PageFile.StringValues val) {
+            PageFile pf = ServiceManager.getService(PageFile.class);
+            Label label = stringLabels.get(val);
+            label.setText(pf.max(val));
+            score.setText(String.format(ScoreFormat, pf.score()));
+            rank.setText(pf.rank());
+        }
     }
 }

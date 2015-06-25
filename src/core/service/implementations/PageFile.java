@@ -2,9 +2,11 @@ package core.service.implementations;
 
 import java.util.Iterator;
 
+import scenes.Messages;
 import github.nhydock.ssm.Service;
 import github.nhydock.ssm.ServiceManager;
 
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -162,15 +164,16 @@ public final class PageFile implements Serializable, Service {
     }
     
     public void increment(NumberValues value) {
-        numeric.put(value, numeric.get(value, 0) + 1);
+        increment(value, 1);
     }
     
     public void decrement(NumberValues value) {
-        numeric.put(value, Math.max(0, numeric.get(value, 1) - 1));
+        decrement(value, 1);
     }
     
     public void set(NumberValues value, int n) {
         numeric.put(value, n);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.PageFile.Changed, value);
     }
     
     public int get(NumberValues value) {
@@ -178,13 +181,11 @@ public final class PageFile implements Serializable, Service {
     }
     
     public void increment(StringValues value, String str) {
-        ObjectIntMap<String> vals = strings.get(value);
-        vals.put(str, vals.get(str, 0)+1);
+        increment(value, str, 1);
     }
     
     public void decrement(StringValues value, String str) {
-        ObjectIntMap<String> vals = strings.get(value);
-        vals.put(str, Math.max(0, vals.get(str, 1)-1));
+        decrement(value, str, 1);
     }
     
     /**
@@ -343,6 +344,7 @@ public final class PageFile implements Serializable, Service {
      */
     public void increment(NumberValues key, int val) {
         numeric.put(key, numeric.get(key, 0) + val);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.PageFile.Changed, key);
     }
     
     /**
@@ -354,6 +356,7 @@ public final class PageFile implements Serializable, Service {
      */
     public void decrement(NumberValues key, int val) {
         numeric.put(key, Math.max(0, numeric.get(key, 0) - val));
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.PageFile.Changed, key);
     }
     
     /**
@@ -368,6 +371,7 @@ public final class PageFile implements Serializable, Service {
     public void increment(StringValues key, String val, int amount) {
         ObjectIntMap<String> index = strings.get(key);
         index.put(val, index.get(val, 0) + amount);
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.PageFile.Changed, key);
     }
     
     /**
@@ -382,6 +386,7 @@ public final class PageFile implements Serializable, Service {
     public void decrement(StringValues key, String val, int amount) {
         ObjectIntMap<String> index = strings.get(key);
         index.put(val, Math.max(0, index.get(val, 0) - amount));
+        MessageDispatcher.getInstance().dispatchMessage(null, Messages.PageFile.Changed, key);
     }
     
     /**
