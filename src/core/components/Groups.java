@@ -51,10 +51,18 @@ public class Groups {
             return name.endsWith(Monster.Loot) || name.endsWith(Monster.Key) || name.endsWith(Monster.Door);
         }
         
+        public static boolean isObject(String name) {
+            return name.endsWith(Monster.Loot) || name.endsWith(Monster.Key) || name.endsWith(Monster.Door);
+        }
+        
+        public static boolean isMimic(String name){
+            return name.endsWith(Mimic) || name.endsWith(DoorMimic);
+        }
+        
         public static boolean isMimic(Entity e) {
             Identifier id = Identifier.Map.get(e);
             String name = id.toString();
-            return name.endsWith(Monster.Mimic) || name.endsWith(Monster.DoorMimic);
+            return isMimic(name);
         }
     }
 

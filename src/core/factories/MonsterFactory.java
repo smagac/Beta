@@ -259,8 +259,8 @@ public class MonsterFactory {
             do {
                 t = selection.random();
             }
-            // don't allow loot chests to be bosses
-            while (t.name.equals(Monster.Loot) || t.name.equals(Monster.Door));
+            // don't allow objects and mimics to be bosses
+            while (Monster.isObject(t.name) || Monster.isMimic(t.name));
             
             Entity monster = create(t, Item.Placeholder, floor.depth, true);
             monster.add(new Boss());
