@@ -1,7 +1,5 @@
 package scene2d.ui.extras;
 
-import java.util.prefs.BackingStoreException;
-
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -93,6 +91,7 @@ public class Card extends Group {
         }
     }
     
+    @Override
     public void setHeight(float size){
         super.setHeight(size);
         background.setHeight(size);

@@ -10,9 +10,7 @@ import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
-import scenes.town.ui.SacrificeSubmenu;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -39,14 +37,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import core.DataDirs;
 import core.common.Input;
 import core.components.Stats;
 import core.datatypes.Craftable;
-import core.datatypes.Item;
 import core.datatypes.quests.Quest;
 import core.service.implementations.PageFile;
 import core.service.interfaces.IPlayerContainer;

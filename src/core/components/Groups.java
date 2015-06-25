@@ -5,7 +5,6 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 
 import core.datatypes.npc.NPC;
-import core.datatypes.npc.Trainer;
 
 /**
  * Simple grouping identifier for monsters

@@ -3,17 +3,13 @@ package core.datatypes.npc;
 import scenes.Messages;
 
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.IntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap;
-import com.badlogic.gdx.utils.ObjectIntMap.Entry;
-import com.badlogic.gdx.utils.ObjectMap;
 
 import core.components.Stats;
 import core.components.Stats.Stat;
 import core.datatypes.Item;
-import core.factories.ItemFactory;
 import core.datatypes.npc.NPC.Behavior;
+import core.factories.ItemFactory;
 
 /**
  * Trainers allow you to exchange items for stat bonuses.
@@ -33,6 +29,7 @@ public class Trainer implements Behavior {
         bonusType = ItemFactory.randomType();
     }
     
+    @Override
     public void run(){
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.NPC.TRAINER, this);
     }

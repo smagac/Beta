@@ -1,31 +1,19 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.ServiceManager;
+import scene2d.InputDisabler;
+import scene2d.ui.extras.Card;
 
-import com.badlogic.gdx.ai.fsm.StateMachine;
-import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 
-import core.common.Input;
 import core.components.Stats;
-import core.components.Stats.Stat;
-import core.datatypes.Item;
 import core.datatypes.npc.Trainer;
 import core.service.interfaces.IPlayerContainer;
-import scene2d.InputDisabler;
-import scene2d.ui.extras.Card;
-import scenes.Messages;
 
 public class TrainMenu {
 

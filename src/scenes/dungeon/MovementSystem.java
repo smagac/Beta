@@ -4,16 +4,15 @@ import static scenes.dungeon.Direction.Down;
 import static scenes.dungeon.Direction.Left;
 import static scenes.dungeon.Direction.Right;
 import static scenes.dungeon.Direction.Up;
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
 
 import java.util.Arrays;
 
-import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.dungeon.CombatHandler.Result;
 
-import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;

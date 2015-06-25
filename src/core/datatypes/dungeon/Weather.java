@@ -83,6 +83,7 @@ public abstract class Weather {
             this.textureFile = file;
         }
         
+        @Override
         public void init(){
             Texture weather = new Texture(textureFile);
             texture = new TextureRegion(weather);

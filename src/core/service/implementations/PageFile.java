@@ -1,10 +1,11 @@
 package core.service.implementations;
 
+import github.nhydock.ssm.Service;
+import github.nhydock.ssm.ServiceManager;
+
 import java.util.Iterator;
 
 import scenes.Messages;
-import github.nhydock.ssm.Service;
-import github.nhydock.ssm.ServiceManager;
 
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;

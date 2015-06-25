@@ -1,5 +1,6 @@
 package scenes.dungeon.ui;
 
+import github.nhydock.ssm.ServiceManager;
 import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
 import scene2d.ui.extras.LabeledTicker;
@@ -18,18 +19,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 
 import core.common.Input;
-import core.datatypes.Inventory;
-import core.datatypes.dungeon.DungeonLoader;
-import core.datatypes.quests.Quest;
-import core.service.interfaces.IPlayerContainer;
-import github.nhydock.ssm.ServiceManager;
 import core.components.Position;
 import core.components.Stats;
+import core.datatypes.Inventory;
 import core.datatypes.npc.Trainer;
+import core.datatypes.quests.Quest;
+import core.service.interfaces.IPlayerContainer;
 
 /**
  * Handles state based ui menu logic and switching

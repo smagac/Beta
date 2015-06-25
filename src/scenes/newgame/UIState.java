@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Array;
 
 import core.DataDirs;
-import core.service.interfaces.IPlayerContainer.SaveSummary;
 
 enum UIState implements State<NewUI> {
         Choose() {

@@ -7,8 +7,6 @@ import scene2d.ui.extras.TabbedPane;
 import scenes.LevelUpDialog.LevelUpState;
 
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.ai.fsm.State;
-import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;

@@ -1,6 +1,9 @@
 package scenes.town.ui;
 
 import github.nhydock.ssm.ServiceManager;
+import scene2d.ui.extras.ScrollFollower;
+import scene2d.ui.extras.TabbedPane;
+import scenes.Messages;
 
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -31,9 +34,6 @@ import core.service.implementations.PageFile;
 import core.service.implementations.PageFile.NumberValues;
 import core.service.implementations.PageFile.StringValues;
 import core.service.interfaces.IPlayerContainer;
-import scene2d.ui.extras.ScrollFollower;
-import scene2d.ui.extras.TabbedPane;
-import scenes.Messages;
 
 public class PageFileWindow {
 

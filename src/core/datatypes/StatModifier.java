@@ -15,6 +15,7 @@ public class StatModifier {
         this.spd = spd;
     }
     
+    @Override
     public String toString(){
         return this.type;
     }

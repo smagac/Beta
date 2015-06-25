@@ -1,10 +1,11 @@
 package scenes.dungeon;
 
+import github.nhydock.ssm.Inject;
+import github.nhydock.ssm.ServiceManager;
+
 import java.util.Arrays;
 import java.util.Iterator;
 
-import github.nhydock.ssm.Inject;
-import github.nhydock.ssm.ServiceManager;
 import scene2d.runnables.PlaySound;
 import scene2d.ui.extras.ParticleActor;
 import scenes.Messages;
