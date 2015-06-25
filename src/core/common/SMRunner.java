@@ -1,5 +1,6 @@
 package core.common;
 
+import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
@@ -10,7 +11,9 @@ public class SMRunner {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.backgroundFPS = -1;
         config.foregroundFPS = 60;
-
+        config.allowSoftwareMode = true;
+        config.addIcon("data/icon.png", FileType.Internal);
+        config.resizable = false;
         config.width = Storymode.InternalRes[0];
         config.height = Storymode.InternalRes[1];
 
