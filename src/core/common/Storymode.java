@@ -33,6 +33,8 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
         public int difficulty;
     }
     
+    boolean debug = false;
+    
     public static final int[] InternalRes = { 960, 540 };
     protected static float[] InternalVolume = {1.0f, 1.0f};
     
@@ -224,7 +226,7 @@ public class Storymode extends com.badlogic.gdx.Game implements IGame {
 
     @Override
     public boolean debug() {
-        return true;
+        return debug;
     }
 
 }

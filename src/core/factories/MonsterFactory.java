@@ -1,5 +1,7 @@
 package core.factories;
 
+import github.nhydock.ssm.ServiceManager;
+
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -30,6 +32,8 @@ import core.datatypes.StatModifier;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.npc.NPC;
 import core.datatypes.npc.Trainer;
+import core.service.interfaces.IGame;
+import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.Room;
 
 /**
@@ -312,9 +316,10 @@ public class MonsterFactory {
             entities.add(monster);
         }
         
-        //if (MathUtils.randomBoolean((floor.depth*2.5f) / 100f)){
+        if (ServiceManager.getService(IGame.class).debug() || 
+            MathUtils.randomBoolean((floor.depth*2.5f) / 100f)){
             makeVillager(entities, floor);
-        //}
+        }
     }
 
     /**

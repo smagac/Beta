@@ -15,7 +15,7 @@
         	<zipfileset excludes="META-INF/*.SF" src="libs/gdx-natives.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="libs/gdx.jar"/>
         </jar>
-    	<jar destfile="dist/storymode-assets.jar" filesetmanifest="mergewithoutmain">
+    	<jar destfile="dist/storymode_assets.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="core.common.SMRunner"/>
                 <attribute name="Class-Path" value="."/>

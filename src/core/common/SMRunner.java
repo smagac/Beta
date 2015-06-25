@@ -45,6 +45,9 @@ public class SMRunner {
                 float vol = Float.parseFloat(val);
                 Storymode.InternalVolume[1] = vol;
             }
+            else if (arg.equals("-debug")) {
+                app.debug = true;
+            }
         }
 
         new LwjglApplication(app, config);
