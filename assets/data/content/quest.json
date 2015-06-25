@@ -5,7 +5,11 @@
     ],
     "titles" : [
     	"Help needed!", "Oh sweet, Joaan, my life is wrecked", "I have a job for you!", "Now Hiring!",
-    	"Immmediate-Act!on-Requ!r3d", "Your payment is waaiting!", "Have you seen my Cat", "Looking For Group",
+    	"Immmed!ate-Act!on-Requ!r3d", "Your payment is waaiting!", "Have you seen my Cat", "Looking For Group",
+    	"Would you like to make a contract?", "Amazing opportunities await!", "You're our 1 million visitor!",
+    	"Hot Single Goddesses in your area!", "Hot Single Gods in your area!", "You're only one click away",
+    	"[GR8T DEALZ]Get 50% off Right Now!", "Sick of spam? Click Here!", "Beat $& Crafting ^& Addiction %$ Today",
+    	"Don't Let Crafting Ruin Your Life", "Take Surveys and Get Rewarded", "Need a Divorce Attorney?"
     ],
     "prompts" : {
     
@@ -14,11 +18,16 @@
         	"My pet ~enemy ate my homework and now I have nothing to show my ~adjective class at show-in-tell tomorrow.  If you can get me a ~objective everyone will be super ~adjective!",
         	"It's my son's birthday and I need you to get ~objective for him.  He's really been asking for one for the past few months and I want to make him ~adjective.  Thanks",
         	"Hello, my name is Johanavich Licten Al-bajubar the 3rd, your second cousin fifth removed and and the ~adjective prince of ~location.  I am searching for nice young people to help me out.  If you and get what I want, I will deposit a portion of my fortune into your account.  All I need is your bank account number and some ~objective.",
+        	"Do you need a loan that can be process within 2 to 3 working days? Have you been frustrated so many times by your ~adjective banks and other loan ~enemy and you don't know what to do? Here comes the Good news Central bank business and home loan company is here to offer you any kind of material you need at an affordable interest rate of gathering us some ~objective. If you are interested let us know how much you need so your loan can be process.",        	
+        	"¡Saludos! Necesito un honesto y ~adjective persona como usted a este proyecto de gran transferencia a confiar.Yo soy el Gerente de la sucursal de una entidad financiera aquí en ~location. Le escribo para solicitar su ayuda en la recopilación de gran cantidad de ~objective. una vez que supe de ti te daré los detalles sobre la transacción.  Gracias, Sr. Michael osei",
+        	"With ~objective Soft you can now experience results in 15 minutes! Soft Tabs are a faster acting ~objective solution. This is enough time to keep your partner feeling ~adjective while the medicine is absorbed into your body. No more planning for ~item in advance. Now you can be ready when your ~enemy is ready. These pills are just like regular ~objective but they are specially formulated to be soft and dissolvable under the tongue. If you can get us some raw ~objective we can make this pill for you, which is absorbed at the mouth and enters the bloodstream directly!"
         ],
         "hunt" : [
         	"They took him.  They took my ~item.  I want you to kill all of them.  Every last one.",
         	"Here in ~location things are looking out to be a bit rough this season.  There's just too many ~objective scampering around destroying our village for us to really get anything done.  We'd love it if you could do something about these crazy beasts.",
         	"Help, I lost my pet ~objective.  He's been gone for a few days, so he's probably rabid, or leaked my info to the NSA.  I need you to kill him.",
-        ]
+        	"Good Day, Although you might be nervous about my email as we have not met before. My name is Robert W Chang, I work with the ~adjective BANK of ~location; there is the sum of $8,700,000.00 in my bank, there were no beneficiary avowed relating to these funds.  I want us to work together to transfer the funds out of my bank into yours.  Once ~objective has been slain, we shall then share in the ratio of 99.9999% for me, .00001% for you. Get back to me as soon as possible.",
+        	
+    	]
     }
 }

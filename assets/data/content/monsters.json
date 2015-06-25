@@ -9,6 +9,17 @@
           "arthritis" : ".05"
         }
     },
+    "minotaur" : {
+        "hp" : "10", "str" : "9", "def" : "6", "spd" : "4", "exp" : "2",
+        "maxhp" : "245", "maxstr" : "132", "maxdef" : "85", "maxexp" : "20", "maxpsd" : "32",
+        "type" : "ogre",
+        "density" : ".8",
+        "status" : {
+          "sprain" : ".25",
+          "arthritis" : ".15",
+          "blind" : ".08"
+        }
+    },
     "bunny" : {
         "hp" : "3", "str" : "6", "def" : "2", "exp" : "1", "spd" : "15",
         "maxhp" : "70", "maxstr" : "110", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "45",

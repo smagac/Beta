@@ -46,6 +46,9 @@ Ascending or Descending requires the player to be standing on a staircase and pr
 
 Players may also gather equipment while dungeoning.  Enemies have a chance of dropping either a sword, shield, or piece of armor.  Equipment will automatically be put on upon stepping on the drop icon.  They all have durability values and a power bonus for your character.  Once a piece of equipment breaks, it no longer grants its power rating.  Equipment is reset with each dungeon.
 
+Spell casting enables the player to send out an attack that streams in a straight path, hurting all enemies in its path, penetrating their defense.  The amount of spells available is limited by how many mana potions you naturally have, which recharge over time.
+To cast a spell you must press Cancel or Middle Click to enter Targeting mode.  Targeting mode allows you to move a cursor anywhere within your FOV.  Enemies highlighted by the targeting cursor will show their stats.  Spells can only be cast perpendicularly to the character, so the cursor will lock to an axis first when attempting to cast a spell.
+
 ## Sleeping
 Sleeping has two main functions.  It advances the game time by a day, and it fully heals you.  You are technically capable of going through multiple dungeons in a single "day" if you balance your way of going through them.
 
