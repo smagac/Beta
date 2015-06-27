@@ -24,7 +24,7 @@ public class Scene extends scenes.Scene<TownUI> {
     
         playerService.getAilments().reset();
         
-        ui = new TownUI(manager);
+        ui = new TownUI(this, manager);
         
         bgm = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "town/")).random();
         manager.load(bgm, Music.class);

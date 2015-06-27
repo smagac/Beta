@@ -1,7 +1,8 @@
 package scenes.dungeon.ui;
 
+import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
+import scene2d.ExtendedInputMultiplexer;
 import scene2d.ui.extras.Card;
 
 import com.badlogic.gdx.math.Interpolation;
@@ -78,13 +79,14 @@ public class TrainMenu {
      * Show initial state with cards
      */
     public void show() {
-        clearActions();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        
         menu.addActor(submenu.getGroup());
         menu.addAction(
             Actions.sequence(
                 Actions.scaleTo(.7f, .7f),
                 Actions.alpha(0f),
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.addAction(
                     Actions.parallel(
                             Actions.moveToAligned(200, getHeight()/2f, Align.left),
@@ -98,7 +100,7 @@ public class TrainMenu {
                         Actions.alpha(1f, .15f),
                         Actions.scaleTo(1f, 1f, .25f, Interpolation.circleOut)
                 ),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
         menu.setTouchable(Touchable.childrenOnly);
@@ -113,19 +115,20 @@ public class TrainMenu {
      * Hide all elements
      */
     public void hide() {
-        clearActions();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        
         trainer = null;
         submenu.reset();
         menu.addAction(
             Actions.sequence(
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.parallel(
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
                 ),
                 Actions.addAction(Actions.visible(false), submenu.getGroup()),
                 Actions.removeActor(submenu.getGroup()),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
         menu.setTouchable(Touchable.disabled);

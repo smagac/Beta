@@ -1,7 +1,6 @@
 package scenes.dungeon.ui;
 
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
 import scene2d.ui.extras.LabeledTicker;
 import scenes.Messages;
@@ -618,14 +617,14 @@ public enum WanderState implements UIState {
             entity.display.addAction(Actions.alpha(0f));
             entity.floorSelect.addAction(
                 Actions.sequence(
-                    Actions.run(InputDisabler.instance),
+                    Actions.run(entity.getScene().getInput().disableMe),
                     Actions.alpha(0f),
                     Actions.scaleTo(.5f, .5f),
                     Actions.parallel(
                         Actions.alpha(1f, .15f),
                         Actions.scaleTo(1, 1, .2f, Interpolation.circleOut)
                     ),
-                    Actions.run(InputDisabler.instance)
+                    Actions.run(entity.getScene().getInput().enableMe)
                 )
             );
             
@@ -638,14 +637,14 @@ public enum WanderState implements UIState {
         public void exit(WanderUI entity) {
             entity.floorSelect.addAction(
                 Actions.sequence(
-                    Actions.run(InputDisabler.instance),
+                    Actions.run(entity.getScene().getInput().disableMe),
                     Actions.alpha(1f),
                     Actions.scaleTo(1f, 1f),
                     Actions.parallel(
                         Actions.alpha(0f, .15f),
                         Actions.scaleTo(4, 4, .2f, Interpolation.circleOut)
                     ),
-                    Actions.run(InputDisabler.instance)
+                    Actions.run(entity.getScene().getInput().enableMe)
                 )
             );
             entity.floorSelect.setTouchable(Touchable.enabled);

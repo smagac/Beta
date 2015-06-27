@@ -1,7 +1,7 @@
 package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
+import scene2d.ExtendedInputMultiplexer;
 import scene2d.runnables.GotoScene;
 import scene2d.runnables.PlayBGM;
 import scenes.Messages;
@@ -82,11 +82,6 @@ public enum CombatStates implements State<BattleUI> {
             };
             
             /*
-             * Pretty much everything can be done as soon as we enter
-             */
-            InputDisabler.swap();
-            
-            /*
              * First we roll the dice, then show the values 
              */
             final Turn t = entity.combat.manualFightRoll(Combatant.Player);
@@ -96,7 +91,6 @@ public enum CombatStates implements State<BattleUI> {
                 @Override
                 public void run() {
                     entity.setFocus(entity.timeline);
-                    InputDisabler.swap();
                     
                     entity.buildTimeline(t, returnToState);
                 }
@@ -125,16 +119,10 @@ public enum CombatStates implements State<BattleUI> {
                     
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, null, Messages.Battle.ADVANCE);
-                    InputDisabler.swap();
                     entity.changeState(MAIN);
                 }
                 
             };
-            
-            /*
-             * Pretty much everything can be done as soon as we enter
-             */
-            InputDisabler.swap();
             
             /*
              * First we roll the dice, then show the values 
@@ -217,12 +205,10 @@ public enum CombatStates implements State<BattleUI> {
                 exit(entity);
                 entity.sacrifices.put(entity.selectedItem, 1);
                 final String adj = entity.selectedItem.descriptor();
-                InputDisabler.swap();
                 entity.playSacrificeAnimation(entity.boss, new Runnable() {
                     
                     @Override
                     public void run() {
-                        InputDisabler.swap();
                         entity.playerService.getInventory().sacrifice(entity.sacrifices, 1);
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, entity.battleService.getBoss());
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.MODIFY, adj);
@@ -310,12 +296,10 @@ public enum CombatStates implements State<BattleUI> {
                 int cost = progress.healed + 1;
                 if (entity.playerService.getInventory().sacrifice(entity.sacrifices, cost)){
                     exit(entity);
-                    InputDisabler.swap();
                     entity.playSacrificeAnimation(entity.player, new Runnable() {
                         
                         @Override
                         public void run() {
-                            InputDisabler.swap();
                             entity.playerService.recover();
                             Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
                             progress.healed++;
@@ -396,7 +380,6 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(final BattleUI entity) {
-            InputDisabler.swap();
             final Turn t = entity.combat.defendRoll();
             final Runnable returnToState = new Runnable(){
 
@@ -404,7 +387,6 @@ public enum CombatStates implements State<BattleUI> {
                 public void run() {
                     //advance the battle once both sides have attacked
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.ADVANCE);
-                    InputDisabler.swap();
                     entity.changeState(MAIN);
                 }
                 
@@ -461,7 +443,6 @@ public enum CombatStates implements State<BattleUI> {
 
         @Override
         public void enter(final BattleUI entity) {
-            InputDisabler.swap();
             entity.fader.addAction(
                 Actions.sequence(
                     Actions.delay(1f),

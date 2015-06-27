@@ -1,5 +1,6 @@
 package scenes;
 
+import scene2d.ExtendedInputMultiplexer;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
@@ -35,11 +36,11 @@ public abstract class Scene<View extends UI> implements Screen {
     protected View ui;
 
     protected boolean loaded;
-    protected InputMultiplexer input;
+    protected ExtendedInputMultiplexer input;
 
     public Scene() {
         manager = new AssetManager();
-        input = new InputMultiplexer();
+        input = new ExtendedInputMultiplexer();
 
         ServiceManager.inject(this);
     }
@@ -103,5 +104,9 @@ public abstract class Scene<View extends UI> implements Screen {
     @Override
     public void hide() {
         dispose();
+    }
+    
+    public final ExtendedInputMultiplexer getInput() {
+        return input;
     }
 }

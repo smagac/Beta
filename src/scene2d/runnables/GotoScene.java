@@ -1,7 +1,6 @@
 package scene2d.runnables;
 
 import github.nhydock.ssm.SceneManager;
-import scene2d.InputDisabler;
 import scenes.Scene;
 
 public class GotoScene implements Runnable {
@@ -24,7 +23,6 @@ public class GotoScene implements Runnable {
         } else {
             SceneManager.switchToScene(scene);
         }
-        InputDisabler.clear();
     }
 
 }

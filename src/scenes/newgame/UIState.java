@@ -3,7 +3,6 @@ package scenes.newgame;
 import java.util.Iterator;
 import java.util.Scanner;
 
-import scene2d.InputDisabler;
 import scene2d.runnables.PlaySound;
 import scene2d.ui.extras.Card;
 import scenes.Messages;
@@ -25,7 +24,7 @@ enum UIState implements State<NewUI> {
             public void enter(final NewUI entity) {
                 entity.slots.addAction(
                     Actions.sequence(
-                        Actions.run(InputDisabler.instance),
+                        Actions.run(entity.getScene().getInput().disableMe),
                         Actions.alpha(0f), 
                         Actions.moveBy(0, 20f),
                         Actions.delay(1.5f),
@@ -33,7 +32,7 @@ enum UIState implements State<NewUI> {
                             Actions.alpha(1, .3f),
                             Actions.moveBy(0, -20f, .3f, Interpolation.circleOut)
                         ),
-                        Actions.run(InputDisabler.instance)
+                        Actions.run(entity.getScene().getInput().enableMe)
                     )
                 );
                 entity.slots.setTouchable(Touchable.enabled);
@@ -86,7 +85,7 @@ enum UIState implements State<NewUI> {
                 entity.getPointer().setVisible(false);
                 entity.createFrame.addAction(
                     Actions.sequence(
-                        Actions.run(InputDisabler.instance),
+                        Actions.run(entity.getScene().getInput().disableMe),
                         Actions.alpha(0f),
                         Actions.delay(.8f),
                         Actions.alpha(1f, .3f), 
@@ -97,7 +96,7 @@ enum UIState implements State<NewUI> {
                                 entity.createFrame.setTouchable(Touchable.childrenOnly);
                             }
                         }),
-                        Actions.run(InputDisabler.instance)
+                        Actions.run(entity.getScene().getInput().enableMe)
                     )
                 );
                 
@@ -166,12 +165,12 @@ enum UIState implements State<NewUI> {
                 );
                 entity.you.addAction(
                     Actions.sequence(
-                        Actions.run(InputDisabler.instance),
+                        Actions.run(entity.getScene().getInput().disableMe),
                         Actions.alpha(0f), 
                         Actions.alpha(1f, 1f),
                         Actions.delay(7f),
                         Actions.addAction(Actions.alpha(1f, .5f), entity.textTable),
-                        Actions.run(InputDisabler.instance)
+                        Actions.run(entity.getScene().getInput().enableMe)
                     )
                 );
                 entity.textTable.addAction(
@@ -212,7 +211,7 @@ enum UIState implements State<NewUI> {
                     entity.goddess.clearActions();
                     entity.goddess.addAction(
                         Actions.sequence(
-                            Actions.run(InputDisabler.instance),
+                            Actions.run(entity.getScene().getInput().disableMe),
                             Actions.rotateBy(360f, 1f),
                             Actions.rotateBy(360f, .75f),
                             Actions.rotateBy(360f, .5f),

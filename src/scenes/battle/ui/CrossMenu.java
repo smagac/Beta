@@ -1,9 +1,10 @@
 package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
+import scene2d.ExtendedInputMultiplexer;
 import scene2d.runnables.SendMessage;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -252,12 +253,13 @@ public class CrossMenu extends Group
 	    MAIN(){
 	        @Override
 	        public void enter(CrossMenu entity) {
+	            ExtendedInputMultiplexer input = (ExtendedInputMultiplexer)Gdx.input.getInputProcessor();
 	            entity.addAction(
                     Actions.sequence(
-                        Actions.run(InputDisabler.instance),
+                        Actions.run(input.disableMe),
                         Actions.delay(1.2f),
                         Actions.run(new SendMessage(entity.sm, Messages.Select, entity.attack)),
-                        Actions.run(InputDisabler.instance)
+                        Actions.run(input.enableMe)
                     )
                 );
 	            
@@ -331,12 +333,14 @@ public class CrossMenu extends Group
 	    ATTACK(){
 	        @Override
             public void enter(CrossMenu entity) {
+               ExtendedInputMultiplexer input = (ExtendedInputMultiplexer)Gdx.input.getInputProcessor();
+
 	            entity.addAction(
                     Actions.sequence(
-                        Actions.run(InputDisabler.instance),
+                        Actions.run(input.disableMe),
                         Actions.delay(.7f),
                         Actions.run(new SendMessage(entity.sm, Messages.Select, entity.attackAuto)),
-                        Actions.run(InputDisabler.instance)
+                        Actions.run(input.enableMe)
                     )
                 );
                 
@@ -442,12 +446,14 @@ public class CrossMenu extends Group
 	    ITEM(){
             @Override
             public void enter(CrossMenu entity) {
+                ExtendedInputMultiplexer input = (ExtendedInputMultiplexer)Gdx.input.getInputProcessor();
+
                 entity.addAction(
                     Actions.sequence(
-                        Actions.run(InputDisabler.instance),
+                        Actions.run(input.disableMe),
                         Actions.delay(.7f),
                         Actions.run(new SendMessage(entity.sm, Messages.Select, entity.itemModify)),
-                        Actions.run(InputDisabler.instance)
+                        Actions.run(input.enableMe)
                     )
                 );
                 

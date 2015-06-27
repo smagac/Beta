@@ -26,7 +26,7 @@ public class Scene extends scenes.Scene<BattleUI>
 	@Override
 	public void show()
 	{
-	    ui = new BattleUI(manager);
+	    ui = new BattleUI(this, manager);
 	    
         bgm = DataDirs.getChildren(Gdx.files.internal(DataDirs.Audio + "combat/")).random();
         manager.load(bgm, Music.class);

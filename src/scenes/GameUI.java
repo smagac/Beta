@@ -131,8 +131,8 @@ public abstract class GameUI extends UI {
         );
     }
 
-    public GameUI(AssetManager manager) {
-        super(manager);
+    public GameUI(Scene parent, AssetManager manager) {
+        super(parent, manager);
 
         buttonList = new HorizontalGroup();
         buttons = new ButtonGroup<Button>();

@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
 
-import scene2d.InputDisabler;
 import scene2d.runnables.ChangeState;
 import scene2d.runnables.PlayBGM;
 import scene2d.runnables.PlaySound;
@@ -93,7 +92,13 @@ enum TownState implements UIState<TownUI> {
             if (prev != QuestMenu && prev != Craft && prev != Train) {
                 entity.main.addAction(Actions.moveToAligned(0, 0, Align.bottomRight, .75f));
                 entity.town.addAction(Actions.moveToAligned(0, 0, Align.bottomLeft, .75f));
-                entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
+                entity.addAction(
+                    Actions.sequence(
+                        Actions.run(entity.getScene().getInput().disableMe), 
+                        Actions.delay(.75f), 
+                        Actions.run(entity.getScene().getInput().enableMe)
+                    )
+                );
             }
             entity.refreshButtons();
             entity.resetFocus();
@@ -133,9 +138,16 @@ enum TownState implements UIState<TownUI> {
             if (prev != PageFile && prev != Sleep && prev != Save) {
                 entity.main.addAction(Actions.moveToAligned(entity.getDisplayWidth(), 0, Align.bottomLeft, .75f));
                 entity.home.addAction(Actions.moveToAligned(0, 0, Align.bottomLeft, .75f));
-                entity.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.75f), Actions.run(InputDisabler.instance)));
+                entity.addAction(
+                    Actions.sequence(
+                        Actions.run(entity.getScene().getInput().disableMe), 
+                        Actions.delay(.75f), 
+                        Actions.run(entity.getScene().getInput().enableMe)
+                    )
+                );
             }
             entity.refreshButtons();
+            entity.resetFocus();
         }
 
         @Override
@@ -303,9 +315,11 @@ enum TownState implements UIState<TownUI> {
             
             ui.fileBrowser.addAction(
                 Actions.sequence(
+                    Actions.run(ui.getScene().getInput().disableMe),
                     Actions.moveTo(0, -ui.getDisplayHeight()),
                     Actions.delay(.8f), 
-                    Actions.moveToAligned(0, ui.getDisplayHeight(), Align.topLeft, .3f, Interpolation.circleOut)
+                    Actions.moveToAligned(0, ui.getDisplayHeight(), Align.topLeft, .3f, Interpolation.circleOut),
+                    Actions.run(ui.getScene().getInput().enableMe)
                 )
             );
 
@@ -378,6 +392,7 @@ enum TownState implements UIState<TownUI> {
 
             ui.getDisplay().addAction(
                 Actions.sequence(
+                    Actions.run(ui.getScene().getInput().disableMe),
                     ui.fadeOutAction(.4f),
                     Actions.delay(.4f),
                     Actions.run(new Runnable() {
@@ -394,6 +409,7 @@ enum TownState implements UIState<TownUI> {
                     }), 
                     ui.fadeInAction(.4f), 
                     Actions.delay(.4f), 
+                    Actions.run(ui.getScene().getInput().enableMe),
                     Actions.run(new ChangeState(ui.getStateMachine(), TownState.Home))
                 )
             );
@@ -489,9 +505,7 @@ enum TownState implements UIState<TownUI> {
 
         @Override
         public void enter(TownUI ui) {
-            InputDisabler.swap();
-            InputDisabler.clear();
-
+            ui.getScene().getInput().disable();
             ui.restore();
             ui.getRoot().clearListeners();
             ui.addAction(
@@ -735,11 +749,11 @@ enum TownState implements UIState<TownUI> {
 
             ui.questDetails.addAction(
                 Actions.sequence(
-                    Actions.run(InputDisabler.instance),
+                    Actions.run(ui.getScene().getInput().disableMe),
                     Actions.moveTo(ui.getDisplayWidth(), 0), 
                     Actions.delay(.8f), 
                     Actions.moveToAligned(ui.getDisplayWidth(), 0, Align.bottomRight, .3f, Interpolation.circleOut),
-                    Actions.run(InputDisabler.instance)
+                    Actions.run(ui.getScene().getInput().enableMe)
                 )
             );
             ui.setMessage("Let's help people!");
@@ -752,7 +766,13 @@ enum TownState implements UIState<TownUI> {
             ui.town.addAction(Actions.moveBy(-256, -90, .8f));
             ui.questSubmenu.addAction(Actions.moveToAligned(0, 0, Align.bottomRight, .3f));
             ui.questDetails.addAction(Actions.moveToAligned(ui.getDisplayWidth(), 0, Align.bottomLeft, .3f));
-            ui.addAction(Actions.sequence(Actions.run(InputDisabler.instance), Actions.delay(.8f), Actions.run(InputDisabler.instance)));
+            ui.addAction(
+                Actions.sequence(
+                    Actions.run(ui.getScene().getInput().disableMe), 
+                    Actions.delay(.8f), 
+                    Actions.run(ui.getScene().getInput().enableMe)
+                )
+            );
         }
 
         private void fillDetails(final TownUI ui, Quest selected) {
@@ -957,6 +977,7 @@ enum TownState implements UIState<TownUI> {
                 ObjectIntMap<Item> sacrifice = entity.sacrificeMenu.getSacrifice();
                 if (t.sacrifice(sacrifice, s)){
                     t.train(s);
+                    entity.sacrificeMenu.sacrifice();
                     entity.playerService.getInventory().sacrifice(sacrifice, 0);
                     entity.audio.playSfx(DataDirs.Sounds.accept);
                     entity.changeState(Town);

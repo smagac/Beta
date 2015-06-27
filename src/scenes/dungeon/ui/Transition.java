@@ -1,7 +1,7 @@
 package scenes.dungeon.ui;
 
-import scene2d.InputDisabler;
 import scene2d.runnables.PlaySound;
+import scenes.Scene;
 import scenes.UI;
 
 import com.badlogic.gdx.assets.AssetManager;
@@ -29,8 +29,8 @@ public class Transition extends UI {
     
     TextureRegion captured;
 
-    public Transition(AssetManager manager) {
-        super(manager);
+    public Transition(Scene scene, AssetManager manager) {
+        super(scene, manager);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class Transition extends UI {
         audio.fadeOut();
         addAction(
             Actions.sequence(
-                Actions.run(InputDisabler.instance),
+                Actions.run(getScene().getInput().disableMe),
                 Actions.run(new PlaySound(DataDirs.Sounds.transition)), 
                 Actions.delay(delay + .3f),
                 Actions.run(after)

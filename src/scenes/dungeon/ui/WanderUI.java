@@ -6,6 +6,7 @@ import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.Pointer;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
+import scenes.Scene;
 import scenes.UI;
 import scenes.dungeon.RenderSystem;
 
@@ -113,8 +114,8 @@ public class WanderUI extends UI {
         );
     }
     
-    public WanderUI(AssetManager manager) {
-        super(manager);
+    public WanderUI(Scene scene, AssetManager manager) {
+        super(scene, manager);
         
         stateMachine = new DefaultStateMachine<WanderUI>(this);
         stateMachine.setGlobalState(WanderState.Global);

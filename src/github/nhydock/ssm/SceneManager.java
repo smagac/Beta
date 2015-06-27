@@ -1,5 +1,7 @@
 package github.nhydock.ssm;
 
+import scenes.Scene;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -76,5 +78,9 @@ public class SceneManager {
 
     public static void setGame(Game g) {
         game = g;
+    }
+    
+    public static Scene getActiveScene() {
+        return (Scene)game.getScreen();
     }
 }

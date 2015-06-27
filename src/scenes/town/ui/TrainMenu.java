@@ -1,7 +1,8 @@
 package scenes.town.ui;
 
+import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
+import scene2d.ExtendedInputMultiplexer;
 import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scenes.Messages;
@@ -137,7 +138,7 @@ public class TrainMenu {
     }
     
     protected void setTrainer(Card card, Trainer trainer){
-        if (trainer != null){
+        if (this.trainer == null && trainer != null){
             for (Card c : cards){
                 c.clearActions();
                 c.addAction(Actions.parallel(Actions.scaleTo(.5f, .5f, .2f), Actions.alpha(0f, .2f)));
@@ -148,7 +149,16 @@ public class TrainMenu {
             Stats stats = Stats.Map.get(playerService.getPlayer());
             submenu.setPrompt("For " + trainer.calcPoints(stats) + " items you can improve your " + trainer.getTrainingType().name() 
                               + ".\n\nThe Aztec Gods of Gains say they'd really like some " + trainer.getBonus());
-            menu.addAction(Actions.sequence(Actions.run(InputDisabler.instance), submenu.show(), Actions.delay(.2f), Actions.run(InputDisabler.instance)));
+            
+            ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+            menu.addAction(
+                Actions.sequence(
+                    Actions.run(input.disableMe), 
+                    submenu.show(), 
+                    Actions.delay(.2f), 
+                    Actions.run(input.enableMe)
+                )
+            );
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Focus, submenu.getGroup());
         }
         this.trainer = trainer;
@@ -170,7 +180,6 @@ public class TrainMenu {
      * Show initial state with cards
      */
     public void show() {
-        clearActions();
         for (int i = 0; i < cards.size; i++){
             Card c = cards.get(i);
             c.clearActions();
@@ -182,13 +191,14 @@ public class TrainMenu {
                 )
             );
         }
-
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        
         menu.addAction(
             Actions.sequence(
                 Actions.visible(true),
                 Actions.scaleTo(.5f, .5f),
                 Actions.alpha(0f),
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.addAction(
                     Actions.sequence(
                         Actions.parallel(
@@ -204,37 +214,34 @@ public class TrainMenu {
                         Actions.scaleTo(1f, 1f, .25f, Interpolation.circleOut)
                 ),
                 Actions.run(resetFocus),
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.enableMe),
                 Actions.touchable(Touchable.childrenOnly)
             )
         );
         submenu.getGroup().setTouchable(Touchable.disabled);
     }
     
-    private void clearActions(){
-        menu.clearActions();
-    }
-    
     /**
      * Hide all elements
      */
     public void hide() {
-        clearActions();
         trainer = null;
         submenu.reset();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        
         menu.addAction(
             Actions.sequence(
-                Actions.run(InputDisabler.instance),
+                Actions.touchable(Touchable.disabled),
+                Actions.run(input.disableMe),
                 Actions.parallel(
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
                 ),
                 Actions.visible(false),
                 Actions.addAction(Actions.visible(false), submenu.getGroup()),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
-        menu.setTouchable(Touchable.disabled);
     }
 
     public Group getGroup() {

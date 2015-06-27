@@ -27,7 +27,7 @@ public class TitleSequence extends UI {
     scenes.title.Scene parent;
 
     public TitleSequence(scenes.title.Scene parent, AssetManager manager) {
-        super(manager);
+        super(parent, manager);
         this.parent = parent;
     }
 

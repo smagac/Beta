@@ -284,53 +284,81 @@ public class Inventory implements Serializable {
      * @param sacrifices
      */
     public boolean sacrifice(ObjectIntMap<Item> sacrifices, int required) {
-        if (getSumOfItems(sacrifices) < required) {
-            return false;
-        }
+        if (required > 0) {
         
-        for (Item item : sacrifices.keys()) {
-            int total = sacrifices.get(item, 1);
-            int tmpCount = tmp.get(item, 0);
-            int lootCount = loot.get(item, 0); 
-            int tmpSub = Math.min(total, tmpCount);
-            int lootSub = Math.min(total - tmpSub, lootCount);
-            int allCount = (tmpCount + lootCount) - (tmpSub + lootSub);
+            if (getSumOfItems(sacrifices) < required) {
+                return false;
+            }
             
-            if (lootSub > 0) {
-                int count = lootCount - lootSub;
-                if (count == 0) {
-                    loot.remove(item, 0);
+            for (Item item : sacrifices.keys()) {
+                int total = sacrifices.get(item, 1);
+                int tmpCount = tmp.get(item, 0);
+                int lootCount = loot.get(item, 0); 
+                int tmpSub = Math.min(total, tmpCount);
+                int lootSub = Math.min(total - tmpSub, lootCount);
+                int allCount = (tmpCount + lootCount) - (tmpSub + lootSub);
+                
+                if (lootSub > 0) {
+                    int count = lootCount - lootSub;
+                    if (count == 0) {
+                        loot.remove(item, 0);
+                    }
+                    else {
+                        loot.put(item, count);
+                    }
+                }
+                if (tmpSub > 0) {
+                    int count = tmpCount - tmpSub;
+                    if (count == 0) {
+                        tmp.remove(item, 0);
+                    }
+                    else {
+                        tmp.put(item, count);
+                    }
+                }
+                ItemMsg im = new ItemMsg();
+                im.item = item;
+                im.amount = allCount;
+                
+                if (allCount == 0) {
+                    all.remove(item, 0);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
                 }
                 else {
-                    loot.put(item, count);
+                    all.put(item, allCount);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
                 }
             }
-            if (tmpSub > 0) {
-                int count = tmpCount - tmpSub;
+        }
+        else {
+            ObjectIntMap.Entries<Item> entries = sacrifices.entries();
+            while (entries.hasNext) {
+                ObjectIntMap.Entry<Item> entry = entries.next();
+                
+                int count = all.get(entry.key, 0);
+                count = Math.max(0, count-entry.value);
+                
+                ItemMsg im = new ItemMsg();
+                im.item = entry.key;
+                im.amount = count;
+                
                 if (count == 0) {
-                    tmp.remove(item, 0);
+                    all.remove(entry.key, 0);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
                 }
                 else {
-                    tmp.put(item, count);
+                    all.put(entry.key, count);
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
                 }
             }
-            ItemMsg im = new ItemMsg();
-            im.item = item;
-            im.amount = allCount;
             
-            if (allCount == 0) {
-                all.remove(item, 0);
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.RemoveItem, im);
-            }
-            else {
-                all.put(item, allCount);
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.UpdateItem, im);
-            }
+            
         }
         
         for (Item i : sacrifices.keys()) {
             ServiceManager.getService(PageFile.class).increment(NumberValues.Loot_Sacrificed, sacrifices.get(i, 0));
         }
+        
         
         return true;
     }

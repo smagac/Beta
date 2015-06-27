@@ -35,6 +35,7 @@ public abstract class UI extends Stage implements Telegraph {
 
     public static final Viewport viewport = new ScalingViewport(Scaling.fit, Storymode.InternalRes[0], Storymode.InternalRes[1]);
     
+    protected final Scene parent;
     protected Skin skin;
     protected AssetManager manager;
     protected Pointer pointer;
@@ -47,9 +48,10 @@ public abstract class UI extends Stage implements Telegraph {
     
     protected StateMachine stateMachine;
     
-    public UI(AssetManager manager) {
+    public UI(Scene parent, AssetManager manager) {
         super(viewport);
         this.manager = manager;
+        this.parent = parent;
         fill = new Image(new Texture(Gdx.files.internal(DataDirs.Home + "fill.png")));
 
         fill.setFillParent(true);
@@ -238,4 +240,7 @@ public abstract class UI extends Stage implements Telegraph {
         return stateMachine.getCurrentState();
     }
 
+    public final Scene getScene() {
+        return parent;
+    }
 }

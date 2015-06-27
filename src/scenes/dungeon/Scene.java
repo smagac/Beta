@@ -2,7 +2,6 @@ package scenes.dungeon;
 
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.InputDisabler;
 import scene2d.runnables.GotoScene;
 import scenes.Messages;
 import scenes.UI;
@@ -125,8 +124,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             Equipment.Map.get(player).reset();
         }
         
-        wanderUI = new WanderUI(manager);
-        transition = new Transition(manager);
+        wanderUI = new WanderUI(this, manager);
+        transition = new Transition(this, manager);
 
         loaded = false;
         
@@ -344,8 +343,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             return true;
         }
         if (msg.message == Messages.Dungeon.Proceed) {
-            InputDisabler.swap();
-            InputDisabler.clear();
+            input.disable();
             leave();
             wanderUI.addAction(
                 Actions.sequence(

@@ -59,7 +59,7 @@ public class EndUI extends UI {
     private Group stats;
 
     public EndUI(Scene scene, AssetManager manager) {
-        super(manager);
+        super(scene, manager);
         parent = scene;
     }
 

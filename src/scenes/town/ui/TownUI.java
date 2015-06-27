@@ -10,6 +10,7 @@ import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.Messages.Player.ItemMsg;
+import scenes.Scene;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
@@ -98,7 +99,7 @@ public class TownUI extends GameUI {
     @Inject
     public IPlayerContainer playerService;
 
-    Group saveWindow;
+    Window saveWindow;
     Array<Table> saveSlots;
     FocusGroup formFocus;
     FocusGroup defaultFocus;
@@ -121,8 +122,8 @@ public class TownUI extends GameUI {
         );
     }
     
-    public TownUI(AssetManager manager) {
-        super(manager);
+    public TownUI(Scene scene, AssetManager manager) {
+        super(scene, manager);
 
         stateMachine = new DefaultStateMachine<TownUI>(this, TownState.Main);
     }
@@ -700,7 +701,9 @@ public class TownUI extends GameUI {
     private void makeSave() {
         final TownUI ui = this;
 
-        Group window = saveWindow = super.makeWindow(skin, 600, 300, true);
+        Window window = saveWindow = new Window("", skin, "square");
+        window.setSize(600, 300);
+        window.setKeepWithinStage(false);
         saveSlots = new Array<Table>();
         Table table = new Table();
 

@@ -51,7 +51,7 @@ public class LoreUI extends UI {
 	float scrollRate = NORMAL;
 	
 	public LoreUI(Scene scene, AssetManager manager) {
-		super(manager);
+		super(scene, manager);
 		parent = scene;
 		
 		sm = new DefaultStateMachine<LoreUI>(this);

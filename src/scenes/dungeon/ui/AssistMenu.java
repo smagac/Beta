@@ -1,6 +1,7 @@
 package scenes.dungeon.ui;
 
-import scene2d.InputDisabler;
+import github.nhydock.ssm.SceneManager;
+import scene2d.ExtendedInputMultiplexer;
 import scene2d.ui.extras.Card;
 import scenes.Messages;
 
@@ -78,13 +79,13 @@ public class AssistMenu {
      * Show initial state with cards
      */
     public void show() {
-        clearActions();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
         menu.addActor(submenu.getGroup());
         menu.addAction(
             Actions.sequence(
                 Actions.scaleTo(.7f, .7f),
                 Actions.alpha(0f),
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.addAction(
                     Actions.parallel(
                         Actions.alpha(1f),
@@ -111,7 +112,7 @@ public class AssistMenu {
                         Actions.alpha(1f, .15f),
                         Actions.scaleTo(1f, 1f, .25f, Interpolation.circleOut)
                 ),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
         menu.setTouchable(Touchable.childrenOnly);
@@ -124,11 +125,11 @@ public class AssistMenu {
      * Show all elements and prompt associated with healing
      */
     public void showHeal(int cost) {
-        clearActions();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
         
         menu.addAction(
             Actions.sequence(
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.addAction(
                     Actions.moveToAligned(0, getHeight()/2f, Align.left, .3f, Interpolation.circleOut),
                     healCard
@@ -139,7 +140,7 @@ public class AssistMenu {
                 ),
                 Actions.delay(.25f),
                 submenu.show(),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
 
@@ -150,11 +151,11 @@ public class AssistMenu {
      * Show all elements and prompt associated with escaping
      */
     public void showEscape(int cost) {
-        clearActions();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
         
         menu.addAction(
             Actions.sequence(
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.addAction(
                     Actions.moveToAligned(0, getHeight()/2f, Align.left, .3f, Interpolation.circleOut),
                     leaveCard
@@ -165,7 +166,7 @@ public class AssistMenu {
                 ),
                 Actions.delay(.25f),
                 submenu.show(),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
         
@@ -185,18 +186,19 @@ public class AssistMenu {
      * Hide all elements
      */
     public void hide() {
-        clearActions();
+        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        
         submenu.reset();
         menu.addAction(
             Actions.sequence(
-                Actions.run(InputDisabler.instance),
+                Actions.run(input.disableMe),
                 Actions.parallel(
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
                 ),
                 Actions.addAction(Actions.visible(false), submenu.getGroup()),
                 Actions.removeActor(submenu.getGroup()),
-                Actions.run(InputDisabler.instance)
+                Actions.run(input.enableMe)
             )
         );
         menu.setTouchable(Touchable.disabled);

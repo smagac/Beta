@@ -18,6 +18,7 @@ import scene2d.ui.extras.TableUtils;
 import scenes.GameUI;
 import scenes.Messages;
 import scenes.Messages.Battle.VictoryResults;
+import scenes.Scene;
 import scenes.battle.ui.CombatHandler.Combatant;
 import scenes.battle.ui.CombatHandler.Turn;
 
@@ -214,9 +215,9 @@ public class BattleUI extends GameUI
         messages.addAll(Messages.Battle.VICTORY, Messages.Battle.DEFEAT, Messages.Battle.Stats, Messages.Battle.DEBUFF);
     }
 	
-    public BattleUI(AssetManager manager)
+    public BattleUI(Scene scene, AssetManager manager)
 	{
-		super(manager);
+		super(scene, manager);
 		stateMachine = new DefaultStateMachine<BattleUI>(this);
 		combat = new CombatHandler();
 	}
@@ -867,6 +868,7 @@ public class BattleUI extends GameUI
 	    glow.clearActions();
 	    
 	    fader.addAction(Actions.sequence(
+	            Actions.run(getScene().getInput().disableMe),
 	            Actions.alpha(1f),
 	            Actions.moveToAligned(-getDisplayWidth(), 0, Align.bottomLeft),
 	            Actions.moveToAligned(0, 0, Align.bottomLeft, .5f, Interpolation.linear)
@@ -957,8 +959,8 @@ public class BattleUI extends GameUI
                         ),
                         Actions.delay(.9f),
                         Actions.sizeTo(192f, 0, .4f, Interpolation.circleOut),
-                        Actions.run(after)
-                        
+                        Actions.run(after),
+                        Actions.run(getScene().getInput().enableMe)
                     ), 
                     blessingLight
                 
@@ -970,6 +972,7 @@ public class BattleUI extends GameUI
 	protected void playFightAnimation(final Turn turn, final Runnable after) {
 	    playRollAnimation(turn,
             Actions.sequence(
+                Actions.run(getScene().getInput().disableMe),
                 Actions.run(new Runnable(){
 
                     @Override
@@ -983,7 +986,8 @@ public class BattleUI extends GameUI
                     
                 }),
                 Actions.delay(1f),
-                Actions.run(after)
+                Actions.run(after),
+                Actions.run(getScene().getInput().enableMe)
             )
         );
 	}
@@ -1047,7 +1051,14 @@ public class BattleUI extends GameUI
                         boss.addAction(hitAnimation(DataDirs.Sounds.deflect));
                     }
                     
-                    addAction(Actions.sequence(Actions.delay(.2f), Actions.run(after)));
+                    addAction(
+                        Actions.sequence(
+                            Actions.run(getScene().getInput().disableMe),
+                            Actions.delay(.2f), 
+                            Actions.run(after),
+                            Actions.run(getScene().getInput().enableMe)
+                        )
+                    );
                 }
             })
         );
@@ -1070,6 +1081,7 @@ public class BattleUI extends GameUI
         
         fader.addAction(
             Actions.sequence(
+                Actions.run(getScene().getInput().disableMe),
                 Actions.alpha(0f),
                 Actions.moveTo(0, 0),
                 Actions.alpha(.8f, .3f),
@@ -1091,7 +1103,8 @@ public class BattleUI extends GameUI
                 ),
                 Actions.delay(2f),
                 Actions.alpha(0f, .2f),
-                after
+                after,
+                Actions.run(getScene().getInput().enableMe)
             )
         );
 	}
@@ -1222,6 +1235,10 @@ public class BattleUI extends GameUI
 	        VictoryResults results = (VictoryResults)msg.extraInfo;
 
             Inventory inv = playerService.getInventory();
+            if (results.reward == Item.Placeholder) {
+                results.reward = ServiceManager.getService(IDungeonContainer.class).getDungeon().getItemFactory().createItem();
+            }
+            
             inv.pickup(results.reward);
             inv.pickup(results.bonus, results.bonusCount);
             

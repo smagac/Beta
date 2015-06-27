@@ -13,7 +13,7 @@ import squidpony.squidutility.jdaygraph.Topology;
  */
 public enum DirectionIntercardinal implements Topology {
 
-    UP(0, -1, '↑'), DOWN(0, 1, '↓'), LEFT(-1, 0, '←'), RIGHT(1, 0, '→'), UP_LEFT(-1, -1, '↖'), UP_RIGHT(1, -1, '↗'), DOWN_LEFT(-1, 1, '↙'), DOWN_RIGHT(1, 1, '↘'), NONE(0, 0, '•');
+    UP(0, -1, 'w'), DOWN(0, 1, 'x'), LEFT(-1, 0, 'a'), RIGHT(1, 0, 'd'), UP_LEFT(-1, -1, 'q'), UP_RIGHT(1, -1, 'e'), DOWN_LEFT(-1, 1, 'z'), DOWN_RIGHT(1, 1, 'c'), NONE(0, 0, 's');
     /**
      * An array which holds only the four cardinal directions.
      */

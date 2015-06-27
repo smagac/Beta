@@ -63,7 +63,7 @@ public class NewUI extends UI {
     StateMachine<NewUI> sm;
 
     public NewUI(Scene scene, AssetManager manager) {
-        super(manager);
+        super(scene, manager);
         parent = scene;
 
         sm = new DefaultStateMachine<NewUI>(this);
