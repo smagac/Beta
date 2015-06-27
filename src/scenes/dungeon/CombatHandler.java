@@ -41,10 +41,12 @@ class CombatHandler {
         
         final float MULT = (attacker == player) ? 2 : 1.25f;
 
-        if (MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f)) {
+        boolean dodged = MathUtils.randomBoolean(1f - (MathUtils.random(.8f, MULT) * bStats.getSpeed()) / 100f);
+        if (dodged) {
             float chance = MathUtils.random(.8f, MULT);
             int str = aStats.getStrength();
             int def = bStats.getDefense();
+            
             if (attacker == player) {
                 str += equipment.getSword().getPower();
                 if (!Monster.isObject(opponent)) {
@@ -56,7 +58,8 @@ class CombatHandler {
                 float pow = equipment.getShield().getPower(); 
                 if (MathUtils.randomBoolean(pow / Equipment.Piece.MAX_POWER)) {
                     equipment.getShield().decay();
-                    def += Integer.MAX_VALUE;    
+                    result.damage = 0;
+                    return result;
                 }
                 //armor lessens damage if the shield doesn't blog
                 else {
@@ -83,13 +86,15 @@ class CombatHandler {
             }
             
             bStats.hp = Math.max(0, bStats.hp - result.damage);
+        
+
+            if (bStats.hp <= 0) {
+                result.killed = true;
+            }
         }
         else {
             result.damage = -1;
-        }
-        
-        if (bStats.hp <= 0) {
-            result.killed = true;
+            return result;
         }
         
         return result;
