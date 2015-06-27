@@ -6,6 +6,7 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
 import scene2d.ui.extras.ScrollFollower;
+import scene2d.ui.extras.SimpleWindow;
 import scene2d.ui.extras.TabbedPane;
 import scenes.GameUI;
 import scenes.Messages;
@@ -88,9 +89,9 @@ public class TownUI extends GameUI {
     TrainMenu trainingMenu;
     
     // download display
-    Window downloadWindow;
+    SimpleWindow downloadWindow;
 
-    Group goddessDialog;
+    SimpleWindow goddessDialog;
     Label gMsg;
     Image miniGoddess;
 
@@ -99,7 +100,7 @@ public class TownUI extends GameUI {
     @Inject
     public IPlayerContainer playerService;
 
-    Window saveWindow;
+    SimpleWindow saveWindow;
     Array<Table> saveSlots;
     FocusGroup formFocus;
     FocusGroup defaultFocus;
@@ -701,9 +702,8 @@ public class TownUI extends GameUI {
     private void makeSave() {
         final TownUI ui = this;
 
-        Window window = saveWindow = new Window("", skin, "square");
+        SimpleWindow window = saveWindow = new SimpleWindow(skin, "square");
         window.setSize(600, 300);
-        window.setKeepWithinStage(false);
         saveSlots = new Array<Table>();
         Table table = new Table();
 
@@ -798,8 +798,7 @@ public class TownUI extends GameUI {
      * Make the popup display for the downloader
      */
     private void makeDownload() {
-        downloadWindow = new Window("", skin, "round");
-        downloadWindow.setKeepWithinStage(false);
+        downloadWindow = new SimpleWindow(skin, "round");
         downloadWindow.setSize(600, 200);
         
 
@@ -870,7 +869,7 @@ public class TownUI extends GameUI {
         goddess.setSize(128f, 128f);
         goddess.setPosition(620, 75, Align.center);
         goddess.setScaling(Scaling.stretch);
-        goddessDialog = new Window("", skin, "round");
+        goddessDialog = new SimpleWindow(skin, "round");
         goddessDialog.setSize(700, 150);
         goddessDialog.setOrigin(Align.center);
         goddessDialog.setPosition(display.getWidth()/2f, display.getHeight() / 2f, Align.center);

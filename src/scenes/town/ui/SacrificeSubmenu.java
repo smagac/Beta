@@ -4,6 +4,7 @@ import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
+import scene2d.ui.extras.SimpleWindow;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
 import scenes.UI;
@@ -156,7 +157,7 @@ class SacrificeSubmenu {
             promptGroup.setSize(240f, 130f);
             promptGroup.setPosition(260f, 50f);
             
-            Window pane = new Window("", skin, "pane");
+            SimpleWindow pane = new SimpleWindow(skin, "pane");
             pane.setSize(240f, 130f);
             promptGroup.addActor(pane);
             

@@ -20,7 +20,6 @@ import com.badlogic.gdx.utils.Json;
 
 import core.datatypes.dungeon.BossFloor;
 import core.datatypes.dungeon.Dungeon;
-import core.datatypes.dungeon.DungeonParams;
 import core.datatypes.dungeon.FloorData;
 import core.datatypes.dungeon.RandomFloorData;
 import core.service.interfaces.IGame;
@@ -40,7 +39,7 @@ public class DungeonFactory {
      * @param params
      * @return
      */
-    public static Dungeon loadFromCache(DungeonParams params) {
+    public static Dungeon loadFromCache(Dungeon.Parameters params) {
         if (params.isCached()) {
             FileHandle hashFile = params.getCacheFile();
 
@@ -79,7 +78,7 @@ public class DungeonFactory {
      * @param dungeon
      * @return
      */
-    public static void writeCacheFile(DungeonParams params, Dungeon dungeon) {
+    public static void writeCacheFile(Dungeon.Parameters params, Dungeon dungeon) {
         // ignore randomly created dungeons for caching because
         // they don't have a cache file
         // also don't overwrite files that have already been cached unless they've been changed
@@ -107,7 +106,7 @@ public class DungeonFactory {
      * @throws IOException
      * @return an array of the serial ids of the floors on the file system
      */
-    public static Array<FloorData> create(DungeonParams params, float[] progress) {
+    public static Array<FloorData> create(Dungeon.Parameters params, float[] progress) {
         // make sure dungeon dir exists
         // Gdx.files.absolute(tmpDir).mkdirs();
         // make sure to create cache files one first create

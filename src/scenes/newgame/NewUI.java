@@ -5,6 +5,7 @@ import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.Pointer;
+import scene2d.ui.extras.SimpleWindow;
 import scenes.Messages;
 import scenes.UI;
 
@@ -46,7 +47,7 @@ public class NewUI extends UI {
     Image goddess;
     Image you;
 
-    Group createFrame;
+    SimpleWindow createFrame;
     FocusGroup createFocus;
 
     Group slots;
@@ -197,7 +198,7 @@ public class NewUI extends UI {
             addActor(slots);
         }
 
-        createFrame = new Window("", skin, "round");
+        createFrame = new SimpleWindow(skin, "round");
         createFrame.setSize(580, 270);
         createFrame.setPosition(getWidth()/2, getHeight()/2, Align.center);
         createFrame.setTouchable(Touchable.disabled);

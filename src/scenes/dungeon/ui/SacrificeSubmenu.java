@@ -4,6 +4,7 @@ import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
+import scene2d.ui.extras.SimpleWindow;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
 import scenes.UI;
@@ -155,27 +156,23 @@ class SacrificeSubmenu {
         
         //Goddess prompt
         {
-            Group promptGroup = new Group();
-            promptGroup.setSize(240f, 140f);
-            promptGroup.setPosition(260f, 60f);
-            
-            Window pane = new Window("", skin, "pane");
+            SimpleWindow pane = new SimpleWindow(skin, "pane");
             pane.setSize(240f, 140f);
-            promptGroup.addActor(pane);
+            pane.setPosition(260f, 60f);
             
             prompt = new Label("", skin, "promptsm");
             prompt.setSize(150f, 120f);
             prompt.setAlignment(Align.topLeft);
             prompt.setPosition(10, 130, Align.topLeft);
             prompt.setWrap(true);
-            promptGroup.addActor(prompt);
+            pane.addActor(prompt);
             
             Image worship = new Image(skin, playerService.getWorship());
             worship.setSize(64, 64);
             worship.setPosition(190f, 70f, Align.center);
-            promptGroup.addActor(worship);
+            pane.addActor(worship);
             
-            window.addActor(promptGroup);
+            window.addActor(pane);
         }
         
         

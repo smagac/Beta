@@ -4,6 +4,7 @@ import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.LabeledTicker;
 import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.Pointer;
+import scene2d.ui.extras.SimpleWindow;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
 import scenes.Scene;
@@ -77,7 +78,7 @@ public class WanderUI extends UI {
 
     private HUD hud;
 
-    Window floorSelect;
+    SimpleWindow floorSelect;
 
     TrainMenu trainingMenu;
     
@@ -216,6 +217,12 @@ public class WanderUI extends UI {
                             return true;
                         }
                     }
+                    else if (stateMachine.isInState(WanderState.Assist)) {
+                        if (button == Buttons.LEFT) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                            return true;
+                        }
+                    }
                     return false;
                 }
             });
@@ -249,7 +256,7 @@ public class WanderUI extends UI {
         {
             messageWindow = new Group();
             
-            Window window = new Window("", skin, "thick");
+            SimpleWindow window = new SimpleWindow(skin, "thick");
             window.setSize(550, 300);
             
             message = new Label("", skin, "prompt");
@@ -269,6 +276,15 @@ public class WanderUI extends UI {
             button.setWidth(150f);
             button.setHeight(48f);
             button.setPosition(messageWindow.getWidth()/2f, 0f, Align.center);
+            button.addListener(new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                    }
+                    return true;
+                }
+            });
             messageWindow.addActor(button);
             
             addActor(messageWindow);
@@ -276,7 +292,7 @@ public class WanderUI extends UI {
         
         //floor select
         {
-            floorSelect = new Window("", skin, "square");
+            floorSelect = new SimpleWindow(skin, "square");
             floorSelect.setSize(380, 400);
             floorSelect.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
             floorSelect.setOrigin(Align.center);

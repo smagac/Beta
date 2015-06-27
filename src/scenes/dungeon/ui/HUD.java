@@ -1,5 +1,7 @@
 package scenes.dungeon.ui;
 
+import scene2d.ui.extras.SimpleWindow;
+
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -43,7 +45,7 @@ public class HUD {
         
         //left component
         {
-            Window window = new Window("", skin, "round");
+            SimpleWindow window = new SimpleWindow(skin, "round");
             window.setSize(100, 48);
             window.setPosition(0, 0);
             
@@ -62,7 +64,7 @@ public class HUD {
         
         //right component
         {
-            Window window = new Window("", skin, "round");
+            SimpleWindow window = new SimpleWindow(skin, "round");
             window.setSize(100, 48);
             window.setPosition(380, 0);
             
@@ -81,7 +83,7 @@ public class HUD {
         
         //central hud
         {
-            Window window = new Window("", skin, "round");
+            SimpleWindow window = new SimpleWindow(skin, "round");
             window.setSize(300, 72);
             window.setPosition(90, 0);
             

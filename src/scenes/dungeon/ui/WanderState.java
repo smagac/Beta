@@ -436,6 +436,10 @@ public enum WanderState implements UIState {
                     return true;
                 }
             } 
+            else if (telegram.message == Messages.Interface.Close) {
+                entity.changeState(Wander);
+                return true;
+            }
             return false;
         }
 
@@ -452,7 +456,7 @@ public enum WanderState implements UIState {
                 }
             }
             if (Input.CANCEL.match(keycode)){
-                entity.changeState(Wander);
+                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
                 return true;
             }
             return false;

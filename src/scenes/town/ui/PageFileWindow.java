@@ -2,6 +2,7 @@ package scenes.town.ui;
 
 import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.ScrollFollower;
+import scene2d.ui.extras.SimpleWindow;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
 
@@ -195,7 +196,7 @@ public class PageFileWindow {
     }
 
     private static class MonsterPane {
-        Group window;
+        SimpleWindow window;
         private Skin skin;
         private List<MonsterTemplate> monsterList;
         
@@ -207,9 +208,9 @@ public class PageFileWindow {
         MonsterPane(Skin skin, Array<MonsterTemplate> monsters) {
             this.skin = skin;
             
-            window = new Window("", skin, "pane");
+            window = new SimpleWindow(skin, "pane");
             window.setSize(600f, 270f);
-            
+           
             monsterList = new List<MonsterTemplate>(skin);
             monsterList.setItems(monsters);
             monsterList.addListener(new ChangeListener(){
@@ -235,7 +236,7 @@ public class PageFileWindow {
             pane.addListener(new ScrollFollower(pane, monsterList));
             window.addActor(pane);
             
-            Window details = new Window("", skin, "pane");
+            SimpleWindow details = new SimpleWindow(skin, "pane");
             details.setSize(400f, 270f);
             details.setPosition(200f, 0f);
             
@@ -295,7 +296,7 @@ public class PageFileWindow {
     static class StatusPane {
         private static final String ScoreFormat = "Score: %09d";
         
-        Window window;
+        SimpleWindow window;
         
         Label strengthLabel;
         Label defenseLabel;
@@ -311,7 +312,7 @@ public class PageFileWindow {
         
         StatusPane(Skin skin, IPlayerContainer service, PageFile tracker){
 
-            window = new Window("", skin, "pane");
+            window = new SimpleWindow(skin, "pane");
             window.setSize(600f, 270f);
             
             Image sprite = new Image(skin, service.getGender());

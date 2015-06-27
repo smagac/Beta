@@ -29,8 +29,7 @@ import core.DataDirs;
 import core.components.Equipment;
 import core.datatypes.FileType;
 import core.datatypes.dungeon.Dungeon;
-import core.datatypes.dungeon.DungeonLoader.DungeonParam;
-import core.datatypes.dungeon.DungeonParams;
+import core.datatypes.dungeon.DungeonLoader.Parameters;
 import core.datatypes.dungeon.Floor;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
@@ -59,7 +58,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
 
     private boolean descending;
 
-    private DungeonParams params;
+    private Dungeon.Parameters params;
     
     private Entity player;
 
@@ -76,7 +75,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         player = playerService.getPlayer();
     }
 
-    public void setDungeon(DungeonParams params, FileHandle file) {
+    public void setDungeon(Dungeon.Parameters params, FileHandle file) {
         this.params = params;
 
         tracker.increment(NumberValues.Files_Explored);
@@ -282,6 +281,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         ui = wanderUI;
         
         if (dungeonService.getDungeon() != null){
+            params = dungeonService.getParams();
             tileset = dungeonService.getDungeon().getTileset();
             
             RenderSystem rs = dungeonService.getEngine().getSystem(RenderSystem.class);
@@ -296,7 +296,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         else {
             tileset = new TsxTileSet(Gdx.files.internal(DataDirs.Tilesets + params.getTileset() + ".tsx"), shared.getAssetManager());
 
-            DungeonParam param = new DungeonParam();
+            Parameters param = new Parameters();
             param.params = this.params;
             
             param.onLoad = new Runnable() {

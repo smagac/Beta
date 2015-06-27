@@ -36,7 +36,8 @@ import core.datatypes.Craftable;
 import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.QuestTracker.Reward;
-import core.datatypes.dungeon.DungeonParams;
+import core.datatypes.dungeon.Dungeon;
+import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.npc.Trainer;
 import core.datatypes.quests.Quest;
 import core.service.implementations.PageFile;
@@ -316,9 +317,9 @@ enum TownState implements UIState<TownUI> {
             ui.fileBrowser.addAction(
                 Actions.sequence(
                     Actions.run(ui.getScene().getInput().disableMe),
-                    Actions.moveTo(0, -ui.getDisplayHeight()),
+                    Actions.moveToAligned(0, 0, Align.topLeft),
                     Actions.delay(.8f), 
-                    Actions.moveToAligned(0, ui.getDisplayHeight(), Align.topLeft, .3f, Interpolation.circleOut),
+                    Actions.moveToAligned(0, 16, Align.bottomLeft, .3f, Interpolation.circleOut),
                     Actions.run(ui.getScene().getInput().enableMe)
                 )
             );
@@ -350,13 +351,13 @@ enum TownState implements UIState<TownUI> {
                     ui.setMessage("You need to rest first!");
                 }
                 else {
-                    DungeonParams params;
+                    Dungeon.Parameters params;
                     FileHandle f = null;
                     // load selected file dungeon
                     if (t.message == Messages.Town.SelectDungeon) {
                         FileHandle file = ui.fileBrowser.getSelectedFile();
                         if (file != null) {
-                            params = DungeonParams.loadDataFromFile(file);
+                            params = Dungeon.Parameters.loadDataFromFile(file);
                             ui.fileBrowser.addToHistory(file);
                         } else {
                             return false;
@@ -364,7 +365,7 @@ enum TownState implements UIState<TownUI> {
                     }
                     // random dungeons
                     else {
-                        params = DungeonParams.loadRandomDungeon();
+                        params = Dungeon.Parameters.loadRandomDungeon();
                     }
                     scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                     dungeon.setDungeon(params, f);
@@ -655,7 +656,7 @@ enum TownState implements UIState<TownUI> {
                                        Gdx.app.log("Daily Dungeon", output);
                                        dungeonData = output;
                        
-                                       DungeonParams params = DungeonParams.loadFromSimpleData(dungeonData);
+                                       Dungeon.Parameters params = Dungeon.Parameters.loadFromSimpleData(dungeonData);
                                        scenes.dungeon.Scene dungeon = (scenes.dungeon.Scene) SceneManager.switchToScene("dungeon");
                                        dungeon.setDungeon(params, null);
                                    }

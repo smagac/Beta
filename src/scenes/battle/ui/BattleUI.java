@@ -13,6 +13,7 @@ import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.ParticleActor.ResetParticle;
 import scene2d.ui.extras.ScrollFocuser;
+import scene2d.ui.extras.SimpleWindow;
 import scene2d.ui.extras.TabbedPane;
 import scene2d.ui.extras.TableUtils;
 import scenes.GameUI;
@@ -103,8 +104,8 @@ public class BattleUI extends GameUI
      * Sacrifice menu
      */
     Label sacrificePrompt;
-    Group sacrificePromptWindow;
-    Group effectWindow;
+    SimpleWindow sacrificePromptWindow;
+    Window effectWindow;
     TextButton sacrificeButton;
     Table itemStatPane;
     Array<Label> itemStatLabels;
@@ -320,8 +321,9 @@ public class BattleUI extends GameUI
 	}
 	
     private void makeDead() {
-        dialog = new Window("", skin, "square");
+        dialog = new SimpleWindow(skin, "square");
         dialog.setSize(400, 250);
+        
         Label message = new Label("You are dead.\n\nYou have dropped all your new loot.\nSucks to be you.", skin, "promptsm");
         message.setWrap(true);
         message.setAlignment(Align.center);
@@ -762,8 +764,9 @@ public class BattleUI extends GameUI
 	    sacrificePrompt.setPosition(48f, 64f);
 	    sacrificePrompt.setWrap(true);
 	    
-	    sacrificePromptWindow = makeWindow(skin, 400, 130, true);
-        sacrificePromptWindow.setColor(1,1,1,0);
+	    sacrificePromptWindow = new SimpleWindow(skin, "square");
+	    sacrificePromptWindow.setSize(400, 130);
+	    sacrificePromptWindow.setColor(1,1,1,0);
         sacrificePromptWindow.setPosition(40f, 200f);
         sacrificePromptWindow.addActor(sacrificePrompt);
 	    
@@ -1103,8 +1106,8 @@ public class BattleUI extends GameUI
                 ),
                 Actions.delay(2f),
                 Actions.alpha(0f, .2f),
-                after,
-                Actions.run(getScene().getInput().enableMe)
+                Actions.run(getScene().getInput().enableMe),
+                after
             )
         );
 	}
@@ -1122,6 +1125,7 @@ public class BattleUI extends GameUI
             Actions.sequence(
                 Actions.alpha(0f),
                 Actions.alpha(.8f, .2f),
+                Actions.run(getScene().getInput().enableMe),
                 Actions.run(new Runnable(){
 
                     @Override
@@ -1141,6 +1145,7 @@ public class BattleUI extends GameUI
                     }
                 }),
                 Actions.delay(1.5f),
+                Actions.run(getScene().getInput().disableMe),
                 Actions.run(after)
             )
         );

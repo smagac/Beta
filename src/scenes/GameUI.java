@@ -4,7 +4,6 @@ import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.Pointer;
 import scene2d.ui.extras.TabbedPane;
-import scenes.LevelUpDialog.LevelUpState;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
@@ -101,9 +100,6 @@ public abstract class GameUI extends UI {
 
     protected Table notificationStack;
 
-    // level up dialog
-    LevelUpDialog levelUpDialog;
-    
     @Inject
     public IPlayerContainer playerService;
 
@@ -217,12 +213,6 @@ public abstract class GameUI extends UI {
             window.addActor(display);
             window.addActor(frame);
             addActor(window);
-
-            levelUpDialog = new LevelUpDialog(skin);
-            levelUpDialog.getGroup().setPosition(getWidth()/2f, getHeight()/2f, Align.center);
-            levelUpDialog.getFocusGroup().addListener(focusListener);
-            addActor(levelUpDialog.getGroup());
-            addActor(levelUpDialog.getFocusGroup());
 
             // populate the window frame
             extend();
@@ -366,12 +356,7 @@ public abstract class GameUI extends UI {
      * @return the current active focus group
      */
     private final FocusGroup focus() {
-        if (levelUpDialog.isVisible()) {
-            return levelUpDialog.getFocusGroup();
-        }
-        else {
-            return focusList();
-        }
+        return focusList();
     }
     
     protected abstract FocusGroup focusList();
@@ -605,13 +590,6 @@ public abstract class GameUI extends UI {
         }
         if (msg.message == Messages.Interface.Focus) {
             setKeyboardFocus((Actor)msg.extraInfo);
-        }
-        if (levelUpDialog.isVisible()) {
-            boolean val = LevelUpState.onMessage(levelUpDialog, msg);
-            if (val) {
-                resetFocus();
-            }
-            return val;
         }
         return stateMachine.handleMessage(msg);
     }

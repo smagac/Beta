@@ -20,7 +20,6 @@ import core.components.Groups.Monster;
 import core.components.Identifier;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonLoader;
-import core.datatypes.dungeon.DungeonLoader.DungeonParam;
 import core.datatypes.dungeon.FloorLoader;
 import core.datatypes.dungeon.FloorLoader.FloorParam;
 import core.datatypes.dungeon.Progress;
@@ -43,6 +42,8 @@ public class DungeonManager implements IDungeonContainer {
     DungeonLoader dl;
     FloorLoader fl;
     
+    Dungeon.Parameters params;
+    
     public DungeonManager() {
         dl = new DungeonLoader(new InternalFileHandleResolver());
         fl = new FloorLoader(new InternalFileHandleResolver());
@@ -60,7 +61,7 @@ public class DungeonManager implements IDungeonContainer {
     }
 
     @Override
-    public void loadDungeon(final DungeonParam params) {
+    public void loadDungeon(final DungeonLoader.Parameters params) {
         params.loadedCallback = new AssetLoaderParameters.LoadedCallback() {
 
             @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -80,7 +81,7 @@ public class DungeonManager implements IDungeonContainer {
             
         };
         dungeonLoader.load("dungeon", Dungeon.class, params);
-        
+        this.params = params.params;
         dungeon = null;
     }
     
@@ -206,4 +207,8 @@ public class DungeonManager implements IDungeonContainer {
         engine = null;
     }
 
+    @Override
+    public Dungeon.Parameters getParams() {
+        return params;
+    }
 }

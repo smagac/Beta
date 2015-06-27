@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.Comparator;
 
+import scene2d.ui.extras.SimpleWindow;
 import scene2d.ui.extras.TabbedPane;
 import scenes.Messages;
 
@@ -74,7 +75,7 @@ public class FileBrowser extends Group {
      * Call this after you size the actor properly
      */
     void init() {
-        Window browseWindow = new Window("", skin, "pane");
+        SimpleWindow browseWindow = new SimpleWindow(skin, "pane");
         
         final Value[] COL = {
                 new Value.Fixed(getWidth() * .5f), 
@@ -98,13 +99,13 @@ public class FileBrowser extends Group {
         filePane = new ScrollPane(currentFolderContents.list, skin, "files");
         filePane.setFadeScrollBars(false);
         filePane.setScrollingDisabled(true, false);
-        browseView.add(filePane).colspan(3).fillX();
+        browseView.add(filePane).colspan(3).fillX().padRight(4f).padBottom(10f);
         browseWindow.addActor(browseView);
         browseWindow.setWidth(getWidth());
-        browseWindow.setHeight(getHeight());
+        browseWindow.setHeight(getHeight()-24);
         
         
-        Window historyWindow = new Window("", skin, "pane");
+        SimpleWindow historyWindow = new SimpleWindow(skin, "pane");
         
         Table historyView = new Table(skin);
         historyView.setFillParent(true);
@@ -120,10 +121,11 @@ public class FileBrowser extends Group {
         historyPane = new ScrollPane(historyContents.list, skin, "files");
         historyPane.setFadeScrollBars(false);
         historyPane.setScrollingDisabled(false, true);
+        
         historyView.add(historyPane).colspan(3).fillX();
         historyWindow.addActor(historyView);
         historyWindow.setWidth(getWidth());
-        historyWindow.setHeight(getHeight());
+        historyWindow.setHeight(getHeight()-24);
         historyWindow.setUserObject(historyContents);
         
         TextButton browseTab = new TextButton("Browse", skin, "tab");
@@ -263,7 +265,7 @@ public class FileBrowser extends Group {
         
         FileList(Skin skin, final Value[] COL, FileBrowser browser){
             list = new Table(skin);
-            list.top().left().pad(5f);
+            list.top().left().pad(10f);
             list.columnDefaults(0).align(Align.left).width(COL[0]).expandX().fillX();
             list.columnDefaults(1).align(Align.center).width(COL[1]).padLeft(8f).padRight(8f).expandX().fill();
             list.columnDefaults(2).align(Align.right).width(COL[2]).expandX().fill();

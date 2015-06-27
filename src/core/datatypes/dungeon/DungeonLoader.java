@@ -17,7 +17,7 @@ import core.factories.DungeonFactory;
  *
  */
 @SuppressWarnings("rawtypes")
-public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoader.DungeonParam> {
+public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoader.Parameters> {
 
     public DungeonLoader(FileHandleResolver resolver) {
         super(resolver);
@@ -27,7 +27,7 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
     protected float[] progress = {0};
 
     @Override
-    public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
+    public void loadAsync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.Parameters param) {
         progress[0] = 0;
         // check if we just need to rebuild a dungeon
         if (param.generatedDungeon == null)
@@ -51,19 +51,19 @@ public class DungeonLoader extends AsynchronousAssetLoader<Dungeon, DungeonLoade
     }
 
     @Override
-    public Dungeon loadSync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
+    public Dungeon loadSync(AssetManager manager, String fileName, FileHandle file, DungeonLoader.Parameters param) {
         Dungeon val = generatedDungeon;
         generatedDungeon = null;
         return val;
     }
 
     @Override
-    public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, DungeonLoader.DungeonParam param) {
+    public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, DungeonLoader.Parameters param) {
         return null;
     }
     
-    public static class DungeonParam extends AssetLoaderParameters<Dungeon> {
-        public DungeonParams params;
+    public static class Parameters extends AssetLoaderParameters<Dungeon> {
+        public Dungeon.Parameters params;
         public Runnable onLoad;
         public Dungeon generatedDungeon;
     }
