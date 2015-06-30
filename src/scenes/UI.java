@@ -281,7 +281,6 @@ public abstract class UI extends Stage implements Telegraph {
     protected void loadReadme(String name) {
         //parse and load readme file if it exists
         FileHandle readmeFile = Gdx.files.internal(DataDirs.GameData + "readme/" + name);
-        System.out.println(readmeFile.path() + " " + readmeFile.exists());
         if (readmeFile.exists())
         {
             final TextButton readme = new TextButton("Help!", skin);

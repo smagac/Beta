@@ -145,7 +145,6 @@ public class Inventory implements Serializable {
         while (items.hasNext) {
             Entry<Item> item = items.next();
             if (item.key.equals(type)) {
-                //Gdx.app.log("Craft", "Found item " + item.key + " which matches type " + type);
                 found.put(item.key, item.value);
             }
         }
@@ -180,7 +179,6 @@ public class Inventory implements Serializable {
         ObjectIntMap<String> requirements = c.getRequirements();
 
         if (!c.canMake) {
-            //Gdx.app.log("Craft", "craftable not marked as having enough resources");
             return false;
         }
 

@@ -21,7 +21,7 @@ import core.components.Identifier;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.dungeon.FloorLoader;
-import core.datatypes.dungeon.FloorLoader.FloorParam;
+import core.datatypes.dungeon.FloorLoader.Parameters;
 import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.ILoader;
@@ -73,10 +73,8 @@ public class DungeonManager implements IDungeonContainer {
                 
                 if (params.onLoad != null) {
                     params.onLoad.run();
+                    params.onLoad = null;
                 }
-
-                dungeonLoader.unload(fileName);
-                loader.setLoading(false);
             }
             
         };
@@ -86,7 +84,7 @@ public class DungeonManager implements IDungeonContainer {
     }
     
     @Override
-    public void loadFloor(final FloorParam params) {
+    public void loadFloor(final FloorLoader.Parameters params) {
         params.floor = dungeon.getFloor(params.depth);
         params.type = dungeon.getType();
         params.difficulty = dungeon.getDifficulty();

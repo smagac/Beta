@@ -66,7 +66,6 @@ public class Dungeon implements Serializable {
         this.filename = params.getFilename();
         this.seed = params.getSeed();
         this.itemFactory = new ItemFactory(this.type);
-
         genBossFloors();
     }
 
@@ -209,6 +208,9 @@ public class Dungeon implements Serializable {
             this.fileName = null;
             this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
             this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length() - 4);
+        
+            this.type = "forest";
+            
         }
 
         private Parameters(long seed, FileType ext, int difficulty) {

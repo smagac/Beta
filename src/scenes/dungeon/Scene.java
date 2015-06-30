@@ -29,9 +29,9 @@ import core.DataDirs;
 import core.components.Equipment;
 import core.datatypes.FileType;
 import core.datatypes.dungeon.Dungeon;
-import core.datatypes.dungeon.DungeonLoader.Parameters;
+import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.dungeon.Floor;
-import core.datatypes.dungeon.FloorLoader.FloorParam;
+import core.datatypes.dungeon.FloorLoader;
 import core.datatypes.dungeon.Progress;
 import core.factories.DungeonFactory;
 import core.service.implementations.DungeonManager;
@@ -195,7 +195,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             @Override
             public void run() {
                 
-                FloorParam param = new FloorParam();
+                FloorLoader.Parameters param = new FloorLoader.Parameters();
                 param.depth = depth;
                 param.onLoad = new Runnable(){
 
@@ -298,7 +298,7 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
         else {
             tileset = new TsxTileSet(Gdx.files.internal(DataDirs.Tilesets + params.getTileset() + ".tsx"), shared.getAssetManager());
 
-            Parameters param = new Parameters();
+            DungeonLoader.Parameters param = new DungeonLoader.Parameters();
             param.params = this.params;
             
             param.onLoad = new Runnable() {

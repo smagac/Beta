@@ -62,7 +62,6 @@ public class TrainMenu {
     private InputListener keys = new InputListener(){
         @Override
         public boolean keyDown(InputEvent evt, int keycode){
-            System.out.println(keycode);
             if (!submenu.getGroup().isVisible() && menu.isVisible()){
                 if (Input.LEFT.match(keycode)){
                     cardGroup.prev();

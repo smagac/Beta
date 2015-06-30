@@ -42,7 +42,6 @@ public class Health {
         if (add) {
             status.put(effect, 0);    
             ailments = new ImmutableArray<Ailment>(status.keys().toArray());
-            Gdx.app.log("Ailment", "Now infected with " + effect.toString());
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.AddAilment, effect);
         }
         

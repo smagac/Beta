@@ -5,14 +5,14 @@ import github.nhydock.ssm.Service;
 import com.badlogic.ashley.core.Engine;
 
 import core.datatypes.dungeon.Dungeon;
-import core.datatypes.dungeon.DungeonLoader.Parameters;
-import core.datatypes.dungeon.FloorLoader.FloorParam;
+import core.datatypes.dungeon.DungeonLoader;
+import core.datatypes.dungeon.FloorLoader;
 import core.datatypes.dungeon.Progress;
 
 public interface IDungeonContainer extends Service {
 
-    public void loadDungeon(Parameters params);
-    public void loadFloor(FloorParam params);
+    public void loadDungeon(DungeonLoader.Parameters params);
+    public void loadFloor(FloorLoader.Parameters params);
     public boolean isLoading();
     
     public void setDungeon(Dungeon generatedDungeon);

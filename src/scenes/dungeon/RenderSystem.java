@@ -163,7 +163,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
 
     public void setMap(TiledMap map) {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, (SCALE)/32f, batch);
-        
+        Gdx.app.log("RenderSystem", "Map set");
         //handle weather
         TiledMapTileSet tileset = dungeonService.getDungeon().getTileset();
         MapProperties prop = tileset.getProperties();
@@ -182,9 +182,8 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                 }
             }
         }
-        
+    
         FileHandle footstepsFile = Gdx.files.internal(DataDirs.Sounds.Footsteps + dungeonService.getDungeon().getEnvironment() + ".wav");
-        System.out.println(footstepsFile.path());
         if (footstepsFile.exists()){
             footsteps = Gdx.audio.newSound(footstepsFile);
         }

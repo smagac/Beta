@@ -1,5 +1,7 @@
 package core.datatypes.dungeon;
 
+import java.util.Arrays;
+
 import scene2d.ui.extras.ParticleActor;
 
 import com.badlogic.gdx.Gdx;
@@ -115,19 +117,18 @@ public abstract class Weather {
             
             Array<float[]> locations = new Array<float[]>(float[].class);
             for (int i = 2; i < args.length - 1; i += 2) {
-                locations.add(new float[]{Float.parseFloat(args[i]), Float.parseFloat(args[i+1])});
+                float x = Float.parseFloat(args[i]),
+                      y = Float.parseFloat(args[i+1]);
+                locations.add(new float[]{x, y});
             }
             
             actorLocations = locations.toArray();
-            init();
         }
         
         public ParticleWeather(float chance, FileHandle file, float[]... locations) {
             super(chance);
             
             actorLocations = locations;
-            
-            init();
         }
         
         @Override
@@ -135,7 +136,6 @@ public abstract class Weather {
             for (float[] pos : actorLocations) {
                 ParticleEffect effect = new ParticleEffect();
                 effect.load(particleFile, Gdx.files.internal(DataDirs.Home));
-                
                 ParticleActor actor = new ParticleActor(effect);
                 actor.setPosition(pos[0] * weatherLayer.getWidth(), pos[1] * weatherLayer.getHeight());
                 actor.start();

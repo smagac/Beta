@@ -20,7 +20,7 @@ import core.factories.FloorFactory;
  *
  */
 @SuppressWarnings("rawtypes")
-public class FloorLoader extends AsynchronousAssetLoader<ImmutableArray, FloorLoader.FloorParam> {
+public class FloorLoader extends AsynchronousAssetLoader<ImmutableArray, FloorLoader.Parameters> {
 
     public FloorLoader(FileHandleResolver resolver) {
         super(resolver);
@@ -30,21 +30,21 @@ public class FloorLoader extends AsynchronousAssetLoader<ImmutableArray, FloorLo
     private ImmutableArray<Entity> data;
 
     @Override
-    public void loadAsync(AssetManager manager, String fileName, FileHandle file, FloorLoader.FloorParam param) {
+    public void loadAsync(AssetManager manager, String fileName, FileHandle file, FloorLoader.Parameters param) {
         data = FloorFactory.populate(param, progress);
     }
 
     @Override
-    public ImmutableArray<?> loadSync(AssetManager manager, String fileName, FileHandle file, FloorLoader.FloorParam param) {
+    public ImmutableArray<?> loadSync(AssetManager manager, String fileName, FileHandle file, FloorLoader.Parameters param) {
         return data;
     }
 
     @Override
-    public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, FloorLoader.FloorParam param) {
+    public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, FloorLoader.Parameters param) {
         return null;
     }
 
-    public static class FloorParam extends AssetLoaderParameters<ImmutableArray> {
+    public static class Parameters extends AssetLoaderParameters<ImmutableArray> {
         public int depth;
         public Floor floor;
         public Runnable onLoad;

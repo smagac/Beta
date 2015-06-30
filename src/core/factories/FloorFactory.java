@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
 import core.datatypes.dungeon.Floor;
-import core.datatypes.dungeon.FloorLoader.FloorParam;
+import core.datatypes.dungeon.FloorLoader.Parameters;
 
 public class FloorFactory {
     
@@ -15,7 +15,7 @@ public class FloorFactory {
      * 
      * @param ts
      */
-    public static ImmutableArray<Entity> populate(FloorParam params, int[] progress) {
+    public static ImmutableArray<Entity> populate(Parameters params, int[] progress) {
         MonsterFactory monsterFactory = new MonsterFactory(params.type);
 
         Floor floor = params.floor;

@@ -55,8 +55,6 @@ public class WanderUI extends UI {
 
     // variables for sacrifice menu
     Image fader;
-    
-    ParticleActor weather;
 
     // services
     @Inject public IPlayerContainer playerService;
@@ -273,7 +271,6 @@ public class WanderUI extends UI {
                 public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
                     if (button == Buttons.LEFT) {
                         LabeledTicker<Integer> ticker = floorSelect.findActor("ticker");
-                        System.out.println(ticker.getValue());
                         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Warp, ticker.getValue());
                     }
                     return false;

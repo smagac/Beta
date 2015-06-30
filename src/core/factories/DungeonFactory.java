@@ -158,6 +158,9 @@ public class DungeonFactory {
             Thread t = new Thread(fl);
             threads.add(t);
         }
+        
+        Gdx.app.log("Dungeon Generation", "Building " + floors.size + " floors");
+        
         //start threads
         for (int d = 0; d < threads.size; d++) {
             Thread t = threads.get(d);
@@ -188,8 +191,6 @@ public class DungeonFactory {
         
         @Override
         public void run(){
-            Gdx.app.log("Dungeon Generation", "Building " + floors.size + " floors");
-            
             while (true) {
                 int d;
                 long seed;
