@@ -87,7 +87,7 @@ public class FileBrowser extends Group {
         browseView.setFillParent(true);
         url = new Label("", skin, "tag");
         browseView.left().top().pad(5f).row();
-        browseView.add(url).align(Align.left).colspan(3).expandX().fillX().padBottom(8f);
+        browseView.add(url).align(Align.left).colspan(3).width(new Value.Fixed(getWidth() * .97f)).expandX().padBottom(8f);
         browseView.row().padBottom(5f);
         browseView.add("File Name", FONTSIZE).width(COL[0]).expandX().align(Align.left);
         browseView.add("Type", FONTSIZE).width(COL[1]).expandX().align(Align.left);
@@ -406,7 +406,7 @@ public class FileBrowser extends Group {
         private void makeParentLabel(FileHandle currentFolder) {
             Label[] row = new Label[3];
             list.row();
-            row[0] = list.add("..", FONTSIZE).getActor();
+            row[0] = list.add("[parent directory]", FONTSIZE).getActor();
             row[1] = list.add("", FONTSIZE).getActor();
             row[2] = list.add("", FONTSIZE).getActor();
             for (Label l : row) {

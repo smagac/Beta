@@ -5,21 +5,35 @@ import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.Pointer;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 import com.badlogic.gdx.utils.Scaling;
@@ -27,6 +41,7 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import core.DataDirs;
+import core.common.Input;
 import core.common.Storymode;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.ISharedResources;
@@ -47,6 +62,8 @@ public abstract class UI extends Stage implements Telegraph {
     private IntSet messages;
     
     protected StateMachine stateMachine;
+
+    private ScrollPane readmeView;
     
     public UI(Scene parent, AssetManager manager) {
         super(viewport);
@@ -69,7 +86,13 @@ public abstract class UI extends Stage implements Telegraph {
         return stateMachine;
     }
     
-    protected void listenTo(IntSet messages){}
+    protected void listenTo(IntSet messages){
+        messages.addAll(
+            Messages.Readme.Open,
+            Messages.Readme.Close,
+            Messages.Interface.Focus
+        );
+    }
     
     /**
      * Add this UI as a listener of all of its message types
@@ -206,8 +229,20 @@ public abstract class UI extends Stage implements Telegraph {
 
     public void update(float delta) { /* do nothing */ }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean handleMessage(Telegram msg) {
+        if (msg.message == Messages.Readme.Open && readmeView != null) {
+            getStateMachine().setGlobalState(ReadmeState.instance);
+            return true;
+        }
+        if (msg.message == Messages.Interface.Focus) {
+            setKeyboardFocus((Actor)msg.extraInfo);
+            return true;
+        }
+        if (getStateMachine() != null) {
+            return getStateMachine().handleMessage(msg);
+        }
         return false;
     }
 
@@ -231,7 +266,6 @@ public abstract class UI extends Stage implements Telegraph {
         stateMachine.changeState(state);
     }
     
-    
     /**
      * Fetch the currently active state of the UI
      * @return
@@ -242,5 +276,100 @@ public abstract class UI extends Stage implements Telegraph {
 
     public final Scene getScene() {
         return parent;
+    }
+    
+    protected void loadReadme(String name) {
+        //parse and load readme file if it exists
+        FileHandle readmeFile = Gdx.files.internal(DataDirs.GameData + "readme/" + name);
+        System.out.println(readmeFile.path() + " " + readmeFile.exists());
+        if (readmeFile.exists())
+        {
+            final TextButton readme = new TextButton("Help!", skin);
+            readme.addListener(new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    readme.setChecked(false);
+                    if (getStateMachine().getGlobalState() != ReadmeState.instance) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Readme.Open);
+                        return true;
+                    } else {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Readme.Close);
+                        return true;
+                    }
+                }
+                @Override
+                public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
+                    readme.setChecked(true);
+                }
+                @Override
+                public void exit(InputEvent evt, float x, float y, int pointer, Actor toActor) {
+                    readme.setChecked(false);
+                }
+            });
+            readme.setSize(90, 24);
+            readme.setPosition(20, getHeight(), Align.topLeft);
+            addActor(readme);
+            
+            Table text = new Table();
+            text.pad(20f);
+            for (String line : readmeFile.readString().split("(\r\n|\n)"))
+            {
+                Label l;
+                if (line.startsWith("##"))
+                {
+                    l = new Label(line.substring(2), skin, "prompt");
+                }
+                else if (line.startsWith("#"))
+                {
+                    l = new Label(line.substring(1), skin, "promptsm");    
+                }
+                else if (line.length() == 0)
+                {
+                    l = new Label(" ", skin);
+                }
+                else
+                {
+                    l = new Label(line, skin, "smaller");
+                }
+                l.setWrap(true);
+                text.add(l).expandX().fillX().row();
+            }
+            
+            readmeView = new ScrollPane(text, skin, "prompt");
+            readmeView.setSize(480, getHeight() - 40);
+            readmeView.setPosition(getWidth()/2f, getHeight(), Align.bottom);
+            readmeView.setFadeScrollBars(false);
+            
+            readmeView.addListener(new InputListener() {
+                @Override
+                public boolean keyDown(InputEvent evt, int keycode) {
+                    if (getStateMachine().getGlobalState() != ReadmeState.instance) {
+                        if (keycode == Keys.F1) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Readme.Open);
+                            return true;
+                        }
+                    } else {
+                        if (Input.CANCEL.match(keycode) || keycode == Keys.F1) {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Readme.Close);
+                            return true;
+                        }
+                        if (Input.UP.match(keycode)) {
+                            readmeView.setScrollY(readmeView.getScrollY() - 32);
+                            return true;
+                        }
+                        if (Input.DOWN.match(keycode)) {
+                            readmeView.setScrollY(readmeView.getScrollY() + 32);
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+            addActor(readmeView);
+        }
+    }
+
+    public Actor getReadme() {
+        return readmeView;
     }
 }

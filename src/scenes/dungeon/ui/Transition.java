@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
@@ -31,6 +32,11 @@ public class Transition extends UI {
 
     public Transition(Scene scene, AssetManager manager) {
         super(scene, manager);
+    }
+    
+    @Override
+    protected void listenTo(IntSet messages){
+        //do nothing
     }
 
     @Override

@@ -397,6 +397,7 @@ public enum WanderState implements UIState {
         @Override
         public void exit(WanderUI entity) {
             entity.assistMenu.hide();
+            entity.getPointer().setVisible(false);
         }
 
         @Override
@@ -476,6 +477,7 @@ public enum WanderState implements UIState {
         @Override
         public void exit(WanderUI entity) {
             entity.trainingMenu.hide();
+            entity.getPointer().setVisible(false);
         }
 
         @Override
@@ -523,7 +525,12 @@ public enum WanderState implements UIState {
                 )
             );
             entity.messageWindow.setTouchable(Touchable.childrenOnly);
-            entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
+            entity.fader.addAction(Actions.sequence(
+                    Actions.touchable(Touchable.enabled),
+                    Actions.alpha(0f), 
+                    Actions.alpha(.5f, .5f)
+                )
+            );
         }
         
         @Override
@@ -579,7 +586,13 @@ public enum WanderState implements UIState {
                 )
             );
             entity.messageWindow.setTouchable(Touchable.childrenOnly);
-            entity.fader.addAction(Actions.sequence(Actions.alpha(0f), Actions.alpha(.5f, .5f)));
+            entity.fader.addAction(
+                Actions.sequence(
+                    Actions.touchable(Touchable.enabled),
+                    Actions.alpha(0f), 
+                    Actions.alpha(.5f, .5f)
+                )
+            );
         }
 
         @Override

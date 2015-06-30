@@ -184,4 +184,11 @@ public interface Messages {
         public static final int Changed = 0xffd0;
     }
     
+    public static interface Readme {
+
+        public static final int Open = 0xfff5;
+        public static final int Close = 0xfff6;
+        
+    }
+    
 }

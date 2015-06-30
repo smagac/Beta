@@ -7,6 +7,7 @@ import scene2d.ui.extras.Pointer;
 import scene2d.ui.extras.SimpleWindow;
 import scenes.Messages;
 import scenes.Messages.Dungeon.CombatNotify;
+import scenes.ReadmeState;
 import scenes.Scene;
 import scenes.UI;
 import scenes.dungeon.RenderSystem;
@@ -240,56 +241,7 @@ public class WanderUI extends UI {
         display.addActor(trainingMenu.getGroup());
         
         addActor(display);
-        
-        fader = new Image(skin.getRegion("wfill"));
-        fader.setScaling(Scaling.fill);
-        fader.setPosition(0, 0);
 
-        fader.addAction(Actions.alpha(0f));
-        fader.act(0f);
-        fader.setFillParent(true);
-        fader.setTouchable(Touchable.disabled);
-        
-        addActor(fader);
-
-        //prompts
-        {
-            messageWindow = new Group();
-            
-            SimpleWindow window = new SimpleWindow(skin, "thick");
-            window.setSize(550, 300);
-            
-            message = new Label("", skin, "prompt");
-            message.setSize(490, 280);
-            message.setAlignment(Align.center);
-            message.setPosition(275, 150, Align.center);
-            message.setWrap(true);
-            window.addActor(message);
-            
-            messageWindow.setSize(550, 300);
-            messageWindow.setOrigin(Align.center);
-            messageWindow.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
-            messageWindow.setColor(1,1,1,0);
-            messageWindow.addActor(window);
-            messageWindow.setTouchable(Touchable.disabled);
-            Button button = new TextButton("Return Home", skin, "bigpop");
-            button.setWidth(150f);
-            button.setHeight(48f);
-            button.setPosition(messageWindow.getWidth()/2f, 0f, Align.center);
-            button.addListener(new InputListener(){
-                @Override
-                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    if (button == Buttons.LEFT) {
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                    }
-                    return true;
-                }
-            });
-            messageWindow.addActor(button);
-            
-            addActor(messageWindow);
-        }
-        
         //floor select
         {
             floorSelect = new SimpleWindow(skin, "square");
@@ -338,7 +290,59 @@ public class WanderUI extends UI {
         pointer = new Pointer(skin);
         addActor(pointer);
         pointer.setVisible(false);
+        
+        loadReadme("dungeoning");
+        
+        
+        fader = new Image(skin.getRegion("wfill"));
+        fader.setScaling(Scaling.fill);
+        fader.setPosition(0, 0);
 
+        fader.addAction(Actions.alpha(0f));
+        fader.act(0f);
+        fader.setFillParent(true);
+        fader.setTouchable(Touchable.disabled);
+
+        addActor(fader);
+
+        //prompts
+        {
+            messageWindow = new Group();
+            
+            SimpleWindow window = new SimpleWindow(skin, "thick");
+            window.setSize(550, 300);
+            
+            message = new Label("", skin, "prompt");
+            message.setSize(490, 280);
+            message.setAlignment(Align.center);
+            message.setPosition(275, 150, Align.center);
+            message.setWrap(true);
+            window.addActor(message);
+            
+            messageWindow.setSize(550, 300);
+            messageWindow.setOrigin(Align.center);
+            messageWindow.setPosition(getWidth()/2f, getHeight()/2f, Align.center);
+            messageWindow.setColor(1,1,1,0);
+            messageWindow.addActor(window);
+            messageWindow.setTouchable(Touchable.disabled);
+            Button button = new TextButton("Return Home", skin, "bigpop");
+            button.setWidth(150f);
+            button.setHeight(48f);
+            button.setPosition(messageWindow.getWidth()/2f, 0f, Align.center);
+            button.addListener(new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+                    if (button == Buttons.LEFT) {
+                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
+                    }
+                    return true;
+                }
+            });
+            messageWindow.addActor(button);
+            
+            addActor(messageWindow);
+        }
+    
         getRoot().setName("root");
         setKeyboardFocus(getRoot());
         // key listener for moving the character by pressing the arrow keys or WASD
@@ -567,7 +571,13 @@ public class WanderUI extends UI {
             hud.updateStats(stats);
             return true;
         }
-        return stateMachine.handleMessage(telegram);
+        if (telegram.message == Messages.Interface.Close && 
+            stateMachine.getGlobalState() instanceof ReadmeState ) {
+            stateMachine.handleMessage(telegram);
+            stateMachine.setGlobalState(WanderState.Global);
+            return true;
+        }
+        return super.handleMessage(telegram);
     }
 
     @Override

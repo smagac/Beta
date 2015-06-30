@@ -588,10 +588,7 @@ public abstract class GameUI extends UI {
             craftingStats.setText(String.format(statFormat, i.getProgress(), i.getRequiredCrafts().size));
             return true;
         }
-        if (msg.message == Messages.Interface.Focus) {
-            setKeyboardFocus((Actor)msg.extraInfo);
-        }
-        return stateMachine.handleMessage(msg);
+        return super.handleMessage(msg);
     }
 
     /**
