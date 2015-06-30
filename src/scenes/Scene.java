@@ -1,13 +1,12 @@
 package scenes;
 
-import scene2d.ExtendedInputMultiplexer;
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
 
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 
+import core.service.implementations.InputHandler;
 import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IColorMode;
 import core.service.interfaces.ILoader;
@@ -36,11 +35,13 @@ public abstract class Scene<View extends UI> implements Screen {
     protected View ui;
 
     protected boolean loaded;
-    protected ExtendedInputMultiplexer input;
+    
+    @Inject
+    public InputHandler input;
 
     public Scene() {
         manager = new AssetManager();
-        input = new ExtendedInputMultiplexer();
+        ServiceManager.register(InputHandler.class, new InputHandler());
 
         ServiceManager.inject(this);
     }
@@ -106,7 +107,7 @@ public abstract class Scene<View extends UI> implements Screen {
         dispose();
     }
     
-    public final ExtendedInputMultiplexer getInput() {
+    public final InputHandler getInput() {
         return input;
     }
 }

@@ -627,11 +627,13 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     @Override
     public void entityAdded(Entity entity) {
         if (Groups.monsterType.matches(entity)) {
-            monsters.add(entity);
             Combat combat = Combat.Map.get(entity);
-            combat.initAI(new DefaultStateMachine<Entity>(entity, MovementAI.Wander));
-            if (combat.isNaturallyPassive()) {
-                combat.getAI().changeState(MovementAI.Passive);
+            if (combat != null) {
+                combat.initAI(new DefaultStateMachine<Entity>(entity, MovementAI.Wander));
+                if (combat.isNaturallyPassive()) {
+                    combat.getAI().changeState(MovementAI.Passive);
+                }
+                monsters.add(entity);
             }
         } 
         /**

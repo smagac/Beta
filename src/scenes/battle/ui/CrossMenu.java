@@ -1,10 +1,8 @@
 package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
-import scene2d.ExtendedInputMultiplexer;
 import scene2d.runnables.SendMessage;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -23,6 +21,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
 import core.common.Input;
+import core.service.implementations.InputHandler;
 import core.service.interfaces.IPlayerContainer;
 import core.util.ListPointer;
 
@@ -253,7 +252,7 @@ public class CrossMenu extends Group
 	    MAIN(){
 	        @Override
 	        public void enter(CrossMenu entity) {
-	            ExtendedInputMultiplexer input = (ExtendedInputMultiplexer)Gdx.input.getInputProcessor();
+	            InputHandler input = ServiceManager.getService(InputHandler.class);
 	            entity.addAction(
                     Actions.sequence(
                         Actions.run(input.disableMe),
@@ -333,8 +332,8 @@ public class CrossMenu extends Group
 	    ATTACK(){
 	        @Override
             public void enter(CrossMenu entity) {
-               ExtendedInputMultiplexer input = (ExtendedInputMultiplexer)Gdx.input.getInputProcessor();
-
+	            InputHandler input = ServiceManager.getService(InputHandler.class);
+                
 	            entity.addAction(
                     Actions.sequence(
                         Actions.run(input.disableMe),
@@ -446,8 +445,8 @@ public class CrossMenu extends Group
 	    ITEM(){
             @Override
             public void enter(CrossMenu entity) {
-                ExtendedInputMultiplexer input = (ExtendedInputMultiplexer)Gdx.input.getInputProcessor();
-
+                InputHandler input = ServiceManager.getService(InputHandler.class);
+                
                 entity.addAction(
                     Actions.sequence(
                         Actions.run(input.disableMe),

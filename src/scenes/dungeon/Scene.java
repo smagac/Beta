@@ -292,6 +292,8 @@ public class Scene extends scenes.Scene<UI> implements Telegraph {
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
             
             setAudio();
+            
+            setFloor(dungeonService.getProgress().depth);
         }
         else {
             tileset = new TsxTileSet(Gdx.files.internal(DataDirs.Tilesets + params.getTileset() + ".tsx"), shared.getAssetManager());

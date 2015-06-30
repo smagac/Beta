@@ -1,8 +1,6 @@
 package scenes.town.ui;
 
-import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.ExtendedInputMultiplexer;
 import scene2d.ui.extras.Card;
 import scene2d.ui.extras.FocusGroup;
 import scenes.Messages;
@@ -23,6 +21,7 @@ import core.common.Input;
 import core.components.Stats;
 import core.components.Stats.Stat;
 import core.datatypes.npc.Trainer;
+import core.service.implementations.InputHandler;
 import core.service.interfaces.IPlayerContainer;
 
 public class TrainMenu {
@@ -150,7 +149,7 @@ public class TrainMenu {
             submenu.setPrompt("For " + trainer.calcPoints(stats) + " items you can improve your " + trainer.getTrainingType().name() 
                               + ".\n\nThe Aztec Gods of Gains say they'd really like some " + trainer.getBonus());
             
-            ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+            InputHandler input = ServiceManager.getService(InputHandler.class);
             menu.addAction(
                 Actions.sequence(
                     Actions.run(input.disableMe), 
@@ -191,8 +190,7 @@ public class TrainMenu {
                 )
             );
         }
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
-        
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         menu.addAction(
             Actions.sequence(
                 Actions.visible(true),
@@ -227,8 +225,7 @@ public class TrainMenu {
     public void hide() {
         trainer = null;
         submenu.reset();
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
-        
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         menu.addAction(
             Actions.sequence(
                 Actions.touchable(Touchable.disabled),

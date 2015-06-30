@@ -1,9 +1,12 @@
-package scene2d;
+package core.service.implementations;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 
-public class ExtendedInputMultiplexer extends InputMultiplexer {
+import github.nhydock.ssm.Service;
 
+public class InputHandler extends InputMultiplexer implements Service {
+    
     public Runnable disableMe = new Runnable() {
 
         @Override
@@ -25,6 +28,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
     
     private boolean disabled;
 
+    @Override
     public boolean keyDown(int keycode){
         if (!disabled) {
             return super.keyDown(keycode);
@@ -32,6 +36,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
         return false;
     }
     
+    @Override
     public boolean keyUp(int keycode){
         if (!disabled) {
             return super.keyUp(keycode);
@@ -39,6 +44,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
         return false;
     }
     
+    @Override
     public boolean keyTyped(char character){
         if (!disabled) {
             return super.keyTyped(character);
@@ -46,6 +52,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
         return false;
     }
     
+    @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
         if (!disabled) {
             return super.touchDown(x, y, pointer, button);
@@ -53,6 +60,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
         return false;
     }
     
+    @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
         if (!disabled) {
             return super.touchUp(x, y, pointer, button);
@@ -60,6 +68,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
         return false;
     }
     
+    @Override
     public boolean touchDragged(int x, int y, int pointer) {
         if (!disabled) {
             return super.touchDragged(x, y, pointer);
@@ -67,6 +76,7 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
         return false;
     }
     
+    @Override
     public boolean mouseMoved(int x, int y) {
         if (!disabled) {
             return super.mouseMoved(x, y);
@@ -89,4 +99,14 @@ public class ExtendedInputMultiplexer extends InputMultiplexer {
     public boolean isDisabled() {
         return disabled;
     }
+    @Override
+    public void onRegister() {
+        Gdx.input.setInputProcessor(this);
+    }
+
+    @Override
+    public void onUnregister() {
+        
+    }
+
 }

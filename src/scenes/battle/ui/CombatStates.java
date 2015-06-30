@@ -1,7 +1,6 @@
 package scenes.battle.ui;
 
 import github.nhydock.ssm.ServiceManager;
-import scene2d.ExtendedInputMultiplexer;
 import scene2d.runnables.GotoScene;
 import scene2d.runnables.PlayBGM;
 import scenes.Messages;

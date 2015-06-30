@@ -411,6 +411,8 @@ public class Inventory implements Serializable {
         tmp.clear();
         loot.clear();
         loot.putAll(all);
+        
+        refreshRequirements();
     }
 
     /**
@@ -421,6 +423,8 @@ public class Inventory implements Serializable {
         tmp.clear();
         all.clear();
         all.putAll(loot);
+        
+        refreshRequirements();
     }
 
     /**

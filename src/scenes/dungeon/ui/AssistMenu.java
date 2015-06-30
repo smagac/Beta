@@ -1,7 +1,6 @@
 package scenes.dungeon.ui;
 
-import github.nhydock.ssm.SceneManager;
-import scene2d.ExtendedInputMultiplexer;
+import github.nhydock.ssm.ServiceManager;
 import scene2d.ui.extras.Card;
 import scenes.Messages;
 
@@ -14,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Align;
+
+import core.service.implementations.InputHandler;
 
 public class AssistMenu {
 
@@ -79,7 +80,7 @@ public class AssistMenu {
      * Show initial state with cards
      */
     public void show() {
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         menu.addActor(submenu.getGroup());
         menu.addAction(
             Actions.sequence(
@@ -125,8 +126,7 @@ public class AssistMenu {
      * Show all elements and prompt associated with healing
      */
     public void showHeal(int cost) {
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
-        
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         menu.addAction(
             Actions.sequence(
                 Actions.run(input.disableMe),
@@ -151,8 +151,7 @@ public class AssistMenu {
      * Show all elements and prompt associated with escaping
      */
     public void showEscape(int cost) {
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
-        
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         menu.addAction(
             Actions.sequence(
                 Actions.run(input.disableMe),
@@ -173,25 +172,16 @@ public class AssistMenu {
         submenu.setPrompt(String.format(LEAVEFMT, cost));
     }
     
-    private void clearActions(){
-        healCard.clearActions();
-        leaveCard.clearActions();
-        menu.clearActions();
-        
-        healCard.setTouchable(Touchable.disabled);
-        leaveCard.setTouchable(Touchable.disabled);
-    }
-    
     /**
      * Hide all elements
      */
     public void hide() {
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
-        
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         submenu.reset();
         menu.addAction(
             Actions.sequence(
                 Actions.run(input.disableMe),
+                Actions.touchable(Touchable.disabled),
                 Actions.parallel(
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
@@ -201,7 +191,6 @@ public class AssistMenu {
                 Actions.run(input.enableMe)
             )
         );
-        menu.setTouchable(Touchable.disabled);
     }
 
     public Group getGroup() {

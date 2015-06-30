@@ -1,8 +1,6 @@
 package scenes.dungeon.ui;
 
-import github.nhydock.ssm.SceneManager;
 import github.nhydock.ssm.ServiceManager;
-import scene2d.ExtendedInputMultiplexer;
 import scene2d.ui.extras.Card;
 
 import com.badlogic.gdx.math.Interpolation;
@@ -14,12 +12,11 @@ import com.badlogic.gdx.utils.Align;
 
 import core.components.Stats;
 import core.datatypes.npc.Trainer;
+import core.service.implementations.InputHandler;
 import core.service.interfaces.IPlayerContainer;
 
 public class TrainMenu {
 
-    private static final String HEALFMT = "";
-    
     private Group menu;
     
     private Card card;
@@ -79,7 +76,7 @@ public class TrainMenu {
      * Show initial state with cards
      */
     public void show() {
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
+        InputHandler input = ServiceManager.getService(InputHandler.class);
         
         menu.addActor(submenu.getGroup());
         menu.addAction(
@@ -107,21 +104,18 @@ public class TrainMenu {
         submenu.getGroup().setTouchable(Touchable.childrenOnly);
     }
     
-    private void clearActions(){
-        menu.clearActions();
-    }
-    
     /**
      * Hide all elements
      */
     public void hide() {
-        ExtendedInputMultiplexer input = SceneManager.getActiveScene().getInput();
-        
+        InputHandler input = ServiceManager.getService(InputHandler.class);
+                
         trainer = null;
         submenu.reset();
         menu.addAction(
             Actions.sequence(
                 Actions.run(input.disableMe),
+                Actions.touchable(Touchable.disabled),
                 Actions.parallel(
                         Actions.alpha(0f, .2f),
                         Actions.scaleTo(2f, 2f, .3f, Interpolation.circleOut)
@@ -131,7 +125,6 @@ public class TrainMenu {
                 Actions.run(input.enableMe)
             )
         );
-        menu.setTouchable(Touchable.disabled);
     }
 
     public Group getGroup() {
