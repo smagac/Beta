@@ -24,6 +24,7 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
+import core.DataDirs;
 import core.components.Combat;
 import core.components.Drop;
 import core.components.Equipment;
@@ -44,6 +45,7 @@ import core.factories.MonsterFactory;
 import core.factories.MonsterFactory.MonsterTemplate;
 import core.service.implementations.PageFile;
 import core.service.implementations.PageFile.NumberValues;
+import core.service.interfaces.IAudioManager;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
 
@@ -67,6 +69,7 @@ public class MovementSystem extends EntitySystem implements EntityListener {
     private Engine engine;
     @Inject public IDungeonContainer dungeonService;
     @Inject public IPlayerContainer playerService;
+    @Inject public IAudioManager audio;
     
     public void setMap(Floor floorData) {
         // set collision map
@@ -314,35 +317,38 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             //open door instead of handling drops
             if (Lock.Map.has(opponent)) {
                 CombatHandler.unlockDoor(opponent);
+                audio.playSfx(DataDirs.Sounds.open);
             }
-            else if (Monster.isLoot(opponent)) {
-                dungeonService.getProgress().lootFound++;
-                dungeonService.getProgress().totalLootFound++;
-                engine.removeEntity(opponent);
+            else {
+                audio.playSfx((MathUtils.randomBoolean())?DataDirs.Sounds.hit:DataDirs.Sounds.hit2);
+                if (Monster.isLoot(opponent)) {
+                    dungeonService.getProgress().lootFound++;
+                    dungeonService.getProgress().totalLootFound++;
+                    engine.removeEntity(opponent);
+                }
+                else if (Monster.isKey(opponent)) {
+                    dungeonService.getProgress().keys++;
+                    engine.removeEntity(opponent);
+                }
+                else if (opponent != player) {
+                    CombatHandler.markDead(opponent);
+                    dungeonService.getProgress().monstersKilled++;
+                    Identifier id = Identifier.Map.get(opponent); 
+                    String name = id.toString();
+                    MessageDispatcher.getInstance().dispatchMessage(null, Quest.Actions.Hunt, name);
+                    
+                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
+                    ServiceManager.getService(PageFile.class).increment(NumberValues.Monsters_Killed);
+                    
+                    //unlock monster profile
+                    int floor = dungeonService.getProgress().depth;
+                    MonsterTemplate monster = MonsterFactory.getMonster(id.getType());
+                    ServiceManager.getService(PageFile.class).discover(monster, floor);
+                    
+                    //unlock adjective
+                    ServiceManager.getService(PageFile.class).discover(id.getModifier(), true);
+                }
             }
-            else if (Monster.isKey(opponent)) {
-                dungeonService.getProgress().keys++;
-                engine.removeEntity(opponent);
-            }
-            else if (opponent != player) {
-                CombatHandler.markDead(opponent);
-                dungeonService.getProgress().monstersKilled++;
-                Identifier id = Identifier.Map.get(opponent); 
-                String name = id.toString();
-                MessageDispatcher.getInstance().dispatchMessage(null, Quest.Actions.Hunt, name);
-                
-                MessageDispatcher.getInstance().dispatchMessage(null, Messages.Player.Stats);
-                ServiceManager.getService(PageFile.class).increment(NumberValues.Monsters_Killed);
-                
-                //unlock monster profile
-                int floor = dungeonService.getProgress().depth;
-                MonsterTemplate monster = MonsterFactory.getMonster(id.getType());
-                ServiceManager.getService(PageFile.class).discover(monster, floor);
-                
-                //unlock adjective
-                ServiceManager.getService(PageFile.class).discover(id.getModifier(), true);
-            }
-            
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Dead, opponent);
             MessageDispatcher.getInstance().dispatchMessage(null, Messages.Dungeon.Refresh, dungeonService.getProgress());
             opponent.remove(Monster.class);
@@ -350,6 +356,8 @@ public class MovementSystem extends EntitySystem implements EntityListener {
             monsters.removeValue(opponent, true);    
             
             handleDrop(opponent);
+        } else {
+            audio.playSfx((MathUtils.randomBoolean())?DataDirs.Sounds.hit:DataDirs.Sounds.hit2);
         }
     }
     

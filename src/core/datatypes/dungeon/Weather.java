@@ -1,7 +1,5 @@
 package core.datatypes.dungeon;
 
-import java.util.Arrays;
-
 import scene2d.ui.extras.ParticleActor;
 
 import com.badlogic.gdx.Gdx;

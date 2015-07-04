@@ -29,6 +29,7 @@ public class Stats extends Component implements Serializable {
     private int strength;
     private int defense;
     private int speed;
+    private int timesTrained;
     public boolean hidden;
 
     private int[] baseStats;
@@ -44,6 +45,7 @@ public class Stats extends Component implements Serializable {
 
     public Stats(int[] values, StatModifier[] mods) {
         level = 1;
+        timesTrained = 0;
         baseStats = values;
         
         maxhp = baseStats[0];
@@ -112,7 +114,12 @@ public class Stats extends Component implements Serializable {
             case DEFENSE:
                 defense++; break;
         }
-        level++;
+
+        timesTrained++;
+        if (timesTrained >= 5) {
+            level++;
+            timesTrained = 0;
+        }
     }
     
     public int getStrength() {
@@ -133,20 +140,6 @@ public class Stats extends Component implements Serializable {
 
     public int getVitality() {
         return maxhp / 2;
-    }
-
-    /**
-     * Level up an entity, setting its stats to the provided list
-     * @param stats - new stats of the entity after level up
-     */
-    public void levelUp(int[] stats) {
-        level++;
-        strength = stats[0];
-        defense = stats[1];
-        speed = stats[2];
-        maxhp = stats[3] * 2;
-        
-        hp = maxhp;
     }
 
     public void addModifier(StatModifier mod) {
@@ -171,6 +164,7 @@ public class Stats extends Component implements Serializable {
         json.writeValue("mhp", maxhp);
         json.writeValue("hp", hp);
         json.writeValue("lvl", level);
+        json.writeValue("trained", timesTrained);
     }
 
     @Override
@@ -181,6 +175,7 @@ public class Stats extends Component implements Serializable {
         speed = jsonData.getInt("spd");
         maxhp = jsonData.getInt("mhp");
         hp = jsonData.getInt("hp");
+        timesTrained = jsonData.getInt("trained", 0);
         
         baseStats = new int[5];
         baseStats[0] = maxhp;

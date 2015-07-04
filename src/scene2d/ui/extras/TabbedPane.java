@@ -108,11 +108,20 @@ public class TabbedPane extends Table {
     }
 
     public void showTab(int index) {
+        showTab(index, false);
         this.buttons.getButtons().get(index).setChecked(true);
+    }
+    
+    public void showTab(int index, boolean forceUpdate) {
+        Button tab = this.buttons.getButtons().get(index);
+        if (forceUpdate && tab.isChecked()){
+            tab.setChecked(false);
+        }
+        tab.setChecked(true);
     }
 
     public int getOpenTabIndex() {
-        return this.buttons.getButtons().indexOf(this.buttons.getChecked(), true);
+        return this.buttons.getCheckedIndex();
     }
     
     public void prevTab(){

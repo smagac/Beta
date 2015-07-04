@@ -111,6 +111,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
     @Inject public IColorMode color;
     @Inject public IDungeonContainer dungeonService;
     @Inject public IPlayerContainer playerService;
+    @Inject public IAudioManager audio;
     
     Family type = Family.all(Renderable.class, Position.class).get();
 
@@ -346,7 +347,7 @@ public class RenderSystem extends EntitySystem implements EntityListener, Telegr
                 dustTimer = 0f;
                 
                 if (footsteps != null){
-                    ServiceManager.getService(IAudioManager.class).playSfx(footsteps);
+                    audio.playSfx(footsteps);
                 }
             }
             

@@ -208,9 +208,6 @@ public class Dungeon implements Serializable {
             this.fileName = null;
             this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
             this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length() - 4);
-        
-            this.type = "forest";
-            
         }
 
         private Parameters(long seed, FileType ext, int difficulty) {
@@ -241,9 +238,7 @@ public class Dungeon implements Serializable {
                 this.hashFile = Gdx.files.absolute(tmpDir + "/storymode/" + hashName + ".tmp");
                 if (this.hashFile.exists()) {
                     this.cached = true;
-                    this.seed = -1; // don't need to seed generate on already
-                                    // loaded
-                                    // files
+                    this.seed = -1; // don't need to seed generate on already loaded files
                 }
                 else {
                     this.seed = getFileHash(file.file());
@@ -259,10 +254,10 @@ public class Dungeon implements Serializable {
                 this.difficulty = 0;
                 this.hashFile = null;
                 this.cached = false;
-                this.fileName = file.path();
+                this.fileName = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
+                this.type = DataDirs.getChildren(Gdx.files.internal(DataDirs.Tilesets)).random();
+                this.type = this.type.substring(DataDirs.Tilesets.length(), this.type.length() - 4);
             }
-
-            this.type = "dungeon";
         }
 
         public long getSeed() {

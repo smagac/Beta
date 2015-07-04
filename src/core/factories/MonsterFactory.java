@@ -33,7 +33,6 @@ import core.datatypes.dungeon.Floor;
 import core.datatypes.npc.NPC;
 import core.datatypes.npc.Trainer;
 import core.service.interfaces.IGame;
-import core.service.interfaces.IPlayerContainer;
 import core.util.dungeon.Room;
 
 /**

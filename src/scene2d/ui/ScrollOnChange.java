@@ -1,10 +1,18 @@
 package scene2d.ui;
 
+import github.nhydock.ssm.ServiceManager;
+import scenes.Messages;
+
+import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+
+import core.DataDirs;
+import core.service.interfaces.IAudioManager;
 
 /**
  * Utility class that assists in scrolling a pane to focus on an actor that's changed.
@@ -31,19 +39,27 @@ public class ScrollOnChange extends ChangeListener {
             }
         }
         
-        pos.x = actor.getX();
-        pos.y = actor.getY();
-        bounds.x = actor.getX() + actor.getWidth();
-        bounds.y = actor.getY() + actor.getHeight();
-        actor.localToStageCoordinates(pos);
-        pane.stageToLocalCoordinates(pos);
-        actor.localToStageCoordinates(bounds);
-        pane.stageToLocalCoordinates(bounds);
-
-        bounds.x -= pos.x;
-        bounds.y -= pos.y;
-        
-        this.pane.scrollTo(pos.x, pos.y, bounds.x, bounds.y, false, false);
+        if (actor.getClass() == List.class) {
+            List list = (List)actor;
+            pane.setScrollY(list.getSelectedIndex() * list.getItemHeight());
+            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
+            ServiceManager.getService(IAudioManager.class).playSfx(DataDirs.Sounds.tick);
+        }
+        else {        
+            pos.x = actor.getX();
+            pos.y = actor.getY();
+            bounds.x = actor.getX() + actor.getWidth();
+            bounds.y = actor.getY() + actor.getHeight();
+            actor.localToStageCoordinates(pos);
+            pane.stageToLocalCoordinates(pos);
+            actor.localToStageCoordinates(bounds);
+            pane.stageToLocalCoordinates(bounds);
+    
+            bounds.x -= pos.x;
+            bounds.y -= pos.y;
+            
+            this.pane.scrollTo(pos.x, pos.y, bounds.x, bounds.y, false, false);
+        }
     }
 
 }

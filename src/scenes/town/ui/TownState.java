@@ -37,7 +37,6 @@ import core.datatypes.Inventory;
 import core.datatypes.Item;
 import core.datatypes.QuestTracker.Reward;
 import core.datatypes.dungeon.Dungeon;
-import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.npc.Trainer;
 import core.datatypes.quests.Quest;
 import core.service.implementations.PageFile;
@@ -56,7 +55,7 @@ enum TownState implements UIState<TownUI> {
         @Override
         public void enter(TownUI ui) {
             ui.restore();
-            ui.refreshButtons();
+            ui.transition(.5f);
             ui.resetFocus();
         }
 
@@ -93,15 +92,10 @@ enum TownState implements UIState<TownUI> {
             if (prev != QuestMenu && prev != Craft && prev != Train) {
                 entity.main.addAction(Actions.moveToAligned(0, 0, Align.bottomRight, .75f));
                 entity.town.addAction(Actions.moveToAligned(0, 0, Align.bottomLeft, .75f));
-                entity.addAction(
-                    Actions.sequence(
-                        Actions.run(entity.getScene().getInput().disableMe), 
-                        Actions.delay(.75f), 
-                        Actions.run(entity.getScene().getInput().enableMe)
-                    )
-                );
+                entity.transition(.75f);
+            } else {
+                entity.transition(0f);
             }
-            entity.refreshButtons();
             entity.resetFocus();
         }
 
@@ -139,15 +133,10 @@ enum TownState implements UIState<TownUI> {
             if (prev != PageFile && prev != Sleep && prev != Save) {
                 entity.main.addAction(Actions.moveToAligned(entity.getDisplayWidth(), 0, Align.bottomLeft, .75f));
                 entity.home.addAction(Actions.moveToAligned(0, 0, Align.bottomLeft, .75f));
-                entity.addAction(
-                    Actions.sequence(
-                        Actions.run(entity.getScene().getInput().disableMe), 
-                        Actions.delay(.75f), 
-                        Actions.run(entity.getScene().getInput().enableMe)
-                    )
-                );
+                entity.transition(.5f);
+            } else {
+                entity.transition(0f);
             }
-            entity.refreshButtons();
             entity.resetFocus();
         }
 
@@ -212,8 +201,8 @@ enum TownState implements UIState<TownUI> {
                 Label l = new Label(name, ui.getSkin(), "smallest");
                 l.setAlignment(Align.left);
                 ui.requirementList.add(l).expandX().fillX();
-                Label i = new Label(ui.playerService.getInventory().genericCount(name) + "/" + items.get(name, 1),
-                        ui.getSkin(), "smallest");
+                String amount = ui.playerService.getInventory().genericCount(name) + "/" + items.get(name, 1);
+                Label i = new Label(amount, ui.getSkin(), "smallest");
                 i.setAlignment(Align.right);
                 ui.requirementList.add(i).width(30f);
                 ui.requirementList.row();
@@ -224,19 +213,28 @@ enum TownState implements UIState<TownUI> {
         @Override
         public void enter(TownUI ui) {
             // populate the submenu's data
-            ui.craftMenu.showTab(0);
+            ui.craftMenu.showTab(0, true);
             // create loot menu
             populateLoot(ui);
 
-            ui.craftSubmenu
-                    .addAction(Actions.sequence(Actions.moveTo(ui.getDisplayWidth(), 0), Actions
-                            .moveTo(ui.getDisplayWidth() - ui.craftSubmenu.getWidth(), 0, .3f, Interpolation.circleOut)));
+            ui.craftSubmenu.addAction(
+                Actions.sequence(
+                    Actions.moveTo(ui.getDisplayWidth(), 0),
+                    Actions.delay(.2f),
+                    Actions.moveToAligned(ui.getDisplayWidth(), 0, Align.bottomRight, .3f, Interpolation.circleOut)
+                )
+            );
 
-            ui.lootSubmenu.addAction(Actions.sequence(Actions.moveTo(-ui.lootSubmenu.getWidth(), 0),
-                    Actions.moveTo(0, 0, .3f, Interpolation.circleOut)));
+            ui.lootSubmenu.addAction(
+                Actions.sequence(
+                    Actions.moveToAligned(0, 0, Align.bottomRight),
+                    Actions.delay(.2f),
+                    Actions.moveTo(0, 0, .3f, Interpolation.circleOut)
+                )
+            );
 
             ui.setMessage("Tink Tink");
-            ui.refreshButtons();
+            ui.transition(.1f);
             ui.resetFocus();
         }
         
@@ -244,7 +242,6 @@ enum TownState implements UIState<TownUI> {
         public void exit(TownUI ui){
             ui.lootSubmenu.addAction(Actions.moveToAligned(0, 0, Align.bottomRight, .3f));
             ui.craftSubmenu.addAction(Actions.moveToAligned(ui.getDisplayWidth(), 0, Align.bottomLeft, .3f));
-            
         }
 
         @Override
@@ -325,7 +322,7 @@ enum TownState implements UIState<TownUI> {
             );
 
             ui.setMessage("Where to?");
-            ui.refreshButtons();
+            ui.transition(.6f);
             ui.resetFocus();
         }
 
@@ -415,7 +412,7 @@ enum TownState implements UIState<TownUI> {
                 )
             );
                         
-            ui.refreshButtons();
+            ui.transition(0f);
             ui.setFocus(null);
         }
         
@@ -450,7 +447,7 @@ enum TownState implements UIState<TownUI> {
             ui.goddessDialog.setVisible(true);
             ui.restore();
 
-            ui.refreshButtons();
+            ui.transition(0f);
             ui.resetFocus();
         }
 
@@ -545,7 +542,7 @@ enum TownState implements UIState<TownUI> {
             return false;
         }
     },
-    Save("Cancel") {
+    Save() {
 
         @Override
         public void enter(final TownUI ui) {
@@ -589,7 +586,7 @@ enum TownState implements UIState<TownUI> {
                         }
 
                     })));
-            ui.refreshButtons();
+            ui.transition(.1f);
             ui.resetFocus();
         }
 
@@ -608,8 +605,7 @@ enum TownState implements UIState<TownUI> {
                 ui.playerService.save((Integer) telegram.extraInfo + 1);
                 ui.changeState(Home);
             }
-            else {
-                ui.audio.playSfx(DataDirs.Sounds.tick);
+            else if (telegram.message == Messages.Interface.Close) {
                 ui.changeState(Home);
             }
             return true;
@@ -617,7 +613,7 @@ enum TownState implements UIState<TownUI> {
     },
     // State used for waiting on the connection to be made with the server
     // to pull down a dungeon hash
-    NetworkLoad("Cancel Download") {
+    NetworkLoad() {
         private final String DAILY_DUNGEON_SERVER = "http://storymode.nhydock.me/daily";
         Net.HttpRequest connection;
         String dungeonData;
@@ -713,7 +709,7 @@ enum TownState implements UIState<TownUI> {
 
         @Override
         public boolean onMessage(TownUI entity, Telegram telegram) {
-            if (telegram.message == Messages.Town.CancelDownload) {
+            if (telegram.message == Messages.Interface.Close) {
                 if (connection != null) {
                     Gdx.net.cancelHttpRequest(connection);
                 }
@@ -742,8 +738,13 @@ enum TownState implements UIState<TownUI> {
             ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
             ui.availableQuests.setItems(ui.playerService.getQuestTracker().getQuests());
 
-            ui.questSubmenu.addAction(Actions.sequence(Actions.moveTo(-ui.questSubmenu.getWidth(), 0),
-                    Actions.delay(.8f), Actions.moveTo(0, 0, .3f, Interpolation.circleOut)));
+            ui.questSubmenu.addAction(
+                Actions.sequence(
+                    Actions.moveTo(-ui.questSubmenu.getWidth(), 0),
+                    Actions.delay(.8f), 
+                    Actions.moveTo(0, 0, .3f, Interpolation.circleOut)
+                )
+            );
 
             fillDetails(ui, (ui.questMenu.getOpenTabIndex() == 0) ? ui.availableQuests.getSelected()
                     : ui.acceptedQuests.getSelected());
@@ -758,7 +759,7 @@ enum TownState implements UIState<TownUI> {
                 )
             );
             ui.setMessage("Let's help people!");
-            ui.refreshButtons();
+            ui.transition(.6f);
             ui.resetFocus();
         }
         
@@ -858,7 +859,7 @@ enum TownState implements UIState<TownUI> {
                         ui.acceptedQuests.setItems(ui.playerService.getQuestTracker().getAcceptedQuests());
                         ui.audio.playSfx(DataDirs.Sounds.accept);
                     } else {
-                        ui.audio.playSfx(DataDirs.Sounds.tick);
+                        ui.audio.playSfx(DataDirs.Sounds.cancel);
                     }
                 }
                 // don't try to accept quests that have already been accepted
@@ -868,7 +869,7 @@ enum TownState implements UIState<TownUI> {
                         boolean completed = ui.playerService.getQuestTracker().complete(selected);
                         if (!completed) {
                             ui.setMessage("You can't complete that quest yet");
-                            ui.audio.playSfx(DataDirs.Sounds.tick);
+                            ui.audio.playSfx(DataDirs.Sounds.cancel);
                         }
                         else {
                             ui.audio.playSfx(DataDirs.Sounds.accept);
@@ -922,13 +923,14 @@ enum TownState implements UIState<TownUI> {
 
     }, 
 
-    PageFile ("Close") {
+    PageFile () {
 
         @Override
         public void enter(TownUI entity) {
             entity.pageFile.getWindow().addAction(
                 Actions.moveToAligned(entity.getDisplayCenterX(), entity.getDisplayCenterY(), Align.center, .4f, Interpolation.circleOut)
             );
+            entity.transition(0f);
             entity.resetFocus();
         }
         
@@ -959,6 +961,7 @@ enum TownState implements UIState<TownUI> {
         public void enter(TownUI entity) {
             entity.trainingMenu.show();
             entity.setKeyboardFocus(entity.trainingMenu.getGroup());
+            entity.transition(0f);
         }
         
         @Override
@@ -983,7 +986,7 @@ enum TownState implements UIState<TownUI> {
                     entity.audio.playSfx(DataDirs.Sounds.accept);
                     entity.changeState(Town);
                 } else {
-                    entity.audio.playSfx(DataDirs.Sounds.tick);
+                    entity.audio.playSfx(DataDirs.Sounds.cancel);
                 }
                 return true;
             }

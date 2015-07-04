@@ -2,7 +2,6 @@ package scenes.dungeon.ui;
 
 import github.nhydock.ssm.Inject;
 import scene2d.ui.extras.LabeledTicker;
-import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.Pointer;
 import scene2d.ui.extras.SimpleWindow;
 import scenes.Messages;
@@ -30,7 +29,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
@@ -454,7 +452,6 @@ public class WanderUI extends UI {
         }
         else if (telegram.message == Messages.Dungeon.Notify && telegram.extraInfo instanceof CombatNotify) {
             CombatNotify notification = (CombatNotify)telegram.extraInfo;
-            audio.playSfx(DataDirs.Sounds.hit);
             int dmg = notification.dmg;
             if (dmg == -1) {
                 if (notification.attacker == playerService.getPlayer()) {

@@ -10,6 +10,7 @@ import scene2d.runnables.ChangeText;
 import scene2d.runnables.PlaySound;
 import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.FocusGroup;
+import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ParticleActor;
 import scene2d.ui.extras.ParticleActor.ResetParticle;
 import scene2d.ui.extras.ScrollFocuser;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.ai.msg.MessageDispatcher;
 import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
@@ -69,13 +71,15 @@ import core.datatypes.Item;
 import core.datatypes.StatModifier;
 import core.datatypes.dungeon.Dungeon;
 import core.factories.AdjectiveFactory;
+import core.service.implementations.PageFile;
 import core.service.interfaces.IBattleContainer;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.IPlayerContainer;
+import core.util.dungeon.TsxTileSet;
 
 public class BattleUI extends GameUI
 {
-    static final String[] stats = {"%d%% HP", "%d%% Str", "%d%% Def", "%d%% Spd"};
+    static final String[] stats = {"%s%% HP", "%s%% Str", "%s%% Def", "%s%% Spd"};
     
     /*
      * Primary view elements
@@ -113,16 +117,9 @@ public class BattleUI extends GameUI
     /*
      * Heal Sacrifice menu 
      */
-    private Table lootList;
-    private ObjectIntMap<Item> loot;
-    ButtonGroup<Button> lootButtons;
-    private Table sacrificeList;
-    ObjectIntMap<Item> sacrifices;
-    private ButtonGroup<Button> sacrificeButtons;
-    private Array<Item> lootRows;
-    private Array<Item> sacrificeRows;
+    ItemList lootList;
+    ItemList sacrificeList;
     
-    Item selectedItem;
     TabbedPane lootPane;
     TabbedPane sacrificePane;
     private FocusGroup sacrificeGroup;
@@ -134,19 +131,10 @@ public class BattleUI extends GameUI
             if (stateMachine.getCurrentState() != CombatStates.MODIFY)
                 return;
             
-            if (!(actor instanceof Button)) {
-                return;
-            }
-            
-            Button self = (Button)actor;
-            if (!lootButtons.getButtons().contains(self, true) || !self.isChecked()){
-                return;
-            }
-            
-            
+            Item selectedItem = lootList.getSelectedItem();
+            PageFile pf = ServiceManager.getService(PageFile.class);
+                        
             // update the modifier pane with info of the adjective associated with the item
-            int index = lootButtons.getCheckedIndex();
-            selectedItem = lootRows.get(index);
             String adj = selectedItem.descriptor();
             StatModifier sm = AdjectiveFactory.getModifier(adj);
             Label l = itemStatLabels.get(0);
@@ -166,13 +154,19 @@ public class BattleUI extends GameUI
             for (int i = 1, n = 0; i <= 4; i++, n++) {
                 l = itemStatLabels.get(i);
                 l.clearActions();
+                ChangeText text;
+                if (pf.hasUnlocked(adj)) {
+                    text = new ChangeText(l, String.format(stats[n], String.valueOf((int)(mStats[n]*100)-100)));
+                } else {
+                    text = new ChangeText(l, String.format(stats[n], "???"));
+                }
                 l.addAction(
                     Actions.sequence(
                         Actions.delay(.05f + (n * .05f)),
                         Actions.parallel(
                             Actions.alpha(0f, .2f)
                         ),
-                        Actions.run(new ChangeText(l, String.format(stats[n], (int)(mStats[n]*100)-100))),
+                        Actions.run(text),
                         Actions.delay(.05f + (n * .05f)),
                         Actions.parallel(
                             Actions.alpha(1f, .2f)
@@ -228,7 +222,6 @@ public class BattleUI extends GameUI
 	{
 	    makeField();
 	    
-
         fader = new Image(skin, "fill");
         fader.setSize(getDisplayWidth(), getDisplayHeight());
         fader.setPosition(-getDisplayWidth(), 0);
@@ -249,8 +242,8 @@ public class BattleUI extends GameUI
         
         mainFocus = new FocusGroup(mainmenu);
         manualFocus = new FocusGroup(timeline);
-        itemFocus = new FocusGroup(lootPane);
-        sacrificeGroup = new FocusGroup(lootPane, sacrificePane, sacrificeButton);
+        itemFocus = new FocusGroup(lootList.getList());
+        sacrificeGroup = new FocusGroup(lootList.getList(), sacrificeList.getList(), sacrificeButton);
         sacrificeGroup.addListener(focusListener);
         
         
@@ -261,34 +254,6 @@ public class BattleUI extends GameUI
                     MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Close);
                     return true;
                 }
-                else if (Input.UP.match(keycode)) {
-                    int index = lootButtons.getCheckedIndex();
-                    Array<Button> buttons = lootButtons.getButtons();
-                    Button b = buttons.get(Math.max(0, index-1));
-                    b.setChecked(true);
-                    return true;
-                }
-                else if (Input.DOWN.match(keycode)) {
-                    int index = lootButtons.getCheckedIndex();
-                    Array<Button> buttons = lootButtons.getButtons();
-                    Button b = buttons.get(Math.min(buttons.size-1, index+1));
-                    b.setChecked(true);
-                    return true;
-                }
-                else if (Input.LEFT.match(keycode)) {
-                    int index = lootButtons.getCheckedIndex();
-                    Array<Button> buttons = lootButtons.getButtons();
-                    Button b = buttons.get(Math.max(0, index-10));
-                    b.setChecked(true);
-                    return true;
-                }
-                else if (Input.RIGHT.match(keycode)) {
-                    int index = lootButtons.getCheckedIndex();
-                    Array<Button> buttons = lootButtons.getButtons();
-                    Button b = buttons.get(Math.min(buttons.size-1, index+10));
-                    b.setChecked(true);
-                    return true;
-                }
                 return false;
             }
         });
@@ -296,7 +261,7 @@ public class BattleUI extends GameUI
         lootPane.addListener(new InputListener(){
            @Override
             public boolean keyDown(InputEvent event, int keycode) {
-                   if (loot.size <= 0) {
+                   if (!lootList.isEmpty()) {
                        return false;
                    }
     
@@ -308,8 +273,7 @@ public class BattleUI extends GameUI
                    }
                    else if (stateMachine.getCurrentState() == CombatStates.Heal) {
                        if (Input.ACCEPT.match(keycode)) {
-                           Item item = (Item) lootButtons.getChecked().getUserObject();
-                           swapItem(item, true);
+                           lootList.swap();
                            return true;
                        }
                        
@@ -340,21 +304,20 @@ public class BattleUI extends GameUI
 
     private void makeHealSacrificeMenu() {
         // loot List and buttons
-        lootList = new Table();
-        lootList.top();
-        lootList.pad(0f);
-        lootList.setTouchable(Touchable.childrenOnly);
+        lootList = new ItemList(skin);
+        lootList.setItems(playerService.getInventory().getLoot());
+        lootList.getList().addListener(updateStatWindow);
         
-        ScrollPane p = new ScrollPane(lootList, skin);
+        ScrollPane p = new ScrollPane(lootList.getList(), skin);
         p.setScrollingDisabled(true, false);
         p.setScrollbarsOnTop(false);
-        p.setScrollBarPositions(true, false);
+        p.setScrollBarPositions(false, false);
         p.setFadeScrollBars(false);
         p.addListener(new ScrollFocuser(p));
         lootPaneScroller = new ScrollOnChange(p);
         
         ButtonGroup<Button> tabs = new ButtonGroup<Button>();
-        TextButton tab = new TextButton("Inventory", skin);
+        TextButton tab = new TextButton("Inventory", skin, "tab");
         tab.setUserObject(p);
         tabs.add(tab);
         lootPane = new TabbedPane(tabs, false);
@@ -363,12 +326,9 @@ public class BattleUI extends GameUI
         
         display.addActor(lootPane);
         
-        sacrificeList = new Table();
-        sacrificeList.top();
-        sacrificeList.pad(4f).padRight(10f);
-        sacrificeList.setTouchable(Touchable.childrenOnly);
+        sacrificeList = new ItemList(skin);
         
-        p = new ScrollPane(sacrificeList, skin);
+        p = new ScrollPane(sacrificeList.getList(), skin);
         p.setScrollingDisabled(true, false);
         p.setScrollbarsOnTop(false);
         p.setScrollBarPositions(true, false);
@@ -386,241 +346,9 @@ public class BattleUI extends GameUI
         display.addActor(sacrificePane);
         
         sacrificePaneScroller = new ScrollOnChange(p);
-
-        sacrificePane.addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent evt, int keycode) {
-                if (sacrifices.size <= 0) {
-                    return false;
-                }
-
-                if (Input.ACCEPT.match(keycode)) {
-                    Button button = sacrificeButtons.getChecked();
-                    if (button != null) {
-                        Item item = (Item) sacrificeButtons.getChecked().getUserObject();
-                        swapItem(item, false);
-                    }
-                    return true;
-                }
-                if (Input.UP.match(keycode)) {
-                    int index = sacrificeButtons.getCheckedIndex();
-                    Array<Button> buttons = sacrificeButtons.getButtons();
-                    Button b = buttons.get(Math.max(0, index-1));
-                    b.setChecked(true);
-                    return true;
-                }
-                else if (Input.DOWN.match(keycode)) {
-                    int index = sacrificeButtons.getCheckedIndex();
-                    Array<Button> buttons = sacrificeButtons.getButtons();
-                    Button b = buttons.get(Math.min(buttons.size-1, index+1));
-                    b.setChecked(true);
-                    return true;
-                }
-                else if (Input.LEFT.match(keycode)) {
-                    int index = sacrificeButtons.getCheckedIndex();
-                    Array<Button> buttons = lootButtons.getButtons();
-                    Button b = buttons.get(Math.max(0, index-10));
-                    b.setChecked(true);
-                    return true;
-                }
-                else if (Input.RIGHT.match(keycode)) {
-                    int index = sacrificeButtons.getCheckedIndex();
-                    Array<Button> buttons = sacrificeButtons.getButtons();
-                    Button b = buttons.get(Math.min(buttons.size-1, index+10));
-                    b.setChecked(true);
-                    return true;
-                }
-
-
-                return false;
-            }
-        });
-
-        lootButtons = new ButtonGroup<Button>();
-        sacrificeButtons = new ButtonGroup<Button>();
         
         display.addActor(lootPane);
         display.addActor(sacrificePane);
-        
-        loot = new ObjectIntMap<Item>(playerService.getInventory().getLoot());
-        lootRows = new Array<Item>();
-        Keys<Item> keys = loot.keys();
-        for (Item item : keys) {
-            addItem(item, loot.get(item, 1));
-        }
-        
-        sacrifices = new ObjectIntMap<Item>();
-        sacrificeRows = new Array<Item>();
-    }
-
-    /**
-     * Adds a new item row to the loot list
-     * @param item
-     * @param amount
-     */
-    private void addItem(final Item item, int amount){
-        final TextButton l = new TextButton(item.toString(), skin);
-        l.setName(item.toString());
-        l.setUserObject(item);
-        l.setDisabled(true);
-        lootList.add(l).width(230f);
-        lootButtons.add(l);
-        Label i = new Label(String.valueOf(amount), getSkin(), "smaller");
-        i.setAlignment(Align.right);
-        lootList.add(i).width(30f).expandX();
-        lootList.row();
-        lootRows.add(item);
-        
-        l.addListener(new InputListener() {
-            @Override
-            public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                
-                if (button == Buttons.LEFT) {
-                    if (l.isChecked() && stateMachine.getCurrentState() == CombatStates.Heal) {
-                        swapItem(item, true);
-                    } else {
-                        l.setChecked(true);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
-        l.addListener(updateStatWindow);
-        l.addListener(lootPaneScroller);
-        
-        lootList.pack();
-        
-        loot.put(item, amount);
-    }
-    
-    void resetSacrifices(){
-        for (Item item : sacrifices.keys()) {
-            int amount = sacrifices.get(item, 0);
-            int k = loot.get(item, 0);
-            modifyItem(item, k+amount);
-        }
-        clearSacrifices();
-    }
-    
-    void clearSacrifices(){
-        sacrifices.clear();
-        sacrificeRows.clear();
-        sacrificeList.clear();
-        sacrificeButtons.clear();
-        
-        sacrificeList.row();
-    }
-    
-    /**
-     * Swaps an item between the two lists
-     * @param item - Item to swap over
-     * @param sacrifice - true if we are adding this item to the sacrifice list
-     */
-    void swapItem(Item item, boolean sacrifice) {
-        int k = loot.get(item, 0);
-        int s = sacrifices.get(item, 0);
-        
-        if (sacrifice) {
-            if (k-1 >= 0) {
-                modifyItem(item, --k);
-                modifySacrifice(item, ++s);
-            }
-        } else {
-            if (s-1 >= 0) {
-                modifyItem(item, ++k);
-                modifySacrifice(item, --s);
-            }
-        }
-    }
-    
-    /**
-     * Modifies a single row in the sacrifice list
-     * @param item
-     * @param amount
-     */
-    private void modifySacrifice(final Item item, int amount) {
-        int existing = sacrifices.get(item, 0);
-        if (existing == 0 && amount > 0) {
-            sacrifices.put(item, amount);
-            //add button
-            
-            final TextButton l = new TextButton(item.toString(), skin);
-            l.setName(item.toString());
-            l.setUserObject(item);
-            l.setDisabled(true);
-            sacrificeList.add(l).width(250f);
-            Label i = new Label(String.valueOf(amount), getSkin(), "smaller");
-            i.setAlignment(Align.right);
-            sacrificeList.add(i).width(30f);
-            sacrificeList.row();
-            sacrificeButtons.add(l);
-            
-            l.addListener(new InputListener() {
-                @Override
-                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    if (button == Buttons.LEFT) {
-                        if (l.isChecked()) {
-                            swapItem(item, false);
-                        } else {
-                            l.setChecked(true);
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            });
-            l.addListener(sacrificePaneScroller);
-            
-            sacrificeList.pack();
-            
-            sacrificeRows.add(item);
-        }
-        else if (existing != 0 && amount == 0) 
-        {
-            sacrifices.remove(item, 0);
-            //remove buttons
-            sacrificeButtons.setChecked(item.fullname());
-            sacrificeButtons.remove(sacrificeButtons.getChecked());
-            //remove row
-            int index = sacrificeRows.indexOf(item, true);
-            TableUtils.removeTableRow(sacrificeList, index, 2);
-            sacrificeRows.removeIndex(index);
-        }
-        else 
-        {
-            //inplace modify button
-            int index = sacrificeRows.indexOf(item, true);
-            Label label = (Label)TableUtils.getActorFromRow(sacrificeList, index, 2, 1);
-            label.setText(String.valueOf(amount));
-            
-            sacrifices.put(item, amount);
-        }
-    }   
-    
-    /**
-     * Modifies a single row in the loot list
-     * @param item
-     * @param amount
-     */
-    private void modifyItem(Item item, int amount) {
-        int existing = loot.get(item, 0);
-        if (existing == 0 && amount > 0) {
-            addItem(item, amount);
-        } 
-        else if (amount > 0) {
-            int index = lootRows.indexOf(item, true);
-            Label label = (Label)TableUtils.getActorFromRow(lootList, index, 2, 1);
-            label.setText(String.valueOf(amount));
-            loot.put(item, amount);
-        } else {
-            int row = lootRows.indexOf(item, true);
-            TableUtils.removeTableRow(lootList, row, 2);
-            lootRows.removeIndex(row);
-            lootButtons.setChecked(item.fullname());
-            lootButtons.remove(lootButtons.getChecked());
-            loot.remove(item, 0);
-        }
     }
     
     /**
@@ -685,6 +413,24 @@ public class BattleUI extends GameUI
 	    bg.setHeight(128f);
 	    bg.setPosition(0, getDisplayHeight(), Align.topLeft);
 	    display.addActor(bg);
+	    
+	    for (float i = 0, op = 1f, height = 16, y = getDisplayHeight()-128f-height, rows = 3; 
+	            i < rows; 
+	            i++, op -= 1/rows, height *= 2f, y -= height) {
+	        TiledDrawable tile = new TiledDrawable(dungeon.getTileset().getTile(TsxTileSet.FLOOR).getTextureRegion());
+	        if (height < 32f) {
+	            tile.setRepeat(true, false);
+	        } else {
+	            tile.setRepeat(true, true);
+	        }
+	        Image row = new Image(tile);
+	        row.setWidth(getDisplayWidth() + 32f);
+	        row.setX(MathUtils.random(-32f, 0));
+	        row.setHeight(height);
+	        row.setColor(1, 1, 1, op);
+	        row.setY(y);
+	        display.addActor(row);
+	    }
 	    
         player = new Image(skin, playerService.getGender());
         player.setSize(64f, 64f);

@@ -201,21 +201,27 @@ public enum CombatStates implements State<BattleUI> {
                 return true;
             }
             if (telegram.message == Messages.Interface.Button) {
-                exit(entity);
-                entity.sacrifices.put(entity.selectedItem, 1);
-                final String adj = entity.selectedItem.descriptor();
-                entity.playSacrificeAnimation(entity.boss, new Runnable() {
-                    
-                    @Override
-                    public void run() {
-                        entity.playerService.getInventory().sacrifice(entity.sacrifices, 1);
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, entity.battleService.getBoss());
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.MODIFY, adj);
-                        MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.ADVANCE);
-                        entity.changeState(MAIN);
-                    }
-                });
-                return true;
+                entity.lootList.setSwapList(entity.sacrificeList);
+                final String adj = entity.lootList.getSelectedItem().descriptor();
+                entity.lootList.swap();
+                if (entity.playerService.getInventory().sacrifice(entity.sacrificeList.getItems(), 1)){
+                    exit(entity);
+                    entity.playSacrificeAnimation(entity.boss, new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.TARGET, entity.battleService.getBoss());
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.MODIFY, adj);
+                            MessageDispatcher.getInstance().dispatchMessage(null, Messages.Battle.ADVANCE);
+                            entity.changeState(MAIN);
+                        }
+                    });
+                    return true;    
+                } else {
+                    entity.sacrificeList.swapAll();
+                }
+                
+                
             }
             return false;
         }
@@ -227,8 +233,8 @@ public enum CombatStates implements State<BattleUI> {
             entity.sacrificeButton.clearActions();
             entity.sacrificePromptWindow.clearActions();
             entity.sacrificePrompt.setText("By sacrificing an item, you can compound its modifier's effects onto the boss for a limited amount of time.");
-            entity.lootButtons.uncheckAll();
-            entity.lootButtons.getButtons().get(0).setChecked(true);
+
+            entity.lootList.setSwapList(null);
             entity.sacrificePromptWindow.addAction(
                 Actions.parallel(
                     Actions.alpha(1f, .1f),
@@ -286,14 +292,14 @@ public enum CombatStates implements State<BattleUI> {
         @Override
         public boolean onMessage(final BattleUI entity, Telegram telegram) {
             if (telegram.message == Messages.Interface.Close) {
-                entity.resetSacrifices();
+                entity.sacrificeList.swapAll();
                 entity.changeState(MAIN);
                 return true;
             }
             if (telegram.message == Messages.Interface.Button) {
                 Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
                 int cost = progress.healed + 1;
-                if (entity.playerService.getInventory().sacrifice(entity.sacrifices, cost)){
+                if (entity.playerService.getInventory().sacrifice(entity.sacrificeList.getItems(), cost)){
                     exit(entity);
                     entity.playSacrificeAnimation(entity.player, new Runnable() {
                         
@@ -302,7 +308,7 @@ public enum CombatStates implements State<BattleUI> {
                             entity.playerService.recover();
                             Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();
                             progress.healed++;
-                            entity.clearSacrifices();
+                            entity.sacrificeList.clear();
                             entity.changeState(MAIN);
                         }
                     });
@@ -321,8 +327,7 @@ public enum CombatStates implements State<BattleUI> {
             entity.sacrificePane.clearActions();
             entity.sacrificeButton.clearActions();
             entity.sacrificePromptWindow.clearActions();
-            entity.lootButtons.uncheckAll();
-            entity.lootButtons.getButtons().get(0).setChecked(true);
+            entity.lootList.setSwapList(entity.sacrificeList);
             
             String prompt = "By sacrificing %s, you can heal yourself in your time of need.";
             Progress progress = ServiceManager.getService(IDungeonContainer.class).getProgress();

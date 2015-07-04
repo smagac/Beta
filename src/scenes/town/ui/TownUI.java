@@ -2,6 +2,8 @@ package scenes.town.ui;
 
 import github.nhydock.ssm.Inject;
 import github.nhydock.ssm.ServiceManager;
+import scene2d.ui.ListKeyInput;
+import scene2d.ui.ScrollOnChange;
 import scene2d.ui.extras.FocusGroup;
 import scene2d.ui.extras.ItemList;
 import scene2d.ui.extras.ScrollFocuser;
@@ -34,7 +36,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
@@ -109,6 +110,19 @@ public class TownUI extends GameUI {
     private FocusGroup pageFileFocus;
     private FocusGroup trainingFocus;
 
+    public void transition(float delay) {
+        addAction(
+            Actions.sequence(
+                Actions.run(getScene().getInput().disableMe),
+                Actions.run(HideButtons),
+                Actions.delay(delay + .2f),
+                Actions.run(RefreshMyButtons),
+                Actions.run(ShowButtons),
+                Actions.run(getScene().getInput().enableMe)
+            )
+        );
+    }
+    
     @Override
     protected void listenTo(IntSet messages)
     {
@@ -373,38 +387,10 @@ public class TownUI extends GameUI {
             final ScrollPane p = new ScrollPane(list, skin);
             p.addListener(new ScrollFocuser(p));
             p.setFadeScrollBars(false);
-            list.addListener(new ChangeListener() {
-
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
-                    p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                    requirementList.clear();
-
-                    // build requirements list
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
-                    audio.playSfx(DataDirs.Sounds.tick);
-                }
-            });
-            p.addListener(new InputListener() {
-                @Override
-                public boolean keyDown(InputEvent evt, int keycode) {
-                    if (Input.DOWN.match(keycode)) {
-                        list.setSelectedIndex(Math.min(list.getItems().size - 1, list.getSelectedIndex() + 1));
-                        float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
-                        p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                        return true;
-                    }
-                    if (Input.UP.match(keycode)) {
-                        list.setSelectedIndex(Math.max(0, list.getSelectedIndex() - 1));
-                        float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
-                        p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                        return true;
-                    }
-
-                    return false;
-                }
-            });
+            list.addListener(new ScrollOnChange(p));
+            
+            p.addListener(new ListKeyInput());
+            
             myButton.setUserObject(p);
         }
 
@@ -417,36 +403,7 @@ public class TownUI extends GameUI {
             p.addListener(new ScrollFocuser(p));
             p.setFadeScrollBars(false);
 
-            list.addListener(new ChangeListener() {
-
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
-                    p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                    MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Selected, list.getSelected());
-                    audio.playSfx(DataDirs.Sounds.tick);
-                }
-            });
-
-            p.addListener(new InputListener() {
-                @Override
-                public boolean keyDown(InputEvent evt, int keycode) {
-                    if (Input.DOWN.match(keycode)) {
-                        list.setSelectedIndex(Math.min(list.getItems().size - 1, list.getSelectedIndex() + 1));
-                        float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
-                        p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                        return true;
-                    }
-                    if (Input.UP.match(keycode)) {
-                        list.setSelectedIndex(Math.max(0, list.getSelectedIndex() - 1));
-                        float y = Math.max(0, (list.getSelectedIndex() * list.getItemHeight()) + p.getHeight() / 2);
-                        p.scrollTo(0, list.getHeight() - y, p.getWidth(), p.getHeight());
-                        return true;
-                    }
-
-                    return false;
-                }
-            });
+            list.addListener(new ScrollOnChange(p));
             todayButton.setUserObject(p);
         }
 
@@ -994,10 +951,6 @@ public class TownUI extends GameUI {
         downloadWindow.addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight() + 100f, Align.bottom, .2f, Interpolation.circleOut));
         pageFile.getWindow().addAction(Actions.moveToAligned(getDisplayCenterX(), getDisplayHeight(), Align.bottom, .3f));
         setMessage("What're we doing next?");
-        
-        
-        enableMenuInput();
-        refreshButtons();
 
         pointer.setVisible(false);
     }

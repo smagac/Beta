@@ -1,9 +1,9 @@
 package core.service.implementations;
 
+import github.nhydock.ssm.Service;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-
-import github.nhydock.ssm.Service;
 
 public class InputHandler extends InputMultiplexer implements Service {
     

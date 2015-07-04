@@ -21,7 +21,6 @@ import core.components.Identifier;
 import core.datatypes.dungeon.Dungeon;
 import core.datatypes.dungeon.DungeonLoader;
 import core.datatypes.dungeon.FloorLoader;
-import core.datatypes.dungeon.FloorLoader.Parameters;
 import core.datatypes.dungeon.Progress;
 import core.service.interfaces.IDungeonContainer;
 import core.service.interfaces.ILoader;

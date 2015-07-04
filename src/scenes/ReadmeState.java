@@ -1,7 +1,7 @@
 package scenes;
 
-import scene2d.runnables.SendMessage;
 import github.nhydock.ssm.ServiceManager;
+import scene2d.runnables.SendMessage;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;

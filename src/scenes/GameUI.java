@@ -11,6 +11,7 @@ import com.badlogic.gdx.ai.msg.Telegram;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -69,6 +70,47 @@ public abstract class GameUI extends UI {
 
     protected final HorizontalGroup buttonList;
     private ButtonGroup<Button> buttons;
+    public final Runnable RefreshMyButtons = new Runnable() {
+        @Override
+        public void run() {
+            refreshButtons();
+        }
+    };
+    public final Runnable HideButtons = new Runnable() {
+        @Override
+        public void run() {
+            disableMenuInput();
+        }
+    };
+    public final Runnable ShowButtons = new Runnable() {
+        @Override
+        public void run() {
+            enableMenuInput();
+        }
+    };
+    protected final InputListener HoverListener = new InputListener() {
+        @Override
+        public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
+            Actor a = evt.getListenerActor();
+            if (a instanceof Button) {
+                Button b = (Button)a;
+                if (buttons.getButtons().contains(b, true)){
+                    b.setChecked(true);
+                }
+            }
+        }
+
+        @Override
+        public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
+            if (button == Buttons.LEFT) {
+                audio.playSfx(DataDirs.Sounds.accept);
+                triggerAction(buttons.getCheckedIndex());
+            }
+            return false;
+        }
+    };
+    
+    
     protected final ChangeListener focusListener = new ChangeListener() {
 
         @Override
@@ -230,35 +272,34 @@ public abstract class GameUI extends UI {
         }
 
         String[] butt = defineButtons();
-        if (butt != null && butt.length > 0) {
-            window.addActor(buttonList);
+        buttonList.setY(32f);
+        window.addActor(buttonList);
 
-            buttonList.addListener(new InputListener() {
-                @Override
-                public boolean keyDown(InputEvent evt, int keycode) {
-                    if (!buttonList.isVisible())
-                        return false;
-
-                    if (Input.LEFT.match(keycode)) {
-                        setIndex(getIndex() - 1);
-                        return true;
-                    }
-                    if (Input.RIGHT.match(keycode)) {
-                        setIndex(getIndex() + 1);
-                        return true;
-                    }
-                    if (Input.ACCEPT.match(keycode)) {
-                        audio.playSfx(DataDirs.Sounds.accept);
-                        triggerAction(getIndex());
-                        pointer.setVisible(false);
-                        return true;
-                    }
+        buttonList.addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent evt, int keycode) {
+                if (!buttonList.isVisible() || buttons.getButtons().size <= 0)
                     return false;
-                }
-            });
 
-            refreshButtons();
-        }
+                if (Input.LEFT.match(keycode)) {
+                    setIndex(getIndex() - 1);
+                    return true;
+                }
+                if (Input.RIGHT.match(keycode)) {
+                    setIndex(getIndex() + 1);
+                    return true;
+                }
+                if (Input.ACCEPT.match(keycode)) {
+                    audio.playSfx(DataDirs.Sounds.accept);
+                    triggerAction(getIndex());
+                    pointer.setVisible(false);
+                    return true;
+                }
+                return false;
+            }
+        });
+        refreshButtons();
+        enableMenuInput();
 
         // focus handler
         addListener(new InputListener() {
@@ -347,7 +388,6 @@ public abstract class GameUI extends UI {
         }
         MessageDispatcher.getInstance().dispatchMessage(null, Messages.Interface.Button, index);
         stateMachine.update();
-        refreshButtons();
     }
     
     /**
@@ -391,40 +431,22 @@ public abstract class GameUI extends UI {
         if (butt == null || butt.length == 0) {
             disableMenuInput();
             buttonList.clearChildren();
-            buttons = null;
+            buttons.clear();
             return;
         }
 
         buttonList.clearChildren();
 
-        buttons = new ButtonGroup<Button>();
+        buttons.clear();
 
         for (int i = 0; i < butt.length; i++) {
             final Button button = new TextButton(butt[i], skin);
-            final int index = i;
             button.setName(butt[i]);
             button.pad(4f, 10f, 4f, 10f);
-            button.addListener(new InputListener() {
-                @Override
-                public void enter(InputEvent evt, float x, float y, int pointer, Actor fromActor) {
-                    setIndex(index);
-                }
-
-                @Override
-                public boolean touchDown(InputEvent evt, float x, float y, int pointer, int button) {
-                    if (button == Buttons.LEFT) {
-                        audio.playSfx(DataDirs.Sounds.accept);
-                        triggerAction(index);
-                    }
-                    return false;
-                }
-            });
+            button.addListener(HoverListener);
             buttonList.addActor(button);
             buttons.add(button);
         }
-
-        buttonList.setPosition(window.getWidth() / 2 - buttonList.getPrefWidth() / 2, 32f);
-        enableMenuInput();
     }
 
     /**
@@ -448,12 +470,7 @@ public abstract class GameUI extends UI {
      * Forcibly set the button menu index from outside the button listeners
      */
     protected final void setIndex(int i) {
-        if (i < 0) {
-            i = 0;
-        }
-        if (i >= buttons.getButtons().size) {
-            i = buttons.getButtons().size - 1;
-        }
+        i = MathUtils.clamp(i, 0, buttons.getButtons().size - 1);
         buttons.getButtons().get(i).setChecked(true);
     }
 
@@ -462,11 +479,37 @@ public abstract class GameUI extends UI {
      * an animation playing. Will also hide the button menu.
      */
     protected final void disableMenuInput() {
-        buttonList.setVisible(false);
+        buttonList.addAction(
+            Actions.sequence(
+                Actions.touchable(Touchable.disabled),
+                Actions.parallel(
+                    Actions.moveTo(window.getWidth()/2f - buttonList.getPrefWidth()/2f, 32f),
+                    Actions.alpha(1f)
+                ),
+                Actions.parallel(
+                    Actions.moveBy(0, -20f, .2f),
+                    Actions.alpha(0f, .2f)
+                ),
+                Actions.visible(false)
+            )
+        );
     }
 
     protected final void enableMenuInput() {
-        buttonList.setVisible(true);
+        buttonList.addAction(
+            Actions.sequence(
+                Actions.parallel(
+                    Actions.moveTo(window.getWidth()/2f - buttonList.getPrefWidth()/2f, 12f),
+                    Actions.alpha(0f)
+                ),
+                Actions.visible(true),
+                Actions.parallel(
+                    Actions.moveBy(0, 20f, .2f),
+                    Actions.alpha(1f, .2f)
+                ),
+                Actions.touchable(Touchable.enabled)
+            )
+        );
     }
 
     /**

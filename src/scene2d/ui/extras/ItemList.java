@@ -76,28 +76,16 @@ public class ItemList {
                     return false;
                 }
                 if (Input.DOWN.match(keycode)) {
-                    index++;
-                    if (index > order.size - 1) {
-                        index = 0;
-                    }
-                    
-                    selectItem(order.get(index));
+                    selectNextItem();
                     return true;
                 }
                 else if (Input.UP.match(keycode)) {
-                    index--;
-                    if (index < 0) {
-                        index = order.size - 1;
-                    }
-                    
-                    selectItem(order.get(index));
+                    selectPreviousItem();
                     return true;
                 }
                 else if (Input.ACCEPT.match(keycode)) {
-                    if (index >= 0 && index <= order.size - 1) {
-                        swap(order.get(index));
-                        return true;
-                    }
+                    swap();
+                    return true;
                 }
                 return false;
             }
@@ -226,6 +214,36 @@ public class ItemList {
         }
     }
     
+    /**
+     * Swaps the currently selected item over between lists
+     * @param item
+     */
+    public void swap() {
+        if (swap != null) {
+            Item item = getSelectedItem();
+            int amount = items.get(item, 0);
+            if (amount > 0) {
+                updateLabel(item, amount - 1);
+                swap.updateLabel(item, swap.items.get(item, 0) + 1);
+            }
+        }
+    }
+    
+    /**
+     * Swaps all the items in this list into the other that it's attached to
+     * @param item
+     */
+    public void swapAll() {
+        if (swap != null) {
+            for (int i = 0; i < order.size; i++){
+                Item item = order.get(i);
+                int amount = items.get(item, 0);
+                swap.updateLabel(item, swap.items.get(item, 0) + 1);
+            }
+        }
+        clear();
+    }
+    
     public Table getList() {
         return list;
     }
@@ -242,5 +260,30 @@ public class ItemList {
         list.clear();
         rows.clear();
         order.clear();
+    }
+
+    public Item getSelectedItem() {
+        return order.get(index);
+    }
+
+    public void selectPreviousItem() {
+        index--;
+        if (index < 0) {
+            index = 0;
+        }
+        selectItem(order.get(index));
+    }
+    
+    public void selectNextItem() {
+        index++;
+        if (index > order.size - 1) {
+            index = 0;
+        }
+        
+        selectItem(order.get(index));
+    }
+
+    public boolean isEmpty() {
+        return order.size <= 0;
     }
 }
