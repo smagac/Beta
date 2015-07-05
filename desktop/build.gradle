@@ -1,10 +1,13 @@
 apply plugin: "java"
 
-sourceCompatibility = 1.6
+sourceCompatibility = 1.7
 sourceSets.main.java.srcDirs = [ "src/" ]
 
-project.ext.mainClassName = "com.nhydock.storymode.desktop.DesktopLauncher"
-project.ext.assetsDir = new File("../core/assets");
+project.ext.mainClassName = "com.nhydock.storymode.DesktopLauncher"
+project.ext.assetsDir = new File("../resources/assets");
+
+distsDirName = "../../dist/"
+libsDirName = "../../dist/"
 
 task run(dependsOn: classes, type: JavaExec) {
     main = project.mainClassName
@@ -15,10 +18,10 @@ task run(dependsOn: classes, type: JavaExec) {
 }
 
 task dist(type: Jar) {
+    archiveName = "storymode.jar"
     from files(sourceSets.main.output.classesDir)
     from files(sourceSets.main.output.resourcesDir)
     from {configurations.compile.collect {zipTree(it)}}
-    from files(project.assetsDir);
  
     manifest {
         attributes 'Main-Class': project.mainClassName
@@ -30,7 +33,7 @@ dist.dependsOn classes
 eclipse {
     project {
         name = appName + "-desktop"
-        linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/core/assets'
+        linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/resources/assets'
     }
 }
 

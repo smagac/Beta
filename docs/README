@@ -1,0 +1,130 @@
+StoryMode is a simple roguelike game.
+There's more to it than that, though, as you'll probably find out just by playing the game.
+
+If you'd like to know more about it, or wish to donate towards development through purchasing the game by naming your price, you can do so at
+	
+    nhydock.github.io/Storymode
+
+#System Requirements
+The following specifications are required in order to play properly
+
+    At least Java 1.7 is installed
+    A GPU capable of OpenGL ES 2.0
+    Recommended 512mb of RAM dedicated for the game
+	
+    *An internet connection is recommended in order to update the game and enjoy daily dungeons
+
+#Playing the Game
+Input is rather simple and is designed to have an emphasis on being able to play with one hand.
+
+For Keyboard, things will be following this naming scheme to identify input
+    Directions - Arrow keys, WASD, IJKL, Num8426
+    Accept/Start - Enter, Space, Q, U, Num7
+    Cancel - Backspace, Escape, E, O
+    Focus/Action - Tab, Backslash, Right Control
+
+## Interacting with Menus
+- Focus switches current keyboard focus of multipane menus
+- Up/Down navigates through lists
+- Left/Right used as incrementing and decrementing, or switching tabs
+- Accept will execute the currently selected menu button
+- Cancel automatically selects the first menu buttons (usually just reverts choice or exits the menu)
+
+## Dungeoning
+Like any classic roguelike, all you gotta do is bump into enemies to attack them.
+Movement is turn based, meaning enemies will only move when you do.  Unless you know what you're doing and your reflexes are god-like, rushing will usually just get you killed really fast.
+
+You can press a Direction key or click around the character to move them in that direction.
+- Holding down the key allows for a relaxing pace of actions with turns occuring at a steady rate.
+- If you want to speed things up, you can tap rapidly to send off a stream of turns
+
+Hovering your mouse over any enemy sprite will show you their name and current amount of HP.
+
+Doors inhibit your field of view and entry into rooms.  By gathering keys, you can simply open treasure chests or doors with no fear of being attacked by a mimic, or you can bash them right in.  Holding the ACTION button and pressing in the Direction of the entity you wish to unlock will use a key if it's a treasure chest or door type.
+
+Ascending or Descending requires the player to be standing on a staircase and pressing the ACTION button.  Ascending while on the first floor of a dungeon will result in leaving the dungeon with no penalty, much like sacrificing to escape.
+
+Players may also gather equipment while dungeoning.  Enemies have a chance of dropping either a sword, shield, or piece of armor.  Equipment will automatically be put on upon stepping on the drop icon.  They all have durability values and a power bonus for your character.  Once a piece of equipment breaks, it no longer grants its power rating.  Equipment is reset with each dungeon.
+
+Spell casting enables the player to send out an attack that streams in a straight path, hurting all enemies in its path, penetrating their defense.  The amount of spells available is limited by how many mana potions you naturally have, which recharge over time.
+To cast a spell you must press Cancel or Middle Click to enter Targeting mode.  Targeting mode allows you to move a cursor anywhere within your FOV.  Enemies highlighted by the targeting cursor will show their stats.  Spells can only be cast perpendicularly to the character, so the cursor will lock to an axis first when attempting to cast a spell.
+
+## Sleeping
+Sleeping has two main functions.  It advances the game time by a day, and it fully heals you.  You are technically capable of going through multiple dungeons in a single "day" if you balance your way of going through them.
+
+Days are of great importance, especially with the introduction of questing.  Quests have a set number of days in which they can be completed.  If the quest is not completed in that time period, it is assumed someone else has completed that quest or the cause of that quest is no longer of significance to the quest giver.  Every time you sleep, quests tick down a day.
+
+In addition to questing, there's also a list of daily craftables that you can use to clean up your inventory and increase your end game score and favour with the Crafting Goddess/God.  Whenever a day passes, there'll be new craftables for you to make.
+
+## Hardcore Mode
+In Hardcore Mode while dungeoning you are restricted to being capable of sacrificing only items that you have picked up on the current run.  You are also incapable of ascending up through the dungeon for a cheaper escape or to backtrack and gather items that you previously missed.
+
+This mode is set when creating a character, and can not be turned off after creation.  Only choose this if you're serious about challenging yourself, as it really does make a difference.
+
+# Credits / Attribution
+
+##Graphics, Programming, Project Lead
+    Nicholas Hydock
+
+
+##Ideas, Suggestions, Emotional Support, and Bros4Lyfe
+    Patrick Flanagan
+    Matthew Hydock
+    Andrew Hoffman
+
+##Sound Attribution
+
+All music is licensed under Creative-Commons BY(-NC) or other permissive licenses.
+
+Town Music
+	Monroeville Music Center - B002
+	Jahzzar - Take Me Higher
+Title Theme
+	Anamanaguchi - Helix Nebula
+Story Music
+	Eric Skiff - All of Us
+Lore
+	Jahzzar - Self Portrait
+Dungeon
+	pip - hannibaugh
+	Aaron Krogh - 294 - Leviathan (Battle Loop)
+	Benjamin Briggs - Benji Needs A Lawyer
+Boss Fights
+	(Victory) Aaron Krogh - 223 Groovy BGM (Loop)
+	Aaron Krogh - 306 Boss Battle 2 (Loop)
+
+Sounds used from freesound.org
+	timgorml
+		8-bit hurt1
+		8-bit coin
+		8-bit shimmer
+		8-bit bump
+	deathbygeko - boss fight
+	hgavin - Whoosh.wav
+	Dymewiz - footsteps (snow)_02.WAV
+	Phil25 - Stone Steps
+	ceberation - Footsteps on leaves.wav
+	aglinder - Footsteps Dirt 02
+	FableVision_Studios - Sandy Footsteps (foley)
+
+Also featuring sounds recorded from Sonic & Knuckles
+	
+Previously Featured Music
+    fb - cueball
+    Decktonic - Fair Game
+    Sycamore Drive - Kicks
+    Revolution Void - Telluric Undercurrent
+    
+## FOSS Libraries Used
+
+LibGDX - core engine of the game
+http://libgdx.badlogicgames.com/
+
+Ashley - an entity system, used in dungeoning
+https://github.com/libgdx/ashley
+
+SquidLib - FOV calculations
+https://github.com/SquidPony/SquidLib
+
+roguelikelib - dungeon generation algorithm
+http://sourceforge.net/projects/roguelikelib/

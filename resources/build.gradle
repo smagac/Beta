@@ -1,0 +1,22 @@
+apply plugin: "java"
+
+sourceCompatibility = 1.7
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+project.ext.assetsDir = new File("assets");
+
+distsDirName = "../../dist/"
+libsDirName = "../../dist/"
+
+task dist(type: Jar) {
+    archiveName = "storymode_assets.jar"
+    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.output.resourcesDir)
+    from files(project.assetsDir)
+    from {configurations.compile.collect {zipTree(it)}}
+}
+
+eclipse.project {
+    name = appName + "-resources"
+}
