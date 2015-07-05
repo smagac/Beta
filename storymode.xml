@@ -3,6 +3,7 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
+    	<property environment="env"/>
         <jar destfile="dist/storymode.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="core.common.SMRunner"/>
@@ -25,9 +26,9 @@
     	<copy file="README" tofile="dist/README" overwrite="true" />
     	<copy file="LICENSE" tofile="dist/LICENSE" overwrite="true" />
     	
-    	<java classpath="boogie.jar" classname="app.BuildHash">
-    		<arg value="dist/" />
-    		<arg value="dist/" />
+    	<java classpath="${basedir}/boogie.jar" classname="github.nhydock.boogie.BuildHash" fork="true">
+    		<arg value="${basedir}/dist/" />
+    		<arg value="${basedir}/dist/" />
     	</java>
     </target>
 </project>

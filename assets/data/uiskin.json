@@ -34,6 +34,7 @@ com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: { background: window6, vScrollKnob: scroll-knob },
 	log: { vScrollKnob: scroll-knob },
     files: { vScrollKnob: scroll-knob },
+    prompt: { background: window4, vScrollKnob: scroll-knob },
 },
 com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 	default: {
