@@ -26,11 +26,12 @@ allprojects {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
     }
+    
+    
 }
 
 project(":desktop") {
     apply plugin: "java"
-
 
     dependencies {
         compile project(":core")
@@ -44,7 +45,6 @@ project(":desktop") {
 project(":core") {
     apply plugin: "java"
 
-
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
@@ -56,3 +56,16 @@ project(":core") {
 tasks.eclipse.doLast {
     delete ".project"
 }
+
+task copyDocs(type: Copy) {
+    from "docs"
+    into "dist"
+}
+
+task boogie << {
+    def path = System.getProperty("user.dir")
+    path += "/dist/"
+    javaexec { main="-cp"; args = ["boogie.jar", "github.nhydock.boogie.BuildHash", path, path]} 
+}
+
+boogie.dependsOn = [":desktop:dist", "copyDocs"]
