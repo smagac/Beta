@@ -132,6 +132,10 @@ public class BattleUI extends GameUI
                 return;
             
             Item selectedItem = lootList.getSelectedItem();
+            if (selectedItem == null) {
+                return;
+            }
+            
             PageFile pf = ServiceManager.getService(PageFile.class);
                         
             // update the modifier pane with info of the adjective associated with the item

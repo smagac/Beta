@@ -38,12 +38,10 @@ public class ItemList {
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
             Item item = (Item)event.getTarget().getUserObject();
-            int i = order.indexOf(item, true);;
-            if (i == index){
+            if (item == getSelectedItem()){
                 swap(item);
             } else {
                 selectItem(item);
-                index = i;
             }
             return true;
         };
@@ -185,7 +183,8 @@ public class ItemList {
             Label[] labels = rows.get(i);
             labels[0].setStyle(hoverStyle);
             labels[1].setStyle(hoverStyle);
-        
+            index = order.indexOf(i, true);;
+            
             ChangeEvent event = Pools.obtain(ChangeEvent.class);
             labels[0].fire(event);
             Pools.free(event);
@@ -263,7 +262,10 @@ public class ItemList {
     }
 
     public Item getSelectedItem() {
-        return order.get(index);
+        if (index >= 0) {
+            return order.get(index);
+        }
+        return null;
     }
 
     public void selectPreviousItem() {
