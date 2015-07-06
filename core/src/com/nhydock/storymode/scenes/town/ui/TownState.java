@@ -133,7 +133,7 @@ enum TownState implements UIState<TownUI> {
                 entity.home.addAction(Actions.moveToAligned(0, 0, Align.bottomLeft, .75f));
                 entity.transition(.5f);
             } else {
-                entity.transition(0f);
+                entity.transition(.1f);
             }
             entity.resetFocus();
         }
@@ -157,6 +157,7 @@ enum TownState implements UIState<TownUI> {
             }
             if (t.message == Messages.Interface.Close) {
                 ui.changeState(Main);
+                return true;
             }
 
             return false;
@@ -943,8 +944,7 @@ enum TownState implements UIState<TownUI> {
         @Override
         public boolean onMessage(TownUI ui, Telegram t) {
 
-            if (t.message == Messages.Interface.Close || 
-                t.message == Messages.Interface.Button && (int)t.extraInfo == 0){
+            if (t.message == Messages.Interface.Close){
                 ui.changeState(Home);
                 return true;
             }

@@ -109,10 +109,6 @@ public class PageFileWindow {
                     }
                     return true;
                 }
-                if (Input.CANCEL.match(keycode)){
-                    MessageManager.getInstance().dispatchMessage(null, Messages.Interface.Close);
-                    return true;
-                }
                 return false;
             }
         });
