@@ -6,6 +6,7 @@ import github.nhydock.ssm.ServiceManager;
 import java.util.Iterator;
 
 import com.badlogic.gdx.ai.msg.MessageManager;
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter.NumericValue;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -283,41 +284,110 @@ public final class PageFile implements Serializable, Service {
 
     @Override
     public void write(Json json) {
-        json.writeValue("nv", numeric, ObjectIntMap.class);
-        json.writeValue("sv", strings, ObjectMap.class);
-        json.writeValue("monsters", discoveredMonsters, ObjectIntMap.class);
-        json.writeValue("modifiers", discoveredModifiers, ObjectMap.class);
+        json.writeObjectStart("nv");
+        {
+            ObjectIntMap.Entries<NumberValues> n = numeric.entries();
+            while (n.hasNext) {
+                ObjectIntMap.Entry<NumberValues> entry = n.next();
+                json.writeValue(entry.key.name(), entry.value, int.class);
+            }
+        }
+        json.writeObjectEnd();
+        
+        json.writeObjectStart("sv");
+        {
+            ObjectMap.Entries<StringValues, ObjectIntMap<String>> s = strings.entries();
+            while (s.hasNext) {
+                ObjectMap.Entry<StringValues, ObjectIntMap<String>> entry = s.next();
+                ObjectIntMap.Entries<String> strings = entry.value.entries();
+                json.writeObjectStart(entry.key.name());
+                while (strings.hasNext) {
+                    ObjectIntMap.Entry<String> str = strings.next();
+                    json.writeValue(str.key, str.value, int.class);
+                }
+                json.writeObjectEnd();
+            }
+        }
+        json.writeObjectEnd();
+        
+        json.writeObjectStart("monsters");
+        {
+            ObjectIntMap.Entries<MonsterTemplate> monsters = discoveredMonsters.entries();
+            while (monsters.hasNext) {
+                ObjectIntMap.Entry<MonsterTemplate> entry = monsters.next();
+                json.writeValue(entry.key.toString(), entry.value, int.class);
+            }
+        }
+        json.writeObjectEnd();
+        
+        json.writeObjectStart("modifiers");
+        {
+            ObjectMap.Entries<String, Boolean> modifiers = discoveredModifiers.entries();
+            while (modifiers.hasNext) {
+                ObjectMap.Entry<String, Boolean> entry = modifiers.next();
+                json.writeValue(entry.key, entry.value, boolean.class);
+            }
+        }
+        json.writeObjectEnd();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void read(Json json, JsonValue jsonData) {
-
         {
-            ObjectIntMap val = json.readValue(ObjectIntMap.class, jsonData.get("numeric"));
+            numeric = new ObjectIntMap<NumberValues>();
+            JsonValue val = jsonData.get("nv");
             if (val != null) {
-                numeric = val;
+                val = val.child();
+                while (val != null) {
+                    numeric.put(NumberValues.valueOf(val.name), val.asInt());
+                    val = val.next();
+                }
             }
         }
         
         {
-            ObjectMap val = json.readValue(ObjectMap.class, jsonData.get("strings"));
-            if (val != null) {
-                strings = val;
+            strings = new ObjectMap<StringValues, ObjectIntMap<String>>();
+            JsonValue val = jsonData.get("sv");
+            if (val != null && val.child() != null) {
+                val = val.child();
+                while (val != null) {
+                    String name = val.name;
+                    
+                    JsonValue entry = val.child();
+                    ObjectIntMap<String> entries = new ObjectIntMap<String>();
+                    while (entry != null) {
+                        entries.put(entry.name, entry.asInt());
+                        entry = entry.next();
+                    }
+                    
+                    strings.put(StringValues.valueOf(name), entries);
+                    val = val.next();
+                }
             }
         }
         
         {
-            ObjectIntMap val = json.readValue(ObjectIntMap.class, jsonData.get("monsters"));
+            discoveredMonsters = new ObjectIntMap<MonsterTemplate>();
+            JsonValue val = jsonData.get("monsters");
             if (val != null) {
-                discoveredMonsters = val;
+                val = val.child();
+                while (val != null) {
+                    discoveredMonsters.put(MonsterFactory.getMonster(val.name), val.asInt());
+                    val = val.next();
+                }
             }
         }
         
         {
-            ObjectMap val = json.readValue(ObjectMap.class, jsonData.get("modifiers"));
+            discoveredModifiers = new ObjectMap<String, Boolean>();
+            JsonValue val = jsonData.get("modifiers");
             if (val != null) {
-                discoveredModifiers = val;
+                val = val.child();
+                while (val != null) {
+                    discoveredModifiers.put(val.name, val.asBoolean());
+                    val = val.next();
+                }
             }
         }
     }
