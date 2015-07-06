@@ -18,8 +18,8 @@ public class ColorManager implements IColorMode {
 
     @Override
     public void onRegister() {
-        hueify = new ShaderProgram(Gdx.files.classpath("com/nhydock/storymode/util/bg.vertex.glsl"),
-                Gdx.files.classpath("com/nhydock/storymode/util/bg.fragment.glsl"));
+        hueify = new ShaderProgram(Gdx.files.classpath("shaders/bg.vertex.glsl"),
+                Gdx.files.classpath("shaders/bg.fragment.glsl"));
         if (!hueify.isCompiled()) {
             (new GdxRuntimeException(hueify.getLog())).printStackTrace();
             System.exit(-1);

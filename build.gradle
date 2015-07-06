@@ -53,6 +53,14 @@ project(":core") {
     }
 }
 
+project(":resources") {
+    apply plugin: "java"
+
+    dependencies {
+    }
+}
+
+
 tasks.eclipse.doLast {
     delete ".project"
 }
@@ -62,10 +70,10 @@ task copyDocs(type: Copy) {
     into "dist"
 }
 
-task boogie << {
+task dist << {
     def path = System.getProperty("user.dir")
     path += "/dist/"
     javaexec { main="-cp"; args = ["boogie.jar", "github.nhydock.boogie.BuildHash", path, path]} 
 }
 
-boogie.dependsOn = [":desktop:dist", "copyDocs"]
+dist.dependsOn = [":desktop:dist", ":resources:dist", "copyDocs"]
