@@ -1,0 +1,22 @@
+{
+com.badlogic.gdx.graphics.g2d.BitmapFont: { 
+    small: { file: prompt_sm.fnt },
+    prompt: { file: titlefnt.fnt },
+},
+com.badlogic.gdx.graphics.Color: {
+	white: { a: 1, b: 1, g: 1, r: 1 },
+	black: { a: 1, b: 0, g: 0, r: 0 }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+	default: { font: small, fontColor: white },
+	prompt: { font: prompt, fontColor: white, background: frame},
+    prompt2: { font: prompt, fontColor: white},
+	more: {font:small, fontColor:white, background: frame}
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+    default: { up: frame, font: small, fontColor: white }
+},
+com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+    default: { vScrollKnob: scroll-knob },
+},
+}

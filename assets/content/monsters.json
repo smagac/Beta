@@ -1,0 +1,291 @@
+{
+    "ogre" : {
+        "hp" : "6", "str" : "11", "def" : "4", "spd" : "5", "exp" : "2",
+        "maxhp" : "200", "maxstr" : "135", "maxdef" : "70", "maxexp" : "20", "maxpsd" : "35",
+        "type" : "ogre",
+        "density" : ".8",
+        "status" : {
+          "sprain" : ".2",
+          "arthritis" : ".05"
+        }
+    },
+    "minotaur" : {
+        "hp" : "10", "str" : "9", "def" : "6", "spd" : "4", "exp" : "2",
+        "maxhp" : "245", "maxstr" : "132", "maxdef" : "85", "maxexp" : "20", "maxpsd" : "32",
+        "type" : "ogre",
+        "density" : ".8",
+        "status" : {
+          "sprain" : ".25",
+          "arthritis" : ".15",
+          "blind" : ".08"
+        }
+    },
+    "bunny" : {
+        "hp" : "3", "str" : "6", "def" : "2", "exp" : "1", "spd" : "15",
+        "maxhp" : "70", "maxstr" : "110", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "45",
+        "type" : "bunny",
+        "passive" : "true",
+        "density" : ".2"
+    },
+    "duck" : {
+        "hp" : "5", "str" : "7", "def" : "1", "exp" : "1", "spd" : "10",
+        "maxhp" : "90", "maxstr" : "140", "maxdef" : "90", "maxexp" : "20", "maxpsd" : "20",
+        "type" : "duck",
+        "density": ".2"
+    },
+    "bat" : {
+        "hp" : "3", "str" : "8", "def" : "3", "exp" : "1", "spd" : "15",
+        "maxhp" : "99", "maxstr" : "105", "maxdef" : "80", "maxexp" : "9", "maxpsd" : "55",
+        "type" : "duck",
+        "density" : ".2",
+        "status" : {
+          "confuse" : ".24"
+        }
+    },
+    "ghost" : {
+        "hp" : "10", "str" : "7", "def" : "0", "exp" : "1", "spd" : "35",
+        "maxhp" : "85", "maxstr" : "115", "maxdef" : "67", "maxexp" : "10", "maxpsd" : "65",
+        "type" : "ghost",
+        "passive" : "true",
+        "die" : "%s crossed over peacefully"
+    },
+    "ghoul" : {
+        "hp" : "15", "str" : "6", "def" : "5", "exp" : "1", "spd" : "3",
+        "maxhp" : "250", "maxstr" : "112", "maxdef" : "75", "maxexp" : "15", "maxpsd" : "15",
+        "type" : "ghost",
+        "die" : "%s only wanted to be your friend",
+        "density" : ".6",
+        "status" : {
+          "poison" : ".15"
+        }
+    },
+    "vampire" : {
+        "hp" : "20", "str" : "8", "def" : "3", "exp" : "3", "spd" : "55",
+        "maxhp" : "295", "maxstr" : "130", "maxdef" : "90", "maxexp" : "30", "maxpsd" : "65",
+        "type" : "ghost",
+        "density" : ".4"
+    },
+    "spider" : {
+        "hp" : "5", "str" : "8", "def" : "2", "exp" : "1", "spd" : "15",
+        "maxhp" : "99", "maxstr" : "122", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "35",
+        "type" : "bug",
+        "status" : {
+          "poison" : ".3",
+          "venom" : ".08"
+        }
+    },
+    "bug" : {
+        "hp" : "4", "str" : "6", "def" : "3", "exp" : "1", "spd" : "5",
+        "maxhp" : "80", "maxstr" : "110", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "25",
+        "type" : "bug",
+        "stauts" : {
+          "poison" : ".15"
+        }
+    },
+    "elf" : {
+        "hp" : "15", "str" : "6", "def" : "4", "exp" : "2", "spd" : "45",
+        "maxhp" : "175", "maxstr" : "60", "maxdef" : "45", "maxexp" : "20", "maxpsd" : "65",
+        "type" : "elf",
+        "passive" : "true",
+        "density" : ".5"
+    },
+    "goblin" : {
+        "hp" : "7", "str" : "4", "def" : "3", "exp" : "1", "spd" : "8",
+        "maxhp" : "115", "maxstr" : "110", "maxdef" : "72", "maxexp" : "10", "maxpsd" : "34",
+        "type" : "elf",
+        "density" : ".5"
+    },
+    "michael bay" : {
+        "hp" : "100", "str" : "0", "def" : "-10", "exp" : "1", "spd" : "0",
+        "maxhp" : "9999", "maxstr" : "140", "maxdef" : "10", "maxexp" : "15", "maxpsd" : "0",
+        "type" : "elf",
+        "die" : "%s exploded!",
+        "density" : ".4"
+    },
+    "gnome" : {
+        "hp" : "15", "str" : "14", "def" : "6", "exp" : "3", "spd" : "3",
+        "maxhp" : "225", "maxstr" : "130", "maxdef" : "90", "maxexp" : "30", "maxpsd" : "25",
+        "type" : "gnome",
+        "passive" : "true",
+        "die" : "%s fled in search of beer",
+        "density" : ".6",
+        "status" : {
+          "sprain" : ".18",
+          "arthritis" : ".05"
+        }
+    },
+    "plant" : {
+        "hp" : "1", "str" : "17", "def" : "1", "exp" : "2", "spd" : "25",
+        "maxhp" : "40", "maxstr" : "150", "maxdef" : "50", "maxexp" : "20", "maxpsd" : "50",
+        "type" : "plant",
+        "die" : "%s withered away!"
+    },
+    "snake" : {
+        "hp" : "8", "str" : "7", "def" : "2", "exp" : "1", "spd" : "12",
+        "maxhp" : "130", "maxstr" : "123", "maxdef" : "65", "maxexp" : "10", "maxpsd" : "35",
+        "type" : "snake",
+        "passive" : "true",
+        "status" : {
+          "poison" : ".28",
+          "venom" : ".125"
+        }
+    },
+    "viper" : {
+        "hp" : "11", "str" : "10", "def" : "0", "exp" : "1", "spd" : "10",
+        "maxhp" : "160", "maxstr" : "130", "maxdef" : "50", "maxexp" : "10", "maxpsd" : "30",
+        "type" : "snake",
+        "status" : {
+          "poison" : ".35",
+          "venom" : ".15"
+        }
+    },
+    "python" : {
+        "hp" : "25", "str" : "10", "def" : "3", "exp" : "1", "spd" : "35",
+        "maxhp" : "335", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "65",
+        "type" : "snake",
+        "density" : ".6"
+    },
+    "rat" : {
+        "hp" : "4", "str" : "4", "def" : "3", "exp" : "1", "spd" : "15",
+        "maxhp" : "105", "maxstr" : "110", "maxdef" : "70", "maxexp" : "10", "maxpsd" : "45",
+        "type" : "rat",
+        "status" : {
+          "poison" : ".165"
+        }
+    },
+    "mouse" : {
+        "hp" : "1", "str" : "3", "def" : "0", "exp" : "1", "spd" : "5",
+        "maxhp" : "75", "maxstr" : "105", "maxdef" : "50", "maxexp" : "5", "maxpsd" : "65",
+        "type" : "rat",
+        "passive" : "true",
+        "status" : {
+          "poison" : ".09",
+        }
+    },
+    "horse" : {
+        "hp" : "13", "str" : "9", "def" : "4", "exp" : "1", "spd" : "35",
+        "maxhp" : "210", "maxstr" : "135", "maxdef" : "85", "maxexp" : "30", "maxpsd" : "65",
+        "type" : "horse",
+        "passive" : "true",
+        "density" : ".7"
+    },
+    "cocatrice" : {
+        "hp" : "19", "str" : "7", "def" : "3", "exp" : "2", "spd" : "10",
+        "maxhp" : "210", "maxstr" : "155", "maxdef" : "75", "maxexp" : "30", "maxpsd" : "15",
+        "type" : "duck",
+        "status" : {
+          "blind" : ".3",
+          "confuse" : ".175"
+        }
+    },
+    "alpaca" : {
+        "hp" : "9", "str" : "5", "def" : "5", "exp" : "1", "spd" : "25",
+        "maxhp" : "185", "maxstr" : "115", "maxdef" : "95", "maxexp" : "15", "maxpsd" : "25",
+        "type" : "horse",
+        "passive" : "true",
+        "density" : ".7"
+    },
+    "llama" : {
+        "hp" : "15", "str" : "3", "def" : "6", "exp" : "1", "spd" : "15",
+        "maxhp" : "295", "maxstr" : "95", "maxdef" : "125", "maxexp" : "20", "maxpsd" : "15",
+        "type" : "horse",
+        "passive" : "true",
+        "density" : ".7",
+        "status" : {
+          "sprain" : ".15"
+        }
+    },
+    "housewife" : {
+        "hp" : "10", "str" : "5", "def" : "5", "exp" : "1", "spd" : "10",
+        "maxhp" : "99", "maxstr" : "105", "maxdef" : "105", "maxexp" : "10", "maxpsd" : "30",
+        "type" : "girl",
+        "density" : ".4"
+    },
+    "schoolgirl" : {
+        "hp" : "4", "str" : "9", "def" : "3", "exp" : "1", "spd" : "25",
+        "maxhp" : "80", "maxstr" : "129", "maxdef" : "75", "maxexp" : "20", "maxpsd" : "45",
+        "type" : "girl",
+        "die" : "%s was late for school",
+        "density" : ".4"
+    },
+    "woman" : {
+        "hp" : "15", "str" : "7", "def" : "4", "exp" : "1", "spd" : "8",
+        "maxhp" : "125", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "25",
+        "type" : "girl",
+        "density" : ".4"
+    },
+    "husband" : {
+        "hp" : "10", "str" : "5", "def" : "5", "exp" : "1", "spd" : "10",
+        "maxhp" : "99", "maxstr" : "105", "maxdef" : "105", "maxexp" : "10", "maxpsd" : "30",
+        "type" : "dude",
+        "density" : ".4"
+    },
+    "jock" : {
+        "hp" : "4", "str" : "9", "def" : "3", "exp" : "1", "spd" : "25",
+        "maxhp" : "80", "maxstr" : "129", "maxdef" : "75", "maxexp" : "20", "maxpsd" : "45",
+        "type" : "dude",
+        "die" : "%s was late for school",
+        "density" : ".4"
+    },
+    "galcia" : {
+        "hp" : "15", "str" : "7", "def" : "4", "exp" : "1", "spd" : "8",
+        "maxhp" : "125", "maxstr" : "60", "maxdef" : "45", "maxexp" : "30", "maxpsd" : "25",
+        "type" : "dude",
+        "density" : ".4"
+    },
+    "mimic" : {
+        "hp" : "28", "str" : "13", "def": "9", "exp" : "5", "spd" : "10",
+        "maxhp" : "450", "maxstr" : "160", "maxdef" : "95", "maxexp" : "50", "maxpsd" : "15",
+        "type" : "loot",
+        "norm" : "0",
+        "agro" : ".8",
+        "passive" : "true",
+        "hideStats" : "true",
+        "hideName" : "true"
+    },
+    "treasure chest" : {
+        "hp" : "1", "str" : "0", "def": "0", "exp" : "0", "spd" : "0",
+        "maxhp" : "1", "maxstr" : "0", "maxdef" : "0", "maxexp" : "0", "maxpsd" : "0",
+        "type" : "loot",
+        "norm" : "0",
+        "agro" : "0",
+        "passive" : "true",
+        "die" : "%s was bashed open",
+        "hideStats" : "true",
+        "hideName" : "true"
+    },
+    "door" : {
+        "hp" : "1", "str" : "6", "def": "0", "exp" : "0", "spd" : "0",
+        "maxhp" : "1", "maxstr" : "20", "maxdef" : "0", "maxexp" : "0", "maxpsd" : "0",
+        "type" : "door",
+        "norm" : "0",
+        "agro" : "0",
+        "passive" : "true",
+        "die" : "%s was bashed open",
+        "hideStats" : "true",
+        "hideName" : "true"
+        "density" : "1.0"
+    },
+    "domimic" : {
+        "hp" : "28", "str" : "13", "def": "9", "exp" : "5", "spd" : "10",
+        "maxhp" : "450", "maxstr" : "160", "maxdef" : "95", "maxexp" : "50", "maxpsd" : "15",
+        "type" : "door",
+        "norm" : "0",
+        "agro" : ".8",
+        "passive" : "true",
+        "hideStats" : "true",
+        "hideName" : "true",
+        "density" : "1.0"
+    },
+    "key" : {
+        "hp" : "1", "str" : "0", "def": "0", "exp" : "0", "spd" : "0",
+        "maxhp" : "1", "maxstr" : "0", "maxdef" : "0", "maxexp" : "0", "maxpsd" : "0",
+        "type" : "key",
+        "norm" : "0",
+        "agro" : "0",
+        "passive" : "true",
+        "die" : "%s was picked up",
+        "hideStats" : "true",
+        "hideName" : "true"
+    },
+}

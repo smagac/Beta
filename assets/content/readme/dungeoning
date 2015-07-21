@@ -1,0 +1,42 @@
+## Dungeoning
+
+#Controls
+Movement
+WASD, IJKL, Arrow Keys, Numpad
+
+Cancel
+E, O, Escape, Backspace, Right Click
+
+Targeting Mode
+E, O, Escape, Backspace, Middle Click
+
+Accept/Request Assistance
+Q, U, Enter, Space
+
+Toggle Window Focus
+Tab, \
+
+Perform Action
+Tab, \, Right Click
+
+#Gameplay
+Like any classic roguelike, all you gotta do is bump into enemies to attack them.
+Movement is turn based, meaning enemies will only move when you do.  Unless you know what you're doing and your reflexes are god-like, rushing will usually just get you killed really fast.
+
+You can press a Movement key or click around the character to move them in that direction.
+- If you want to speed things up, you can tap rapidly to send off a stream of turns
+
+Hovering your mouse over any enemy sprite or moving the targeting cursor to them will show you their name and current amount of HP.
+
+Doors inhibit your field of view and entry into rooms.  
+By gathering keys, you can simply open treasure chests or doors with no fear of being attacked by a mimic, or you can bash them right in. 
+ 
+Holding the ACTION button and moving in the Direction of the object you wish to unlock will use a key if it's a treasure chest or door type.
+
+Ascending or Descending requires the player to be standing on a staircase and pressing the ACTION button.  
+Ascending while on the first floor of a dungeon will result in leaving the dungeon with no penalty, much like sacrificing to escape.
+
+Players may also gather equipment while dungeoning.  Enemies have a chance of dropping either a sword, shield, or piece of armor.  Equipment will automatically be put on upon stepping on the drop icon.  They all have durability values and a power bonus for your character.  Once a piece of equipment breaks, it no longer grants its power rating.  Equipment is reset with each dungeon.
+
+Spell casting enables the player to send out an attack that streams in a straight path, hurting all enemies in its path, penetrating their defense.  The amount of spells available is limited by how many mana potions you naturally have, which recharge over time.
+To cast a spell you must enter Targeting mode.  Targeting mode allows you to move a cursor anywhere within your FOV.  Spells can only be cast perpendicularly to the character, so the cursor will lock to an axis first when attempting to cast a spell.

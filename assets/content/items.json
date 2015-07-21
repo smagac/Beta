@@ -1,0 +1,30 @@
+{
+    "other" : [
+        "gumbo", "eyedrops", "underpants", "wood", "fish", "potato", "granola", "junk", "rock", "lint", "sock", "STD", "sadness", "booty", "dollas"
+    ],
+    
+    "image" : [
+        "pants", "lamp shade", "fire", "self-esteem", "comic", "copycat", "reference", "trope", "magazine", "ashes"
+    ],
+
+    "audio" : [
+        "shades", "pancakes", "synthesizer", "radio", "speakers", "record", "codec", "8-track", "sax", "tuba", "boogie"
+    ],
+    
+    "video" : [
+        "chips", "popcorn", "glasses", "recliner", "car", "hero", "heroine", "shampoo", "commercial", "questionables",  "myth", "legend"
+    ],
+    
+    "compressed" : [
+        "shoes", "waldo", "thermos", "mints", "zipper", "slinky", "spring", "tofu", "giraffe", "raptor"
+    ],
+    
+    "executable" : [
+        "cat", "rice", "operating system", "gears", "axe", "spaghetti", "interpreter", "order", "agenda"
+    ],
+    
+    "craftable" : [
+        "sword", "pants", "drugs", "hats", "cake", "politics", "cocktail", "armor", "stew", "statue", "apocalypse",
+        "plan", "soda", "computer", "boat", "robot", "ensemble", "sport", "virus", "genome", "picnic", "trainwreck"
+    ]
+}

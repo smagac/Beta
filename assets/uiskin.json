@@ -1,0 +1,93 @@
+{
+com.badlogic.gdx.graphics.g2d.BitmapFont: { 
+    small: { file: small.fnt },
+    smaller: { file: smaller.fnt },
+    smallest: { file: smallest.fnt },
+    big: { file: big.fnt },
+    prompt: { file: titlefnt.fnt },
+    promptsm: { file: prompt_sm.fnt },
+    dmg: { file: dmg.fnt },
+    loading: { file: loading.fnt },
+},
+com.badlogic.gdx.graphics.Color: {
+	white: { a: 1, b: 1, g: 1, r: 1 },
+	black: { a: 1, b: 0, g: 0, r: 0 }
+},
+com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable: {
+    scrollbar: { region: scroll }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
+	default: { down: button_down, up: button_up },
+	toggle: { down: button_down, checked: button_down, up: button_up },
+	pop: { down: 3dbutton_down, checked: 3dbutton_down, up: 3dbutton_up }
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+	default: { down: button_down, up: button_up, checked: button_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
+    big: { down: button_down, up: button_up, checked: button_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },
+    pop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
+    bigpop: { down: 3dbutton_down, up: 3dbutton_up, checked: 3dbutton_down, font: promptsm, fontColor: white, downFontColor: black, checkedFontColor: black },
+	list: {font: smaller, fontColor: white},
+	tab: { down: tab_down, up: tab_up, checked: tab_down, font: smaller, fontColor: white, downFontColor: black, checkedFontColor: black },
+	huge: { down: 3dbutton_down, up: window4, checked: 3dbutton_down, font: prompt, fontColor: white, downFontColor: black, checkedFontColor: black}
+},
+com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+	default: { background: window6, vScrollKnob: scroll-knob },
+	log: { vScrollKnob: scroll-knob },
+    files: { vScrollKnob: scroll-knob },
+    prompt: { background: window4, vScrollKnob: scroll-knob },
+},
+com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
+	default: {
+		font: small, fontColor: white, background: window,
+		scrollStyle: default,
+		listStyle: { font: small, selection: button_down }
+	},
+	log : {
+	   font: smallest, fontColor: white,
+       scrollStyle: default,
+       listStyle: { font: smallest, selection: button_down }
+	}
+},
+com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
+	default: { titleFont: small, background: window, titleFontColor: white },
+	window: { titleFont: small, background: window, titleFontColor: white },
+	thick: { titleFont: small, background: window2, titleFontColor: white },
+	round: { titleFont: small, background: window3, titleFontColor: white },
+	square: { titleFont: small, background: window4, titleFontColor: white },
+	flattop: { titleFont: small, background: window5, titleFontColor: white },
+	pane: { titleFont: small, background: window6, titleFontColor: white },
+},
+com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+	default: { font: small, fontColor: white },
+	big: { font: big, fontColor: white },
+	small: { font: small, fontColor: white },
+	smaller: { font: smaller, fontColor: white },
+	smallest: {font: smallest, fontColor: white},
+	prompt: { font: prompt, fontColor: white },
+	promptsm: { font: promptsm, fontColor: white },
+	hover: { font: smaller, fontColor: black, background: button_down },
+	header: { font: smaller, fontColor: white, background: button_up },
+	field: { font: smaller, fontColor: white, background: button_up },
+	dmg: { font: dmg, fontColor: white },
+	loading: { font: loading, fontColor: white },
+	tag: { font: smallest, fontColor: white, background: tag },
+	list: { font: smaller, fontColor: white, background: list}
+	selected: { font: smaller, fontColor: black, background: selected}
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+	default: { selection: button_down, background: button_up, font: small, fontColor: white, cursor: character }
+},
+com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
+	default: { fontColorUnselected: white, selection: selected, fontColorSelected: black, font: smaller },
+	log: { fontColorUnselected: white, selection: selected, fontColorSelected: black, font: smallest },
+},
+com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
+	default: { background: progback, knobBefore: progfront},
+	simple: { background: list, knobBefore: selected }
+},
+com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+	default: { checkboxOff: checkbox-unchecked,
+	           checkboxOn: checkbox-checked,
+	           font: promptsm },
+},
+}
